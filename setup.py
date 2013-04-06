@@ -16,10 +16,14 @@ limitations under the License.
 
 import os
 import sys
-import pwd
-import grp
 import cloudcafe
+import platform
 import shutil
+
+# These imports are only possible on Linux/OSX
+if platform.system().lower() != 'windows':
+    import pwd
+    import grp
 
 try:
     from setuptools import setup, find_packages
@@ -101,20 +105,24 @@ else:
         # State file
         temp = open("~install", "w")
         temp.close()
-        
-        ''' todo: This is MAC/Linux Only '''
-        # get who really executed this
-        sudo_user = os.getenv("SUDO_USER")
-        uid = pwd.getpwnam(sudo_user).pw_uid
-        gid = pwd.getpwnam(sudo_user).pw_gid
+
+        # Get uid and gid of the current user to set permissions (Linux/OSX only)
+        if platform.system().lower() != 'windows':
+            sudo_user = os.getenv("SUDO_USER")
+            uid = pwd.getpwnam(sudo_user).pw_uid
+            gid = pwd.getpwnam(sudo_user).pw_gid
     
         config_dirs = os.listdir("configs")
         for dir in config_dirs:
             if not os.path.exists("{0}/{1}".format(config_dir, dir)):
                 print("Installing configurations for: {0}".format("{0}/{1}".format(config_dir, dir)))
                 os.makedirs("{0}/{1}".format(config_dir, dir))
-                os.chown("{0}/{1}".format(config_dir, dir), uid, gid)
+                # Fix the directory permissions
+                if platform.system().lower() != 'windows':
+                    os.chown("{0}/{1}".format(config_dir, dir), uid, gid)
             for file in os.listdir("configs/{0}".format(dir)):
                 print("Installing {0}/{1}/{2}".format(config_dir, dir, file))
                 shutil.copy2("configs/{0}/{1}".format(dir, file), "{0}/{1}/{2}".format(config_dir, dir, file))
-                os.chown("{0}/{1}/{2}".format(config_dir, dir, file), uid, gid)
+                # Fix the directory permissions
+                if platform.system().lower() != 'windows':
+                    os.chown("{0}/{1}/{2}".format(config_dir, dir, file), uid, gid)
