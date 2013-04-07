@@ -192,7 +192,7 @@ class Server(AutoMarshallingModel):
         @rtype: bool
         """
         return EqualityTools.are_objects_equal(self, other,
-                                               ['adminPass', 'updated',
+                                               ['admin_pass', 'updated',
                                                 'progress'])
 
     def __ne__(self, other):
