@@ -62,3 +62,17 @@ class ServersConfig(ConfigSectionInterface):
     def instance_disk_path(self):
         """Primary disk path of instances under test"""
         return self.get("instance_disk_path")
+
+    @property
+    def connection_retry_interval(self):
+        """
+        Amount of time to wait between connection attempts
+        """
+        return int(self.get("connection_retry_interval"))
+
+    @property
+    def connection_timeout(self):
+        """
+        Amount of time to wait before giving up on connecting to an instance
+        """
+        return int(self.get("connection_timeout"))

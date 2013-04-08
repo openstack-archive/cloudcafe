@@ -24,8 +24,8 @@ from cloudcafe.compute.servers_api.models.servers import Addresses
 from cloudcafe.compute.servers_api.models.requests import CreateServer
 from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
-    ConfirmResize, Resize, Reboot, MigrateServer, Lock, Unlock, \
-    Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage
+    ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
+    Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, Rebuild
 
 
 class ServersClient(AutoMarshallingRestClient):
@@ -79,7 +79,7 @@ class ServersClient(AutoMarshallingRestClient):
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker,
                   'limit': limit, 'changes-since': changes_since}
-        url = '%s/servers' % (self.url)
+        url = '%s/servers' % self.url
         server_response = self.request('GET', url, params=params,
                                        response_entity_type=Server,
                                        requestslib_kwargs=requestslib_kwargs)
@@ -113,7 +113,7 @@ class ServersClient(AutoMarshallingRestClient):
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker, 'limit': limit,
                   'changes-since': changes_since}
-        url = '%s/servers/detail' % (self.url)
+        url = '%s/servers/detail' % self.url
         server_response = self.request('GET', url, params=params,
                                        response_entity_type=Server,
                                        requestslib_kwargs=requestslib_kwargs)
@@ -192,7 +192,7 @@ class ServersClient(AutoMarshallingRestClient):
                                              networks=networks,
                                              adminPass=admin_pass)
 
-        url = '%s/servers' % (self.url)
+        url = '%s/servers' % self.url
         server_response = self.request('POST', url,
                                        response_entity_type=Server,
                                        request_entity=server_request_object,
@@ -208,13 +208,13 @@ class ServersClient(AutoMarshallingRestClient):
         @type server_id: String
         @param name: The name of the server.
         @type name: String
-        @param meta: A dictionary of values to be used as metadata.
-        @type meta: Dictionary. The limit is 5 key/values.
-        @param ipv4: IPv4 address for the server.
-        @type ipv4: String
-        @param ipv6: IPv6 address for the server.
-        @type ipv6: String
-        @return: The response code and the updated Server .
+        @param metadata: A dictionary of values to be used as metadata.
+        @type metadata: Dictionary.
+        @param accessIPv4: IPv4 address for the server.
+        @type accessIPv4: String
+        @param accessIPv6: IPv6 address for the server.
+        @type accessIPv6: String
+        @return: The response code and the updated Server
         @rtype: Integer(Response code) and Object(Server)
         """
 
@@ -303,9 +303,8 @@ class ServersClient(AutoMarshallingRestClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-    def rebuild(self, server_id, imageRef, name=None,
-                flavorRef=None, adminPass=None,
-                diskConfig=None, metadata=None,
+    def rebuild(self, server_id, image_ref, name=None,
+                admin_pass=None, disk_config=None, metadata=None,
                 personality=None, accessIPv4=None, accessIPv6=None,
                 requestslib_kwargs=None):
         '''
@@ -314,22 +313,20 @@ class ServersClient(AutoMarshallingRestClient):
         @type server_id: String
         @param name: The new name for the server
         @type name: String
-        @param imageRef:The image ID.
-        @type imageRef: String
-        @param flavorRef:The flavor ID.
-        @type flavorRef: String
-        @param adminPass:The administrator password
-        @type adminPass: String
-        @param diskConfig:The disk configuration value, which is AUTO or MANUAL
-        @type diskConfig: String(AUTO/MANUAL)
+        @param image_ref:The image ID.
+        @type image_ref: String
+        @param admin_pass:The administrator password
+        @type admin_pass: String
+        @param disk_config:The disk configuration value, which is AUTO or MANUAL
+        @type disk_config: String(AUTO/MANUAL)
         @param metadata:A metadata key and value pair.
         @type metadata: Dictionary
         @param personality:The file path and file contents
         @type personality: String
-        @param accessIPV4:The IP version 4 address.
-        @type accessIPV4: String
-        @param accessIPV6:The IP version 6 address
-        @type accessIPV6: String
+        @param accessIPv4:The IP version 4 address.
+        @type accessIPv4: String
+        @param accessIPv6:The IP version 6 address
+        @type accessIPv6: String
         @return: Response Object containing response code and
          the server domain object
         @rtype: Response Object
@@ -337,10 +334,9 @@ class ServersClient(AutoMarshallingRestClient):
 
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
-        rebuild_request_object = Rebuild(name=name, imageRef=imageRef,
-                                         flavorRef=flavorRef,
-                                         adminPass=adminPass,
-                                         diskConfig=diskConfig,
+        rebuild_request_object = Rebuild(name=name, image_ref=image_ref,
+                                         admin_pass=admin_pass,
+                                         disk_config=disk_config,
                                          metadata=metadata,
                                          personality=personality,
                                          accessIPv4=accessIPv4,
