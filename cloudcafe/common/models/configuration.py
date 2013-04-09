@@ -29,7 +29,8 @@ class ConfigSectionInterface(BaseConfigSectionInterface):
 
         config_file_path = config_file_path or self.default_config_file
 
-        super(ConfigSectionInterface, self).__init__(config_file_path, section_name)
+        super(ConfigSectionInterface, self).__init__(config_file_path,
+                                                     section_name)
 
     @property
     def default_config_file(self):

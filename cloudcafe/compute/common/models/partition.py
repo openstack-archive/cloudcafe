@@ -52,7 +52,9 @@ class Partition:
         @return: String representation of Partition
         @rtype: string
         """
-        return "Partition Name : %s, Size: %s, Type : %s" % (self.name, self.size, self.type)
+        return "Partition Name : %s, Size: %s, Type : %s" % (self.name,
+                                                             self.size,
+                                                             self.type)
 
 
 class DiskSize:
