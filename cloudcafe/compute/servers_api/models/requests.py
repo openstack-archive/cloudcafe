@@ -178,18 +178,20 @@ class Personality(AutoMarshallingModel):
 
 
 class Rebuild(CreateServer):
-    '''
+    """
     @summary: Rebuild Request Object for Server
-    '''
+    """
 
     ROOT_TAG = 'rebuild'
 
-    def __init__(self, name, imageRef, flavorRef, adminPass, diskConfig=None,
+    def __init__(self, name, image_ref, admin_pass, disk_config=None,
                  metadata=None, personality=None, accessIPv4=None,
                  accessIPv6=None):
-        super(Rebuild, self).__init__(name=name, imageRef=imageRef,
-                                      flavorRef=flavorRef, adminPass=adminPass,
-                                      diskConfig=diskConfig, metadata=metadata,
+        super(Rebuild, self).__init__(name=name, imageRef=image_ref,
+                                      flavorRef=None,
+                                      adminPass=admin_pass,
+                                      diskConfig=disk_config,
+                                      metadata=metadata,
                                       personality=personality,
                                       accessIPv4=accessIPv4,
                                       accessIPv6=accessIPv6)

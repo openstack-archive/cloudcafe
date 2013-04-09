@@ -209,6 +209,46 @@ class ServerBehaviors(object):
         else:
             return server.addresses.public.ipv6
 
+    def get_remote_instance_client(self, server, config=None, ip_address=None,
+                                   username=None, password=None):
+        '''
+        @summary: Gets an client of the server
+        @param server: Instance uuid id of the server
+        @type server: String
+        @param ip_address: IPv4 address of the server
+        @type ip_address: String
+        @param username: Valid user of the server
+        @type username: String
+        @param password: Valid user password of the server
+        @type password: String
+        @return: Either IPv4 or IPv6 address of instance
+        @rtype: String
+
+        '''
+        if password is None:
+            password = server.admin_pass
+        if ip_address is None:
+            ip_address = self.get_public_ip_address(server)
+
+        # (TODO) dwalleck: Remove hard coding of distro after discussion on long term solution
+        return InstanceClientFactory.get_instance_client(
+            ip_address=ip_address, username=username, password=password,
+            os_distro='linux', config=config)
+
+    def get_public_ip_address(self, server):
+        """
+        @summary: Gets the public ip address of instance
+        @param server: Instance uuid id of the server
+        @type server: String
+        @return: Either IPv4 or IPv6 address of instance
+        @rtype: String
+
+        """
+        if self.config.ip_address_version_for_ssh == '4':
+            return server.addresses.public.ipv4
+        else:
+            return server.addresses.public.ipv6
+
     def resize_and_await(self, server_id, new_flavor):
         resp = self.servers_client.resize(server_id, new_flavor)
         assert resp.status_code is 202
