@@ -17,7 +17,7 @@ limitations under the License.
 from cafe.engine.models.base import \
     AutoMarshallingModel, AutoMarshallingListModel
 
-from cloudcafe.identity.rax.v2_0.tokens_api.models.constants \
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.constants \
     import V2_0Constants
 
 
