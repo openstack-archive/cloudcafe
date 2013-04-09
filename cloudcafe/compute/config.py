@@ -28,3 +28,37 @@ class ComputeConfig(ConfigSectionInterface):
     @property
     def compute_endpoint_name(self):
         return self.get("compute_endpoint_name")
+
+
+class ComputeAuthorizationConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'compute_secondary_user'
+
+    @property
+    def username(self):
+        return self.get("username")
+
+    @property
+    def password(self):
+        return self.get_raw("password")
+
+    @property
+    def tenant_name(self):
+        return self.get("tenant_name")
+
+
+class ComputeAdminConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'compute_admin_user'
+
+    @property
+    def username(self):
+        return self.get("username")
+
+    @property
+    def password(self):
+        return self.get_raw("password")
+
+    @property
+    def tenant_name(self):
+        return self.get("tenant_name")
