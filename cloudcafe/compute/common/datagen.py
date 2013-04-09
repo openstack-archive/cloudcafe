@@ -42,8 +42,8 @@ EXACT_TERABYTE = int(pow(10,12))
 
 def timestamp_string(prefix=None, suffix=None, decimal_precision=6):
     '''
-        Return a unix timestamp surrounded by any defined prefixes and suffixes
-        Decimal precision is full (6) by default.
+    Return a unix timestamp surrounded by any defined prefixes and suffixes
+    Decimal precision is full (6) by default.
     '''
     t = str('%f' % time.time())
     int_seconds, dec_seconds = t.split('.')
@@ -65,8 +65,8 @@ def timestamp_string(prefix=None, suffix=None, decimal_precision=6):
 
 def random_string(prefix=None, suffix=None, size=8):
     '''
-        Return exactly size bytes worth of base_text as a string
-        surrounded by any defined pre or suf-fixes
+    Return exactly size bytes worth of base_text as a string
+    surrounded by any defined pre or suf-fixes
     '''
 
     base_text = str(uuid4()).replace('-','0')
@@ -91,10 +91,12 @@ def random_string(prefix=None, suffix=None, size=8):
     return body
 
 def random_ip(pattern=None):
-    '''Takes a pattern as a string in the format of #.#.#.# where a # is an
+    '''
+    Takes a pattern as a string in the format of #.#.#.# where a # is an
     integer, and a can be substituded with an * to produce a random octet.
     pattern = 127.0.0.* would return a random string between 127.0.0.1 and
-    127.0.0.254'''
+    127.0.0.254
+    '''
     if pattern is None:
         pattern = '*.*.*.*'
     num_asterisks = 0
@@ -107,8 +109,10 @@ def random_ip(pattern=None):
     return pattern
 
 def random_cidr(ip_pattern=None, mask=None, min_mask=0, max_mask=30):
-    '''Gets a random cidr using the random_ip function in this module. If mask
-    is None then a random mask between 0 and 30 inclusive will be assigned.'''
+    '''
+    Gets a random cidr using the random_ip function in this module. If mask
+    is None then a random mask between 0 and 30 inclusive will be assigned.
+    '''
     if mask is None:
         mask = random.randint(min_mask, max_mask)
     ip = random_ip(ip_pattern)

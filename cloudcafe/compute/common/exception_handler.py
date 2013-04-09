@@ -38,10 +38,12 @@ class ExceptionHandler:
             resp_body_dict, type = self._parse_resp_body(resp.text)
 
         if resp.status_code == 400 and type == 'html':
-            raise exceptions.BadRequest(resp_body_dict['400 Bad Request']['message'])
+            raise exceptions.BadRequest(
+                resp_body_dict['400 Bad Request']['message'])
 
         if resp.status_code == 400:
-            raise exceptions.BadRequest(resp_body_dict['badRequest']['message'])
+            raise exceptions.BadRequest(
+                resp_body_dict['badRequest']['message'])
 
         if resp.status_code == 401:
             raise exceptions.Unauthorized()

@@ -47,7 +47,8 @@ class EqualityTools:
             return sanitized_dict
 
     @classmethod
-    def are_objects_equal(cls, expected_object, actual_object, keys_to_exclude=[]):
+    def are_objects_equal(cls, expected_object, actual_object,
+                          keys_to_exclude=[]):
 
         if(expected_object is None and actual_object is None):
             return True
@@ -56,7 +57,8 @@ class EqualityTools:
             return False
 
         for key, expected_value in expected_object.__dict__.items():
-            if  key not in keys_to_exclude and expected_value != actual_object.__dict__[key]:
+            if  key not in keys_to_exclude \
+                and expected_value != actual_object.__dict__[key]:
                 return False
         return True
 
@@ -66,8 +68,10 @@ class EqualityTools:
 
     @classmethod
     def is_true(cls, value):
-        return value is not None and (str(value) == '1' or str.lower(value) == 'true')
+        return value is not None and (str(value) == '1'
+                                      or str.lower(value) == 'true')
 
     @classmethod
-    def are_datetimes_equal(cls, datetime1, datetime2, leeway=timedelta(seconds=0)):
+    def are_datetimes_equal(cls, datetime1, datetime2,
+                            leeway=timedelta(seconds=0)):
         return abs(datetime1 - datetime2) <= leeway
