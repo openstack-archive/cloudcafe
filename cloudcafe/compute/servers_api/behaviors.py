@@ -167,33 +167,6 @@ class ServerBehaviors(object):
                 time_waited += interval_time
         except ItemNotFound:
             pass
-    def get_remote_instance_client(self, server, ip_address=None,
-                                   username=None, password=None):
-        '''
-        @summary: Gets an client of the server
-        @param server: Instance uuid id of the server
-        @type server: String
-        @param ip_address: IPv4 address of the server
-        @type ip_address: String
-        @param username: Valid user of the server
-        @type username: String
-        @param password: Valid user password of the server
-        @type password: String
-        @return: Either IPv4 or IPv6 address of instance
-        @rtype: String
-
-        '''
-        if password is None:
-            password = server.admin_pass
-
-        if ip_address is None:
-            ip_address = self.get_public_ip_address(server)
-
-        return InstanceClientFactory.get_instance_client(ip_address=ip_address,
-                                                         username=username,
-                                                         password=password,
-                                                         os_distro='linux',
-                                                         server_id=server.id)
 
     def get_public_ip_address(self, server):
         """
@@ -234,20 +207,6 @@ class ServerBehaviors(object):
         return InstanceClientFactory.get_instance_client(
             ip_address=ip_address, username=username, password=password,
             os_distro='linux', config=config)
-
-    def get_public_ip_address(self, server):
-        """
-        @summary: Gets the public ip address of instance
-        @param server: Instance uuid id of the server
-        @type server: String
-        @return: Either IPv4 or IPv6 address of instance
-        @rtype: String
-
-        """
-        if self.config.ip_address_version_for_ssh == '4':
-            return server.addresses.public.ipv4
-        else:
-            return server.addresses.public.ipv6
 
     def resize_and_await(self, server_id, new_flavor):
         resp = self.servers_client.resize(server_id, new_flavor)
