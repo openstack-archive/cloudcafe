@@ -25,7 +25,8 @@ from cloudcafe.compute.servers_api.models.requests import CreateServer
 from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
-    Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, Rebuild
+    Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
+    Rebuild, ResetState
 
 
 class ServersClient(AutoMarshallingRestClient):
@@ -485,12 +486,12 @@ class ServersClient(AutoMarshallingRestClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-    def reset_state(self, server_id, reset_state='error',
+    def reset_state(self, server_id, state='error',
                     requestslib_kwargs=None):
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
-                            request_entity=MigrateServer(),
+                            request_entity=ResetState(state),
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
