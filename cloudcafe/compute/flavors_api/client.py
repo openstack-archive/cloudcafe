@@ -17,7 +17,8 @@ limitations under the License.
 from urlparse import urlparse
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.compute.flavors_api.models.flavor import Flavor, FlavorMin
+from cloudcafe.compute.flavors_api.models.flavor import \
+    Flavor, FlavorMin, CreateFlavor
 
 
 class FlavorsClient(AutoMarshallingRestClient):
@@ -43,6 +44,28 @@ class FlavorsClient(AutoMarshallingRestClient):
         self.default_headers['Content-Type'] = ct
         self.default_headers['Accept'] = accept
         self.url = url
+
+    def create_flavor(self, name=None, ram=None, vcpus=None,
+                      disk=None, id=None, is_public=None,
+                      requestslib_kwargs=None):
+
+        request = CreateFlavor(name=name, ram=ram, vcpus=vcpus,
+                               disk=disk, id=id, is_public=is_public)
+
+        url = '%s/flavors' % self.url
+        resp = self.request('POST', url,
+                            response_entity_type=Flavor,
+                            request_entity=request,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def delete_flavor(self, flavor_id, requestslib_kwargs=None):
+
+        url = '%s/flavors/%s' % (self.url, flavor_id)
+        resp = self.request('DELETE', url,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
 
     def list_flavors(self, min_disk=None, min_ram=None, marker=None,
                      limit=None, requestslib_kwargs=None):
