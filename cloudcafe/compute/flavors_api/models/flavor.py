@@ -23,11 +23,50 @@ from cloudcafe.compute.common.constants import Constants
 from cloudcafe.compute.common.models.link import Links
 
 
+class CreateFlavor(AutoMarshallingModel):
+
+    ROOT_TAG = 'flavor'
+
+    def __init__(self, name=None, ram=None, vcpus=None,
+                 disk=None, id=None, is_public=None):
+
+        super(CreateFlavor, self).__init__()
+        self.id = id
+        self.name = name
+        self.ram = ram
+        self.disk = disk
+        self.vcpus = vcpus
+        self.is_public = is_public
+
+    def _obj_to_json(self):
+        ret = {self.ROOT_TAG: self._obj_to_dict()}
+        return json.dumps(ret)
+
+    def _obj_to_dict(self):
+        ret = {}
+        ret['id'] = self.id
+        ret['name'] = self.name
+        ret['ram'] = int(self.ram)
+        ret['disk'] = int(self.disk)
+        ret['vcpus'] = int(self.vcpus)
+        ret['os-flavor-access:is_public'] = self.is_public
+        return ret
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        raise  NotImplemented
+
+    @classmethod
+    def _xml_list_to_obj(cls, xml_list):
+        raise  NotImplemented
+
+
 class Flavor(AutoMarshallingModel):
 
     def __init__(self, id=None, name=None, ram=None, disk=None, vcpus=None,
                  swap=None, rxtx_factor=None, links=None):
-        '''An object that represents a flavor.
+        '''
+        An object that represents a flavor.
         '''
         self.id = id
         self.name = name
