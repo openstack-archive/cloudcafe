@@ -355,7 +355,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                     "delete confirmed".format(snapshot_id))
                 break
 
-            if (not status_resp.ok) and (status_resp.status_code != 404):
+            if not status_resp.ok and status_resp.status_code != 404:
                 behavior_response.ok = False
                 self._log.error(
                     "Status request on snapshot {0} failed with a {0}".format(
@@ -365,10 +365,41 @@ class VolumesAPI_Behaviors(BaseBehavior):
             behavior_response.ok = False
             self._log.error(
                 "delete_snapshot_confirmed() was unable to verify the snapshot"
-                "delete withing the alloted {0} second timeout".format())
+                "was delete within the alloted {0} second timeout".format())
 
         return behavior_response
 
     @behavior(VolumesClient)
-    def delete_volume_with_snapshots_confirmed(self):
-        pass
+    def delete_volume_with_snapshots_confirmed(self, volume_id):
+        behavior_response = BehaviorResponse()
+
+        resp = self._client.list_all_snapshots_info()
+        if not resp.status:
+            self._log.error(
+                "delete_volume_with_snapshots_confirmed() could not retrieve"
+                "list of snapshots.  Expected 2XX but revieved {0}")
+
+        #Attempt to delete all snapshots associated with provided volume_id
+        snapshots = resp.entity
+        if snapshots is not None:
+            for snap in snapshots:
+                if snap.volume_id != volume_id:
+                    continue
+
+                resp = self.delete_snapshot_confirmed(snap.id)
+
+                if not resp.ok:
+                    self._log.error(
+                        "delete_volume_with_snapshots_confirmed() unable"
+                        "to confirm delete of snapshot {0} for volume {1}."
+                        .format(snap.id, volume_id))
+
+        resp = self.delete_volume_confirmed(volume_id)
+        behavior_response.ok = resp.ok
+        behavior_response.response = resp
+        if not resp.ok:
+            self._log.error(
+                "delete_volume_with_snapshots_confirmed() unable to confirm"
+                "delete of volume {0}.".format(volume_id))
+
+        return behavior_response
