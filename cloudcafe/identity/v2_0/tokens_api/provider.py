@@ -14,10 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-'''
-@summary: Provider Module for the AUTH API
-@note: Should be the primary interface to a test case or external tool.
-'''
 from cafe.engine.provider import BaseProvider
 from cloudcafe.identity.v2_0.tokens_api.client import TokenAPI_Client
 from cloudcafe.identity.v2_0.tokens_api.behaviors import TokenAPI_Behaviors

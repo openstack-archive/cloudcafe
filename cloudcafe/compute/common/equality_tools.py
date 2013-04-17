@@ -16,6 +16,7 @@ limitations under the License.
 
 from datetime import timedelta
 
+
 class EqualityTools:
 
     @classmethod

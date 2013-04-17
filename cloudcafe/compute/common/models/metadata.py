@@ -21,6 +21,7 @@ from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.compute.common.constants import Constants
 from cloudcafe.compute.common.equality_tools import EqualityTools
 
+
 class MetadataItem(AutoMarshallingModel):
     '''
     @summary: MetadataItem Request/Response Object for Server/Image

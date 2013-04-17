@@ -16,6 +16,7 @@ limitations under the License.
 
 from cloudcafe.compute.common.equality_tools import EqualityTools
 
+
 class FileDetails:
     """
     @summary: Represents File details
