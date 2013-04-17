@@ -19,7 +19,7 @@ from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 class TokenAPI_Config(ConfigSectionInterface):
 
-    SECTION_NAME = 'rax_token_api'
+    SECTION_NAME = 'user'
 
     @property
     def serialize_format(self):
@@ -28,10 +28,6 @@ class TokenAPI_Config(ConfigSectionInterface):
     @property
     def deserialize_format(self):
         return self.get("deserialize_format")
-
-    @property
-    def authentication_endpoint(self):
-        return self.get("authentication_endpoint")
 
     @property
     def username(self):

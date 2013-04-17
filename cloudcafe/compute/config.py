@@ -17,9 +17,9 @@ limitations under the License.
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
-class ComputeConfig(ConfigSectionInterface):
+class ComputeEndpointConfig(ConfigSectionInterface):
 
-    SECTION_NAME = 'compute'
+    SECTION_NAME = 'compute_endpoint'
 
     @property
     def region(self):
@@ -47,21 +47,9 @@ class ComputeAuthorizationConfig(ConfigSectionInterface):
         return self.get("tenant_name")
 
 
-class ComputeAdminConfig(ConfigSectionInterface):
+class ComputeAdminUserConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'compute_admin_user'
-
-    @property
-    def authentication_endpoint(self):
-        return self.get("authentication_endpoint")
-
-    @property
-    def compute_endpoint_name(self):
-        return self.get("compute_endpoint_name")
-
-    @property
-    def region(self):
-        return self.get("region")
 
     @property
     def username(self):
