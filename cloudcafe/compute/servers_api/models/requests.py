@@ -475,43 +475,6 @@ class Unpause(AutoMarshallingModel):
         xml += ET.tostring(element)
         return xml
 
-
-class RescueMode(AutoMarshallingModel):
-    '''
-    Rescue Server Action Request Object
-    '''
-    ROOT_TAG = 'rescue'
-
-    def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
-
-    def _obj_to_xml(self):
-        xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
-        element.set('xmlns', Constants.XML_API_RESCUE)
-        xml += ET.tostring(element)
-        return xml
-
-
-class ExitRescueMode(AutoMarshallingModel):
-    '''
-    Exit Rescue Action Request Object
-    '''
-    ROOT_TAG = 'unrescue'
-
-    def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
-
-    def _obj_to_xml(self):
-        xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
-        element.set('xmlns', Constants.XML_API_UNRESCUE)
-        xml += ET.tostring(element)
-        return xml
-
-
 class CreateImage(AutoMarshallingModel):
     '''
     Create Image Server Action Request Object
