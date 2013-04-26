@@ -16,6 +16,7 @@ limitations under the License.
 
 import time
 
+from cafe.engine.behaviors import BaseBehavior
 from cafe.engine.clients.remote_instance.instance_client import InstanceClientFactory
 from cloudcafe.compute.common.types import NovaServerStatusTypes as ServerStates
 from cloudcafe.compute.common.datagen import rand_name
@@ -23,7 +24,7 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException
 
 
-class ServerBehaviors(object):
+class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, servers_config,
                  images_config, flavors_config):
@@ -36,7 +37,7 @@ class ServerBehaviors(object):
     def create_active_server(self, name=None, image_ref=None, flavor_ref=None,
                              personality=None, metadata=None, accessIPv4=None,
                              accessIPv6=None, disk_config=None, networks=None):
-        '''
+        """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
         @type name: String
@@ -58,7 +59,7 @@ class ServerBehaviors(object):
         @return: Response Object containing response code and
          the server domain object
         @rtype: Request Response Object
-        '''
+        """
 
         if name is None:
             name = rand_name('testserver')
@@ -82,91 +83,78 @@ class ServerBehaviors(object):
         resp.entity.admin_pass = server_obj.admin_pass
         return resp
 
-    def wait_for_server_status(self, server_id, desired_status, timeout=None):
-        """Polls server until the desired status is reached"""
-        if desired_status == ServerStates.DELETED:
-            return self.wait_for_server_to_be_deleted(server_id)
-        server_response = self.servers_client.get_server(server_id)
-        server_obj = server_response.entity
-        time_waited = 0
-        interval_time = self.config.server_status_interval
+    def wait_for_server_status(self, server_id, desired_status,
+                               interval_time=None, timeout=None):
+        """
+        @summary: Waits for a server to reach a desired status
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param desired_status: The desired final status of the server
+        @type desired_status: String
+        @param interval_time: The amount of time in seconds to wait
+                              between polling
+        @type interval_time: Integer
+        @param interval_time: The amount of time in seconds to wait
+                              before aborting
+        @type interval_time: Integer
+        @return: Response object containing response and the server
+                 domain object
+        @rtype: requests.Response
+        """
+
+        interval_time = interval_time or self.config.server_status_interval
         timeout = timeout or self.config.server_build_timeout
-        while (server_obj.status.lower() != desired_status.lower() and
-               server_obj.status.lower() != ServerStates.ERROR.lower() and
-               time_waited <= timeout):
-            server_response = self.servers_client.get_server(server_id)
-            server_obj = server_response.entity
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            resp = self.servers_client.get_server(server_id)
+            server = resp.entity
+
+            if server.status.lower() == ServerStates.ERROR.lower():
+                raise BuildErrorException(
+                    'Build failed. Server with uuid %s entered ERROR status.'
+                    % server.id)
+
+            if server.status == desired_status:
+                break
             time.sleep(interval_time)
-            time_waited += interval_time
-        if time_waited > timeout:
-            raise TimeoutException
-        if server_obj.status.lower() == ServerStates.ERROR.lower():
-            raise BuildErrorException(
-                'Build failed. Server with uuid %s entered ERROR status.' %
-                (server_id))
-        return server_response
+        else:
+            raise TimeoutException(
+                "wait_for_server_status ran for {0} seconds and did not "
+                "observe the server achieving the {1} status.".format(
+                    timeout, desired_status))
 
-    def wait_for_server_error_status(self, server_id, desired_status,
-                                     timeout=None):
-        """Polls a server until the desired status is reached"""
+        return resp
 
-        if desired_status == ServerStates.DELETED:
-            return self.wait_for_server_to_be_deleted(server_id)
-        server_response = self.servers_client.get_server(server_id)
-        server_obj = server_response.entity
-        time_waited = 0
-        interval_time = self.config.server_status_interval
-        timeout = timeout or self.config.compute_api.server_status_timeout
-        while (server_obj.status.lower() != desired_status.lower()
-               and time_waited <= timeout * 10):
-            server_response = self.servers_client.get_server(server_id)
-            server_obj = server_response.entity
+    def wait_for_server_to_be_deleted(self, server_id, interval_time=None,
+                                      timeout=None):
+        """
+        @summary: Waits for a server to be deleted
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param interval_time: The amount of time in seconds to wait
+                              between polling
+        @type interval_time: Integer
+        @param interval_time: The amount of time in seconds to wait
+                              before aborting
+        @type interval_time: Integer
+        """
+
+        interval_time = interval_time or self.config.server_status_interval
+        timeout = timeout or self.config.server_build_timeout
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            try:
+                resp = self.servers_client.get_server(server_id)
+            except ItemNotFound:
+                break
             time.sleep(interval_time)
-            time_waited += interval_time
-        return server_response
-
-    def wait_for_server_status_from_error(self, server_id, desired_status,
-                                          timeout=None):
-        if desired_status == ServerStates.DELETED:
-            return self.wait_for_server_to_be_deleted(server_id)
-        server_response = self.servers_client.get_server(server_id)
-        server_obj = server_response.entity
-        time_waited = 0
-        interval_time = self.config.compute_api.build_interval
-        timeout = timeout or self.config.compute_api.server_status_timeout
-        while (server_obj.status.lower() != desired_status.lower()
-               and time_waited <= timeout):
-            server_response = self.servers_client.get_server(server_id)
-            server_obj = server_response.entity
-            time.sleep(interval_time)
-            time_waited += interval_time
-        if time_waited > timeout:
-            raise TimeoutException(server_obj.status, server_obj.status,
-                                   id=server_obj.id)
-        return server_response
-
-    def wait_for_server_to_be_deleted(self, server_id):
-        time_waited = 0
-        interval_time = self.config.server_status_interval
-        try:
-            while (True):
-                server_response = self.servers_client.get_server(server_id)
-                server_obj = server_response.entity
-                if time_waited > self.config.server_build_timeout:
-                    raise TimeoutException(
-                        "Timed out while deleting server id: %s" % server_id)
-                if server_obj.status.lower() != ServerStates.ERROR.lower():
-                    time.sleep(interval_time)
-                    time_waited += interval_time
-                    continue
-                    if server_obj.status.lower() != ServerStates.ERROR.lower():
-                        raise BuildErrorException(
-                            "Server entered Error state while deleting, \
-                            server id : %s" % server_id)
-                time.sleep(interval_time)
-                time_waited += interval_time
-        except ItemNotFound:
-            pass
+        else:
+            raise TimeoutException(
+                "wait_for_server_status ran for {0} seconds and did not "
+                "observe the server achieving the {1} status.".format(
+                    timeout, 'DELETED'))
 
     def get_public_ip_address(self, server):
         """
@@ -175,7 +163,6 @@ class ServerBehaviors(object):
         @type server: String
         @return: Either IPv4 or IPv6 address of instance
         @rtype: String
-
         """
         if self.config.ip_address_version_for_ssh == '4':
             return server.addresses.public.ipv4
@@ -184,7 +171,7 @@ class ServerBehaviors(object):
 
     def get_remote_instance_client(self, server, config=None, ip_address=None,
                                    username=None, password=None):
-        '''
+        """
         @summary: Gets an client of the server
         @param server: Instance uuid id of the server
         @type server: String
@@ -196,8 +183,8 @@ class ServerBehaviors(object):
         @type password: String
         @return: Either IPv4 or IPv6 address of instance
         @rtype: String
+        """
 
-        '''
         if password is None:
             password = server.admin_pass
         if ip_address is None:
@@ -209,6 +196,16 @@ class ServerBehaviors(object):
             os_distro='linux', config=config)
 
     def resize_and_await(self, server_id, new_flavor):
+        """
+        @summary: Resizes a server and waits for VERIFY_RESIZE status
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param new_flavor: The flavor to resize a server to
+        @type new_flavor: String
+        @return: The Server after the resize has completed
+        @rtype: Server
+        """
+
         resp = self.servers_client.resize(server_id, new_flavor)
         assert resp.status_code is 202
         resized_server = self.wait_for_server_status(
@@ -216,6 +213,17 @@ class ServerBehaviors(object):
         return resized_server.entity
 
     def resize_and_confirm(self, server_id, new_flavor):
+        """
+        @summary: Resizes a server, confirms, and waits for the
+                  confirmation to complete
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param new_flavor: The flavor to resize a server to
+        @type new_flavor: String
+        @return: The Server after the resize has been confirmed
+        @rtype: Server
+        """
+
         self.resize_and_await(server_id, new_flavor)
         resp = self.servers_client.confirm_resize(server_id)
         assert resp.status_code is 204
@@ -224,6 +232,17 @@ class ServerBehaviors(object):
         return resized_server.entity
 
     def resize_and_revert(self, server_id, new_flavor):
+        """
+        @summary: Resizes a server, reverts the resize, and waits for the
+                  revert to complete
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param new_flavor: The flavor to resize a server to
+        @type new_flavor: String
+        @return: The Server after the resize has been reverted
+        @rtype: Server
+        """
+
         self.resize_and_await(server_id, new_flavor)
         resp = self.servers_client.revert_resize(server_id)
         assert resp.status_code is 202
@@ -232,13 +251,36 @@ class ServerBehaviors(object):
         return resized_server.entity
 
     def reboot_and_await(self, server_id, reboot_type):
+        """
+        @summary: Reboots a server and waits for the action to complete
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param reboot_type: The type of reboot to perform
+        @type reboot_type: String
+        @return: The Server after the reboot has completed
+        @rtype: Server
+        """
+
         resp = self.servers_client.reboot(server_id, reboot_type)
         assert resp.status_code is 202
-        self.wait_for_server_status(server_id,
-                                    ServerStates.ACTIVE)
+        resp = self.wait_for_server_status(server_id,
+                                           ServerStates.ACTIVE)
+        return resp.entity
 
     def change_password_and_await(self, server_id, new_password):
+        """
+        @summary: Changes the server password and waits for
+                  the action to complete
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param new_password: The new server password
+        @type new_password: String
+        @return: The Server after the password has been changed
+        @rtype: Server
+        """
+
         resp = self.servers_client.change_password(server_id, new_password)
         assert resp.status_code is 202
-        self.wait_for_server_status(server_id,
-                                    ServerStates.ACTIVE)
+        resp = self.wait_for_server_status(server_id,
+                                           ServerStates.ACTIVE)
+        return resp.entity
