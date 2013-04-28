@@ -28,3 +28,4 @@ pip-log.txt
 # IDE Project Files
 *.project
 *.pydev*
+*.idea
