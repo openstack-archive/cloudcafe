@@ -38,7 +38,7 @@ class RescueClient(AutoMarshallingRestClient):
         @type deserialize_format: String
         """
         super(RescueClient, self).__init__(serialize_format,
-                                            deserialize_format)
+                                           deserialize_format)
         self.auth_token = auth_token
         self.default_headers['X-Auth-Token'] = auth_token
         ct = ''.join(['application/', self.serialize_format])
@@ -46,7 +46,6 @@ class RescueClient(AutoMarshallingRestClient):
         self.default_headers['Content-Type'] = ct
         self.default_headers['Accept'] = accept
         self.url = url
-
 
     def rescue(self, server_id, requestslib_kwargs=None):
         self.server_id = server_id

@@ -54,20 +54,20 @@ class CreateFlavor(AutoMarshallingModel):
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
-        raise  NotImplemented
+        raise NotImplemented
 
     @classmethod
     def _xml_list_to_obj(cls, xml_list):
-        raise  NotImplemented
+        raise NotImplemented
 
 
 class Flavor(AutoMarshallingModel):
 
     def __init__(self, id=None, name=None, ram=None, disk=None, vcpus=None,
                  swap=None, rxtx_factor=None, links=None):
-        '''
+        """
         An object that represents a flavor.
-        '''
+        """
         self.id = id
         self.name = name
         self.ram = ram
@@ -83,8 +83,10 @@ class Flavor(AutoMarshallingModel):
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
-        '''Returns an instance of a Flavor based on the json serialized_str
-        passed in.'''
+        """
+        Returns an instance of a Flavor based on the json serialized_str
+        passed in.
+        """
         json_dict = json.loads(serialized_str)
 
         if 'flavor' in json_dict.keys():
@@ -100,7 +102,7 @@ class Flavor(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, flavor_dict):
-        '''Helper method to turn dictionary into Server instance.'''
+        """Helper method to turn dictionary into Server instance."""
         flavor = Flavor(id=flavor_dict.get('id'),
                         name=flavor_dict.get('name'),
                         ram=flavor_dict.get('ram'),
@@ -111,8 +113,10 @@ class Flavor(AutoMarshallingModel):
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
-        '''Returns an instance of a Flavor based on the xml serialized_str
-        passed in.'''
+        """
+        Returns an instance of a Flavor based on the xml serialized_str
+        passed in.
+        """
         element = ET.fromstring(serialized_str)
         cls._remove_xml_etree_namespace(element, Constants.XML_API_NAMESPACE)
         cls._remove_xml_etree_namespace(element,
@@ -131,7 +135,7 @@ class Flavor(AutoMarshallingModel):
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
-        '''Helper method to turn ElementTree instance to Flavor instance.'''
+        """Helper method to turn ElementTree instance to Flavor instance."""
         flavor_dict = element.attrib
         if 'vcpus' in flavor_dict:
             flavor_dict['vcpus'] = (flavor_dict.get('vcpus') and
@@ -182,7 +186,7 @@ class FlavorMin(Flavor):
     @summary: Represents minimum details of a flavor
     """
     def __init__(self, **kwargs):
-        '''Flavor Min has only id, name and links '''
+        """Flavor Min has only id, name and links"""
         for keys, values in kwargs.items():
             setattr(self, keys, values)
 
@@ -208,7 +212,7 @@ class FlavorMin(Flavor):
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
-        '''Helper method to turn ElementTree instance to Server instance.'''
+        """Helper method to turn ElementTree instance to Server instance."""
         flavor_dict = element.attrib
         flavor_min = FlavorMin(id=flavor_dict.get('id'),
                                name=flavor_dict.get('name'))
@@ -217,7 +221,7 @@ class FlavorMin(Flavor):
 
     @classmethod
     def _dict_to_obj(cls, flavor_dict):
-        '''Helper method to turn dictionary into Server instance.'''
+        """Helper method to turn dictionary into Server instance."""
         flavor_min = FlavorMin(id=flavor_dict.get('id'),
                                name=flavor_dict.get('name'))
         flavor_min.links = Links._dict_to_obj(flavor_dict['links'])

@@ -33,8 +33,6 @@ class SecurityGroup(AutoMarshallingModel):
         self.id = id
         self.tenant_id = tenant_id
 
-
-
     def __repr__(self):
         values = []
         for prop in self.__dict__:

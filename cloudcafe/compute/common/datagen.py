@@ -26,18 +26,18 @@ TEMP_LOCATION = '/tmp'
 #Binary prefixes
 #IEE_MAGNITUDE = int(pow(2,10))
 EXACT_BYTE = 8
-EXACT_KIBIBYTE = int(pow(2,10))
-EXACT_MEBIBYTE = int(pow(2,20))
-EXACT_GIBIBYTE = int(pow(2,30))
-EXACT_TEBIBYTE = int(pow(2,40))
+EXACT_KIBIBYTE = int(pow(2, 10))
+EXACT_MEBIBYTE = int(pow(2, 20))
+EXACT_GIBIBYTE = int(pow(2, 30))
+EXACT_TEBIBYTE = int(pow(2, 40))
 
 #Decimal prefixes
 #SI_MAGNITURE = int(pow(10,3))
 
-EXACT_KILOBYTE = int(pow(10,3))
-EXACT_MEGABYTE = int(pow(10,6))
-EXACT_GIGABYTE = int(pow(10,9))
-EXACT_TERABYTE = int(pow(10,12))
+EXACT_KILOBYTE = int(pow(10, 3))
+EXACT_MEGABYTE = int(pow(10, 6))
+EXACT_GIGABYTE = int(pow(10, 9))
+EXACT_TERABYTE = int(pow(10, 12))
 
 
 def timestamp_string(prefix=None, suffix=None, decimal_precision=6):
@@ -48,7 +48,7 @@ def timestamp_string(prefix=None, suffix=None, decimal_precision=6):
     t = str('%f' % time.time())
     int_seconds, dec_seconds = t.split('.')
     for x in range(6 - decimal_precision):
-        dec_seconds=dec_seconds[:-1]
+        dec_seconds = dec_seconds[:-1]
 
     int_seconds = str(int_seconds)
     dec_seconds = str(dec_seconds)
@@ -56,20 +56,20 @@ def timestamp_string(prefix=None, suffix=None, decimal_precision=6):
     suffix = suffix or ''
     final = None
     if len(dec_seconds) > 0:
-        final = '%s%s%s' % ( prefix, int_seconds, suffix)
+        final = '%s%s%s' % (prefix, int_seconds, suffix)
     else:
-        final = '%s%s.%s%s' % ( prefix, int_seconds, dec_seconds, suffix)
+        final = '%s%s.%s%s' % (prefix, int_seconds, dec_seconds, suffix)
 
     return final
 
 
 def random_string(prefix=None, suffix=None, size=8):
-    '''
+    """
     Return exactly size bytes worth of base_text as a string
     surrounded by any defined pre or suf-fixes
-    '''
+    """
 
-    base_text = str(uuid4()).replace('-','0')
+    base_text = str(uuid4()).replace('-', '0')
 
     if size <= 0:
         return '%s%s' % (prefix, suffix)
@@ -90,13 +90,14 @@ def random_string(prefix=None, suffix=None, size=8):
     body = str(body) + str(suffix) if suffix is not None else body
     return body
 
+
 def random_ip(pattern=None):
-    '''
+    """
     Takes a pattern as a string in the format of #.#.#.# where a # is an
     integer, and a can be substituded with an * to produce a random octet.
     pattern = 127.0.0.* would return a random string between 127.0.0.1 and
     127.0.0.254
-    '''
+    """
     if pattern is None:
         pattern = '*.*.*.*'
     num_asterisks = 0
@@ -108,30 +109,37 @@ def random_ip(pattern=None):
         pattern = pattern.replace('*', str(item), 1)
     return pattern
 
+
 def random_cidr(ip_pattern=None, mask=None, min_mask=0, max_mask=30):
-    '''
+    """
     Gets a random cidr using the random_ip function in this module. If mask
     is None then a random mask between 0 and 30 inclusive will be assigned.
-    '''
+    """
     if mask is None:
         mask = random.randint(min_mask, max_mask)
     ip = random_ip(ip_pattern)
     return ''.join([ip, '/', str(mask)])
 
+
 def random_int(min_int, max_int):
     return random.randint(min_int, max_int)
+
 
 def rand_name(name='test'):
     return name + str(random.randint(99999, 1000000))
 
+
 def random_item_in_list(selection_list):
     return random.choice(selection_list)
+
 
 def bytes_to_gb(val):
     return float(val) / 1073741824
 
+
 def gb_to_bytes(val):
     return int(val * 1073741824)
+
 
 def bytes_to_mb(val):
     return float(val) / 1024

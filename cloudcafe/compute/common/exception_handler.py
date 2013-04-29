@@ -58,7 +58,7 @@ class ExceptionHandler:
         if resp.status_code == 500 and type == 'html':
             raise exceptions.InternalServerError()
 
-        if (resp.status_code == 500) and (resp_body_dict == None):
+        if resp.status_code == 500 and resp_body_dict is None:
             raise exceptions.ComputeFault(resp.reason)
 
         if resp.status_code in (500, 501):
@@ -95,17 +95,16 @@ class ExceptionHandler:
             raise exceptions.BadMediaType()
 
     def _parse_resp_body(self, resp_body):
-        #Try parsing as JSON
 
+        # Try parsing as JSON
         try:
             body = json.loads(resp_body)
             type = 'json'
             return body, type
         except:
-            #Not JSON
             pass
 
-        #Try parsing as XML
+        # Try parsing as XML
         try:
             element = ET.fromstring(resp_body)
             # Handle the case where the API returns the exception in HTML
@@ -113,10 +112,9 @@ class ExceptionHandler:
             type = 'xml'
             return {element.tag: {'message': element.find('message').text}}, type
         except:
-            #Not XML Either
             pass
 
-        #Parse as HTML
+        # Parse as HTML
         finally:
             split_resp = resp_body.split("\n\n")
             type = 'html'

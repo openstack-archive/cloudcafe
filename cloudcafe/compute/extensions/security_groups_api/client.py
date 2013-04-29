@@ -26,7 +26,7 @@ class SecurityGroupsClient(AutoMarshallingRestClient):
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):
         super(SecurityGroupsClient, self).__init__(serialize_format,
-                                             deserialize_format)
+                                                   deserialize_format)
         self.auth_token = auth_token
         self.default_headers['X-Auth-Token'] = auth_token
         ct = ''.join(['application/', self.serialize_format])

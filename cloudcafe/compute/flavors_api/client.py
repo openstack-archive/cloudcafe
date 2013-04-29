@@ -66,15 +66,14 @@ class FlavorsClient(AutoMarshallingRestClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-
     def list_flavors(self, min_disk=None, min_ram=None, marker=None,
                      limit=None, requestslib_kwargs=None):
         '''
         @summary: Returns a list of flavors
-        @param min_disk: min Disk in GB, to filter by minimum Disk size in MB
-        @type min_disk:int
+        @param min_disk: min Disk in GB, to filter by minimum disk size in GB
+        @type min_disk: int
         @param min_ram: min ram in GB, to filter by minimum RAM size in MB
-        @type min_Disk:int
+        @type min_disk: int
         @param marker: ID of last item in previous list (paginated collections)
         @type marker:C{str}
         @param limit: Sets page size

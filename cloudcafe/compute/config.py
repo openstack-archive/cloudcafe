@@ -33,4 +33,3 @@ class ComputeEndpointConfig(ConfigSectionInterface):
 class ComputeAdminEndpointConfig(ComputeEndpointConfig):
 
     SECTION_NAME = 'compute_admin_endpoint'
-

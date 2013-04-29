@@ -308,7 +308,7 @@ class ServersClient(AutoMarshallingRestClient):
                 admin_pass=None, disk_config=None, metadata=None,
                 personality=None, accessIPv4=None, accessIPv6=None,
                 requestslib_kwargs=None):
-        '''
+        """
         @summary: Rebuilds the server
         @param server_id: The id of an existing server.
         @type server_id: String
@@ -318,8 +318,8 @@ class ServersClient(AutoMarshallingRestClient):
         @type image_ref: String
         @param admin_pass:The administrator password
         @type admin_pass: String
-        @param disk_config:The disk configuration value, which is AUTO or MANUAL
-        @type disk_config: String(AUTO/MANUAL)
+        @param disk_config: The disk configuration value (AUTO or MANUAL)
+        @type disk_config: String
         @param metadata:A metadata key and value pair.
         @type metadata: Dictionary
         @param personality:The file path and file contents
@@ -331,7 +331,7 @@ class ServersClient(AutoMarshallingRestClient):
         @return: Response Object containing response code and
          the server domain object
         @rtype: Response Object
-        '''
+        """
 
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)

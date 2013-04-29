@@ -23,9 +23,9 @@ from cloudcafe.compute.common.equality_tools import EqualityTools
 
 
 class MetadataItem(AutoMarshallingModel):
-    '''
+    """
     @summary: MetadataItem Request/Response Object for Server/Image
-    '''
+    """
     ROOT_TAG = 'meta'
 
     def __init__(self, metadata_dict):
@@ -51,10 +51,10 @@ class MetadataItem(AutoMarshallingModel):
         meta = {}
         for name in dir(meta_obj):
             value = getattr(meta_obj, name)
-            if not name.startswith('_') and not name.startswith('RO') \
-                and not name.startswith('deser') \
-                and not name.startswith('sele') \
-                and not name.startswith('seria'):
+            if (not name.startswith('_') and not name.startswith('RO')
+                    and not name.startswith('deser')
+                    and not name.startswith('sele')
+                    and not name.startswith('seria')):
                 meta[name] = value
         return meta
 
@@ -125,10 +125,10 @@ class Metadata(AutoMarshallingModel):
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         for name in dir(self):
             value = getattr(self, name)
-            if not name.startswith('_') and not name.startswith('RO') \
-                and not name.startswith('deser') \
-                and not name.startswith('sele') \
-                and not name.startswith('seria'):
+            if (not name.startswith('_') and not name.startswith('RO')
+                    and not name.startswith('deser')
+                    and not name.startswith('sele')
+                    and not name.startswith('seria')):
                 element.append(self._dict_to_xml(key=name, value=value))
         xml += ET.tostring(element)
         return xml
@@ -180,8 +180,10 @@ class Metadata(AutoMarshallingModel):
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
-        '''Returns an instance of metadata based on the json
-        serialized_str passed in.'''
+        """
+        Returns an instance of metadata based on the json
+        serialized_str passed in.
+        """
         json_dict = json.loads(serialized_str)
         if 'metadata' in json_dict.keys():
             metadata_dict = json_dict['metadata']
@@ -192,11 +194,11 @@ class Metadata(AutoMarshallingModel):
         meta = {}
         for name in dir(meta_obj):
             value = getattr(meta_obj, name)
-            if not name.startswith('_') \
-                and not name.startswith('RO') \
-                and not name.startswith('deser') \
-                and not name.startswith('sele') \
-                and not name.startswith('seria'):
+            if (not name.startswith('_')
+                    and not name.startswith('RO')
+                    and not name.startswith('deser')
+                    and not name.startswith('sele')
+                    and not name.startswith('seria')):
                 meta[name] = value
         return meta
 

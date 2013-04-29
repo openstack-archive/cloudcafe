@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+
 class TimeoutException(Exception):
-    """ Exception on timeout """
+    """Exception on timeout"""
     def __init__(self, message='Request timed out'):
         self.message = message
 
@@ -24,7 +25,7 @@ class TimeoutException(Exception):
 
 
 class BuildErrorException(Exception):
-    """ Exception on server build """
+    """Exception on server build"""
     def __init__(self, message='Build Error'):
         self.message = message
 

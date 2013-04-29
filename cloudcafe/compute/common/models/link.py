@@ -52,7 +52,7 @@ class Links(AutoMarshallingModel):
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
-        '''Helper method to turn ElementTree instance to Links instance.'''
+        """Helper method to turn ElementTree instance to Links instance."""
         links = []
         '''
         When we serialize a flavor object to XML, we generate an additional
@@ -88,8 +88,10 @@ class Links(AutoMarshallingModel):
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
-        '''Returns an instance of links based on the json
-        serialized_str passed in.'''
+        """
+        Returns an instance of links based on the json
+        serialized_str passed in.
+        """
         json_dict = json.loads(serialized_str)
         if 'links' in json_dict.keys():
             links_list = json_dict['links']
@@ -103,16 +105,15 @@ class Links(AutoMarshallingModel):
         @return: True if Links objects are equal, False otherwise
         @rtype: bool
         """
-        if(self is None and other is None):
+        if self is None and other is None:
             return True
 
-        if(self is None or other is None):
+        if self is None or other is None:
             return False
 
         for key in self.links:
-            #Alternate links are random, equality is impossible..ignoring it
-            if key != 'alternate' and \
-                            self.links[key] != other.links[key]:
+            # Alternate links are random, equality is impossible..ignoring it
+            if key != 'alternate' and self.links[key] != other.links[key]:
                 return False
         return True
 

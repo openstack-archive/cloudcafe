@@ -36,7 +36,7 @@ class KeypairsClient(AutoMarshallingRestClient):
         @type deserialize_format: String
         """
         super(KeypairsClient, self).__init__(serialize_format,
-                                            deserialize_format)
+                                             deserialize_format)
         self.auth_token = auth_token
         self.default_headers['X-Auth-Token'] = auth_token
         ct = ''.join(['application/', self.serialize_format])

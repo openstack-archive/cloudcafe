@@ -21,7 +21,7 @@ class EqualityTools:
 
     @classmethod
     def are_not_equal(expected, actual):
-        return expected != None and expected != actual
+        return expected is not None and expected != actual
 
     @classmethod
     def are_lists_equal(expected, actual):
@@ -51,15 +51,15 @@ class EqualityTools:
     def are_objects_equal(cls, expected_object, actual_object,
                           keys_to_exclude=[]):
 
-        if(expected_object is None and actual_object is None):
+        if expected_object is None and actual_object is None:
             return True
 
-        if(expected_object is None or actual_object is None):
+        if expected_object is None or actual_object is None:
             return False
 
         for key, expected_value in expected_object.__dict__.items():
-            if  key not in keys_to_exclude \
-                and expected_value != actual_object.__dict__[key]:
+            if (key not in keys_to_exclude
+                    and expected_value != actual_object.__dict__[key]):
                 return False
         return True
 

@@ -30,7 +30,6 @@ class Keypair(AutoMarshallingModel):
         self.name = name
         self.fingerprint = fingerprint
 
-
     def __repr__(self):
         values = []
         for prop in self.__dict__:
@@ -75,6 +74,7 @@ class Keypair(AutoMarshallingModel):
         @rtype: bool
         """
         return not self == other
+
 
 class Keypairs(Keypair):
 

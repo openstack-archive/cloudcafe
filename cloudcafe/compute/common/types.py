@@ -16,7 +16,7 @@ limitations under the License.
 
 
 class NovaServerStatusTypes(object):
-    '''
+    """
     @summary: Types dictating an individual Server Status
     @cvar ACTIVE: Server is active and available
     @type ACTIVE: C{str}
@@ -25,7 +25,7 @@ class NovaServerStatusTypes(object):
     @cvar ERROR: Server is in error
     @type ERROR: C{str}
     @note: This is essentially an Enumerated Type
-    '''
+    """
     ACTIVE = "ACTIVE"
     BUILD = "BUILD"
     REBUILD = "REBUILD"
@@ -40,7 +40,7 @@ class NovaServerStatusTypes(object):
 
 
 class NovaImageStatusTypes(object):
-    '''
+    """
     @summary: Types dictating an individual Server Status
     @cvar ACTIVE: Server is active and available
     @type ACTIVE: C{str}
@@ -49,7 +49,7 @@ class NovaImageStatusTypes(object):
     @cvar ERROR: Server is in error
     @type ERROR: C{str}
     @note: This is essentially an Enumerated Type
-    '''
+    """
     ACTIVE = "ACTIVE"
     SAVING = "SAVING"
     ERROR = "ERROR"
@@ -58,20 +58,20 @@ class NovaImageStatusTypes(object):
 
 
 class NovaServerRebootTypes(object):
-    '''
+    """
     @summary: Types dictating server reboot types
     @cvar HARD: Hard reboot
     @type HARD: C{str}
     @cvar SOFT: Soft reboot
     @type SOFT: C{str}
     @note: This is essentially an Enumerated Type
-    '''
+    """
     HARD = "HARD"
     SOFT = "SOFT"
 
 
 class NovaVolumeStatusTypes(object):
-    '''
+    """
     @summary: Types dictating an individual Volume Status
     @cvar AVAILABLE: Volume is active and available
     @type AVAILABLE: C{str}
@@ -86,7 +86,7 @@ class NovaVolumeStatusTypes(object):
     @cvar IN_USE: Volume is active and available
     @type IN_USE: C{str}
     @note: This is essentially an Enumerated Type
-    '''
+    """
     AVAILABLE = "available"
     ATTACHING = "attaching"
     CREATING = "creating"

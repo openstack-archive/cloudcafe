@@ -475,6 +475,7 @@ class Unpause(AutoMarshallingModel):
         xml += ET.tostring(element)
         return xml
 
+
 class CreateImage(AutoMarshallingModel):
     '''
     Create Image Server Action Request Object

@@ -50,10 +50,10 @@ class ImagesClient(AutoMarshallingRestClient):
         self.url = url
 
     def list_images(self, server_ref=None, image_name=None, status=None,
-                    image_type=None, marker=None, changes_since=None, limit=None,
-                    requestslib_kwargs=None):
+                    image_type=None, marker=None, changes_since=None,
+                    limit=None, requestslib_kwargs=None):
 
-        '''
+        """
         @summary: Lists IDs, names, and links for all available images.
         @param server_ref: Server id or Url to server
         @type server_ref: String
@@ -71,7 +71,7 @@ class ImagesClient(AutoMarshallingRestClient):
         @type limit:int
         @return: lists all images visible by the account filtered by the params
         @rtype: Response with Image List as response.entity
-        '''
+        """
 
         url = '%s/images' % (self.url)
 
