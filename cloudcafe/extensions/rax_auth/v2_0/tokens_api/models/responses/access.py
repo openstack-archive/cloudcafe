@@ -111,12 +111,13 @@ class EndpointList(BaseIdentityListModel):
 class Endpoint(BaseIdentityModel):
 
     def __init__(self, admin_url, internal_url, public_url,
-                 region, id):
+                 region, id, tenant_id=None):
         self.admin_url = admin_url
         self.internal_url = internal_url
         self.public_url = public_url
         self.region = region
         self.id_ = id
+        self.tenant_id = tenant_id
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -124,7 +125,8 @@ class Endpoint(BaseIdentityModel):
                             json_dict.get('internalURL'),
                             json_dict.get('publicURL'),
                             json_dict.get('region'),
-                            json_dict.get('id'))
+                            json_dict.get('id'),
+                            json_dict.get('tenantId'))
         return endpoint
 
 
