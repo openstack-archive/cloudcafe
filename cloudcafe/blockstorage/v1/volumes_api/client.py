@@ -15,12 +15,14 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.blockstorage.volumes_api.models.requests.volumes_api import \
-    Volume as VolumeRequest, VolumeSnapshot as VolumeSnapshotRequest\
+from cloudcafe.blockstorage.v1.volumes_api.models.requests.volumes_api import (
+    Volume as VolumeRequest,
+    VolumeSnapshot as VolumeSnapshotRequest)
 
-from cloudcafe.blockstorage.volumes_api.models.responses.volumes_api import \
-    Volume as VolumeResponse, VolumeSnapshot as VolumeSnapshotResponse,\
-    VolumeType, VolumeList, VolumeTypeList, VolumeSnapshotList
+from cloudcafe.blockstorage.v1.volumes_api.models.responses.volumes_api import(
+    Volume as VolumeResponse,
+    VolumeSnapshot as VolumeSnapshotResponse,
+    VolumeType, VolumeList, VolumeTypeList, VolumeSnapshotList)
 
 
 class VolumesClient(AutoMarshallingRestClient):
@@ -41,7 +43,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def create_volume(
             self, display_name, size, volume_type, availability_zone=None,
-            metadata={}, display_description='', snapshot_id=None,
+            metadata={}, display_description=None, snapshot_id=None,
             requestslib_kwargs=None):
 
         '''POST v1/{tenant_id}/volumes'''
