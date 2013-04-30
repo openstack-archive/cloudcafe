@@ -14,3 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from cafe.engine.behaviors import BaseBehavior, behavior
+from cloudcafe.objectstorage.objectstorage_api.config \
+    import ObjectStorageAPIConfig
+from cloudcafe.objectstorage.objectstorage_api.client \
+    import ObjectStorageAPIClient
+
+
+class ObjectStorageAPI_Behaviors(BaseBehavior):
+    def __init__(self, client=None):
+        self.client = client
+        self.cofnig = ObjectStorageAPIConfig()
+
+    @behavior(ObjectStorageAPIClient)
+    def create_container(self, name=None):
+        response = self.client.create_container(name)
+        if not response.ok:
+            raise Exception('could not create container')
