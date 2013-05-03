@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import IPy
 import json
 import re
 import xml.etree.ElementTree as ET
@@ -52,8 +53,16 @@ class Server(AutoMarshallingModel):
         self.created = created
         self.host_id = hostId
         self.user_id = user_id
-        self.accessIPv4 = accessIPv4
-        self.accessIPv6 = accessIPv6
+        if accessIPv4:
+            self.accessIPv4 = str(IPy.IP(accessIPv4))
+        else:
+            self.accessIPv4 = None
+
+        if accessIPv6:
+            self.accessIPv6 = str(IPy.IP(accessIPv6))
+        else:
+            self.accessIPv6 = None
+
         self.addresses = addresses
         self.flavor = flavor
         self.image = image
@@ -296,14 +305,14 @@ class Addresses(AutoMarshallingModel):
         def ipv4(self):
             for addr in self.addresses:
                 if str(addr.version) == '4':
-                    return str(addr.addr)
+                    return str(str(IPy.IP(addr.addr)))
             return None
 
         @property
         def ipv6(self):
             for addr in self.addresses:
                 if str(addr.version) == '6':
-                    return str(addr.addr)
+                    return str(str(IPy.IP(addr.addr)))
             return None
 
         @property
@@ -315,7 +324,10 @@ class Addresses(AutoMarshallingModel):
         def __init__(self, version=None, addr=None):
             super(Addresses._AddrObj, self).__init__()
             self.version = version
-            self.addr = addr
+            if addr:
+                self.addr = str(str(IPy.IP(addr)))
+            else:
+                self.addr = None
 
         def __repr__(self):
             ret = ''
