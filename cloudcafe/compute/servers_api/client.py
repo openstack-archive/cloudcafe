@@ -71,20 +71,20 @@ class ServersClient(AutoMarshallingRestClient):
         @type marker: String
         @param limit: The maximum number of results to return
         @type limit: Int
-        @param changes-since: Will only return servers where the updated time
+        @param changes_since: Will only return servers where the updated time
          is later than the changes-since parameter.
-        @return: server_response
-        @rtype: Response
+        @return: resp
+        @rtype: Requests.response
         """
 
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker,
                   'limit': limit, 'changes-since': changes_since}
         url = '%s/servers' % self.url
-        server_response = self.request('GET', url, params=params,
-                                       response_entity_type=Server,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('GET', url, params=params,
+                            response_entity_type=Server,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def list_servers_with_detail(self, image=None, flavor=None, name=None,
                                  status=None, marker=None,
@@ -107,26 +107,26 @@ class ServersClient(AutoMarshallingRestClient):
         @type limit: Int
         @param changes-since: Will only return servers where the updated time
          is later than the changes-since parameter.
-        @return: server_response
-        @rtype: Response
+        @return: resp
+        @rtype: Requests.response
         """
 
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker, 'limit': limit,
                   'changes-since': changes_since}
         url = '%s/servers/detail' % self.url
-        server_response = self.request('GET', url, params=params,
-                                       response_entity_type=Server,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('GET', url, params=params,
+                            response_entity_type=Server,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def get_server(self, server_id, requestslib_kwargs=None):
         """
         @summary: Retrieves the details of the specified server
         @param server_id: The id of an existing server
         @type server_id: String
-        @return: server_response
-        @rtype: Response
+        @return: resp
+        @rtype: Requests.response
         """
 
         self.server_id = server_id
@@ -134,25 +134,25 @@ class ServersClient(AutoMarshallingRestClient):
         url_scheme = urlparse(url_new).scheme
         url = url_new if url_scheme else '%s/servers/%s' % (self.url,
                                                             self.server_id)
-        server_response = self.request('GET', url,
-                                       response_entity_type=Server,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('GET', url,
+                            response_entity_type=Server,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def delete_server(self, server_id, requestslib_kwargs=None):
         """
         @summary: Deletes the specified server
         @param server_id: The id of a server
         @type server_id: String
-        @return: server_response
-        @rtype: Response
+        @return: resp
+        @rtype: Requests.response
         """
 
         self.server_id = server_id
         url = '%s/servers/%s' % (self.url, self.server_id)
-        server_response = self.request('DELETE', url,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('DELETE', url,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def create_server(self, name, image_ref, flavor_ref, personality=None,
                       metadata=None, accessIPv4=None, accessIPv6=None,
@@ -180,7 +180,7 @@ class ServersClient(AutoMarshallingRestClient):
         @type disk_config: String
         @return: Response Object containing response code and
          the server domain object
-        @rtype: Response Object
+        @rtype: Requests.response
         """
 
         server_request_object = CreateServer(name=name, flavorRef=flavor_ref,
@@ -194,11 +194,11 @@ class ServersClient(AutoMarshallingRestClient):
                                              adminPass=admin_pass)
 
         url = '%s/servers' % self.url
-        server_response = self.request('POST', url,
-                                       response_entity_type=Server,
-                                       request_entity=server_request_object,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('POST', url,
+                            response_entity_type=Server,
+                            request_entity=server_request_object,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def update_server(self, server_id, name=None, metadata=None,
                       accessIPv4=None, accessIPv6=None,
@@ -216,7 +216,7 @@ class ServersClient(AutoMarshallingRestClient):
         @param accessIPv6: IPv6 address for the server.
         @type accessIPv6: String
         @return: The response code and the updated Server
-        @rtype: Integer(Response code) and Object(Server)
+        @rtype: Requests.response
         """
 
         self.server_id = server_id
@@ -235,7 +235,7 @@ class ServersClient(AutoMarshallingRestClient):
         @param server_id: The id of an existing server.
         @type server_id: String
         @return: Response code and the Addresses
-        @rtype: Integer(Response code) and Object(Addresses)
+        @rtype: Requests.response
         """
 
         self.server_id = server_id
@@ -254,20 +254,20 @@ class ServersClient(AutoMarshallingRestClient):
         @param network_id: The ID of a network.
         @type network_id: String
         @return: Response code and the Addresses by network.
-        @rtype: Integer(Response code) and Object(Addresses)
+        @rtype: Requests.response
         """
 
         self.server_id = server_id
         self.network_id = network_id
         url = '%s/servers/%s/ips/%s' % (self.url, self.server_id,
                                         self.network_id)
-        server_response = self.request('GET', url,
-                                       response_entity_type=Addresses,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('GET', url,
+                            response_entity_type=Addresses,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def change_password(self, server_id, password, requestslib_kwargs=None):
-        '''
+        """
         @summary: Changes the root password for the server.
         @param server_id: The id of an existing server.
         @type server_id: String
@@ -275,8 +275,8 @@ class ServersClient(AutoMarshallingRestClient):
         @type password: String.
         @return: Response Object containing response code and the empty
          body on success
-        @rtype: Response Object
-        '''
+        @rtype: Requests.response
+        """
 
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
@@ -286,7 +286,7 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def reboot(self, server_id, reboot_type, requestslib_kwargs=None):
-        '''
+        """
         @summary: Reboots the server - soft/hard based on reboot_type.
         @param server_id: The id of an existing server.
         @type server_id: String
@@ -294,8 +294,8 @@ class ServersClient(AutoMarshallingRestClient):
         @type reboot_type: String.
         @return: Response Object containing response code and the empty body
         after the server reboot is applied
-        @rtype: Response Object
-        '''
+        @rtype: Requests.response
+        """
 
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
@@ -330,7 +330,7 @@ class ServersClient(AutoMarshallingRestClient):
         @type accessIPv6: String
         @return: Response Object containing response code and
          the server domain object
-        @rtype: Response Object
+        @rtype: Requests.response
         """
 
         self.server_id = server_id
@@ -351,7 +351,7 @@ class ServersClient(AutoMarshallingRestClient):
 
     def resize(self, server_id, flavorRef, diskConfig=None,
                requestslib_kwargs=None):
-        '''
+        """
         @summary: Resizes the server to specified flavorRef.
         @param server_id: The id of an existing server.
         @type server_id: String
@@ -359,8 +359,8 @@ class ServersClient(AutoMarshallingRestClient):
         @type flavorRef: String.
         @return: Response Object containing response code and
          the empty body after the server resize is applied
-        @rtype: Response Object
-        '''
+        @rtype: Requests.response
+        """
 
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
@@ -372,14 +372,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def confirm_resize(self, server_id, requestslib_kwargs=None):
-        '''
+        """
         @summary: Confirms resize of server
         @param server_id: The id of an existing server.
         @type server_id: String
         @return: Response Object containing response code and the empty
          body after the server resize is applied
-        @rtype: Response Object
-        '''
+        @rtype: Requests.response
+        """
 
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
@@ -390,14 +390,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def revert_resize(self, server_id, requestslib_kwargs=None):
-        '''
+        """
         @summary: Reverts resize of the server
         @param server_id: The id of an existing server.
         @type server_id: String
         @return: Response Object containing response code and the empty body
          after the server resize is applied
-        @rtype: Response Object
-        '''
+        @rtype: Requests.response
+        """
 
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
@@ -407,6 +407,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def migrate_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Migrates a server to a new host
+        @param server_id: The id of the server to migrate
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -415,6 +423,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def live_migrate_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Migrates a server live to a new host
+        @param server_id: The id of the server to migrate
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -423,6 +439,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def lock_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Locks an existing server
+        @param server_id: The id of the server to lock
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -431,6 +455,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def unlock_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Locks an existing server
+        @param server_id: The id of the server to unlock
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -439,6 +471,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def stop_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Stops a server
+        @param server_id: The id of the target server
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -447,6 +487,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def start_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Starts a stopped server
+        @param server_id: The id of the target server
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -455,6 +503,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def suspend_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Suspends a server
+        @param server_id: The id of the target server
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -463,6 +519,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def resume_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Resumes a suspended server
+        @param server_id: The id of the target server
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -471,6 +535,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def pause_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Pauses a server
+        @param server_id: The id of the target server
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -479,6 +551,14 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def unpause_server(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Un-pauses a paused server
+        @param server_id: The id of the target server
+        @type server_id: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -488,6 +568,16 @@ class ServersClient(AutoMarshallingRestClient):
 
     def reset_state(self, server_id, state='error',
                     requestslib_kwargs=None):
+        """
+        @summary: Resets a server's state
+        @param server_id: The id of the target server
+        @type server_id: String
+        @param state: The state to reset the server to
+        @type state: String
+        @return: An object that represents the response to the request
+        @rtype: Requests.response
+        """
+
         self.server_id = server_id
         url = '%s/servers/%s/action' % (self.url, self.server_id)
         resp = self.request('POST', url,
@@ -497,7 +587,7 @@ class ServersClient(AutoMarshallingRestClient):
 
     def create_image(self, server_id, name=None, metadata=None,
                      requestslib_kwargs=None):
-        '''
+        """
         @summary: Creates snapshot of the server
         @param server_id: The id of an existing server.
         @type server_id: String
@@ -505,8 +595,8 @@ class ServersClient(AutoMarshallingRestClient):
         @type: Metadata Object
         @return: Response Object containing response code and the empty body
          after the server resize is applied
-        @rtype: Response Object
-        '''
+        @rtype: Requests.response
+        """
 
         if name is None:
             name = 'new_image'
@@ -521,51 +611,51 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def list_server_metadata(self, server_id, requestslib_kwargs=None):
-        '''
+        """
         @summary: Returns metadata associated with an server
         @param server_id: server ID
         @type server_id:String
         @return: Metadata associated with an server on success
-        @rtype: Response object with metadata dictionary as entity
-        '''
+        @rtype: Requests.response
+        """
 
         url = '%s/servers/%s/metadata' % (self.url, server_id)
-        server_response = self.request('GET', url,
-                                       response_entity_type=Metadata,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('GET', url,
+                            response_entity_type=Metadata,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def set_server_metadata(self, server_id, metadata,
                             requestslib_kwargs=None):
-        '''
+        """
         @summary: Sets metadata for the specified server
         @param server_id: server ID
         @type server_id:String
         @param metadata: Metadata to be set for an server
         @type metadata: dictionary
         @return: Metadata associated with an server on success
-        @rtype:  Response object with metadata dictionary as entity
-        '''
+        @rtype:  Requests.response
+        """
 
         url = '%s/servers/%s/metadata' % (self.url, server_id)
         request_metadata_object = Metadata(metadata)
-        server_response = self.request('PUT', url,
-                                       response_entity_type=Metadata,
-                                       request_entity=request_metadata_object,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('PUT', url,
+                            response_entity_type=Metadata,
+                            request_entity=request_metadata_object,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def update_server_metadata(self, server_id, metadata,
                                requestslib_kwargs=None):
-        '''
+        """
         @summary: Updates metadata items for the specified server
         @param server_id: server ID
         @type server_id:String
         @param metadata: Metadata to be updated for an server
         @type metadata: dictionary
         @return: Metadata associated with an server on success
-        @rtype:  Response object with metadata dictionary as entity
-        '''
+        @rtype:  Requests.response
+        """
 
         url = '%s/servers/%s/metadata' % (self.url, server_id)
         request_metadata_object = Metadata(metadata)
@@ -577,55 +667,55 @@ class ServersClient(AutoMarshallingRestClient):
 
     def get_server_metadata_item(self, server_id, key,
                                  requestslib_kwargs=None):
-        '''
+        """
         @summary: Retrieves a single metadata item by key
         @param server_id: server ID
         @type server_id:String
         @param key: Key for which metadata item needs to be retrieved
         @type key: String
         @return: Metadata Item for a key on success
-        @rtype:  Response object with metadata dictionary as entity
-        '''
+        @rtype:  Requests.response
+        """
 
         url = '%s/servers/%s/metadata/%s' % (self.url, server_id, key)
-        server_response = self.request('GET', url,
-                                       response_entity_type=MetadataItem,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('GET', url,
+                            response_entity_type=MetadataItem,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def set_server_metadata_item(self, server_id, key, value,
                                  requestslib_kwargs=None):
-        '''
+        """
         @summary: Sets a metadata item for a specified server
         @param server_id: server ID
         @type server_id:String
         @param key: Key for which metadata item needs to be set
         @type key: String
         @return: Metadata Item for the key on success
-        @rtype:  Response object with metadata dictionary as entity
-        '''
+        @rtype:  Requests.response
+        """
 
         url = '%s/servers/%s/metadata/%s' % (self.url, server_id, key)
         request = MetadataItem({key: value})
-        server_response = self.request('PUT', url,
-                                       response_entity_type=MetadataItem,
-                                       request_entity=request,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('PUT', url,
+                            response_entity_type=MetadataItem,
+                            request_entity=request,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
 
     def delete_server_metadata_item(self, server_id, key,
                                     requestslib_kwargs=None):
-        '''
+        """
         @summary: Sets a metadata item for a specified server
         @param server_id: server ID
         @type server_id:String
         @param key: Key for which metadata item needs to be set
         @type key: String
         @return: Metadata Item for the key on success
-        @rtype:  Response object with metadata dictionary as entity
-        '''
+        @rtype:  Requests.response
+        """
 
         url = '%s/servers/%s/metadata/%s' % (self.url, server_id, key)
-        server_response = self.request('DELETE', url,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        resp = self.request('DELETE', url,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
