@@ -30,19 +30,8 @@ class SystemInfo(AutoMarshallingModel):
         self.load_average = load_average
         self.disk_usage = disk_usage
 
-    def _obj_to_dict(self):
-        body = {
-            'os_type': self.os_type,
-            'memory_mb': self.memory_mb,
-            'architecture': self.architecture,
-            'cpu_cores': self.cpu_cores,
-            'load_average': self.load_average,
-            'disk_usage': self.disk_usage._obj_to_dict()
-        }
-        return body
-
     def _obj_to_json(self):
-        return json_to_str(self._obj_to_dict())
+        return json_to_str(self._auto_to_dict())
 
     @classmethod
     def _dict_to_obj(cls, dic):
@@ -94,17 +83,16 @@ class LoadAverage(AutoMarshallingModel):
 class DiskUsage(AutoMarshallingModel):
     def __init__(self):
         super(DiskUsage, self).__init__()
-        self.disks = []
+        self.partitions = []
 
     def add_disk(self, partition):
         if partition is not None:
-            self.disks.append(partition)
+            self.partitions.append(partition)
 
     def _obj_to_dict(self):
         body = {}
-        for disk in self.disks:
-            key = disk.keys()[0]
-            body[key] = disk[key]
+        for partition in self.partitions:
+            body.update(partition._obj_to_dict())
         return body
 
     def _obj_to_json(self):
@@ -112,7 +100,7 @@ class DiskUsage(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        usage = DiskUsage()
+        usage = cls()
         for disk in json_dict:
             part = Partition(name=disk,
                              used=json_dict[disk]['used'],
