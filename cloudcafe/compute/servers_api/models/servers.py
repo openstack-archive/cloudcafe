@@ -31,8 +31,6 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 class Server(AutoMarshallingModel):
 
-    ROOT_TAG = 'server'
-
     def __init__(self, id, diskConfig, power_state, progress, task_state,
                  vm_state, name, tenantId, status, updated, created, hostId,
                  user_id, accessIPv4, accessIPv6, addresses, flavor, image,

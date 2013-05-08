@@ -26,8 +26,6 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 class Image(AutoMarshallingModel):
 
-    ROOT_TAG = 'image'
-
     def __init__(self, diskConfig, id, name, status, updated, created,
                  minDisk, minRam, progress, links=None, metadata=None,
                  server=None):

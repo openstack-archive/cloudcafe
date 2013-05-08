@@ -25,8 +25,6 @@ from cloudcafe.compute.common.models.link import Links
 
 class CreateFlavor(AutoMarshallingModel):
 
-    ROOT_TAG = 'flavor'
-
     def __init__(self, name=None, ram=None, vcpus=None,
                  disk=None, id=None, is_public=None):
 
@@ -39,7 +37,7 @@ class CreateFlavor(AutoMarshallingModel):
         self.is_public = is_public
 
     def _obj_to_json(self):
-        ret = {self.ROOT_TAG: self._obj_to_dict()}
+        ret = {'flavor': self._obj_to_dict()}
         return json.dumps(ret)
 
     def _obj_to_dict(self):

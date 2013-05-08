@@ -23,8 +23,6 @@ from cloudcafe.compute.common.equality_tools import EqualityTools
 
 class Keypair(AutoMarshallingModel):
 
-    ROOT_TAG = 'keypair'
-
     def __init__(self, public_key, name, fingerprint):
         self.public_key = public_key
         self.name = name
@@ -78,8 +76,6 @@ class Keypair(AutoMarshallingModel):
 
 class Keypairs(Keypair):
 
-    ROOT_TAG = 'keypairs'
-
     @classmethod
     def _xml_to_obj(cls, serialized_str):
         raise NotImplemented
@@ -88,7 +84,7 @@ class Keypairs(Keypair):
     def _json_to_obj(cls, serialized_str):
         ret = []
         json_dict = json.loads(serialized_str)
-        key_list = json_dict.get(cls.ROOT_TAG)
+        key_list = json_dict.get('keypairs')
 
         for key in key_list:
             ret.append(Keypair(key.get('public_key'),
