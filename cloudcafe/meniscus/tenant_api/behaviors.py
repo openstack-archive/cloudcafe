@@ -19,25 +19,45 @@ from cloudcafe.meniscus.common.tools import RequestUtilities
 
 class TenantBehaviors(object):
 
-    def __init__(self, tenant_client, tenant_config):
+    def __init__(self, tenant_client, db_client, tenant_config):
         self.tenant_client = tenant_client
+        self.db_client = db_client
         self.tenant_config = tenant_config
+        self.tenant_ids = []
 
-    def create_tenant(self):
+    def remove_created_tenants(self):
+        self.db_client.connect()
+        self.db_client.auth()
+        for tenant_id in self.tenant_ids:
+            self.db_client.remove_tenant(tenant_id)
+        self.db_client.disconnect()
+        self.tenant_ids = []
+
+    def create_tenant(self, use_alternate=False):
         """
         Helper function for creating a tenant on a fixture
         @param self:
         @return: Returns tuple with tenant_id and response object
         """
-        tenant_id = random_int(1, 100000)
+        tenant_id = str(random_int(1, 100000))
+        self.tenant_ids.append(tenant_id)
+
+        if use_alternate:
+            self.tenant_client.use_alternate = use_alternate
+
         resp = self.tenant_client.create_tenant(tenant_id)
-        return str(tenant_id), resp
+
+        if use_alternate:
+            self.tenant_client.use_alternate = False
+        return tenant_id, resp
 
 
 class ProducerBehaviors(TenantBehaviors):
 
-    def __init__(self, tenant_client, producer_client, tenant_config):
+    def __init__(self, tenant_client, producer_client, db_client,
+                 tenant_config):
         super(ProducerBehaviors, self).__init__(tenant_client=tenant_client,
+                                                db_client=db_client,
                                                 tenant_config=tenant_config)
         self.producer_client = producer_client
         self.producers_created = []
@@ -81,10 +101,11 @@ class ProducerBehaviors(TenantBehaviors):
 class ProfileBehaviors(ProducerBehaviors):
 
     def __init__(self, tenant_client, producer_client, profile_client,
-                 tenant_config):
+                 db_client, tenant_config):
         super(ProfileBehaviors, self).__init__(
             tenant_client=tenant_client,
             producer_client=producer_client,
+            db_client=db_client,
             tenant_config=tenant_config)
         self.profile_client = profile_client
         self.profiles_created = []
@@ -116,11 +137,12 @@ class ProfileBehaviors(ProducerBehaviors):
 class HostBehaviors(ProfileBehaviors):
 
     def __init__(self, tenant_client, producer_client, profile_client,
-                 host_client, tenant_config):
+                 host_client, db_client, tenant_config):
         super(HostBehaviors, self).__init__(
             tenant_client=tenant_client,
             producer_client=producer_client,
             profile_client=profile_client,
+            db_client=db_client,
             tenant_config=tenant_config)
         self.host_client = host_client
         self.hosts_created = []
