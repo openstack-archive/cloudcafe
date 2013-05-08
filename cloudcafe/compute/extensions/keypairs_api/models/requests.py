@@ -22,8 +22,6 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class CreateKeypair(AutoMarshallingModel):
 
-    ROOT_TAG = 'keypair'
-
     def __init__(self, name, public_key=None):
 
         super(CreateKeypair, self).__init__()
@@ -31,7 +29,7 @@ class CreateKeypair(AutoMarshallingModel):
         self.public_key = public_key
 
     def _obj_to_json(self):
-        ret = {self.ROOT_TAG: self._obj_to_dict()}
+        ret = {'keypair': self._obj_to_dict()}
         return json.dumps(ret)
 
     def _obj_to_dict(self):

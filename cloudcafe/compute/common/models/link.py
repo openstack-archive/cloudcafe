@@ -25,7 +25,6 @@ class Links(AutoMarshallingModel):
     """
     @summary: Represents links (url) in the system
     """
-    ROOT_TAG = 'links'
 
     def __init__(self, links_list):
         super(Links, self).__init__()

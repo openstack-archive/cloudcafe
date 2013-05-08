@@ -22,8 +22,6 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class CreateSecurityGroup(AutoMarshallingModel):
 
-    ROOT_TAG = 'security_group'
-
     def __init__(self, name=None, description=None):
 
         super(CreateSecurityGroup, self).__init__()
@@ -31,7 +29,7 @@ class CreateSecurityGroup(AutoMarshallingModel):
         self.description = description
 
     def _obj_to_json(self):
-        ret = {self.ROOT_TAG: self._obj_to_dict()}
+        ret = {'security_group': self._obj_to_dict()}
         return json.dumps(ret)
 
     def _obj_to_dict(self):

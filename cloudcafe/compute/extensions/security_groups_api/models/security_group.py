@@ -23,8 +23,6 @@ from cloudcafe.compute.common.equality_tools import EqualityTools
 
 class SecurityGroup(AutoMarshallingModel):
 
-    ROOT_TAG = 'security_group'
-
     def __init__(self, id=None, name=None, description=None,
                  rules=None, tenant_id=None):
         self.name = name
@@ -42,7 +40,7 @@ class SecurityGroup(AutoMarshallingModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        return cls._dict_to_obj(json_dict.get(cls.ROOT_TAG))
+        return cls._dict_to_obj(json_dict.get('security_group'))
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -83,8 +81,6 @@ class SecurityGroup(AutoMarshallingModel):
 
 class SecurityGroups(SecurityGroup):
 
-    ROOT_TAG = 'security_groups'
-
     @classmethod
     def _xml_to_obj(cls, serialized_str):
         raise NotImplemented
@@ -93,7 +89,7 @@ class SecurityGroups(SecurityGroup):
     def _json_to_obj(cls, serialized_str):
         ret = []
         json_dict = json.loads(serialized_str)
-        groups = json_dict.get(cls.ROOT_TAG)
+        groups = json_dict.get('security_groups')
 
         for group in groups:
             ret.append(SecurityGroup._dict_to_obj(group))
