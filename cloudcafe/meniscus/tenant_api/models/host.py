@@ -62,6 +62,12 @@ class Host(AutoMarshallingModel):
     def _dict_to_obj(cls, json_dict):
         return Host(**json_dict)
 
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class AllHosts(AutoMarshallingModel):
     ROOT_TAG = 'hosts'
