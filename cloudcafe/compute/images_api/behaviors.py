@@ -130,6 +130,31 @@ class ImageBehaviors(object):
         resp = self.wait_for_image_status(image_id, ImageStates.ACTIVE)
         return resp
 
+    def create_active_backup(self, server_id, backup_type, backup_rotation):
+        """
+        @summary: Creates a backup from a server and waits for
+                  the backup to become active
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param backup_type: The type of the backup, either daily or weekly.
+        @type backup_type: String
+        @param backup_rotation: Number of backups to maintain.
+        @type backup_type: Integer
+        @return: Response object containing response and the image
+                 domain object
+        @rtype: requests.Response
+        """
+
+        name = rand_name('backup')
+        resp = self.servers_client.create_backup(
+            server_id, backup_type, backup_rotation, name)
+        assert resp.status_code == 202
+
+        # Retrieve the backup id from the response header
+        backup_id = resp.headers['location'].rsplit('/')[-1]
+        resp = self.wait_for_image_status(backup_id, ImageStates.ACTIVE)
+        return resp
+
     def wait_for_image_to_be_deleted(self, image_id, interval_time=None,
                                      timeout=None):
         """
