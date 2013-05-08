@@ -28,8 +28,15 @@ class UpdateHost(AutoMarshallingModel):
         self.profile_id = profile_id
 
     def _obj_to_json(self):
-        body = self._auto_to_dict()
-        return json_to_str(body)
+        return json_to_str(self._obj_to_dict())
+
+    def _obj_to_dict(self):
+        return {
+            'hostname': self.hostname,
+            'ip_address_v4': self.ip_address_v4,
+            'ip_address_v6': self.ip_address_v6,
+            'profile_id': self.profile_id
+        }
 
 
 # Create requires all parameters, whereas update they are optional
