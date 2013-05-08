@@ -40,3 +40,11 @@ class ImagesConfig(ConfigSectionInterface):
     def snapshot_timeout(self):
         """Length of time to wait before giving up on reaching a status"""
         return int(self.get("snapshot_timeout"))
+
+    @property
+    def can_get_deleted_image(self):
+        """
+        true: Performing a GET on a deleted image returns the image
+        false: Performing a GET on a deleted image returns a 404
+        """
+        return self.get_boolean("can_get_deleted_image")

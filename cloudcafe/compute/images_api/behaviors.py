@@ -150,13 +150,17 @@ class ImageBehaviors(object):
 
         while time.time() < end_time:
             try:
-                self.images_client.get_image(image_id)
+                image = self.images_client.get_image(image_id).entity
             except ItemNotFound:
+                break
+
+            # If GET on deleted images is enabled, check for DELETED status
+            if self.config.can_get_deleted_image and image.status == ImageStates.DELETED:
                 break
             time.sleep(interval_time)
         else:
             raise TimeoutException(
                 "wait_for_image_to_be_deleted ran for {0} seconds "
-                "and did not observe the image achieving the "
+                "and did not observe the image reaching the "
                 "{1} status.".format(
                     timeout, ImageStates.DELETED))
