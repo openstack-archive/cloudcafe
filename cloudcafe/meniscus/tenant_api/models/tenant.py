@@ -34,13 +34,14 @@ class Tenant(AutoMarshallingModel):
     ROOT_TAG = 'tenant'
 
     def __init__(self, tenant_id=None, event_producers=None, hosts=None,
-                 profiles=None):
+                 profiles=None, token=None):
         """An object that represents an tenant's response object."""
         super(Tenant, self).__init__()
         self.tenant_id = tenant_id
         self.event_producers = event_producers
         self.hosts = hosts
         self.profiles = profiles
+        self.token = token
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -60,12 +61,14 @@ class Tenant(AutoMarshallingModel):
             Producer, dic.get('event_producers'))
         hosts = cls._convert_dict_of_types(Host, dic.get('hosts'))
         profiles = cls._convert_dict_of_types(Profile, dic.get('profiles'))
+        token = TenantToken._dict_to_obj(dic.get('token'))
 
         kwargs = {
             'tenant_id': str(dic.get('tenant_id')),
             'event_producers': event_producers,
             'hosts': hosts,
-            'profiles': profiles
+            'profiles': profiles,
+            'token': token
         }
         return Tenant(**kwargs)
 
@@ -77,3 +80,24 @@ class Tenant(AutoMarshallingModel):
             for item in dict:
                 result.append(c_type._dict_to_obj(item))
         return result
+
+
+class TenantToken(AutoMarshallingModel):
+
+    def __init__(self, valid, previous, last_changed):
+        super(TenantToken, self).__init__()
+        self.valid = valid
+        self.previous = previous
+        self.last_changed = last_changed
+
+    def _obj_to_json(self):
+        return json_to_str(self._auto_to_dict())
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = str_to_json(serialized_str)
+        return cls._dict_to_obj(json_dict)
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        return TenantToken(**json_dict)
