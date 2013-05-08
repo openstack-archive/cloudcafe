@@ -16,6 +16,7 @@ limitations under the License.
 
 from urlparse import urlparse
 
+from cloudcafe.compute.common.datagen import rand_name
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
@@ -26,7 +27,7 @@ from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
     Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
-    Rebuild, ResetState
+    Rebuild, ResetState, CreateBackup
 
 
 class ServersClient(AutoMarshallingRestClient):
@@ -598,8 +599,6 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        if name is None:
-            name = 'new_image'
         self.server_id = server_id
         if name is None:
             name = rand_name("TestImage")
@@ -639,10 +638,10 @@ class ServersClient(AutoMarshallingRestClient):
 
         url = '%s/servers/%s/metadata' % (self.url, server_id)
         request_metadata_object = Metadata(metadata)
-        resp = self.request('PUT', url,
-                            response_entity_type=Metadata,
-                            request_entity=request_metadata_object,
-                            requestslib_kwargs=requestslib_kwargs)
+        self.request = self.request('PUT', url, response_entity_type=Metadata,
+                                    request_entity=request_metadata_object,
+                                    requestslib_kwargs=requestslib_kwargs)
+        resp = self.request
         return resp
 
     def update_server_metadata(self, server_id, metadata,
@@ -717,5 +716,33 @@ class ServersClient(AutoMarshallingRestClient):
 
         url = '%s/servers/%s/metadata/%s' % (self.url, server_id, key)
         resp = self.request('DELETE', url,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def create_backup(self, server_id, backup_type, backup_rotation,
+                      name=None, metadata=None, requestslib_kwargs=None):
+        """
+        @summary: Creates backup of the server
+        @param server_id: The id of an existing server.
+        @type server_id: String
+        @param backup_type: The type of the backup, either daily or weekly.
+        @type backup_type: String
+        @param backup_rotation: Number of backups to maintain.
+        @type backup_type: Integer
+        @param: metadata: A metadata key and value pair.
+        @type: Metadata Object
+        @return: Response Object containing response code and the empty body
+         after the server resize is applied
+        @rtype: Requests.response
+        """
+
+        self.server_id = server_id
+        if name is None:
+            name = rand_name("TestBackup")
+        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        create_backup_request_object = CreateBackup(
+            name, backup_type, backup_rotation, metadata)
+        resp = self.request('POST', url,
+                            request_entity=create_backup_request_object,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

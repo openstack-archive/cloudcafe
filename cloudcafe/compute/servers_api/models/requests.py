@@ -506,6 +506,40 @@ class CreateImage(AutoMarshallingModel):
         return xml
 
 
+class CreateBackup(AutoMarshallingModel):
+    """
+    Create Backup Server Action Request Object
+    """
+    ROOT_TAG = 'createBackup'
+
+    def __init__(self, name, backup_type, backup_rotation, metadata=None):
+        self.name = name
+        self.backup_type = backup_type
+        self.rotation = backup_rotation
+        self.metadata = metadata
+
+    def _obj_to_json(self):
+        ret = self._auto_to_dict()
+
+        return json.dumps(ret)
+
+    def _obj_to_xml(self):
+        xml = Constants.XML_HEADER
+        element = ET.Element(self.ROOT_TAG)
+        element.set('xmlns', Constants.XML_API_NAMESPACE)
+        element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
+        element.set('name', self.name)
+        element.set('backup_type', self.backup_type)
+        element.set('rotation', self.rotation)
+        if self.metadata is not None:
+            meta_ele = ET.Element('metadata')
+            for key, value in self.metadata.items():
+                meta_ele.append(Metadata._dict_to_xml(key, value))
+            element.append(meta_ele)
+        xml += ET.tostring(element)
+        return xml
+
+
 class ChangePassword(AutoMarshallingModel):
 
     ROOT_TAG = 'changePassword'
