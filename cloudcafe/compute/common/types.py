@@ -94,3 +94,16 @@ class NovaVolumeStatusTypes(object):
     ERROR = "error"
     ERROR_DELETING = "error_deleting"
     IN_USE = "in-use"
+
+
+class BackupTypes(object):
+    """
+    @summary: Types dictating server backup types
+    @cvar DAILY: Daily backup
+    @type DAILY: C{str}
+    @cvar WEEKLY: Weekly backup
+    @type WEEKLY: C{str}
+    @note: This is essentially an Enumerated Type
+    """
+    DAILY = "daily"
+    WEEKLY = "weekly"
