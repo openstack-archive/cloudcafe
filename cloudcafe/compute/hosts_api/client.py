@@ -15,8 +15,7 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.compute.hosts_api.models.hosts import \
-    Host
+from cloudcafe.compute.hosts_api.models.hosts import Host
 
 
 class HostsClient(AutoMarshallingRestClient):
@@ -50,6 +49,21 @@ class HostsClient(AutoMarshallingRestClient):
         @rtype: C{list}
         """
         url = '%s/os-hosts' % (self.url)
+
+        host_response = self.request('GET', url,
+                                     response_entity_type=Host,
+                                     requestslib_kwargs=requestslib_kwargs)
+        return host_response
+
+    def get_host(self, host_name, requestslib_kwargs=None):
+        """
+        @summary: Returns a host
+        @param: host_name: Name of the host
+        @type: String
+        @return: resp
+        @rtype: Request.responses
+        """
+        url = '%s/os-hosts/%s' % (self.url, host_name)
 
         host_response = self.request('GET', url,
                                      response_entity_type=Host,
