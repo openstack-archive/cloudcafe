@@ -40,6 +40,22 @@ class MeniscusConfig(ConfigSectionInterface):
     def api_version(self):
         return self.get("api_version")
 
+    @property
+    def db_host(self):
+        return self.get("db_host")
+
+    @property
+    def db_name(self):
+        return self.get("db_name")
+
+    @property
+    def db_username(self):
+        return self.get("db_username")
+
+    @property
+    def db_password(self):
+        return self.get("db_password")
+
 
 class TenantConfig(ConfigSectionInterface):
     SECTION_NAME = 'meniscus-tenant'
