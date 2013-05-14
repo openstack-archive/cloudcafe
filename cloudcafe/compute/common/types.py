@@ -107,3 +107,16 @@ class BackupTypes(object):
     """
     DAILY = "daily"
     WEEKLY = "weekly"
+
+
+class HostServiceTypes(object):
+    """
+    @summary: Types dictating host service types
+    @cvar COMPUTE: compute service
+    @type COMPUTE: C{str}
+    @cvar NETWORK: network service
+    @type NETWORK: C{str}
+    @note: This is essentially an Enumerated Type
+    """
+    COMPUTE = "compute"
+    NETWORK = "network"
