@@ -120,3 +120,10 @@ class HostServiceTypes(object):
     """
     COMPUTE = "compute"
     NETWORK = "network"
+
+
+class ComputeHypervisors(object):
+    XEN_SERVER = 'xen_server'
+    KVM = 'kvm'
+    QEMU = 'qemu'
+    HYPER_V = 'hyper_v'
