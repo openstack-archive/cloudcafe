@@ -31,11 +31,13 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 class Server(AutoMarshallingModel):
 
-    def __init__(self, id, diskConfig, power_state, progress, task_state,
-                 vm_state, name, tenantId, status, updated, created, hostId,
-                 user_id, accessIPv4, accessIPv6, addresses, flavor, image,
-                 links, metadata, admin_pass):
-        self.diskConfig = diskConfig
+    def __init__(self, id=None, disk_config=None, power_state=None,
+                 progress=None, task_state=None, vm_state=None, name=None,
+                 tenant_id=None, status=None, updated=None, created=None,
+                 host_id=None, user_id=None, accessIPv4=None, accessIPv6=None,
+                 addresses=None, flavor=None, image=None, links=None,
+                 metadata=None, admin_pass=None):
+        self.diskConfig = disk_config
         try:
             self.power_state = int(power_state)
         except TypeError:
@@ -45,11 +47,11 @@ class Server(AutoMarshallingModel):
         self.vm_state = vm_state
         self.name = name
         self.id = id
-        self.tenant_id = tenantId
+        self.tenant_id = tenant_id
         self.status = status
         self.updated = updated
         self.created = created
-        self.host_id = hostId
+        self.host_id = host_id
         self.user_id = user_id
         if accessIPv4:
             self.accessIPv4 = str(IPy.IP(accessIPv4))
@@ -112,15 +114,14 @@ class Server(AutoMarshallingModel):
     @classmethod
     def _xml_ele_to_obj(cls, element):
         '''Helper method to turn ElementTree instance to Server instance.'''
-        server_dict = element.attrib
+        server = element.attrib
 
         addresses = None
         flavor = None
         image = None
-        links = None
         metadata = None
-
         links = Links._xml_ele_to_obj(element)
+
         if element.find('addresses') is not None:
             addresses = Addresses._xml_ele_to_obj(element.find('addresses'))
         if element.find('flavor') is not None:
@@ -130,24 +131,25 @@ class Server(AutoMarshallingModel):
         if element.find('metadata') is not None:
             metadata = Metadata._xml_ele_to_obj(element)
 
-        if 'progress' in server_dict:
-            progress = server_dict.get('progress') \
-                and int(server_dict.get('progress'))
-        if 'tenantId' in server_dict:
-            tenant_id = server_dict.get('tenantId')
-        if 'userId' in server_dict:
-            user_id = server_dict.get('userId')
+        if 'progress' in server:
+            progress = server.get('progress') \
+                and int(server.get('progress'))
+        else:
+            progress = None
 
-        server = Server(server_dict['id'], server_dict['diskConfig'],
-                        server_dict['power_state'], progress,
-                        server_dict['task_state'],
-                        server_dict['vm_state'],
-                        server_dict['name'], tenant_id,
-                        server_dict['status'], server_dict['updated'],
-                        server_dict['created'], server_dict['hostId'],
-                        user_id, server_dict['accessIPv4'],
-                        server_dict['accessIPv6'], addresses, flavor,
-                        image, links, metadata)
+        server = Server(
+            id=server.get('id'), disk_config=server.get('diskConfig'),
+            power_state=server.get('power_state'), progress=progress,
+            task_state=server.get('task_state'),
+            vm_state=server.get('vm_state'), name=server.get('name'),
+            tenant_id=server.get('tenant_id'), status=server.get('status'),
+            updated=server.get('updated'), created=server.get('created'),
+            host_id=server.get('hostId'), user_id=server.get('user_id'),
+            accessIPv4=server.get('accessIPv4'),
+            accessIPv6=server.get('accessIPv6'), addresses=addresses,
+            flavor=flavor, image=image, links=links, metadata=metadata,
+            admin_pass=server.get('adminPass'))
+
         return server
 
     @classmethod
@@ -172,22 +174,24 @@ class Server(AutoMarshallingModel):
             metadata = Metadata._dict_to_obj(server_dict['metadata'])
 
         server = Server(
-            server_dict['id'], server_dict.get('OS-DCF:diskConfig'),
-            server_dict.get('OS-EXT-STS:power_state'),
-            server_dict.get('progress', 0),
-            server_dict.get('OS-EXT-STS:task_state'),
-            server_dict.get('OS-EXT-STS:vm_state'),
-            server_dict.get('name'), server_dict.get('tenant_id'),
-            server_dict.get('status'), server_dict.get('updated'),
-            server_dict.get('created'), server_dict.get('hostId'),
-            server_dict.get('user_id'), server_dict.get('accessIPv4'),
-            server_dict.get('accessIPv6'), addresses, flavor,
-            image, links, metadata, server_dict.get('adminPass'))
+            id=server_dict.get('id'),
+            disk_config=server_dict.get('OS-DCF:diskConfig'),
+            power_state=server_dict.get('OS-EXT-STS:power_state'),
+            progress=server_dict.get('progress', 0),
+            task_state=server_dict.get('OS-EXT-STS:task_state'),
+            vm_state=server_dict.get('OS-EXT-STS:vm_state'),
+            name=server_dict.get('name'),
+            tenant_id=server_dict.get('tenant_id'),
+            status=server_dict.get('status'),
+            updated=server_dict.get('updated'),
+            created=server_dict.get('created'),
+            host_id=server_dict.get('hostId'),
+            user_id=server_dict.get('user_id'),
+            accessIPv4=server_dict.get('accessIPv4'),
+            accessIPv6=server_dict.get('accessIPv6'), addresses=addresses,
+            flavor=flavor, image=image, links=links, metadata=metadata,
+            admin_pass=server_dict.get('adminPass'))
 
-        for each in server_dict:
-            if each.startswith("{"):
-                newkey = re.split("}", each)[1]
-                setattr(server, newkey, server_dict[each])
         return server
 
     def __eq__(self, other):
@@ -279,10 +283,7 @@ class ServerMin(Server):
         return servermin
 
 
-#New Version
 class Addresses(AutoMarshallingModel):
-
-    ROOT_TAG = 'addresses'
 
     class _NetworkAddressesList(BaseModel):
 
@@ -336,16 +337,16 @@ class Addresses(AutoMarshallingModel):
     def __init__(self, addr_dict):
         super(Addresses, self).__init__()
 
-        #Preset properties that should be expected, if not always populated
+        # Preset properties that should be expected, if not always populated
         self.public = None
         self.private = None
 
         if len(addr_dict) > 1:
-            ''' adddress_type is PUBLIC/PRIVATE '''
+            # adddress_type is PUBLIC/PRIVATE
             for address_type in addr_dict:
-                ''' address_list is list of address dictionaries'''
+                # address_list is list of address dictionaries
                 address_list = addr_dict[address_type]
-                ''' init a network object with empty addresses list '''
+                # init a network object with empty addresses list
                 network = self._NetworkAddressesList()
                 for address in address_list:
                     addrobj = self._AddrObj(
@@ -359,9 +360,9 @@ class Addresses(AutoMarshallingModel):
             if big_addr_dict.get('addresses') is not None:
                 addr_dict = big_addr_dict.get('addresses')
             for address_type in addr_dict:
-                ''' address_list is list of address dictionaries'''
+                # address_list is list of address dictionaries
                 address_list = addr_dict[address_type]
-                ''' init a network object with empty addresses list '''
+                # init a network object with empty addresses list
                 network = self._NetworkAddressesList()
                 for address in address_list:
                     addrobj = self._AddrObj(version=address.get('version'),
