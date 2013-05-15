@@ -17,6 +17,15 @@ limitations under the License.
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
+class ComputeConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'compute'
+
+    @property
+    def hypervisor(self):
+        return self.get("hypervisor")
+
+
 class ComputeEndpointConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'compute_endpoint'
