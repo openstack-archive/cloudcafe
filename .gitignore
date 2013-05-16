@@ -29,3 +29,6 @@ pip-log.txt
 *.project
 *.pydev*
 *.idea
+
+# vim
+*.swp
