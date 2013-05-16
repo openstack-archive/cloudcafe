@@ -24,7 +24,7 @@ from cloudcafe.objectstorage.objectstorage_api.client \
 class ObjectStorageAPI_Behaviors(BaseBehavior):
     def __init__(self, client=None):
         self.client = client
-        self.cofnig = ObjectStorageAPIConfig()
+        self.config = ObjectStorageAPIConfig()
 
     @behavior(ObjectStorageAPIClient)
     def create_container(self, name=None):
