@@ -16,6 +16,8 @@ limitations under the License.
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.compute.hosts_api.models.hosts import Host
+from cloudcafe.compute.hosts_api.models.requests import UpdateHostRequest
+from cloudcafe.compute.hosts_api.models.responses import HostUpdateResponse
 
 
 class HostsClient(AutoMarshallingRestClient):
@@ -66,5 +68,53 @@ class HostsClient(AutoMarshallingRestClient):
                                                   host_name=host_name)
         host_response = self.request('GET', url,
                                      response_entity_type=Host,
+                                     requestslib_kwargs=requestslib_kwargs)
+        return host_response
+
+    def update_host(self, host_name, **request_params):
+        """
+        @summary: Returns a host response
+        @param: host_name: Name of the host
+        @type: String
+        @param: request_params: request parameters
+        @type: Dict
+        @return: resp
+        @rtype: Request.responses
+        """
+        update_host_request_object = UpdateHostRequest(**request_params)
+        url = "{url}/os-hosts/{host_name}".format(
+            url=self.url, host_name=host_name)
+        host_response = self.request('PUT', url,
+                                     response_entity_type=HostUpdateResponse,
+                                     request_entity=update_host_request_object)
+        return host_response
+
+    def shutdown(self, host_name, requestslib_kwargs=None):
+        """
+        @summary: Returns a host response
+        @param: host_name: Name of the host
+        @type: String
+        @return: resp
+        @rtype: Request.responses
+        """
+        url = "{url}/os-hosts/{host_name}/shutdown".format(
+            url=self.url, host_name=host_name)
+        host_response = self.request('GET', url,
+                                     response_entity_type=HostUpdateResponse,
+                                     requestslib_kwargs=requestslib_kwargs)
+        return host_response
+
+    def reboot(self, host_name, requestslib_kwargs=None):
+        """
+        @summary: Returns a host response
+        @param: host_name: Name of the host
+        @type: String
+        @return: resp
+        @rtype: Request.responses
+        """
+        url = "{url}/os-hosts/{host_name}/reboot".format(
+            url=self.url, host_name=host_name)
+        host_response = self.request('GET', url,
+                                     response_entity_type=HostUpdateResponse,
                                      requestslib_kwargs=requestslib_kwargs)
         return host_response
