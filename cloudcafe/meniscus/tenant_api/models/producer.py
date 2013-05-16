@@ -23,7 +23,7 @@ class UpdateProducer(AutoMarshallingModel):
                  producer_durable=None, producer_encrypted=None):
         super(UpdateProducer, self).__init__()
 
-        # Making all of these conditional for _auto_to_dict()
+        # Making all of these optional
         if producer_name is not None:
             self.name = producer_name
         if producer_pattern is not None:
@@ -34,8 +34,20 @@ class UpdateProducer(AutoMarshallingModel):
             self.encrypted = producer_encrypted
 
     def _obj_to_json(self):
-        body = self._auto_to_dict()
-        return json_to_str(body)
+        return json_to_str(self._obj_to_dict())
+
+    def _obj_to_dict(self):
+        # All of these elements are optional
+        converted = {}
+        if hasattr(self, 'name'):
+            converted['name'] = self.name
+        if hasattr(self, 'pattern'):
+            converted['pattern'] = self.pattern
+        if hasattr(self, 'durable'):
+            converted['durable'] = self.durable
+        if hasattr(self, 'encrypted'):
+            converted['encrypted'] = self.encrypted
+        return converted
 
 
 # Create requires all parameters, whereas update they are optional

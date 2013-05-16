@@ -26,8 +26,10 @@ class CreateTenant(AutoMarshallingModel):
         self.tenant_id = tenant_id
 
     def _obj_to_json(self):
-        body = self._auto_to_dict()
-        return json_to_str(body)
+        return json_to_str(self._obj_to_dict())
+
+    def _obj_to_dict(self):
+        return {'tenant_id': self.tenant_id}
 
 
 class Tenant(AutoMarshallingModel):
@@ -91,7 +93,14 @@ class TenantToken(AutoMarshallingModel):
         self.last_changed = last_changed
 
     def _obj_to_json(self):
-        return json_to_str(self._auto_to_dict())
+        return json_to_str(self._obj_to_dict())
+
+    def _obj_to_dict(self):
+        return {
+            'valid': self.valid,
+            'previous': self.previous,
+            'last_changed': self.last_changed
+        }
 
     @classmethod
     def _json_to_obj(cls, serialized_str):

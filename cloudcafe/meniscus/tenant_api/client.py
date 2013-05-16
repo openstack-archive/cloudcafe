@@ -24,26 +24,34 @@ from cloudcafe.meniscus.tenant_api.models.host import \
     CreateHost, UpdateHost, AllHosts, Host
 
 
-class TenantClient(AutoMarshallingRestClient):
-    def __init__(self, url, api_version, serialize_format=None,
-                 deserialize_format=None):
-        """
-        @param url: Base URL of meniscus api
-        @type url: String
-        """
-        super(TenantClient, self).__init__(serialize_format,
-                                           deserialize_format)
+class MeniscusClient(AutoMarshallingRestClient):
+
+    def __init__(self, url, api_version, use_alternate=False,
+                 serialize_format=None, deserialize_format=None):
+        super(MeniscusClient, self).__init__(serialize_format,
+                                             deserialize_format)
         self.url = url
         self.api_version = api_version
+        self.use_alternate = use_alternate
+
+    def _get_base_url(self):
+        if not self.use_alternate:
+            url = '{base}/{version}/tenant'.format(base=self.url,
+                                                   version=self.api_version)
+        else:
+            url = '{base}/{version}'.format(base=self.url,
+                                            version=self.api_version)
+        return url
+
+
+class TenantClient(MeniscusClient):
 
     def create_tenant(self, tenant_id):
         """
         @summary: Creates a tenant with the given id
         @param tenant_id:
         """
-        url = '{base}/{version}'.format(base=self.url,
-                                        version=self.api_version)
-
+        url = self._get_base_url()
         resp = self.request('POST', url,
                             request_entity=CreateTenant(tenant_id))
         return resp
@@ -52,28 +60,23 @@ class TenantClient(AutoMarshallingRestClient):
         """
         @summary: Retrieves the version information from the API
         """
-        url = '{base}/{version}/{tenant_id}'.format(
-            base=self.url,
-            version=self.api_version,
-            tenant_id=tenant_id)
-
+        url = '{base}/{tenant_id}'.format(base=self._get_base_url(),
+                                          tenant_id=tenant_id)
         resp = self.request('GET', url, response_entity_type=Tenant)
         return resp
 
 
-class ProducerClient(AutoMarshallingRestClient):
-    def __init__(self, url, api_version, tenant_id, serialize_format=None,
-                 deserialize_format=None):
-        super(ProducerClient, self).__init__(serialize_format,
+class ProducerClient(MeniscusClient):
+    def __init__(self, url, api_version, tenant_id, use_alternate=False,
+                 serialize_format=None, deserialize_format=None):
+        super(ProducerClient, self).__init__(url, api_version,
+                                             use_alternate, serialize_format,
                                              deserialize_format)
-        self.url = url
-        self.api_version = api_version
         self.tenant_id = tenant_id
 
     def _generate_producer_url(self, producer_id):
-        remote_url = '{base}/{version}/{tenant_id}/producers/{producer_id}'\
-            .format(base=self.url,
-                    version=self.api_version,
+        remote_url = '{base}/{tenant_id}/producers/{producer_id}'\
+            .format(base=self._get_base_url(),
                     tenant_id=self.tenant_id,
                     producer_id=producer_id)
         return remote_url
@@ -91,8 +94,8 @@ class ProducerClient(AutoMarshallingRestClient):
             producer_durable=durable,
             producer_encrypted=encrypted)
 
-        url = '{base}/{version}/{tenant_id}/producers'.format(
-            base=self.url,
+        url = '{base}/{tenant_id}/producers'.format(
+            base=self._get_base_url(),
             version=self.api_version,
             tenant_id=self.tenant_id)
 
@@ -140,9 +143,8 @@ class ProducerClient(AutoMarshallingRestClient):
         GET /{app_version}/{tenant_id}/producers
         @summary: Retrieves all producers on a given tenants
         """
-        remote_url = '{base}/{version}/{tenant_id}/producers'.format(
-            base=self.url,
-            version=self.api_version,
+        remote_url = '{base}/{tenant_id}/producers'.format(
+            base=self._get_base_url(),
             tenant_id=self.tenant_id)
 
         response = self.request('GET', remote_url,
@@ -150,21 +152,20 @@ class ProducerClient(AutoMarshallingRestClient):
         return response
 
 
-class ProfileClient(AutoMarshallingRestClient):
+class ProfileClient(MeniscusClient):
 
     def __init__(self, url, api_version, tenant_id, producer_id,
-                 serialize_format=None, deserialize_format=None):
-        super(ProfileClient, self).__init__(serialize_format,
+                 use_alternate=False, serialize_format=None,
+                 deserialize_format=None):
+        super(ProfileClient, self).__init__(url, api_version,
+                                            use_alternate, serialize_format,
                                             deserialize_format)
-        self.url = url
-        self.api_version = api_version
         self.tenant_id = tenant_id
         self.producer_id = producer_id
 
     def _generate_profile_url(self, profile_id):
-        remote_url = '{base}/{version}/{tenant_id}/profiles/{profile_id}'\
-            .format(base=self.url,
-                    version=self.api_version,
+        remote_url = '{base}/{tenant_id}/profiles/{profile_id}'\
+            .format(base=self._get_base_url(),
                     tenant_id=self.tenant_id,
                     profile_id=profile_id)
         return remote_url
@@ -177,9 +178,8 @@ class ProfileClient(AutoMarshallingRestClient):
 
         request_profile = CreateProfile(name=name,
                                         producer_ids=producer_ids)
-        url = '{base}/{version}/{tenant_id}/profiles'.format(
-            base=self.url,
-            version=self.api_version,
+        url = '{base}/{tenant_id}/profiles'.format(
+            base=self._get_base_url(),
             tenant_id=self.tenant_id)
 
         profile_request = self.post(url, request_entity=request_profile)
@@ -200,9 +200,8 @@ class ProfileClient(AutoMarshallingRestClient):
         GET /{app_version}/{tenant_id}/profiles
         @summary: Retrieves all profiles from a tenant
         """
-        remote_url = '{base}/{version}/{tenant_id}/profiles'.format(
-            base=self.url,
-            version=self.api_version,
+        remote_url = '{base}/{tenant_id}/profiles'.format(
+            base=self._get_base_url(),
             tenant_id=self.tenant_id)
 
         response = self.request('GET', remote_url,
@@ -231,11 +230,13 @@ class ProfileClient(AutoMarshallingRestClient):
         return response
 
 
-class HostClient(AutoMarshallingRestClient):
+class HostClient(MeniscusClient):
 
     def __init__(self, url, api_version, tenant_id, profile_id,
-                 serialize_format=None, deserialize_format=None):
-        super(HostClient, self).__init__(serialize_format,
+                 use_alternate=False, serialize_format=None,
+                 deserialize_format=None):
+        super(HostClient, self).__init__(url, api_version,
+                                         use_alternate, serialize_format,
                                          deserialize_format)
         self.url = url
         self.api_version = api_version
@@ -243,9 +244,8 @@ class HostClient(AutoMarshallingRestClient):
         self.profile_id = profile_id
 
     def _generate_host_url(self, host_id):
-        remote_url = '{base}/{version}/{tenant_id}/hosts/{host_id}'.format(
-            base=self.url,
-            version=self.api_version,
+        remote_url = '{base}/{tenant_id}/hosts/{host_id}'.format(
+            base=self._get_base_url(),
             tenant_id=self.tenant_id,
             host_id=host_id)
         return remote_url
@@ -255,9 +255,8 @@ class HostClient(AutoMarshallingRestClient):
         POST /{app_version}/{tenant_id}/hosts
         @summary: Creates a new host on a tenant
         """
-        remote_url = '{base}/{version}/{tenant_id}/hosts'.format(
-            base=self.url,
-            version=self.api_version,
+        remote_url = '{base}/{tenant_id}/hosts'.format(
+            base=self._get_base_url(),
             tenant_id=self.tenant_id)
 
         host = CreateHost(hostname, profile_id, ip_v4, ip_v6)
@@ -280,9 +279,8 @@ class HostClient(AutoMarshallingRestClient):
         GET /{app_version}/{tenant_id}/hosts
         @summary: Retrieves all hosts from a tenant
         """
-        remote_url = '{base}/{version}/{tenant_id}/hosts'.format(
-            base=self.url,
-            version=self.api_version,
+        remote_url = '{base}/{tenant_id}/hosts'.format(
+            base=self._get_base_url(),
             tenant_id=self.tenant_id)
 
         response = self.request('GET', remote_url,

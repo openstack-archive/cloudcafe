@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+from json import loads as json_to_dict
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -91,3 +91,83 @@ class TenantConfig(ConfigSectionInterface):
     @property
     def profile_name(self):
         return self.get("profile_name")
+
+
+class PairingConfig(ConfigSectionInterface):
+    SECTION_NAME = 'meniscus-pairing'
+
+    @property
+    def hostname(self):
+        return self.get('hostname')
+
+    @property
+    def coordinator_base_url(self):
+        return self.get('coordinator_base_url')
+
+    @property
+    def worker_base_url(self):
+        return self.get('worker_base_url')
+
+    @property
+    def callback(self):
+        return self.get('callback')
+
+    @property
+    def ip_v4(self):
+        return self.get('ip_address_v4')
+
+    @property
+    def ip_v6(self):
+        return self.get('ip_address_v6')
+
+    @property
+    def os_type(self):
+        return self.get('os_type')
+
+    @property
+    def memory_mb(self):
+        return self.get('memory_mb')
+
+    @property
+    def arch(self):
+        return self.get('arch')
+
+    @property
+    def api_secret(self):
+        return self.get('api_secret')
+
+    @property
+    def personality(self):
+        return self.get('personality')
+
+    @property
+    def cpu_cores(self):
+        return self.get('cpu_cores')
+
+    @property
+    def load_average(self):
+        return json_to_dict(self.get('load_average'))
+
+    @property
+    def disks(self):
+        return json_to_dict(self.get('disks'))
+
+
+class CorrelationConfig(ConfigSectionInterface):
+    SECTION_NAME = 'meniscus-correlation'
+
+    @property
+    def host(self):
+        return self.get('host')
+
+    @property
+    def pname(self):
+        return self.get('pname')
+
+    @property
+    def time(self):
+        return self.get('time')
+
+    @property
+    def native(self):
+        return self.get('native')

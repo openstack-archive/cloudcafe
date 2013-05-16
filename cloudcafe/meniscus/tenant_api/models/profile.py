@@ -28,8 +28,16 @@ class UpdateProfile(AutoMarshallingModel):
             self.producer_ids = producer_ids
 
     def _obj_to_json(self):
-        body = self._auto_to_dict()
-        return json_to_str(body)
+        return json_to_str(self._obj_to_dict())
+
+    def _obj_to_dict(self):
+        converted = {}
+        if hasattr(self, 'name'):
+            converted['name'] = self.name
+        if hasattr(self, 'producer_ids'):
+            converted['producer_ids'] = self.producer_ids
+
+        return converted
 
 
 # Create requires all parameters, whereas update they are optional
