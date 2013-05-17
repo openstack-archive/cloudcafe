@@ -174,7 +174,7 @@ class Server(AutoMarshallingModel):
             metadata = Metadata._dict_to_obj(server_dict['metadata'])
 
         server = Server(
-            id=server_dict.get('id'),
+            id=server_dict.get('id') or server_dict.get('uuid'),
             disk_config=server_dict.get('OS-DCF:diskConfig'),
             power_state=server_dict.get('OS-EXT-STS:power_state'),
             progress=server_dict.get('progress', 0),
