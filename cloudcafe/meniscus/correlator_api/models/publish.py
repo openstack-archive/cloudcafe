@@ -35,7 +35,7 @@ class JobInformation(AutoMarshallingModel):
     def __init__(self, job_id, job_status_uri):
         super(JobInformation, self).__init__()
         self.job_id = job_id
-        self.job_status_uri
+        self.job_status_uri = job_status_uri
 
     def _json_to_obj(cls, serialized_str):
         json_dict = str_to_json(serialized_str)
