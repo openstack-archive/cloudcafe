@@ -129,3 +129,18 @@ class DBaaSConfig(ConfigSectionInterface):
     def mgmt_tenant_id(self):
         """N/A"""
         return self.get('mgmt_tenant_id')
+
+    @property
+    def path_to_report(self):
+        """N/A"""
+        return self.get('path_to_report')
+
+    @property
+    def path_to_error_report(self):
+        """N/A"""
+        return self.get('path_to_error_report')
+
+    @property
+    def path_to_perf_log(self):
+        """N/A"""
+        return self.get('path_to_perf_log')
