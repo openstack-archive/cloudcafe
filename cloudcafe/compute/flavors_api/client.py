@@ -52,7 +52,7 @@ class FlavorsClient(AutoMarshallingRestClient):
         request = CreateFlavor(name=name, ram=ram, vcpus=vcpus,
                                disk=disk, id=id, is_public=is_public)
 
-        url = '%s/flavors' % self.url
+        url = '{base_url}/flavors'.format(base_url=self.url)
         resp = self.request('POST', url,
                             response_entity_type=Flavor,
                             request_entity=request,
@@ -61,7 +61,8 @@ class FlavorsClient(AutoMarshallingRestClient):
 
     def delete_flavor(self, flavor_id, requestslib_kwargs=None):
 
-        url = '%s/flavors/%s' % (self.url, flavor_id)
+        url = '{base_url}/flavors/{flavor_id}'.format(
+            base_url=self.url, flavor_id=flavor_id)
         resp = self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
@@ -82,7 +83,7 @@ class FlavorsClient(AutoMarshallingRestClient):
         @rtype: C{list}
         '''
 
-        url = '%s/flavors' % (self.url)
+        url = '{base_url}/flavors'.format(base_url=self.url)
 
         params = {'minDisk': min_disk, 'minRam': min_ram, 'marker': marker,
                   'limit': limit}
@@ -108,7 +109,7 @@ class FlavorsClient(AutoMarshallingRestClient):
         @rtype: C{list}
         '''
 
-        url = '%s/flavors/detail' % (self.url)
+        url = '{base_url}/flavors/detail'.format(base_url=self.url)
 
         params = {'minDisk': min_disk, 'minRam': min_ram, 'marker': marker,
                   'limit': limit}
@@ -129,7 +130,8 @@ class FlavorsClient(AutoMarshallingRestClient):
         url_new = str(flavor_id)
         url_scheme = urlparse(url_new).scheme
         url = url_new if url_scheme \
-            else '%s/flavors/%s' % (self.url, flavor_id)
+            else '{base_url}/flavors/{flavor_id}'.format(base_url=self.url,
+                                                flavor_id=flavor_id)
 
         flavor_response = self.request('GET', url, requestslib_kwargs,
                                        response_entity_type=Flavor,

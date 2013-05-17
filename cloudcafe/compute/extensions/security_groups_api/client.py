@@ -39,7 +39,7 @@ class SecurityGroupsClient(AutoMarshallingRestClient):
                               requestslib_kwargs=None):
         request = CreateSecurityGroup(name=name, description=description)
 
-        url = '%s/os-security-groups' % self.url
+        url = '{base_url}/os-security-groups'.format(base_url=self.url)
         resp = self.request('POST', url,
                             response_entity_type=SecurityGroup,
                             request_entity=request,
@@ -48,7 +48,8 @@ class SecurityGroupsClient(AutoMarshallingRestClient):
 
     def get_security_group(self, group_id, requestslib_kwargs=None):
 
-        url = '%s/os-security-groups/%s' % (self.url, group_id)
+        url = '{base_url}/os-security-groups/{group_id}'.format(
+            base_url=self.url, group_id=group_id)
         resp = self.request('GET', url,
                             response_entity_type=SecurityGroup,
                             requestslib_kwargs=requestslib_kwargs)
@@ -56,14 +57,15 @@ class SecurityGroupsClient(AutoMarshallingRestClient):
 
     def list_security_groups(self, requestslib_kwargs=None):
 
-        url = '%s/os-security-groups' % self.url
+        url = '{base_url}/os-security-groups'.format(base_url=self.url)
         resp = self.request('GET', url,
                             response_entity_type=SecurityGroups,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
     def delete_security_group(self, group_id, requestslib_kwargs=None):
-        url = '%s/os-security-groups/%s' % (self.url, group_id)
+        url = '{base_url}/os-security-groups/{group_id}'.format(
+            base_url=self.url, group_id=group_id)
         resp = self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

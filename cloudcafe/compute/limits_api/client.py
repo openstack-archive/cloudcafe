@@ -52,7 +52,7 @@ class LimitsClient(AutoMarshallingRestClient):
         @return: limit_response
         @rtype: Limits Response Domain Object
         """
-        url = '%s/limits' % (self.url)
+        url = '{base_url}/limits'.format(base_url=self.url)
         limit_response = self.request('GET', url,
                                       response_entity_type=Limits,
                                       requestslib_kwargs=requestslib_kwargs)

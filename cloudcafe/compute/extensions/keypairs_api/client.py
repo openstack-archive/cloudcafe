@@ -48,7 +48,7 @@ class KeypairsClient(AutoMarshallingRestClient):
     def create_keypair(self, name, public_key=None, requestslib_kwargs=None):
         request = CreateKeypair(name=name, public_key=public_key)
 
-        url = '%s/os-keypairs' % self.url
+        url = '{base_url}/os-keypairs'.format(base_url=self.url)
         resp = self.request('POST', url,
                             response_entity_type=Keypair,
                             request_entity=request,
@@ -57,7 +57,8 @@ class KeypairsClient(AutoMarshallingRestClient):
 
     def get_keypair(self, keypair_name, requestslib_kwargs=None):
 
-        url = '%s/os-keypairs/%s' % (self.url, keypair_name)
+        url = '{base_url}/os-keypairs/{name}'.format(basee_url=self.url,
+                                                     name=keypair_name)
         resp = self.request('GET', url,
                             response_entity_type=Keypair,
                             requestslib_kwargs=requestslib_kwargs)
@@ -65,14 +66,15 @@ class KeypairsClient(AutoMarshallingRestClient):
 
     def list_keypairs(self, requestslib_kwargs=None):
 
-        url = '%s/os-keypairs' % self.url
+        url = '{base_url}/os-keypairs'.format(base_url=self.url)
         resp = self.request('GET', url,
                             response_entity_type=Keypairs,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
     def delete_keypair(self, keypair_name, requestslib_kwargs=None):
-        url = '%s/os-keypairs/%s' % (self.url, keypair_name)
+        url = '{base_url}/os-keypairs/{name}'.format(base_url=self.url,
+                                                     name=keypair_name)
         resp = self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

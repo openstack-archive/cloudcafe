@@ -49,7 +49,8 @@ class RescueClient(AutoMarshallingRestClient):
 
     def rescue(self, server_id, requestslib_kwargs=None):
         self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request(
             'POST', url, response_entity_type=RescueResponse,
             request_entity=RescueMode(),
@@ -58,7 +59,8 @@ class RescueClient(AutoMarshallingRestClient):
 
     def unrescue(self, server_id, requestslib_kwargs=None):
         self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            url=self.url, server_id=server_id)
         resp = self.request(
             'POST', url, response_entity_type=Server,
             request_entity=ExitRescueMode(),

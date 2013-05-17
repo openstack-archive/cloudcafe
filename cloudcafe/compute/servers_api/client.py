@@ -81,7 +81,7 @@ class ServersClient(AutoMarshallingRestClient):
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker,
                   'limit': limit, 'changes-since': changes_since}
-        url = '%s/servers' % self.url
+        url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('GET', url, params=params,
                             response_entity_type=Server,
                             requestslib_kwargs=requestslib_kwargs)
@@ -115,7 +115,7 @@ class ServersClient(AutoMarshallingRestClient):
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker, 'limit': limit,
                   'changes-since': changes_since}
-        url = '%s/servers/detail' % self.url
+        url = '{base_url}/servers/detail'.format(base_url=self.url)
         resp = self.request('GET', url, params=params,
                             response_entity_type=Server,
                             requestslib_kwargs=requestslib_kwargs)
@@ -130,11 +130,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url_new = str(server_id)
-        url_scheme = urlparse(url_new).scheme
-        url = url_new if url_scheme else '%s/servers/%s' % (self.url,
-                                                            self.server_id)
+        url = '{base_url}/servers/{server_id}'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('GET', url,
                             response_entity_type=Server,
                             requestslib_kwargs=requestslib_kwargs)
@@ -149,8 +146,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
@@ -194,7 +191,7 @@ class ServersClient(AutoMarshallingRestClient):
                                              networks=networks,
                                              adminPass=admin_pass)
 
-        url = '%s/servers' % self.url
+        url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('POST', url,
                             response_entity_type=Server,
                             request_entity=server_request_object,
@@ -220,8 +217,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}'.format(
+            base_url=self.url, server_id=server_id)
         request = UpdateServer(name=name, metadata=metadata,
                                accessIPv4=accessIPv4, accessIPv6=accessIPv6)
         resp = self.request('PUT', url,
@@ -239,8 +236,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/ips' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/ips'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('GET', url,
                             response_entity_type=Addresses,
                             requestslib_kwargs=requestslib_kwargs)
@@ -258,10 +255,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        self.network_id = network_id
-        url = '%s/servers/%s/ips/%s' % (self.url, self.server_id,
-                                        self.network_id)
+        url = '{base_url}/servers/{server_id}/ips/{network}'.format(
+            base_url=self.url, server_id=server_id, network=network_id)
         resp = self.request('GET', url,
                             response_entity_type=Addresses,
                             requestslib_kwargs=requestslib_kwargs)
@@ -279,8 +274,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=ChangePassword(password),
                             requestslib_kwargs=requestslib_kwargs)
@@ -299,7 +294,8 @@ class ServersClient(AutoMarshallingRestClient):
         """
 
         self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=self.server_id)
         resp = self.request('POST', url,
                             request_entity=Reboot(reboot_type),
                             requestslib_kwargs=requestslib_kwargs)
@@ -334,8 +330,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         rebuild_request_object = Rebuild(name=name, image_ref=image_ref,
                                          admin_pass=admin_pass,
                                          disk_config=disk_config,
@@ -363,8 +359,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resize_request_object = Resize(flavorRef, diskConfig)
 
         resp = self.request('POST', url,
@@ -382,8 +378,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         confirm_resize_request_object = ConfirmResize()
         resp = self.request('POST', url,
                             request_entity=confirm_resize_request_object,
@@ -400,8 +396,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=RevertResize(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -416,8 +412,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=MigrateServer(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -432,8 +428,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=MigrateServer(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -448,8 +444,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Lock(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -464,8 +460,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Unlock(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -480,8 +476,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Stop(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -496,8 +492,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Start(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -512,8 +508,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Suspend(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -528,8 +524,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Resume(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -544,8 +540,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Pause(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -560,8 +556,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=Unpause(),
                             requestslib_kwargs=requestslib_kwargs)
@@ -579,8 +575,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('POST', url,
                             request_entity=ResetState(state),
                             requestslib_kwargs=requestslib_kwargs)
@@ -599,10 +595,10 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.server_id = server_id
         if name is None:
             name = rand_name("TestImage")
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         create_image_request_object = CreateImage(name, metadata)
         resp = self.request('POST', url,
                             request_entity=create_image_request_object,
@@ -618,7 +614,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        url = '%s/servers/%s/metadata' % (self.url, server_id)
+        url = '{base_url}/servers/{server_id}/metadata'.format(
+            base_url=self.url, server_id=server_id)
         resp = self.request('GET', url,
                             response_entity_type=Metadata,
                             requestslib_kwargs=requestslib_kwargs)
@@ -636,12 +633,12 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype:  Requests.response
         """
 
-        url = '%s/servers/%s/metadata' % (self.url, server_id)
+        url = '{base_url}/servers/{server_id}/metadata'.format(
+            base_url=self.url, server_id=server_id)
         request_metadata_object = Metadata(metadata)
-        self.request = self.request('PUT', url, response_entity_type=Metadata,
-                                    request_entity=request_metadata_object,
-                                    requestslib_kwargs=requestslib_kwargs)
-        resp = self.request
+        resp = self.request('PUT', url, response_entity_type=Metadata,
+                            request_entity=request_metadata_object,
+                            requestslib_kwargs=requestslib_kwargs)
         return resp
 
     def update_server_metadata(self, server_id, metadata,
@@ -656,7 +653,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype:  Requests.response
         """
 
-        url = '%s/servers/%s/metadata' % (self.url, server_id)
+        url = '{base_url}/servers/{server_id}/metadata'.format(
+            base_url=self.url, server_id=server_id)
         request_metadata_object = Metadata(metadata)
         resp = self.request('POST', url,
                             response_entity_type=Metadata,
@@ -676,7 +674,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype:  Requests.response
         """
 
-        url = '%s/servers/%s/metadata/%s' % (self.url, server_id, key)
+        url = '{base_url}/servers/{server_id}/metadata/{meta_key}'.format(
+            base_url=self.url, server_id=server_id, meta_key=key)
         resp = self.request('GET', url,
                             response_entity_type=MetadataItem,
                             requestslib_kwargs=requestslib_kwargs)
@@ -694,11 +693,12 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype:  Requests.response
         """
 
-        url = '%s/servers/%s/metadata/%s' % (self.url, server_id, key)
+        url = '{base_url}/servers/{server_id}/metadata/{meta_key}'.format(
+            base_url=self.url, server_id=server_id, meta_key=key)
         request = MetadataItem({key: value})
         resp = self.request('PUT', url,
-                            response_entity_type=MetadataItem,
                             request_entity=request,
+                            response_entity_type=MetadataItem,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
@@ -714,7 +714,8 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype:  Requests.response
         """
 
-        url = '%s/servers/%s/metadata/%s' % (self.url, server_id, key)
+        url = '{base_url}/servers/{server_id}/metadata/{meta_key}'.format(
+            base_url=self.url, server_id=server_id, meta_key=key)
         resp = self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
@@ -739,7 +740,8 @@ class ServersClient(AutoMarshallingRestClient):
         self.server_id = server_id
         if name is None:
             name = rand_name("TestBackup")
-        url = '%s/servers/%s/action' % (self.url, self.server_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
         create_backup_request_object = CreateBackup(
             name, backup_type, backup_rotation, metadata)
         resp = self.request('POST', url,

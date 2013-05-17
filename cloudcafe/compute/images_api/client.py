@@ -73,7 +73,7 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype: Response with Image List as response.entity
         """
 
-        url = '%s/images' % (self.url)
+        url = '{base_url}/images'.format(base_url=self.url)
 
         params = {'server': server_ref, 'name': image_name,
                   'status': status, 'type': image_type, 'marker': marker,
@@ -106,7 +106,7 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype: Response with Image List as response.entity
         '''
 
-        url = '%s/images/detail' % (self.url)
+        url = '{base_url}/images/detail'.format(base_url=self.url)
 
         params = {'server': server_ref, 'name': image_name,
                   'status': status, 'type': image_type, 'marker': marker,
@@ -124,9 +124,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype: Response with Image as response.entity
         '''
 
-        url_new = str(image_id)
-        url_scheme = urlparse(url_new).scheme
-        url = url_new if url_scheme else '%s/images/%s' % (self.url, image_id)
+        url = '{base_url}/images/{image_id}'.format(base_url=self.url,
+                                                    image_id=image_id)
 
         return self.request('GET', url, response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
@@ -140,7 +139,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype: Response Object
         '''
 
-        url = '%s/images/%s' % (self.url, image_id)
+        url = '{base_url}/images/{image_id}'.format(base_url=self.url,
+                                                    image_id=image_id)
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
@@ -153,7 +153,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype: Response object with metadata dictionary as entity
         '''
 
-        url = '%s/images/%s/metadata' % (self.url, image_id)
+        url = '{base_url}/images/{image_id}/metadata'.format(base_url=self.url,
+                                                             image_id=image_id)
         image_response = self.request('GET', url,
                                       response_entity_type=Metadata,
                                       requestslib_kwargs=requestslib_kwargs)
@@ -170,7 +171,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype:  Response object with metadata dictionary as entity
         '''
 
-        url = '%s/images/%s/metadata' % (self.url, image_id)
+        url = '{base_url}/images/{image_id}/metadata'.format(base_url=self.url,
+                                                             image_id=image_id)
         request_object = Metadata(metadata)
         image_response = self.request('PUT', url,
                                       response_entity_type=Metadata,
@@ -190,7 +192,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype:  Response object with metadata dictionary as entity
         '''
 
-        url = '%s/images/%s/metadata' % (self.url, image_id)
+        url = '{base_url}/images/{image_id}/metadata'.format(base_url=self.url,
+                                                             image_id=image_id)
         request_object = Metadata(metadata)
         image_response = self.request('POST', url,
                                       response_entity_type=Metadata,
@@ -209,7 +212,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype:  Response object with metadata dictionary as entity
         '''
 
-        url = '%s/images/%s/metadata/%s' % (self.url, image_id, key)
+        url = '{base_url}/images/{image_id}/metadata/{meta_key}'.format(
+            base_url=self.url, image_id=image_id, meta_key=key)
         image_response = self.request('GET', url,
                                       response_entity_type=MetadataItem,
                                       requestslib_kwargs=requestslib_kwargs)
@@ -229,7 +233,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype:  Response object with metadata dictionary as entity
         '''
 
-        url = '%s/images/%s/metadata/%s' % (self.url, image_id, key)
+        url = '{base_url}/images/{image_id}/metadata/{meta_key}'.format(
+            base_url=self.url, image_id=image_id, meta_key=key)
         metadata_item = MetadataItem({key: value})
         image_response = self.request('PUT', url,
                                       response_entity_type=MetadataItem,
@@ -249,7 +254,8 @@ class ImagesClient(AutoMarshallingRestClient):
         @rtype:  Response object with metadata dictionary as entity
         '''
 
-        url = '%s/images/%s/metadata/%s' % (self.url, image_id, key)
+        url = '{base_url}/images/{image_id}/metadata/{meta_key}'.format(
+            base_url=self.url, image_id=image_id, meta_key=key)
         image_response = self.request('DELETE', url,
                                       requestslib_kwargs=requestslib_kwargs)
         return image_response

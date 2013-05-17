@@ -26,6 +26,7 @@ class MetadataItem(AutoMarshallingModel):
     """
     @summary: MetadataItem Request/Response Object for Server/Image
     """
+    ROOT_TAG = 'meta'
 
     def __init__(self, metadata_dict):
         for key, value in metadata_dict.items():
