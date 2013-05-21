@@ -29,13 +29,13 @@ class IntegrationTestFixture(BaseTestFixture):
     CONTENT_TYPE = 'application/{0}'.format(FORMAT)
     ACCEPT = 'application/{0}'.format(FORMAT)
 
-    def setUp(cls):
-        super(IntegrationTestFixture, cls).setUp()
+    def setUp(self):
+        super(IntegrationTestFixture, self).setUp()
         HTTPretty.reset()
         HTTPretty.enable()
 
-    def tearDown(cls):
-        super(IntegrationTestFixture, cls).tearDown()
+    def tearDown(self):
+        super(IntegrationTestFixture, self).tearDown()
         HTTPretty.disable()
 
     def _assert_default_headers_in_request(self, request):
