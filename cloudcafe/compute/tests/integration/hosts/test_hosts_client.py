@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import unittest2 as unittest
-import httpretty
+from httpretty import HTTPretty
 
 from cloudcafe.compute.hosts_api.client import HostsClient
 from cloudcafe.compute.tests.integration.fixtures import IntegrationTestFixture
@@ -42,7 +42,7 @@ class HostsClientTest(IntegrationTestFixture):
         cls.mock_response = HostsMockResponse(cls.FORMAT)
 
     def test_list_hosts(self):
-        httpretty.register_uri(httpretty.GET, self.hosts_uri,
+        HTTPretty.register_uri(HTTPretty.GET, self.hosts_uri,
                                body=self.mock_response.list_hosts())
         response = self.hosts_client.list_hosts()
         self.assertEqual(200, response.status_code)
@@ -50,7 +50,7 @@ class HostsClientTest(IntegrationTestFixture):
                          response.content)
 
     def test_get_host(self):
-        httpretty.register_uri(httpretty.GET, self.host_uri,
+        HTTPretty.register_uri(HTTPretty.GET, self.host_uri,
                                body=self.mock_response.get_host())
         response = self.hosts_client.get_host(HOST_NAME)
         self.assertEqual(200, response.status_code)

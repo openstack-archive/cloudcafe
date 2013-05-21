@@ -23,7 +23,6 @@ import shutil
 # These imports are only possible on Linux/OSX
 if platform.system().lower() != 'windows':
     import pwd
-    import grp
 
 try:
     from setuptools import setup, find_packages
@@ -39,7 +38,8 @@ requires = open('pip-requires').readlines()
 setup(
     name='cloudcafe',
     version=cloudcafe.__version__,
-    description='CloudCAFE is an implementation of the Open CAFE Framework specifically designed to test deployed versions of OpenStack',
+    description='CloudCAFE is an implementation of the Open CAFE Framework '
+                'specifically designed to test deployed versions of OpenStack',
     long_description='{0}\n\n{1}'.format(
         open('README.md').read(),
         open('HISTORY.rst').read()),
@@ -73,17 +73,18 @@ setup(
 # real_prefix should only be set under a virtualenv
 using_virtualenv = hasattr(sys, 'real_prefix')
 
-''' @todo: need to clean this up or do it with puppet/chef '''
+# todo: need to clean this up or do it with puppet/chef
+
 # Default Config Options
 root_dir = "{0}/.cloudcafe".format(os.path.expanduser("~"))
 config_dir = "{0}/configs".format(root_dir)
 
 # Build Default directories
-if(os.path.exists("{0}/engine.config".format(config_dir)) == False):
+if not os.path.exists("{0}/engine.config".format(config_dir)):
     raise Exception("Core CAFE Engine configuration not found")
 else:
     # Copy over the default configurations
-    if(os.path.exists("~install")):
+    if os.path.exists("~install"):
         os.remove("~install")
         # Report
         print('\n'.join(["\t\t   _ _ _",
@@ -108,7 +109,8 @@ else:
         temp = open("~install", "w")
         temp.close()
 
-        # Get uid and gid of the current user to set permissions (Linux/OSX only)
+        # Get uid and gid of the current user to set permissions
+        # (Linux/OSX only)
         if platform.system().lower() != 'windows':
             if using_virtualenv:
                 working_user = os.getenv("USER")
@@ -117,18 +119,24 @@ else:
 
             uid = pwd.getpwnam(working_user).pw_uid
             gid = pwd.getpwnam(working_user).pw_gid
+            sudo_user = os.getenv("SUDO_USER")
+            uid = pwd.getpwnam(sudo_user).pw_uid
+            gid = pwd.getpwnam(sudo_user).pw_gid
 
         config_dirs = os.listdir("configs")
         for dir in config_dirs:
             if not os.path.exists("{0}/{1}".format(config_dir, dir)):
-                print("Installing configurations for: {0}".format("{0}/{1}".format(config_dir, dir)))
+                print("Installing configurations for: {0}".format(
+                    "{0}/{1}".format(config_dir, dir)))
                 os.makedirs("{0}/{1}".format(config_dir, dir))
                 # Fix the directory permissions
                 if platform.system().lower() != 'windows':
                     os.chown("{0}/{1}".format(config_dir, dir), uid, gid)
             for file in os.listdir("configs/{0}".format(dir)):
                 print("Installing {0}/{1}/{2}".format(config_dir, dir, file))
-                shutil.copy2("configs/{0}/{1}".format(dir, file), "{0}/{1}/{2}".format(config_dir, dir, file))
+                shutil.copy2("configs/{0}/{1}".format(dir, file),
+                             "{0}/{1}/{2}".format(config_dir, dir, file))
                 # Fix the directory permissions
                 if platform.system().lower() != 'windows':
-                    os.chown("{0}/{1}/{2}".format(config_dir, dir, file), uid, gid)
+                    os.chown("{0}/{1}/{2}".format(config_dir, dir, file), uid,
+                             gid)

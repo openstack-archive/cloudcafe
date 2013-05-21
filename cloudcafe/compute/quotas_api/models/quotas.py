@@ -21,8 +21,7 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 
 class Quota(AutoMarshallingModel):
-
-    def __init__(self, cores, floating_ips, id,
+    def __init__(self, cores, floating_ips, id_,
                  injected_file_content_bytes, injected_file_path_bytes,
                  injected_files, instances, key_pairs,
                  metadata_items, ram, security_group_rules,
@@ -30,7 +29,7 @@ class Quota(AutoMarshallingModel):
         super(Quota, self).__init__()
         self.cores = cores
         self.floating_ips = floating_ips
-        self.id = id
+        self.id_ = id_
         self.injected_file_content_bytes = injected_file_content_bytes
         self.injected_file_path_bytes = injected_file_path_bytes
         self.injected_files = injected_files
@@ -44,11 +43,15 @@ class Quota(AutoMarshallingModel):
     @classmethod
     def _dict_to_obj(self, quota_dict):
         return Quota(quota_dict.get('cores'), quota_dict.get('floating_ips'),
-                     quota_dict.get('id'), quota_dict.get('injected_file_content_bytes'),
+                     quota_dict.get('id'),
+                     quota_dict.get('injected_file_content_bytes'),
                      quota_dict.get('injected_file_path_bytes'),
-                     quota_dict.get('injected_files'), quota_dict.get('instances'),
-                     quota_dict.get('key_pairs'), quota_dict.get('metadata_items'),
-                     quota_dict.get('ram'), quota_dict.get('security_group_rules'),
+                     quota_dict.get('injected_files'),
+                     quota_dict.get('instances'),
+                     quota_dict.get('key_pairs'),
+                     quota_dict.get('metadata_items'),
+                     quota_dict.get('ram'),
+                     quota_dict.get('security_group_rules'),
                      quota_dict.get('security_groups'))
 
     @classmethod
@@ -84,4 +87,4 @@ class Quota(AutoMarshallingModel):
          """
         element = ET.fromstring(serialized_str)
         quota = cls._xml_ele_to_obj(element)
-        return  quota
+        return quota

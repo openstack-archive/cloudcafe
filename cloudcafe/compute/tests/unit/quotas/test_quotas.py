@@ -24,7 +24,7 @@ class QuotaDomainTest(object):
     def test_quota_attributes(self):
         self.assertEqual(str(self.quota.cores), '20')
         self.assertEqual(str(self.quota.floating_ips), '10')
-        self.assertEqual(str(self.quota.id), 'fake_tenant')
+        self.assertEqual(str(self.quota.id_), 'fake_tenant')
         self.assertEqual(str(self.quota.injected_file_content_bytes), '10240')
         self.assertEqual(str(self.quota.injected_file_path_bytes), '255')
         self.assertEqual(str(self.quota.injected_files), '5')
@@ -64,8 +64,10 @@ class QuotaDomainXMLTest(unittest.TestCase, QuotaDomainTest):
                         '<quota_set id="fake_tenant">' \
                         '<cores>20</cores>' \
                         '<floating_ips>10</floating_ips>' \
-                        '<injected_file_content_bytes>10240</injected_file_content_bytes>' \
-                        '<injected_file_path_bytes>255</injected_file_path_bytes>' \
+                        '<injected_file_content_bytes>10240' \
+                        '</injected_file_content_bytes>' \
+                        '<injected_file_path_bytes>255' \
+                        '</injected_file_path_bytes>' \
                         '<injected_files>5</injected_files>' \
                         '<instances>10</instances>' \
                         '<key_pairs>100</key_pairs>' \
