@@ -1,0 +1,2 @@
+# __init__.py should be ignored in the unit/mock test folder to avoid namespace clashes
+__init__.py

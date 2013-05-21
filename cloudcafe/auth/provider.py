@@ -9,8 +9,8 @@ from cloudcafe.identity.v2_0.tokens_api.behaviors import \
 from cloudcafe.auth.config import UserAuthConfig, UserConfig
 
 
-class AuthProvider(object):
 
+class AuthProvider(object):
     @classmethod
     def get_access_data(self, endpoint_config=None, user_config=None):
         endpoint_config = endpoint_config or UserAuthConfig()

@@ -21,7 +21,6 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 
 class Quota(AutoMarshallingModel):
-
     def __init__(self, cores, floating_ips, id,
                  injected_file_content_bytes, injected_file_path_bytes,
                  injected_files, instances, key_pairs,
@@ -84,4 +83,4 @@ class Quota(AutoMarshallingModel):
          """
         element = ET.fromstring(serialized_str)
         quota = cls._xml_ele_to_obj(element)
-        return  quota
+        return quota

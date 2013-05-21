@@ -35,7 +35,7 @@ class IntegrationTestFixture(BaseTestFixture):
         HTTPretty.enable()
 
     def tearDown(cls):
-        super(IntegrationTestFixture, cls).tearDown()
+        # super(IntegrationTestFixture, cls).tearDown()
         HTTPretty.disable()
 
     def _assert_default_headers_in_request(self, request):
