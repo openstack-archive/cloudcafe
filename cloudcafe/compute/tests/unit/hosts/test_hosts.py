@@ -43,7 +43,7 @@ class HostDomainTest(object):
 class HostDomainJSONTest(unittest.TestCase, HostDomainTest):
 
     @classmethod
-    def setUp(cls):
+    def setUpClass(cls):
         cls.host_json = '{"host":[{"resource":' \
                         '{"cpu": "1",' \
                         '"disk_gb": "1028", ' \
@@ -56,7 +56,7 @@ class HostDomainJSONTest(unittest.TestCase, HostDomainTest):
 class HostDomainXMLTest(unittest.TestCase, HostDomainTest):
 
     @classmethod
-    def setUp(cls):
+    def setUpClass(cls):
         cls.host_xml = '<?xml version="1.0" encoding="UTF-8"?>' \
                        '<host> <resource>' \
                        ' <project>(total)</project>' \
@@ -90,7 +90,7 @@ class HostDomainCollectionJSONTest(unittest.TestCase,
                                    HostDomainCollectionTest):
 
     @classmethod
-    def setUp(cls):
+    def setUpClass(cls):
         cls.hosts_json = '{"hosts":' \
                          '[{"host_name":' \
                          ' "host_name1","service": "compute1",' \
@@ -103,7 +103,7 @@ class HostDomainCollectionJSONTest(unittest.TestCase,
 class HostDomainCollectionXMLTest(unittest.TestCase, HostDomainCollectionTest):
 
     @classmethod
-    def setUp(cls):
+    def setUpClass(cls):
         cls.hosts_xml = '<?xml version="1.0" encoding="UTF-8"?>' \
                         '<hosts>' \
                         '<host host_name="host_name1" ' \
