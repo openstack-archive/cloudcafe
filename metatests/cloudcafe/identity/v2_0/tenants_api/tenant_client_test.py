@@ -87,9 +87,10 @@ class TenantsClientTest(TestCase):
         self._build_assertions(actual_response, self.tenant_url)
 
     def test_list_users(self):
-        HTTPretty.register_uri(HTTPretty.GET,
-                               self.users_url,
-                               body=self._build_list_users_expected_response())
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            self.users_url,
+            body=self._build_list_users_expected_response())
 
         actual_response = self.tenant_api_client.list_users()
         self._build_assertions(actual_response, self.users_url)

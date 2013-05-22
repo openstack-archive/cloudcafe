@@ -230,7 +230,14 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
     def get_users_for_tenant(self, tenant_id, requestslib_kwargs=None):
         """
         @summary: Returns all the users that a given tenant has.
-         Maps to /tenants/{tenant_id}/users.
+        Maps to /tenants/{tenant_id}/users.
+        @summary: Returns all the users that a tenant has.
+        Maps to /tenants/{tenant_id}/users.
+        @summary: Returns all the users that a tenant has.
+        Maps to /tenants/{tenant_id}/users.
+        Maps to /tenants/{tenant_id}/users.
+        @summary: Returns all the users that a tenant has.
+        Maps to /tenants/{tenant_id}/users.
         @param tenant_id: The ID for the tenant
         @type tenant_id: String
         @return: server_response
