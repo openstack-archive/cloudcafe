@@ -1,0 +1,19 @@
+{
+   "visibility" : "public",
+   "container_format" : "ari",
+   "disk_format" : "ari",
+   "status" : "active",
+   "file" : "/v2/images/21c697d1-2cc5-4a45-ba50-61fab15ab9b7/file",
+   "protected" : false,
+   "self" : "/v2/images/21c697d1-2cc5-4a45-ba50-61fab15ab9b7",
+   "name" : "cirros-0.3.1-x86_64-uec-ramdisk",
+   "min_ram" : 0,
+   "schema" : "/v2/schemas/image",
+   "size" : 3714968,
+   "tags" : [],
+   "checksum" : "69c33642f44ca552ba4bb8b66ad97e85",
+   "created_at" : "2013-05-22T14:24:36Z",
+   "updated_at" : "2013-05-22T14:24:36Z",
+   "min_disk" : 0,
+   "id" : "21c697d1-2cc5-4a45-ba50-61fab15ab9b7"
+}
