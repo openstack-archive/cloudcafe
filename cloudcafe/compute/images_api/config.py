@@ -23,12 +23,12 @@ class ImagesConfig(ConfigSectionInterface):
 
     @property
     def primary_image(self):
-        """Default image to be used when building servers in compute tests"""
+        """Default image to be used when building servers in compute test"""
         return self.get("primary_image")
 
     @property
     def secondary_image(self):
-        """Alternate image to be used in compute tests"""
+        """Alternate image to be used in compute test"""
         return self.get("secondary_image")
 
     @property
