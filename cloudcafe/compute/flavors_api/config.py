@@ -23,10 +23,10 @@ class FlavorsConfig(ConfigSectionInterface):
 
     @property
     def primary_flavor(self):
-        """Default flavor to be used when building servers in compute tests"""
+        """Default flavor to be used when building servers in compute test"""
         return self.get("primary_flavor")
 
     @property
     def secondary_flavor(self):
-        """Alternate flavor to be used in compute tests"""
+        """Alternate flavor to be used in compute test"""
         return self.get("secondary_flavor")
