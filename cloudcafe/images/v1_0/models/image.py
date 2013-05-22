@@ -75,22 +75,12 @@ class Image(AutoMarshallingModel):
         for prop in self.__dict__:
             if prop in ['created_at', 'updated_at', 'deleted_at']:
                 date_property = self.__dict__[prop]
-                self.__dict__[prop] = 'None' or \
-                                      date_property.strftime(
-                                          '%Y-%m-%dT%H:%M:%S'
-                                      )
-            values.append("%s: %s" % (prop, self.__dict__[prop]))
+                date_string = 'None' or \
+                    date_property.strftime('%Y-%m-%dT%H:%M:%S')
+                values.append("{0}: {1}".format(prop, date_string))
+        else:
+            values.append("{0}: {1}".format(prop, self.__dict__[prop]))
         return '[ {0} ]'.format(', '.join(values))
-
-    @classmethod
-    def _dict_to_obj(cls, json_dict):
-        """@summary: Processing dates in converting string to date objects"""
-
-        for date_key in ['created_at', 'updated_at', 'deleted_at']:
-            if json_dict[date_key]:
-                json_dict[date_key] = datetime.strptime(json_dict[date_key],
-                                                        '%Y-%m-%dT%H:%M:%S')
-        return Image(**json_dict)
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -103,6 +93,16 @@ class Image(AutoMarshallingModel):
             for image_dict in json_dict['images']:
                 images.append(cls._dict_to_obj(image_dict))
             return images
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        """@summary: Processing dates in converting string to date objects"""
+
+        for date_key in ['created_at', 'updated_at', 'deleted_at']:
+            if json_dict[date_key]:
+                json_dict[date_key] = datetime.strptime(json_dict[date_key],
+                                                        '%Y-%m-%dT%H:%M:%S')
+        return Image(**json_dict)
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
@@ -148,5 +148,5 @@ class ImageMin(Image):
         values = []
         for prop in self.__dict__:
             if self.__dict__[prop]:
-                values.append("%s: %s" % (prop, self.__dict__[prop]))
+                values.append("{0}: {1}".format(prop, self.__dict__[prop]))
         return '[{0}]'.format(', '.join(values))
