@@ -57,7 +57,7 @@ class Tenants(BaseIdentityListModel):
 class Tenant(BaseIdentityModel):
 
     def __init__(self, id_=None, name=None, description=None,
-                 enabled=None, created=None):
+                 enabled=None):
         """
         An object that represents a tenant response object.
         """
@@ -66,7 +66,6 @@ class Tenant(BaseIdentityModel):
         self.name = name
         self.description = description
         self.enabled = enabled
-        self.created = created
 
     @classmethod
     def _dict_to_obj(cls, dic):
