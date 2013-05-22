@@ -61,6 +61,7 @@ class Tenant(BaseIdentityModel):
         """
         An object that represents a tenant response object.
         """
+        super(Tenant, self).__init__()
         self.id_ = id_
         self.name = name
         self.description = description
@@ -126,6 +127,7 @@ class TenantsLinks(BaseIdentityListModel):
 class TenantsLink(BaseIdentityModel):
 
     def __init__(self, href=None, type_=None, rel=None):
+        super(TenantsLink, self).__init__()
         self.href = href
         self.type = type_
         self.rel = rel
