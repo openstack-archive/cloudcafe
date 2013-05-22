@@ -26,7 +26,6 @@ HYPERVISOR_HOSTNAME = "hypervisor_test"
 
 
 class HypervisorsClientTest(IntegrationTestFixture):
-
     @classmethod
     def setUpClass(cls):
         super(HypervisorsClientTest, cls).setUpClass()
@@ -35,11 +34,11 @@ class HypervisorsClientTest(IntegrationTestFixture):
             auth_token=cls.AUTH_TOKEN,
             serialize_format=cls.FORMAT,
             deserialize_format=cls.FORMAT)
-        cls.hypervisors_uri = "{0}/os-hypervisors".\
-                              format(cls.COMPUTE_API_ENDPOINT)
-        cls.hypervisor_servers_uri = "{0}/{1}/servers".\
-                                     format(cls.hypervisors_uri,
-                                     HYPERVISOR_HOSTNAME)
+        cls.hypervisors_uri = "{0}/os-hypervisors". \
+            format(cls.COMPUTE_API_ENDPOINT)
+        cls.hypervisor_servers_uri = "{0}/{1}/servers". \
+            format(cls.hypervisors_uri,
+                   HYPERVISOR_HOSTNAME)
         cls.mock_response = HypervisorsClientMockResponse()
 
     @httpretty.activate
@@ -49,7 +48,8 @@ class HypervisorsClientTest(IntegrationTestFixture):
                                list_hypervisors())
         response = self.hypervisor_client.list_hypervisors()
         self.assertEqual(200, response.status_code)
-        self._assert_default_headers_in_request()
+        self._assert_default_headers_in_request(
+            httpretty.HTTPretty.last_request)
         self.assertEqual(HypervisorsClientMockResponse.list_hypervisors(),
                          response.content)
 
@@ -58,10 +58,11 @@ class HypervisorsClientTest(IntegrationTestFixture):
         httpretty.register_uri(httpretty.GET, self.hypervisor_servers_uri,
                                body=self.mock_response.
                                list_hypervisor_servers())
-        response = self.hypervisor_client.\
+        response = self.hypervisor_client. \
             list_hypervisor_servers(HYPERVISOR_HOSTNAME)
         self.assertEqual(200, response.status_code)
-        self._assert_default_headers_in_request()
+        self._assert_default_headers_in_request(
+            httpretty.HTTPretty.last_request)
         self.assertEqual(HypervisorsClientMockResponse.
                          list_hypervisor_servers(),
                          response.content)
@@ -69,4 +70,3 @@ class HypervisorsClientTest(IntegrationTestFixture):
 
 if __name__ == '__main__':
     unittest.main()
-
