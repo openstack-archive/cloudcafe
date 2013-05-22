@@ -19,9 +19,8 @@ from cloudcafe.identity.v2_0.tokens_api.models.base import \
     BaseIdentityModel, BaseIdentityListModel
 
 
+# noinspection PyMissingConstructor
 class Access(BaseIdentityModel):
-
-    TAG = 'access'
 
     def __init__(self):
         self.metadata = {}
@@ -38,7 +37,7 @@ class Access(BaseIdentityModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        return cls._dict_to_obj(json_dict.get(cls.TAG))
+        return cls._dict_to_obj(json_dict.get('access'))
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -46,14 +45,13 @@ class Access(BaseIdentityModel):
         access = Access()
         access.metadata = json_dict.get('metadata')
         access.service_catalog = ServiceCatalog._list_to_obj(
-            json_dict.get(ServiceCatalog.TAG))
-        access.user = User._dict_to_obj(json_dict.get(User.TAG))
-        access.token = Token._dict_to_obj(json_dict.get(Token.TAG))
+            json_dict.get('serviceCatalog'))
+        access.user = User._dict_to_obj(json_dict.get('user'))
+        access.token = Token._dict_to_obj(json_dict.get('token'))
         return access
 
 
 class ServiceCatalog(BaseIdentityListModel):
-    TAG = 'serviceCatalog'
 
     @classmethod
     def _list_to_obj(cls, service_dict_list):
@@ -65,6 +63,7 @@ class ServiceCatalog(BaseIdentityListModel):
         return service_catalog
 
 
+# noinspection PyMissingConstructor
 class Service(BaseIdentityModel):
 
     def __init__(self):
@@ -74,9 +73,10 @@ class Service(BaseIdentityModel):
         self.type = None
 
     def get_endpoint(self, region):
-        '''Returns the endpoint that matches the provided region,
-           or None if such an endpoint is not found
-        '''
+        """
+        Returns the endpoint that matches the provided region,
+        or None if such an endpoint is not found
+        """
         for ep in self.endpoints:
             if getattr(ep, 'region'):
                 if str(ep.region).lower() == str(region).lower():
@@ -86,7 +86,7 @@ class Service(BaseIdentityModel):
     def _dict_to_obj(cls, json_dict):
         service = Service()
         service.endpoints = EndpointList._list_to_obj(
-            json_dict.get(EndpointList.TAG))
+            json_dict.get('endpoints'))
         service.endpoint_links = json_dict.get('endpoints_links')
         service.name = json_dict.get('name')
         service.type = json_dict.get('type')
@@ -95,7 +95,6 @@ class Service(BaseIdentityModel):
 
 
 class EndpointList(BaseIdentityListModel):
-    TAG = 'endpoints'
 
     @classmethod
     def _list_to_obj(cls, endpoint_dict_list):
@@ -107,15 +106,16 @@ class EndpointList(BaseIdentityListModel):
         return endpoint_list
 
 
+# noinspection PyMissingConstructor
 class Endpoint(BaseIdentityModel):
 
-    def __init__(self, admin_url, internal_url, public_url,
-                 region, id):
+    def __init__(self, id_, admin_url,
+                 internal_url, public_url, region):
         self.admin_url = admin_url
         self.internal_url = internal_url
         self.public_url = public_url
         self.region = region
-        self.id_ = id
+        self.id_ = id_
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -127,8 +127,8 @@ class Endpoint(BaseIdentityModel):
         return endpoint
 
 
+# noinspection PyMissingConstructor
 class Token(BaseIdentityModel):
-    TAG = 'token'
 
     def __init__(self):
         self.expires = None
@@ -147,8 +147,8 @@ class Token(BaseIdentityModel):
         return token_model
 
 
+# noinspection PyMissingConstructor
 class Tenant(BaseIdentityModel):
-    TAG = 'tenant'
 
     def __init__(self):
         self.description = None
@@ -167,8 +167,8 @@ class Tenant(BaseIdentityModel):
         return tenant
 
 
+# noinspection PyMissingConstructor
 class User(BaseIdentityModel):
-    TAG = 'user'
 
     def __init__(self):
         self.id_ = None
@@ -182,7 +182,7 @@ class User(BaseIdentityModel):
         user = User()
         user.id_ = json_dict.get('id')
         user.name = json_dict.get('name')
-        user.roles = RoleList._list_to_obj(json_dict.get(RoleList.TAG))
+        user.roles = RoleList._list_to_obj(json_dict.get('roles'))
         user.role_links = json_dict.get('role_links')
         user.username = json_dict.get('username')
 
@@ -190,7 +190,6 @@ class User(BaseIdentityModel):
 
 
 class RoleList(BaseIdentityListModel):
-    TAG = 'roles'
 
     @classmethod
     def _list_to_obj(cls, role_dict_list):
@@ -202,6 +201,7 @@ class RoleList(BaseIdentityListModel):
         return role_list
 
 
+# noinspection PyMissingConstructor
 class Role(BaseIdentityListModel):
 
     def __init__(self, name=None):

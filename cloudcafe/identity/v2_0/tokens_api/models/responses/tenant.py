@@ -22,58 +22,53 @@ from cloudcafe.identity.v2_0.tokens_api.models.base import \
 
 class Tenants(BaseIdentityListModel):
 
-    ROOT_TAG = 'tenants'
-
     def __init__(self, tenants=None):
-        '''An object that represents an tenants response object.
-        '''
+        """
+        An object that represents a tenants response object.
+        """
         super(Tenants, self).__init__()
         self.extend(tenants)
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        return cls._list_to_obj(json_dict.get(cls.ROOT_TAG))
+        return cls._list_to_obj(json_dict.get('tenants'))
 
     @classmethod
     def _list_to_obj(cls, list_):
-        ret = {cls.ROOT_TAG: [Tenant(**tenant) for tenant in list_]}
+        ret = {'tenants': [Tenant(**tenant) for tenant in list_]}
         return Tenants(**ret)
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
         element = ElementTree.fromstring(serialized_str)
         cls._remove_identity_xml_namespaces(element)
-        if element.tag != cls.ROOT_TAG:
+        if element.tag != 'tenants':
             return None
-        return cls._xml_list_to_obj(element.findall(Tenant.ROOT_TAG))
+        return cls._xml_list_to_obj(element.findall('tenant'))
 
     @classmethod
     def _xml_list_to_obj(cls, xml_list):
-        kwargs = {cls.ROOT_TAG: [Tenant._xml_ele_to_obj(ele)
-                                 for ele in xml_list]}
+        kwargs = {'tenants': [Tenant._xml_ele_to_obj(ele) for ele in xml_list]}
         return Tenants(**kwargs)
 
 
 class Tenant(BaseIdentityModel):
 
-    ROOT_TAG = 'tenant'
-
-    def __init__(self, id=None, name=None, description=None, enabled=None,
-                 created=None):
-        '''An object that represents an tenants response object.
-        '''
+    def __init__(self, id_=None, name=None, description=None, enabled=None):
+        """
+        An object that represents a tenant response object.
+        """
         super(Tenant, self).__init__()
-        self.id = id
+        self.id_ = id_
         self.name = name
         self.description = description
         self.enabled = enabled
-        self.created = created
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        return cls._dict_to_obj(json_dict.get(cls.ROOT_TAG))
+        return cls._dict_to_obj(json_dict.get('tenant'))
 
     @classmethod
     def _dict_to_obj(cls, dic):
@@ -83,7 +78,7 @@ class Tenant(BaseIdentityModel):
     def _xml_to_obj(cls, serialized_str):
         element = ElementTree.fromstring(serialized_str)
         cls._remove_identity_xml_namespaces(element)
-        if element.tag != cls.ROOT_TAG:
+        if element.tag != 'tenant':
             return None
         return cls._xml_ele_to_obj(element)
 
