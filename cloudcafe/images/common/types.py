@@ -54,6 +54,7 @@ class ImageDiskFormat(object):
     QCOW2 = "QCOW2"
     AKI = "AKI"
     AMI = "AMI"
+    ARI = "ARI"
 
 
 class ImageContainerFormat(object):
