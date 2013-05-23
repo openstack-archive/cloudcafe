@@ -21,39 +21,39 @@ from cloudcafe.identity.v2_0.tokens_api.models.base import \
 
 class Access(BaseIdentityModel):
 
-    TAG = 'access'
-
-    def __init__(self):
-        self.metadata = {}
-        self.service_catalog = ServiceCatalog()
-        self.user = User()
-        self.token = Token()
+    def __init__(self, metadata=None, service_catalog=None,
+                 user=None, token=None):
+        super(Access, self).__init__()
+        self.metadata = metadata
+        self.service_catalog = service_catalog
+        self.user = user
+        self.token = token
 
     def get_service(self, name):
         for service in self.service_catalog:
             if service.name == name:
                 return service
-        return None
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        return cls._dict_to_obj(json_dict.get(cls.TAG))
+        return cls._dict_to_obj(json_dict.get('access'))
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-
         access = Access()
         access.metadata = json_dict.get('metadata')
         access.service_catalog = ServiceCatalog._list_to_obj(
-            json_dict.get(ServiceCatalog.TAG))
-        access.user = User._dict_to_obj(json_dict.get(User.TAG))
-        access.token = Token._dict_to_obj(json_dict.get(Token.TAG))
+            json_dict.get('serviceCatalog'))
+        access.user = User._dict_to_obj(json_dict.get('user'))
+        access.token = Token._dict_to_obj(json_dict.get('token'))
         return access
 
 
 class ServiceCatalog(BaseIdentityListModel):
-    TAG = 'serviceCatalog'
+    def __init__(self, services=None):
+        super(ServiceCatalog, self).__init__()
+        self.extend(services or [])
 
     @classmethod
     def _list_to_obj(cls, service_dict_list):
@@ -67,16 +67,23 @@ class ServiceCatalog(BaseIdentityListModel):
 
 class Service(BaseIdentityModel):
 
-    def __init__(self):
-        self.endpoints = EndpointList()
-        self.endpoint_links = []
-        self.name = None
-        self.type = None
+    def __init__(self, endpoints=None, endpoint_links=None,
+                 name=None, type_=None):
+        """
+        @param endpoints:
+        @type: EndpointList
+        """
+        super(Service, self).__init__()
+        self.endpoints = endpoints
+        self.endpoint_links = endpoint_links
+        self.name = name
+        self.type = type_
 
     def get_endpoint(self, region):
-        '''Returns the endpoint that matches the provided region,
-           or None if such an endpoint is not found
-        '''
+        """
+        Returns the endpoint that matches the provided region,
+        or None if such an endpoint is not found
+        """
         for ep in self.endpoints:
             if getattr(ep, 'region'):
                 if str(ep.region).lower() == str(region).lower():
@@ -86,7 +93,7 @@ class Service(BaseIdentityModel):
     def _dict_to_obj(cls, json_dict):
         service = Service()
         service.endpoints = EndpointList._list_to_obj(
-            json_dict.get(EndpointList.TAG))
+            json_dict.get('endpoints'))
         service.endpoint_links = json_dict.get('endpoints_links')
         service.name = json_dict.get('name')
         service.type = json_dict.get('type')
@@ -95,7 +102,9 @@ class Service(BaseIdentityModel):
 
 
 class EndpointList(BaseIdentityListModel):
-    TAG = 'endpoints'
+    def __init__(self, endpoints=None):
+        super(EndpointList, self).__init__()
+        self.extend(endpoints or [])
 
     @classmethod
     def _list_to_obj(cls, endpoint_dict_list):
@@ -109,52 +118,53 @@ class EndpointList(BaseIdentityListModel):
 
 class Endpoint(BaseIdentityModel):
 
-    def __init__(self, admin_url, internal_url, public_url,
-                 region, id):
+    def __init__(self, id_=None, admin_url=None,
+                 internal_url=None, public_url=None, region=None):
+        super(Endpoint, self).__init__()
         self.admin_url = admin_url
         self.internal_url = internal_url
         self.public_url = public_url
         self.region = region
-        self.id_ = id
+        self.id_ = id_
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        endpoint = Endpoint(json_dict.get('adminURL'),
-                            json_dict.get('internalURL'),
-                            json_dict.get('publicURL'),
-                            json_dict.get('region'),
-                            json_dict.get('id'))
+        endpoint = Endpoint(admin_url=json_dict.get('adminURL'),
+                            internal_url=json_dict.get('internalURL'),
+                            public_url=json_dict.get('publicURL'),
+                            region=json_dict.get('region'),
+                            id_=json_dict.get('id'))
         return endpoint
 
 
 class Token(BaseIdentityModel):
-    TAG = 'token'
 
-    def __init__(self):
-        self.expires = None
-        self.issued_at = None
-        self.id_ = None
-        self.tenant = Tenant()
+    def __init__(self, id_=None, issued_at=None,
+                 expires=None, tenant=None):
+        super(Token, self).__init__()
+        self.expires = expires
+        self.issued_at = issued_at
+        self.id_ = id_
+        self.tenant = tenant
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        token_model = Token()
-        token_model.tenant = Tenant._dict_to_obj(json_dict.get('tenant'))
-        token_model.expires = json_dict.get('expires')
-        token_model.issued_at = json_dict.get('issued_at')
-        token_model.id_ = json_dict.get('id')
-
-        return token_model
+        token = Token(tenant=Tenant._dict_to_obj(json_dict.get('tenant')),
+                      expires=json_dict.get('expires'),
+                      issued_at=json_dict.get('issued_at'),
+                      id_=json_dict.get('id'))
+        return token
 
 
 class Tenant(BaseIdentityModel):
-    TAG = 'tenant'
 
-    def __init__(self):
-        self.description = None
-        self.enabled = None
-        self.id_ = None
-        self.name = None
+    def __init__(self, id_=None, name=None,
+                 enabled=None, description=None):
+        super(Tenant, self).__init__()
+        self.id_ = id_
+        self.name = name
+        self.enabled = enabled
+        self.description = description
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -168,29 +178,37 @@ class Tenant(BaseIdentityModel):
 
 
 class User(BaseIdentityModel):
-    TAG = 'user'
 
-    def __init__(self):
-        self.id_ = None
-        self.name = None
-        self.roles = RoleList()
-        self.role_links = []
-        self.username = None
+    def __init__(self, id_=None, name=None,
+                 username=None, roles=None, roles_links=None):
+        """
+        @param id_
+        @return:
+        @param roles
+        @type RoleList
+        """
+        super(User, self).__init__()
+        self.id_ = id_
+        self.name = name
+        self.username = username
+        self.roles = roles
+        self.roles_links = roles_links
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        user = User()
-        user.id_ = json_dict.get('id')
-        user.name = json_dict.get('name')
-        user.roles = RoleList._list_to_obj(json_dict.get(RoleList.TAG))
-        user.role_links = json_dict.get('role_links')
-        user.username = json_dict.get('username')
+        user = User(id_=json_dict.get('id'),
+                    name=json_dict.get('name'),
+                    roles=RoleList._list_to_obj(json_dict.get('roles')),
+                    roles_links=json_dict.get('roles_links'),
+                    username=json_dict.get('username'))
 
         return user
 
 
 class RoleList(BaseIdentityListModel):
-    TAG = 'roles'
+    def __init__(self, roles=None):
+        super(RoleList, self).__init__()
+        self.extend(roles or [])
 
     @classmethod
     def _list_to_obj(cls, role_dict_list):
@@ -204,5 +222,7 @@ class RoleList(BaseIdentityListModel):
 
 class Role(BaseIdentityListModel):
 
-    def __init__(self, name=None):
+    def __init__(self, id_=None, name=None):
+        super(Role, self).__init__()
+        self.id_ = id_
         self.name = name
