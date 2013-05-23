@@ -39,3 +39,35 @@ class CloudKeepConfig(ConfigSectionInterface):
     @property
     def api_version(self):
         return self.get("api_version")
+
+    @property
+    def tenant_id(self):
+        return self.get("tenant_id")
+
+
+class CloudKeepSecretsConfig(ConfigSectionInterface):
+    SECTION_NAME = 'cloudkeep-secrets'
+
+    @property
+    def name(self):
+        return self.get("name")
+
+    @property
+    def algorithm(self):
+        return self.get("algorithm")
+
+    @property
+    def bit_length(self):
+        return int(self.get("bit_length"))
+
+    @property
+    def cypher_type(self):
+        return self.get("cypher_type")
+
+    @property
+    def plain_text(self):
+        return self.get("plain_text")
+
+    @property
+    def mime_type(self):
+        return self.get("mime_type")
