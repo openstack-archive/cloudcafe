@@ -416,3 +416,62 @@ class Addresses(AutoMarshallingModel):
                 addresses[network_id].append(ip.attrib)
 
         return Addresses(addresses)
+
+
+class InstanceAction(AutoMarshallingModel):
+
+    def __init__(self, instance_uuid, user_id, start_time, request_id,
+                 action, message, project_id):
+        self.instance_uuid = instance_uuid
+        self.user_id = user_id
+        self.start_time = start_time
+        self.request_id = request_id
+        self.action = action
+        self.message = message
+        self.project_id = project_id
+
+    def __repr__(self):
+        values = []
+        for prop in self.__dict__:
+            values.append("%s: %s" % (prop, self.__dict__[prop]))
+        return '[' + ', '.join(values) + ']'
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._dict_to_obj(json_dict)
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        return InstanceAction(**json_dict)
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        raise NotImplemented
+
+    @classmethod
+    def _xml_ele_to_obj(cls, xml_ele):
+        raise NotImplemented
+
+    def __eq__(self, other):
+        return EqualityTools.are_objects_equal(self, other)
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class InstanceActions(AutoMarshallingModel):
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        raise NotImplemented
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        ret = []
+        json_dict = json.loads(serialized_str)
+        actions_list = json_dict.get('instanceActions')
+
+        for action in actions_list:
+            ret.append(InstanceAction(**action))
+        return ret
