@@ -109,9 +109,9 @@ class Endpoint(BaseIdentityModel):
         return Endpoint(**kwargs)
 
 
-# noinspection PyMissingConstructor
 class Version(BaseIdentityModel):
     def __init__(self, id_=None, info=None, list_=None):
+        super(Version, self).__init__()
         self.id_ = id_
         self.info = info
         self.list_ = list_
