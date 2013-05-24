@@ -49,26 +49,25 @@ class Users(BaseIdentityListModel):
 
 class User(BaseIdentityModel):
 
-    def __init__(self, id_=None, enabled=None, username=None, updated=None,
-                 created=None, email=None, domainId=None, defaultRegion=None,
-                 password=None, roles=None, name=None, display_name=None):
+    def __init__(self, id_=None, name=None, tenant_id=None,
+                 enabled=None, email=None, roles=None):
         """
         An object that represents an users response object.
         Keyword arguments:
+        @param id_:
+        @param name:
+        @param tenant_id:
+        @param enabled:
+        @param email:
+        @param roles:
         """
         super(User, self).__init__()
         self.id = id_
-        self.enabled = enabled
-        self.username = username
-        self.updated = updated
-        self.created = created
-        self.email = email
-        self.domainId = domainId
-        self.defaultRegion = defaultRegion
-        self.password = password
-        self.roles = roles
         self.name = name
-        self.display_name = display_name
+        self.tenant_id = tenant_id
+        self.enabled = enabled
+        self.email = email
+        self.roles = roles
 
     def get_role(self, id_=None, name=None):
         """Returns the role object if it matches all provided criteria

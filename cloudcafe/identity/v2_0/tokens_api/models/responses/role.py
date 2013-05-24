@@ -23,7 +23,7 @@ from cloudcafe.identity.v2_0.tokens_api.models.base import \
 class Roles(BaseIdentityListModel):
     def __init__(self, roles=None):
         """
-        An object that represents an users response object.
+        An object that represents a roles response object.
         Keyword arguments:
         """
         super(Roles, self).__init__()
@@ -54,22 +54,15 @@ class Roles(BaseIdentityListModel):
 
 
 class Role(BaseIdentityModel):
-    def __init__(self, id_=None, name=None, description=None, serviceId=None,
-                 tenantId=None, propagate=None, weight=None):
+    def __init__(self, id_=None, name=None, description=None):
         super(Role, self).__init__()
         self.id_ = id_
         self.name = name
         self.description = description
-        self.serviceId = serviceId
-        self.tenantId = tenantId
-        self.weight = weight
-        self.propagate = propagate
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        json_dict['role']['propagate'] = json_dict['role'].pop('RAX-AUTH:propagate')
-        json_dict['role']['weight'] = json_dict['role'].pop('RAX-AUTH:Weight')
         return Role(**json_dict.get('role'))
 
     @classmethod
@@ -83,9 +76,7 @@ class Role(BaseIdentityModel):
     @classmethod
     def _xml_ele_to_obj(cls, xml_ele):
         kwargs = {'name': xml_ele.get('name'),
-                  'description': xml_ele.get('description'),
-                  'serviceId': xml_ele.get('serviceId'),
-                  'tenantId': xml_ele.get('tenantId')}
+                  'description': xml_ele.get('description')}
         try:
             kwargs['id'] = int(xml_ele.get('id'))
         except (ValueError, TypeError):
