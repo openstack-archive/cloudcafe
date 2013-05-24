@@ -28,7 +28,7 @@ class Tenants(BaseIdentityListModel):
         '''An object that represents an tenants response object.
         '''
         super(Tenants, self).__init__()
-        self.extend(tenants)
+        self.extend(tenants or [])
 
     @classmethod
     def _json_to_obj(cls, serialized_str):

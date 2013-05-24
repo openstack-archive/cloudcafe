@@ -1,0 +1,115 @@
+{"access": {
+  "token": {
+    "issued_at": "2013-05-23T15:01:37.202957",
+    "expires": "2013-05-23T19:53:33Z",
+    "id": "26ec64b43c15b2161315738a62ab9790",
+    "tenant": {
+      "id": "b788c9e041224a43b2fc31ccd42c1f92",
+      "enabled": true,
+      "description": null,
+      "name": "admin"
+    }
+  },
+  "serviceCatalog": [
+    {
+      "endpoints": [
+        {
+          "adminURL": "http://10.0.2.15:8774/v2/b788c9e041224a43b2fc31ccd42",
+          "region": "RegionOne",
+          "internalURL": "http://10.0.2.15:8774/v2/b788c9e041224a43b2fc31cc",
+          "id": "2b7c43fef36f4ead8bd6e51f303b8171",
+          "publicURL": "http://10.0.2.15:8774/v2/b788c9e041224a43b2fc31ccd4"
+        }
+      ],
+      "endpoints_links": [],
+      "type": "compute",
+      "name": "nova"
+    },
+    {
+      "endpoints": [
+        {
+          "adminURL": "http://10.0.2.15:3333",
+          "region": "RegionOne",
+          "internalURL": "http://10.0.2.15:3333",
+          "id": "3771e9ea1dff43b5b89e57327c9a69aa",
+          "publicURL": "http://10.0.2.15:3333"
+        }
+      ],
+      "endpoints_links": [],
+      "type": "s3",
+      "name": "s3"
+    },
+    {
+      "endpoints": [
+        {
+          "adminURL": "http://10.0.2.15:9292",
+          "region": "RegionOne",
+          "internalURL": "http://10.0.2.15:9292",
+          "id": "4013de81e7904a2f844e26f136624200",
+          "publicURL": "http://10.0.2.15:9292"
+        }
+      ],
+      "endpoints_links": [],
+      "type": "image",
+      "name": "glance"
+    },
+    {
+      "endpoints": [
+        {
+          "adminURL": "http://10.0.2.15:8776/v1/b788c9e041224a43b2fc31ccd",
+          "region": "RegionOne",
+          "internalURL": "http://10.0.2.15:8776/v1/b788c9e041224a43b2fc31ccd",
+          "id": "4a405636b9454c4ebe0e3a6ff8110559",
+          "publicURL": "http://10.0.2.15:8776/v1/b788c9e041224a43b2fc31ccd42"
+        }
+      ],
+      "endpoints_links": [],
+      "type": "volume",
+      "name": "cinder"
+    },
+    {
+      "endpoints": [
+        {
+          "adminURL": "http://10.0.2.15:8773/services/Admin",
+          "region": "RegionOne",
+          "internalURL": "http://10.0.2.15:8773/services/Cloud",
+          "id": "303933ddc3734689b8f7f807362936d5",
+          "publicURL": "http://10.0.2.15:8773/services/Cloud"
+        }
+      ],
+      "endpoints_links": [],
+      "type": "ec2",
+      "name": "ec2"
+    },
+    {
+      "endpoints": [
+        {
+          "adminURL": "http://10.0.2.15:35357/v2.0",
+          "region": "RegionOne",
+          "internalURL": "http://10.0.2.15:5000/v2.0",
+          "id": "a8210a6f297d4f4c9315d0fbf360d6d6",
+          "publicURL": "http://10.0.2.15:5000/v2.0"
+        }
+      ],
+      "endpoints_links": [],
+      "type": "identity",
+      "name": "keystone"
+    }
+  ],
+  "user": {
+    "username": "admin",
+    "roles_links": [],
+    "id": "7dd8581097a84ce39b9672d5bf87bbe5",
+    "roles": [
+      {
+        "id": "585d271708bd4786be19bce8f3ed572c",
+        "name": "admin"
+      }
+    ],
+    "name": "admin"
+  },
+  "metadata": {
+    "is_admin": 0,
+    "roles": ["585d271708bd4786be19bce8f3ed572c"]
+  }
+}}
