@@ -23,7 +23,7 @@ from cloudcafe.identity.v2_0.tokens_api.models.base import \
 class Endpoints(BaseIdentityListModel):
     def __init__(self, endpoints=None):
         super(Endpoints, self).__init__()
-        self.extend(endpoints)
+        self.extend(endpoints or [])
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -51,23 +51,17 @@ class Endpoints(BaseIdentityListModel):
 
 
 class Endpoint(BaseIdentityModel):
-    def __init__(self, tenantId=None, region=None, id_=None, publicURL=None,
-                 name=None, adminURL=None, type_=None, internalURL=None,
-                 versionId=None, versionInfo=None, versionList=None):
+    def __init__(self, tenant_id=None, region=None, id_=None, public_url=None,
+                 name=None, admin_url=None, type_=None, internal_url=None):
         super(Endpoint, self).__init__()
-        self.tenantId = tenantId
+        self.tenant_id = tenant_id
         self.region = region
         self.id_ = id_
-        self.publicURL = publicURL
+        self.public_url = public_url
         self.name = name
-        self.adminURL = adminURL
+        self.admin_url = admin_url
         self.type_ = type_
-        self.internalURL = internalURL
-        self.versionId = versionId
-        self.versionInfo = versionInfo
-        self.versionList = versionList
-        #currently json has version attributes as part of the Endpoint
-        #xml has it as a separate element.
+        self.internal_url = internal_url
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -109,9 +103,51 @@ class Endpoint(BaseIdentityModel):
         return Endpoint(**kwargs)
 
 
-# noinspection PyMissingConstructor
 class Version(BaseIdentityModel):
-    def __init__(self, id_=None, info=None, list_=None):
+    def __init__(self, status=None, updated=None, media_types=None,
+                 id_=None, links=None):
+        super(Version, self).__init__()
+        self.status = status
+        self.updated = updated
+        self.media_types = media_types
         self.id_ = id_
-        self.info = info
-        self.list_ = list_
+        self.links = links
+
+
+class MediaTypes(BaseIdentityListModel):
+    def __init__(self, media_types=None):
+        """
+        An object that represents a mediatypes response object.
+        """
+        super(MediaTypes, self).__init__()
+        self.extend(media_types or [])
+
+
+class MediaType(BaseIdentityListModel):
+    def __init__(self, base=None, type_=None):
+        """
+        An object that represents a mediatype response object.
+        """
+        super(MediaType, self).__init__()
+        self.base = base
+        self.type_ = type_
+
+
+class Links(BaseIdentityListModel):
+    def __init__(self, links=None):
+        """
+        An object that represents a links response object.
+        """
+        super(Links, self).__init__()
+        self.extend(links or [])
+
+
+class Link(BaseIdentityListModel):
+    def __init__(self, href=None, type_=None, rel=None):
+        """
+        An object that represents a link response object.
+        """
+        super(Link, self).__init__()
+        self.href = href
+        self.type_ = type_
+        self.rel = rel
