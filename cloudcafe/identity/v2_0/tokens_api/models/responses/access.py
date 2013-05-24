@@ -21,7 +21,6 @@ from cloudcafe.identity.v2_0.tokens_api.models.base import \
 
 # noinspection PyMissingConstructor
 class Access(BaseIdentityModel):
-
     def __init__(self, metadata=None, service_catalog=None,
                  user=None, token=None):
         self.metadata = metadata
@@ -42,12 +41,11 @@ class Access(BaseIdentityModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        access = Access()
-        access.metadata = json_dict.get('metadata')
-        access.service_catalog = ServiceCatalog._list_to_obj(
-            json_dict.get('serviceCatalog'))
-        access.user = User._dict_to_obj(json_dict.get('user'))
-        access.token = Token._dict_to_obj(json_dict.get('token'))
+        access = Access(metadata=json_dict.get('metadata'),
+                        service_catalog=ServiceCatalog._list_to_obj(
+                            json_dict.get('serviceCatalog')),
+                        user=User._dict_to_obj(json_dict.get('user')),
+                        token=Token._dict_to_obj(json_dict.get('token')))
         return access
 
 
@@ -68,7 +66,6 @@ class ServiceCatalog(BaseIdentityListModel):
 
 # noinspection PyMissingConstructor
 class Service(BaseIdentityModel):
-
     def __init__(self, endpoints=None, endpoint_links=None,
                  name=None, type_=None):
         """
@@ -78,7 +75,7 @@ class Service(BaseIdentityModel):
         self.endpoints = endpoints
         self.endpoint_links = endpoint_links
         self.name = name
-        self.type = type_
+        self.type_ = type_
 
     def get_endpoint(self, region):
         """
@@ -92,12 +89,10 @@ class Service(BaseIdentityModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        service = Service()
-        service.endpoints = EndpointList._list_to_obj(
-            json_dict.get('endpoints'))
-        service.endpoint_links = json_dict.get('endpoints_links')
-        service.name = json_dict.get('name')
-        service.type = json_dict.get('type')
+        service = Service(endpoints=EndpointList._list_to_obj(json_dict.get('endpoints')),
+                          endpoint_links=json_dict.get('endpoints_links'),
+                          name=json_dict.get('name'),
+                          type_=json_dict.get('type'))
 
         return service
 
@@ -119,7 +114,6 @@ class EndpointList(BaseIdentityListModel):
 
 # noinspection PyMissingConstructor
 class Endpoint(BaseIdentityModel):
-
     def __init__(self, id_=None, admin_url=None,
                  internal_url=None, public_url=None, region=None):
         self.admin_url = admin_url
@@ -140,7 +134,6 @@ class Endpoint(BaseIdentityModel):
 
 # noinspection PyMissingConstructor
 class Token(BaseIdentityModel):
-
     def __init__(self, id_=None, issued_at=None,
                  expires=None, tenant=None):
         self.expires = expires
@@ -159,7 +152,6 @@ class Token(BaseIdentityModel):
 
 # noinspection PyMissingConstructor
 class Tenant(BaseIdentityModel):
-
     def __init__(self, id_=None, name=None,
                  enabled=None, description=None):
         self.id_ = id_
@@ -169,18 +161,16 @@ class Tenant(BaseIdentityModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        tenant = Tenant()
-        tenant.description = json_dict.get('description')
-        tenant.enabled = json_dict.get('enabled')
-        tenant.id_ = json_dict.get('id')
-        tenant.name = json_dict.get('name')
+        tenant = Tenant(id_=json_dict.get('id'),
+                        name=json_dict.get('name'),
+                        enabled=json_dict.get('enabled'),
+                        description=json_dict.get('description'))
 
         return tenant
 
 
 # noinspection PyMissingConstructor
 class User(BaseIdentityModel):
-
     def __init__(self, id_=None, name=None,
                  username=None, roles=None, roles_links=None):
         """
@@ -223,7 +213,6 @@ class RoleList(BaseIdentityListModel):
 
 # noinspection PyMissingConstructor
 class Role(BaseIdentityListModel):
-
     def __init__(self, id_=None, name=None):
         self.id_ = id_
         self.name = name
