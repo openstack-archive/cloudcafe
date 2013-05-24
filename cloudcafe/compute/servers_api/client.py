@@ -22,6 +22,7 @@ from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
 from cloudcafe.compute.servers_api.models.servers import Server
 from cloudcafe.compute.servers_api.models.servers import Addresses
+from cloudcafe.compute.servers_api.models.servers import InstanceActions
 from cloudcafe.compute.servers_api.models.requests import CreateServer
 from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
@@ -746,5 +747,20 @@ class ServersClient(AutoMarshallingRestClient):
             name, backup_type, backup_rotation, metadata)
         resp = self.request('POST', url,
                             request_entity=create_backup_request_object,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def get_instance_actions(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Returns a list of all actions a server has taken
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @return: A list of instance actions
+        @rtype: Requests.response
+        """
+
+        url = '{base_url}/servers/{server_id}/os-instance-actions'.format(
+            base_url=self.url, server_id=server_id)
+        resp = self.request('GET', url, response_entity_type=InstanceActions,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

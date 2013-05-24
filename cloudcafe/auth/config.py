@@ -43,6 +43,10 @@ class UserConfig(ConfigSectionInterface):
     def tenant_name(self):
         return self.get("tenant_name")
 
+    @property
+    def user_id(self):
+        return self.get("user_id")
+
 
 class ComputeAuthorizationConfig(UserConfig):
 
