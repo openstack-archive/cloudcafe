@@ -65,19 +65,19 @@ class Hypervisor(AutoMarshallingModel):
         json_dict = json.loads(serialized_str)
         hypervisors = []
         for hypervisor_dict in json_dict['hypervisors']:
+            id = hypervisor_dict['id']
+            hypervisor_hostname = hypervisor_dict['hypervisor_hostname']
             if 'servers' in hypervisor_dict.keys():
                 servers = []
                 for server_dict in hypervisor_dict['servers']:
                     servers.append(Server._dict_to_obj(server_dict))
+                return Hypervisor(id, hypervisor_hostname, servers)
             else:
                 servers = None
                 hypervisor_dict.update({"servers": servers})
-            id = hypervisor_dict['id']
-            hypervisor_hostname = hypervisor_dict['hypervisor_hostname']
-            hypervisors.append(Hypervisor(id,
-                                          hypervisor_hostname,
-                                          servers))
-        return hypervisors
+                hypervisors.append(Hypervisor(id, hypervisor_hostname,
+                                              servers))
+                return hypervisors
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
@@ -93,18 +93,17 @@ class Hypervisor(AutoMarshallingModel):
         element = ET.fromstring(serialized_str)
         hypervisors = []
         for hypervisor in element.findall('hypervisor'):
-            if "servers" in [elem.tag for elem in hypervisor.iter()]:
-                for server in hypervisor.iter('server'):
-                    servers = [Server._dict_to_obj(server.attrib)]
-            else:
-                servers = None
-                hypervisor.attrib.update({"servers": servers})
-
             hypervisor_dict = hypervisor.attrib
             id = hypervisor_dict['id']
             hypervisor_hostname = hypervisor_dict['hypervisor_hostname']
-            hypervisors.append(Hypervisor(id,
-                                          hypervisor_hostname,
-                                          servers))
-
-        return hypervisors
+            if "servers" in [elem.tag for elem in hypervisor.iter()]:
+                servers = []
+                for server in hypervisor.iter('server'):
+                    servers.append(Server._dict_to_obj(server.attrib))
+                return Hypervisor(id, hypervisor_hostname, servers)
+            else:
+                servers = None
+                hypervisor.attrib.update({"servers": servers})
+                hypervisors.append(Hypervisor(id, hypervisor_hostname,
+                                              servers))
+                return hypervisors
