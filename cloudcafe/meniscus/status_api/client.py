@@ -49,7 +49,7 @@ class WorkerStatusClient(AutoMarshallingRestClient):
         return resp
 
     def get_worker_status(self, worker_id):
-        url = '{base}/{version}/status/{worker_id}'.format(
+        url = '{base}/{version}/worker/{worker_id}/status'.format(
             base=self.url, version=self.api_version, worker_id=worker_id)
         resp = self.request('GET', url, response_entity_type=WorkerStatus)
         return resp
