@@ -106,8 +106,12 @@ else:
         temp = open("~install", "w")
         temp.close()
 
+        # Modify file permissions if on not running on Windows or as root
+        modify_permissions = (platform.system().lower() != 'windows'
+                              and os.getenv("SUDO_USER"))
+
         # Get uid and gid of the current user to set permissions (Linux/OSX only)
-        if platform.system().lower() != 'windows':
+        if modify_permissions:
             sudo_user = os.getenv("SUDO_USER")
             uid = pwd.getpwnam(sudo_user).pw_uid
             gid = pwd.getpwnam(sudo_user).pw_gid
@@ -118,11 +122,11 @@ else:
                 print("Installing configurations for: {0}".format("{0}/{1}".format(config_dir, dir)))
                 os.makedirs("{0}/{1}".format(config_dir, dir))
                 # Fix the directory permissions
-                if platform.system().lower() != 'windows':
+                if modify_permissions:
                     os.chown("{0}/{1}".format(config_dir, dir), uid, gid)
             for file in os.listdir("configs/{0}".format(dir)):
                 print("Installing {0}/{1}/{2}".format(config_dir, dir, file))
                 shutil.copy2("configs/{0}/{1}".format(dir, file), "{0}/{1}/{2}".format(config_dir, dir, file))
                 # Fix the directory permissions
-                if platform.system().lower() != 'windows':
+                if modify_permissions:
                     os.chown("{0}/{1}/{2}".format(config_dir, dir, file), uid, gid)
