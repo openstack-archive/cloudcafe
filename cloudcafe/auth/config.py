@@ -14,11 +14,6 @@ class UserAuthConfig(ConfigSectionInterface):
         return self.get("strategy")
 
 
-class ComputeAdminAuthConfig(UserAuthConfig):
-
-    SECTION_NAME = 'compute_admin_auth_config'
-
-
 class UserConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'user'
@@ -46,6 +41,11 @@ class UserConfig(ConfigSectionInterface):
     @property
     def user_id(self):
         return self.get("user_id")
+
+
+class ComputeAdminAuthConfig(UserAuthConfig):
+
+    SECTION_NAME = 'compute_admin_auth_config'
 
 
 class ComputeAuthorizationConfig(UserConfig):

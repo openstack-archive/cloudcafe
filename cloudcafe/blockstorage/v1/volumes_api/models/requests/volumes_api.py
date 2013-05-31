@@ -21,11 +21,12 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 
 class Volume(AutoMarshallingModel):
+    obj_model_key = "volume"
 
     def __init__(
             self, display_name=None, size=None, volume_type=None,
             display_description=None, metadata=None, availability_zone=None,
-            snapshot_id=None, attachments=None, xmlns=None):
+            snapshot_id=None, attachments=None):
 
         self.display_name = display_name
         self.display_description = display_description
@@ -49,13 +50,12 @@ class Volume(AutoMarshallingModel):
         sub_dict['snapshot_id'] = self.snapshot_id
 
         root_dict = {}
-        root_dict["volume"] = self._remove_empty_values(sub_dict)
+        root_dict[self.obj_model_key] = self._remove_empty_values(sub_dict)
         return root_dict
 
     def _obj_to_xml_ele(self):
-        element = ElementTree.Element('volume')
+        element = ElementTree.Element(self.obj_model_key)
         attrs = {}
-        attrs["xmlns"] = self.xmlns
         attrs["display_name"] = self.display_name
         attrs["display_description"] = self.display_description
         attrs["size"] = str(self.size)
@@ -79,6 +79,7 @@ class Volume(AutoMarshallingModel):
 
 
 class VolumeSnapshot(AutoMarshallingModel):
+    obj_model_key = "snapshot"
 
     def __init__(
             self, volume_id, force=True, display_name=None, name=None,
@@ -103,16 +104,15 @@ class VolumeSnapshot(AutoMarshallingModel):
         sub_attrs["display_name"] = self.display_name
         sub_attrs["display_description"] = self.display_description
 
-        attrs["snapshot"] = self._remove_empty_values({}, sub_attrs)
-        return self._remove_empty_values({}, attrs)
+        attrs[self.obj_model_key] = self._remove_empty_values(sub_attrs)
+        return self._remove_empty_values(attrs)
 
     def _obj_to_xml(self):
         return ElementTree.tostring(self._obj_to_xml_ele())
 
     def _obj_to_xml_ele(self):
-        element = ElementTree.Element('snapshot')
+        element = ElementTree.Element(self.obj_model_key)
         attrs = {}
-        attrs["xmlns"] = self.xmlns
         attrs["volume_id"] = self.volume_id
         attrs["force"] = str(self.force)
         attrs["display_name"] = self.display_name
