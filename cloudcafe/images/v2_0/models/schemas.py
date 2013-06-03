@@ -13,3 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+
+class BaseJsonSchema(object):
+    def __init__(self, name=None, type_=None, links=None, first=None,
+                 next_=None):
+        self.name = name
+        self.type_ = type_
+        self.links = links
+        self.first = first
+        self.next_ = next_
