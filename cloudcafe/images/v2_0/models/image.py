@@ -30,7 +30,8 @@ class Image(AutoMarshallingModel):
                  status=None, protected=None, tags=None, checksum=None,
                  size=None, created_at=None, updated_at=None, file_=None,
                  self_=None, schema=None, container_format=None,
-                 disk_format=None, min_disk=None, min_ram=None):
+                 disk_format=None, min_disk=None, min_ram=None, kernel_id=None,
+                 ramdisk_id=None):
         """@Summary Construct an Image model
            @param visibility
            @type ImageVisibility
@@ -59,6 +60,8 @@ class Image(AutoMarshallingModel):
         self.disk_format = disk_format
         self.min_disk = min_disk
         self.min_ram = min_ram
+        self.kernel_id = kernel_id
+        self.ramdisk_id = ramdisk_id
 
     def __eq__(self, other):
         """
