@@ -37,21 +37,13 @@ class Keypair(AutoMarshallingModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        return cls._dict_to_obj(json_dict.get(cls.ROOT_TAG))
+        return cls._dict_to_obj(json_dict.get('keypair'))
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
         return Keypair(json_dict.get('public_key'),
                        json_dict.get('name'),
                        json_dict.get('fingerprint'))
-
-    @classmethod
-    def _xml_to_obj(cls, serialized_str):
-        raise NotImplemented
-
-    @classmethod
-    def _xml_ele_to_obj(cls, xml_ele):
-        raise NotImplemented
 
     def __eq__(self, other):
         """
@@ -77,16 +69,13 @@ class Keypair(AutoMarshallingModel):
 class Keypairs(Keypair):
 
     @classmethod
-    def _xml_to_obj(cls, serialized_str):
-        raise NotImplemented
-
-    @classmethod
     def _json_to_obj(cls, serialized_str):
         ret = []
         json_dict = json.loads(serialized_str)
         key_list = json_dict.get('keypairs')
 
         for key in key_list:
+            key = key.get('keypair')
             ret.append(Keypair(key.get('public_key'),
                                key.get('name'),
                                key.get('fingerprint')))
