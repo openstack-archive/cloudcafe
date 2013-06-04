@@ -36,7 +36,7 @@ class Server(AutoMarshallingModel):
                  tenant_id=None, status=None, updated=None, created=None,
                  host_id=None, user_id=None, accessIPv4=None, accessIPv6=None,
                  addresses=None, flavor=None, image=None, links=None,
-                 metadata=None, admin_pass=None):
+                 metadata=None, admin_pass=None, key_name=None):
         self.diskConfig = disk_config
         try:
             self.power_state = int(power_state)
@@ -69,6 +69,7 @@ class Server(AutoMarshallingModel):
         self.links = links
         self.metadata = metadata
         self.admin_pass = admin_pass
+        self.key_name = key_name
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -148,7 +149,8 @@ class Server(AutoMarshallingModel):
             accessIPv4=server.get('accessIPv4'),
             accessIPv6=server.get('accessIPv6'), addresses=addresses,
             flavor=flavor, image=image, links=links, metadata=metadata,
-            admin_pass=server.get('adminPass'))
+            admin_pass=server.get('adminPass'),
+            key_name=server.get('key_name'))
 
         return server
 
@@ -190,7 +192,8 @@ class Server(AutoMarshallingModel):
             accessIPv4=server_dict.get('accessIPv4'),
             accessIPv6=server_dict.get('accessIPv6'), addresses=addresses,
             flavor=flavor, image=image, links=links, metadata=metadata,
-            admin_pass=server_dict.get('adminPass'))
+            admin_pass=server_dict.get('adminPass'),
+            key_name=server_dict.get('key_name'))
 
         return server
 

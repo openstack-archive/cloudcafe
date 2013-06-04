@@ -57,7 +57,7 @@ class KeypairsClient(AutoMarshallingRestClient):
 
     def get_keypair(self, keypair_name, requestslib_kwargs=None):
 
-        url = '{base_url}/os-keypairs/{name}'.format(basee_url=self.url,
+        url = '{base_url}/os-keypairs/{name}'.format(base_url=self.url,
                                                      name=keypair_name)
         resp = self.request('GET', url,
                             response_entity_type=Keypair,
