@@ -16,8 +16,6 @@ limitations under the License.
 from json import dumps as json_to_str, loads as str_to_json
 from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.meniscus.tenant_api.models.producer import Producer
-from cloudcafe.meniscus.tenant_api.models.profile import Profile
-from cloudcafe.meniscus.tenant_api.models.host import Host
 
 
 class CreateTenant(AutoMarshallingModel):
@@ -29,20 +27,17 @@ class CreateTenant(AutoMarshallingModel):
         return json_to_str(self._obj_to_dict())
 
     def _obj_to_dict(self):
-        return {'tenant_id': self.tenant_id}
+        return {'tenant': {'tenant_id': self.tenant_id}}
 
 
 class Tenant(AutoMarshallingModel):
     ROOT_TAG = 'tenant'
 
-    def __init__(self, tenant_id=None, event_producers=None, hosts=None,
-                 profiles=None, token=None):
+    def __init__(self, tenant_id=None, event_producers=None, token=None):
         """An object that represents an tenant's response object."""
         super(Tenant, self).__init__()
         self.tenant_id = tenant_id
         self.event_producers = event_producers
-        self.hosts = hosts
-        self.profiles = profiles
         self.token = token
 
     @classmethod
@@ -61,15 +56,11 @@ class Tenant(AutoMarshallingModel):
     def _dict_to_obj(cls, dic):
         event_producers = cls._convert_dict_of_types(
             Producer, dic.get('event_producers'))
-        hosts = cls._convert_dict_of_types(Host, dic.get('hosts'))
-        profiles = cls._convert_dict_of_types(Profile, dic.get('profiles'))
         token = TenantToken._dict_to_obj(dic.get('token'))
 
         kwargs = {
             'tenant_id': str(dic.get('tenant_id')),
             'event_producers': event_producers,
-            'hosts': hosts,
-            'profiles': profiles,
             'token': token
         }
         return Tenant(**kwargs)

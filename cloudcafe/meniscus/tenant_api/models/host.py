@@ -15,6 +15,7 @@ limitations under the License.
 """
 from json import dumps as json_to_str, loads as str_to_json
 from cafe.engine.models.base import AutoMarshallingModel
+from cafe.engine.models.base import AutoMarshallingListModel
 
 
 class UpdateHost(AutoMarshallingModel):
@@ -31,12 +32,14 @@ class UpdateHost(AutoMarshallingModel):
         return json_to_str(self._obj_to_dict())
 
     def _obj_to_dict(self):
-        return {
+        body = {
             'hostname': self.hostname,
             'ip_address_v4': self.ip_address_v4,
             'ip_address_v6': self.ip_address_v6,
             'profile_id': self.profile_id
         }
+
+        return {'host': self._remove_empty_values(body)}
 
 
 # Create requires all parameters, whereas update they are optional
@@ -51,12 +54,12 @@ class CreateHost(UpdateHost):
 class Host(AutoMarshallingModel):
     ROOT_TAG = 'host'
 
-    def __init__(self, ip_address_v6=None, profile=None, ip_address_v4=None,
+    def __init__(self, ip_address_v6=None, profile_id=None, ip_address_v4=None,
                  hostname=None, id=None):
         super(Host, self).__init__()
         self.ip_address_v6 = ip_address_v6
         self.ip_address_v4 = ip_address_v4
-        self.profile = profile
+        self.profile_id = profile_id
         self.hostname = hostname
         self.id = id
 
@@ -67,7 +70,14 @@ class Host(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        return Host(**json_dict)
+        kwargs = {
+            'id': json_dict.get('id'),
+            'hostname': json_dict.get('hostname'),
+            'profile_id': json_dict.get('profile_id'),
+            'ip_address_v4': json_dict.get('ip_address_v4'),
+            'ip_address_v6': json_dict.get('ip_address_v6')
+        }
+        return Host(**kwargs)
 
     def __eq__(self, other):
         return self.id == other.id
@@ -76,21 +86,18 @@ class Host(AutoMarshallingModel):
         return not self.__eq__(other)
 
 
-class AllHosts(AutoMarshallingModel):
+class HostList(AutoMarshallingListModel):
     ROOT_TAG = 'hosts'
-
-    def __init__(self):
-        super(AllHosts, self).__init__()
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = str_to_json(serialized_str)
 
-        converted = []
-        json_producer_list = json_dict.get(cls.ROOT_TAG)
+        host_list = HostList()
+        json_host_list = json_dict.get(cls.ROOT_TAG)
 
-        for json_producer in json_producer_list:
-            producer = Host._dict_to_obj(json_producer)
-            converted.append(producer)
+        for json_host in json_host_list:
+            host = Host._dict_to_obj(json_host)
+            host_list.append(host)
 
-        return converted
+        return host_list

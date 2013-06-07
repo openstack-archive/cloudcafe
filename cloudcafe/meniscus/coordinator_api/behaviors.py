@@ -32,31 +32,32 @@ class PairingBehaviors(object):
         self.cleanup_client.disconnect()
         self.worker_ids = []
 
-    def pair_worker_from_config(self):
+    def pair_worker_from_config(self, hostname=None, ip_v4=None, ip_v6=None,
+                                personality=None, status=None, os_type=None,
+                                memory_mb=None, arch=None, cpu_cores=None,
+                                load_average=None, disks=None):
         resp = self.pair_worker(
-            hostname=self.pairing_config.hostname,
-            callback=self.pairing_config.callback,
-            ip_v4=self.pairing_config.ip_v4,
-            ip_v6=self.pairing_config.ip_v6,
-            personality=self.pairing_config.personality,
+            hostname=hostname or self.pairing_config.hostname,
+            ip_v4=ip_v4 or self.pairing_config.ip_v4,
+            ip_v6=ip_v6 or self.pairing_config.ip_v6,
+            personality=personality or self.pairing_config.personality,
             status='new',
-            os_type=self.pairing_config.os_type,
-            memory_mb=self.pairing_config.memory_mb,
-            arch=self.pairing_config.arch,
-            cpu_cores=self.pairing_config.cpu_cores,
-            load_average=self.pairing_config.load_average,
-            disks=self.pairing_config.disks)
+            os_type=os_type or self.pairing_config.os_type,
+            memory_mb=memory_mb or self.pairing_config.memory_mb,
+            arch=arch or self.pairing_config.arch,
+            cpu_cores=cpu_cores or self.pairing_config.cpu_cores,
+            load_average=load_average or self.pairing_config.load_average,
+            disks=disks or self.pairing_config.disks)
 
         return resp
 
-    def pair_worker(self, hostname=None, callback=None, ip_v4=None,
-                    ip_v6=None, personality=None, status=None, os_type=None,
+    def pair_worker(self, hostname=None, ip_v4=None, ip_v6=None,
+                    personality=None, status=None, os_type=None,
                     memory_mb=None, arch=None, cpu_cores=None,
                     load_average=None, disks=None):
 
         response = self.client.pair(
             hostname=hostname,
-            callback=callback,
             ip_v4=ip_v4,
             ip_v6=ip_v6,
             personality=personality,

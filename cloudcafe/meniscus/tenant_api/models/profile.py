@@ -22,22 +22,18 @@ class UpdateProfile(AutoMarshallingModel):
     def __init__(self, name=None, producer_ids=None):
         super(UpdateProfile, self).__init__()
 
-        if name is not None:
-            self.name = name
-        if producer_ids is not None:
-            self.producer_ids = producer_ids
+        self.name = name
+        self.producer_ids = producer_ids
 
     def _obj_to_json(self):
         return json_to_str(self._obj_to_dict())
 
     def _obj_to_dict(self):
-        converted = {}
-        if hasattr(self, 'name'):
-            converted['name'] = self.name
-        if hasattr(self, 'producer_ids'):
-            converted['event_producer_ids'] = self.producer_ids
-
-        return converted
+        body = {
+            'name': self.name,
+            'event_producer_ids': self.producer_ids
+        }
+        return {'profile': self._remove_empty_values(body)}
 
 
 # Create requires all parameters, whereas update they are optional
@@ -50,9 +46,9 @@ class CreateProfile(UpdateProfile):
 class Profile(AutoMarshallingModel):
     ROOT_TAG = 'profile'
 
-    def __init__(self, name=None, id=None, event_producers=None):
+    def __init__(self, name=None, id=None, event_producer_ids=None):
         super(Profile, self).__init__()
-        self.event_producers = event_producers
+        self.event_producer_ids = event_producer_ids
         self.id = id
         self.name = name
 
@@ -63,7 +59,12 @@ class Profile(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        return Profile(**json_dict)
+        body = {
+            'name': json_dict.get('name'),
+            'id': json_dict.get('id'),
+            'event_producer_ids': json_dict.get('event_producer_ids')
+        }
+        return Profile(**body)
 
 
 class AllProfiles(AutoMarshallingModel):
@@ -75,12 +76,6 @@ class AllProfiles(AutoMarshallingModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = str_to_json(serialized_str)
-
-        converted = []
         json_profile_list = json_dict.get(cls.ROOT_TAG)
 
-        for json_profile in json_profile_list:
-            profile = Profile._dict_to_obj(json_profile)
-            converted.append(profile)
-
-        return converted
+        return [Profile._dict_to_obj(item) for item in json_profile_list]

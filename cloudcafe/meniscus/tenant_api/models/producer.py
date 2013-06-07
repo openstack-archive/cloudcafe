@@ -23,31 +23,22 @@ class UpdateProducer(AutoMarshallingModel):
                  producer_durable=None, producer_encrypted=None):
         super(UpdateProducer, self).__init__()
 
-        # Making all of these optional
-        if producer_name is not None:
-            self.name = producer_name
-        if producer_pattern is not None:
-            self.pattern = producer_pattern
-        if producer_durable is not None:
-            self.durable = producer_durable
-        if producer_encrypted is not None:
-            self.encrypted = producer_encrypted
+        self.name = producer_name
+        self.pattern = producer_pattern
+        self.durable = producer_durable
+        self.encrypted = producer_encrypted
 
     def _obj_to_json(self):
         return json_to_str(self._obj_to_dict())
 
     def _obj_to_dict(self):
-        # All of these elements are optional
-        converted = {}
-        if hasattr(self, 'name'):
-            converted['name'] = self.name
-        if hasattr(self, 'pattern'):
-            converted['pattern'] = self.pattern
-        if hasattr(self, 'durable'):
-            converted['durable'] = self.durable
-        if hasattr(self, 'encrypted'):
-            converted['encrypted'] = self.encrypted
-        return converted
+        body = {
+            'name': self.name,
+            'pattern': self.pattern,
+            'durable': self.durable,
+            'encrypted': self.encrypted
+        }
+        return {'event_producer': self._remove_empty_values(body)}
 
 
 # Create requires all parameters, whereas update they are optional
@@ -63,13 +54,14 @@ class Producer(AutoMarshallingModel):
     ROOT_TAG = 'event_producer'
 
     def __init__(self, pattern=None, durable=None, encrypted=None, id=None,
-                 name=None):
+                 name=None, sinks=None):
         super(Producer, self).__init__()
         self.pattern = pattern
         self.durable = durable
         self.encrypted = encrypted
         self.id = id
         self.name = name
+        self.sinks = sinks
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -87,12 +79,6 @@ class AllProducers(AutoMarshallingModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = str_to_json(serialized_str)
-
-        converted = []
         json_producer_list = json_dict.get(cls.ROOT_TAG)
 
-        for json_producer in json_producer_list:
-            producer = Producer._dict_to_obj(json_producer)
-            converted.append(producer)
-
-        return converted
+        return [Producer._dict_to_obj(item) for item in json_producer_list]

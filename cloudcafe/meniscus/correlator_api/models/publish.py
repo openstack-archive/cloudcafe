@@ -37,7 +37,7 @@ class PublishMessage(AutoMarshallingModel):
             'native': self.native
         }
 
-        return self._remove_empty_values(body)
+        return {'log_message': self._remove_empty_values(body)}
 
 
 class JobInformation(AutoMarshallingModel):
