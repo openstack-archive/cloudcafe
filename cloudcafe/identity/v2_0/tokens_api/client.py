@@ -28,10 +28,9 @@ _tokens = 'tokens'
 
 
 class BaseTokenAPI_Client(AutoMarshallingRestClient):
-
     def __init__(self, serialize_format, deserialize_format=None):
         super(BaseTokenAPI_Client, self).__init__(serialize_format,
-                                                 deserialize_format)
+                                                  deserialize_format)
 
     @property
     def token(self):
@@ -47,37 +46,30 @@ class BaseTokenAPI_Client(AutoMarshallingRestClient):
 
 
 class TokenAPI_Client(BaseTokenAPI_Client):
-    def __init__(self, url, serialize_format, deserialize_format=None,
-                 auth_token=None):
-
-        super(TokenAPI_Client, self).__init__(
-            serialize_format, deserialize_format)
+    def __init__(self, url=None, serialize_format=None,
+                 deserialize_format=None, auth_token=None):
+        super(TokenAPI_Client, self).__init__(serialize_format,
+                                              deserialize_format)
         self.base_url = '{0}/{1}'.format(url, _version)
         self.default_headers['Content-Type'] = 'application/{0}'.format(
             serialize_format)
         self.default_headers['Accept'] = 'application/{0}'.format(
-            serialize_format)
+            deserialize_format)
 
         if auth_token is not None:
             self.default_headers['X-Auth-Token'] = auth_token
 
-    def authenticate(self, username, password, tenant_name,
+    def authenticate(self, username=None, password=None, tenant_name=None,
                      requestslib_kwargs=None):
-
-        '''
+        """
         @summary: Creates authentication using Username and password.
         @param username: The username of the customer.
-        @type name: String
         @param password: The user password.
         @type password: String
         @return: Response Object containing auth response
         @rtype: Response Object
-        '''
+        """
 
-        '''
-            POST
-            v2.0/tokens
-        '''
         credentials = PasswordCredentials(
             username=username,
             password=password)
