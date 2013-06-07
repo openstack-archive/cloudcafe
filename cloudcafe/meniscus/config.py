@@ -157,6 +157,10 @@ class CorrelationConfig(ConfigSectionInterface):
     SECTION_NAME = 'meniscus-correlation'
 
     @property
+    def correlator_base_url(self):
+        return self.get('correlator_base_url')
+
+    @property
     def host(self):
         return self.get('host')
 
