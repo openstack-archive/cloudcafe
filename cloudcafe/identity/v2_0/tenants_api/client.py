@@ -19,6 +19,8 @@ from cloudcafe.identity.v2_0.tenants_api.models.responses.tenant import \
     Tenants, Tenant
 from cloudcafe.identity.v2_0.tenants_api.models.responses.role import \
     Roles
+from cloudcafe.identity.v2_0.tenants_api.models.responses.user import User
+from cloudcafe.identity.v2_0.tokens_api.models.requests.role import Role
 from cloudcafe.identity.v2_0.users_api.models.responses.user import \
     Users
 
@@ -26,7 +28,6 @@ _version = 'v2.0'
 
 
 class TenantsAPI_Client(AutoMarshallingRestClient):
-
     def __init__(self, url, auth_token,
                  serialize_format=None, deserialize_format=None):
         """
@@ -118,8 +119,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @return: server_response
         @rtype: Response
         """
-        self.tenant_id = tenant_id
-        url = '%s/tenants/%s' % (self.base_url, self.tenant_id)
+        url = '%s/tenants/%s' % (self.base_url, tenant_id)
         tenant_request_object = Tenant(id_=tenant_id, name=name,
                                        description=description,
                                        enabled=enabled)
@@ -138,11 +138,26 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.tenant_id = tenant_id
-        url = '%s/tenants/%s' % (self.base_url, self.tenant_id)
+        url = '%s/tenants/%s' % (self.base_url, tenant_id)
         response = self.request('DELETE', url,
                                 requestslib_kwargs=requestslib_kwargs)
         return response
+
+    def create_user_for_a_tenant(self, id_=None, tenant_id=None, name=None,
+                                 enabled=None, email=None,
+                                 requestslib_kwargs=None):
+        """
+        @summary: Creates a user for a given tenant
+        """
+
+        url = '%s/tenants/%s/users' % (self.base_url, tenant_id)
+        user_request_object = User(id_=id_, tenant_id=tenant_id, name=name,
+                                   enabled=enabled, email=email)
+        server_response = self.request('POST', url,
+                                       response_entity_type=User,
+                                       request_entity=user_request_object,
+                                       requestslib_kwargs=requestslib_kwargs)
+        return server_response
 
     def get_users_for_tenant(self, tenant_id, requestslib_kwargs=None):
         """
@@ -157,6 +172,23 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         url = '%s/tenants/%s/users' % (self.base_url, tenant_id)
         server_response = self.request('GET', url,
                                        response_entity_type=Users,
+                                       requestslib_kwargs=requestslib_kwargs)
+        return server_response
+
+    def create_role_for_tenant_user(self, id_=None, name=None,
+                                    tenant_id=None, user_id=None,
+                                    requestslib_kwargs=None):
+        """
+        @summary: Creates a role for a given tenant user
+        """
+
+        url = '%s/tenants/%s/users/%s/roles' % (
+            self.base_url, tenant_id, user_id)
+
+        role_request_object = Role(id=id_, name=name)
+        server_response = self.request('POST', url,
+                                       response_entity_type=Role,
+                                       request_entity=role_request_object,
                                        requestslib_kwargs=requestslib_kwargs)
         return server_response
 
