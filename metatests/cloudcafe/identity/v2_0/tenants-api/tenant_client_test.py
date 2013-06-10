@@ -22,6 +22,7 @@ IDENTITY_ENDPOINT_URL = "http://localhost:5000"
 
 
 class TenantsClientTest(TestCase):
+
     def setUp(self):
         self.url = IDENTITY_ENDPOINT_URL
         self.serialize_format = "json"
@@ -38,8 +39,13 @@ class TenantsClientTest(TestCase):
         self.tenants_url = "{0}/v2.0/tenants".format(self.url)
         self.tenant_url = "{0}/v2.0/tenants/{1}".format(self.url,
                                                         self.tenant_id)
-
         self.user_id = "USER_ID"
+        self.users_url = "{0}/v2.0/users".format(self.url)
+        self.user_url = "{0}/{1}".format(self.users_url, self.user_id)
+        self.tenant_users_url = "{0}/users".format(self.tenant_url)
+        self.user_role_url = "{0}/{1}/roles".format(self.tenant_users_url,
+                                                    self.user_id)
+
         HTTPretty.enable()
 
     def test_list_tenants(self):
@@ -78,26 +84,72 @@ class TenantsClientTest(TestCase):
             tenant_id=self.tenant_id)
         self._build_assertions(actual_response, self.tenant_url)
 
+    def test_list_users(self):
+        HTTPretty.register_uri(HTTPretty.GET, self.users_url,
+                               body=
+                               self._build_list_users_expected_response())
+
+        actual_response = self.tenant_api_client.list_users()
+        self._build_assertions(actual_response, self.users_url)
+
+    def test_get_user(self):
+        HTTPretty.register_uri(HTTPretty.GET, self.user_url,
+                               body=self._build_get_user_expected_response())
+
+        actual_response = self.tenant_api_client.get_user(user_id=self.user_id)
+        self._build_assertions(actual_response, self.user_url)
+
+    def test_create_user_for_tenant(self):
+        HTTPretty.register_uri(HTTPretty.POST, self.tenant_users_url)
+
+        actual_response = self.tenant_api_client.create_user_for_a_tenant(
+            name="Admin", tenant_id=self.tenant_id)
+        self._build_assertions(actual_response, self.tenant_users_url)
+
+    def test_update_user(self):
+        HTTPretty.register_uri(HTTPretty.PUT, self.user_url)
+
+        actual_response = self.tenant_api_client.update_user(
+            user_id=self.user_id)
+        self._build_assertions(actual_response, self.user_url)
+
+    def test_delete_user(self):
+        HTTPretty.register_uri(HTTPretty.DELETE, self.user_url)
+
+        actual_response = self.tenant_api_client.delete_user(
+            user_id=self.user_id)
+        self._build_assertions(actual_response, self.user_url)
+
     def test_get_users_for_tenant(self):
-        url = "{0}/v2.0/tenants/{1}/users".format(self.url, self.tenant_id)
-        HTTPretty.register_uri(HTTPretty.GET, url,
+        HTTPretty.register_uri(HTTPretty.GET, self.tenant_users_url,
                                body=self._build_list_of_users_for_tenant())
 
         actual_response = self.tenant_api_client.get_users_for_tenant(
             tenant_id=self.tenant_id)
+        self._build_assertions(actual_response, self.tenant_users_url)
 
-        self._build_assertions(actual_response, url)
+    def test_create_role_for_tenant_user(self):
+        HTTPretty.register_uri(HTTPretty.POST, self.user_role_url)
+
+        actual_response = self.tenant_api_client.create_role_for_tenant_user(
+            name="Admin", user_id=self.user_id, tenant_id=self.tenant_id)
+        self._build_assertions(actual_response, self.user_role_url)
 
     def test_get_users_roles_for_tenant(self):
-        url = "{0}/v2.0/tenants/{1}/users/{2}/roles".format(
-            self.url, self.tenant_id, self.user_id)
-        HTTPretty.register_uri(HTTPretty.GET, url,
+        HTTPretty.register_uri(HTTPretty.GET, self.user_role_url,
                                body=self._build_list_of_roles_for_tenant())
 
         actual_response = self.tenant_api_client.get_users_roles_on_tenant(
             tenant_id=self.tenant_id,
             user_id=self.user_id)
-        self._build_assertions(actual_response, url)
+        self._build_assertions(actual_response, self.user_role_url)
+
+    def test_delete_role_of_tenant_user(self):
+        HTTPretty.register_uri(HTTPretty.DELETE, self.user_role_url)
+
+        actual_response = self.tenant_api_client.delete_role_of_tenant_user(
+            tenant_id=self.tenant_id, user_id=self.user_id)
+        self._build_assertions(actual_response, self.user_role_url)
 
     def _build_assertions(self, actual_response, url):
         assert HTTPretty.last_request.headers['Content-Type'] == \
@@ -130,3 +182,17 @@ class TenantsClientTest(TestCase):
     def _build_list_of_roles_for_tenant(self):
         return {"roles": [{"id": "3",
                            "name": "Member"}]}
+
+    def _build_list_users_expected_response(self):
+        return {"users": [{"name": "user_name",
+                           "id": "user_id",
+                           "tenantId": "user_tenant_id",
+                           "enabled": True,
+                           "email": "user_email"}]}
+
+    def _build_get_user_expected_response(self):
+        return {"user": {"name": "user_name",
+                         "id": "user_id",
+                         "tenantId": "user_tenant_id",
+                         "enabled": True,
+                         "email": "user_email"}}

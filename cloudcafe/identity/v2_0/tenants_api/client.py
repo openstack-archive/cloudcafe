@@ -18,15 +18,14 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.identity.v2_0.tenants_api.models.responses.tenant import \
     Tenants, Tenant
 from cloudcafe.identity.v2_0.tenants_api.models.responses.role import \
-    Roles
-from cloudcafe.identity.v2_0.users_api.models.responses.user import \
-    Users
+    Roles, Role
+from cloudcafe.identity.v2_0.tenants_api.models.responses.user import \
+    Users, User
 
 _version = 'v2.0'
 
 
 class TenantsAPI_Client(AutoMarshallingRestClient):
-
     def __init__(self, url, auth_token,
                  serialize_format=None, deserialize_format=None):
         """
@@ -57,10 +56,10 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         """
 
         url = '%s/tenants' % self.base_url
-        server_response = self.request('GET', url,
-                                       response_entity_type=Tenants,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        response = self.request('GET', url,
+                                response_entity_type=Tenants,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
 
     def get_tenant(self, tenant_id, requestslib_kwargs=None):
         """
@@ -73,10 +72,10 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         """
 
         url = '%s/tenants/%s' % (self.base_url, tenant_id)
-        server_response = self.request('GET', url,
-                                       response_entity_type=Tenant,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        response = self.request('GET', url,
+                                response_entity_type=Tenant,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
 
     def create_tenant(self, name=None, description=None,
                       enabled=None, requestslib_kwargs=None):
@@ -96,11 +95,11 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         url = '%s/tenants' % self.base_url
         tenant_request_object = Tenant(name=name, description=description,
                                        enabled=enabled)
-        server_response = self.request('POST', url,
-                                       response_entity_type=Tenant,
-                                       request_entity=tenant_request_object,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        response = self.request('POST', url,
+                                response_entity_type=Tenant,
+                                request_entity=tenant_request_object,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
 
     def update_tenant(self, tenant_id, name=None, description=None,
                       enabled=None, requestslib_kwargs=None):
@@ -118,16 +117,15 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @return: server_response
         @rtype: Response
         """
-        self.tenant_id = tenant_id
-        url = '%s/tenants/%s' % (self.base_url, self.tenant_id)
+        url = '%s/tenants/%s' % (self.base_url, tenant_id)
         tenant_request_object = Tenant(id_=tenant_id, name=name,
                                        description=description,
                                        enabled=enabled)
-        server_response = self.request('PUT', url,
-                                       response_entity_type=Tenant,
-                                       request_entity=tenant_request_object,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        response = self.request('PUT', url,
+                                response_entity_type=Tenant,
+                                request_entity=tenant_request_object,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
 
     def delete_tenant(self, tenant_id, requestslib_kwargs=None):
         """
@@ -138,15 +136,100 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        self.tenant_id = tenant_id
-        url = '%s/tenants/%s' % (self.base_url, self.tenant_id)
+        url = '%s/tenants/%s' % (self.base_url, tenant_id)
+        response = self.request('DELETE', url,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def list_users(self, requestslib_kwargs=None):
+        """
+        @summary: Lists all users. Maps to /users
+        @return: server_response
+        @rtype: Response
+        """
+
+        url = '%s/users' % self.base_url
+        response = self.request('GET', url,
+                                response_entity_type=Users,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def get_user(self, user_id, requestslib_kwargs=None):
+        """
+        @summary: Returns a user based off passed user_id.
+         Maps to /users/{user_id}
+        @param user_id: The ID for the user
+        @type user_id: String
+        @return: server_response
+        @rtype: Response
+        """
+
+        url = '%s/users/%s' % (self.base_url, user_id)
+        response = self.request('GET', url,
+                                response_entity_type=User,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def create_user_for_a_tenant(self, id_=None, tenant_id=None, name=None,
+                                 enabled=None, email=None,
+                                 requestslib_kwargs=None):
+        """
+        @summary: Creates a user for a given tenant
+        """
+
+        url = '%s/tenants/%s/users' % (self.base_url, tenant_id)
+        user_request_object = User(id_=id_, tenant_id=tenant_id, name=name,
+                                   enabled=enabled, email=email)
+        response = self.request('POST', url,
+                                response_entity_type=User,
+                                request_entity=user_request_object,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def update_user(self, user_id=None, name=None, enabled=None,
+                    email=None, requestslib_kwargs=None):
+        """
+        @summary: Updates a user given the provided parameters
+         Maps to /users/{user_id}
+        @param user_id: The id of an existing tenant.
+        @type user_id: String
+        @param name: The name for the user
+        @type name: String
+        @param user_id: The id of the user
+        @type user_id: String
+        @param enabled: The status of the user
+        @type name: Boolean
+        @return: server_response
+        @rtype: Response
+        """
+
+        url = '%s/users/%s' % (self.base_url, user_id)
+        user_request_object = User(id_=user_id, name=name,
+                                   tenant_id=user_id,
+                                   enabled=enabled, email=email)
+        response = self.request('PUT', url,
+                                response_entity_type=User,
+                                request_entity=user_request_object,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def delete_user(self, user_id, requestslib_kwargs=None):
+        """
+        @summary: Deletes the specified user
+        @param user_id: The id of a user
+        @type user_id: String
+        @return: resp
+        @rtype: Requests.response
+        """
+
+        url = '%s/users/%s' % (self.base_url, user_id)
         response = self.request('DELETE', url,
                                 requestslib_kwargs=requestslib_kwargs)
         return response
 
     def get_users_for_tenant(self, tenant_id, requestslib_kwargs=None):
         """
-        @summary: Returns all the users that a tenant has.
+        @summary: Returns all the users that a given tenant has.
          Maps to /tenants/{tenant_id}/users.
         @param tenant_id: The ID for the tenant
         @type tenant_id: String
@@ -155,15 +238,32 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         """
 
         url = '%s/tenants/%s/users' % (self.base_url, tenant_id)
-        server_response = self.request('GET', url,
-                                       response_entity_type=Users,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        response = self.request('GET', url,
+                                response_entity_type=Users,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def create_role_for_tenant_user(self, id_=None, name=None,
+                                    tenant_id=None, user_id=None,
+                                    requestslib_kwargs=None):
+        """
+        @summary: Creates a role for a given tenant user
+        """
+
+        url = '%s/tenants/%s/users/%s/roles' % (
+            self.base_url, tenant_id, user_id)
+
+        role_request_object = Role(id_=id_, name=name)
+        response = self.request('POST', url,
+                                response_entity_type=Role,
+                                request_entity=role_request_object,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
 
     def get_users_roles_on_tenant(self, tenant_id, user_id,
                                   requestslib_kwargs=None):
         """
-        @summary: Returns a specific users roles for a given tenant
+        @summary: Returns a specific roles for a given tenant user
         @param tenant_id: The id of the tenant
         @type tenant_id: String
         @param user_id: The id of the user
@@ -174,7 +274,25 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
 
         url = '%s/tenants/%s/users/%s/roles' % (
             self.base_url, tenant_id, user_id)
-        server_response = self.request('GET', url,
-                                       response_entity_type=Roles,
-                                       requestslib_kwargs=requestslib_kwargs)
-        return server_response
+        response = self.request('GET', url,
+                                response_entity_type=Roles,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def delete_role_of_tenant_user(self, tenant_id,
+                                   user_id, requestslib_kwargs=None):
+        """
+        @summary: Deletes the specified roles for a tenant user
+        @param tenant_id: The id of a tenant
+        @type tenant_id: String
+        @param user_id: The id of a user
+        @type user_id: String
+        @return: resp
+        @rtype: Requests.response
+        """
+
+        url = '%s/tenants/%s/users/%s/roles' % (
+            self.base_url, tenant_id, user_id)
+        response = self.request('DELETE', url,
+                                requestslib_kwargs=requestslib_kwargs)
+        return response
