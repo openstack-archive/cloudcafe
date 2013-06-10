@@ -38,6 +38,7 @@ class TenantsClientTest(TestCase):
         self.tenants_url = "{0}/v2.0/tenants".format(self.url)
         self.tenant_url = "{0}/v2.0/tenants/{1}".format(self.url,
                                                         self.tenant_id)
+        self.users_url = "{0}/users".format(self.tenant_url)
 
         self.user_id = "USER_ID"
         HTTPretty.enable()
@@ -78,19 +79,24 @@ class TenantsClientTest(TestCase):
             tenant_id=self.tenant_id)
         self._build_assertions(actual_response, self.tenant_url)
 
+    def test_create_user_for_tenant(self):
+        HTTPretty.register_uri(HTTPretty.POST, self.users_url)
+
+        actual_response = self.tenant_api_client.create_user_for_a_tenant(
+            name="Admin", tenant_id=self.tenant_id)
+        self._build_assertions(actual_response, self.users_url)
+
     def test_get_users_for_tenant(self):
-        url = "{0}/v2.0/tenants/{1}/users".format(self.url, self.tenant_id)
-        HTTPretty.register_uri(HTTPretty.GET, url,
+        HTTPretty.register_uri(HTTPretty.GET, self.users_url,
                                body=self._build_list_of_users_for_tenant())
 
         actual_response = self.tenant_api_client.get_users_for_tenant(
             tenant_id=self.tenant_id)
 
-        self._build_assertions(actual_response, url)
+        self._build_assertions(actual_response, self.users_url)
 
     def test_get_users_roles_for_tenant(self):
-        url = "{0}/v2.0/tenants/{1}/users/{2}/roles".format(
-            self.url, self.tenant_id, self.user_id)
+        url = "{0}/{1}/roles".format(self.users_url, self.user_id)
         HTTPretty.register_uri(HTTPretty.GET, url,
                                body=self._build_list_of_roles_for_tenant())
 
