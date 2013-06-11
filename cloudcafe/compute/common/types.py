@@ -127,3 +127,7 @@ class ComputeHypervisors(object):
     KVM = 'kvm'
     QEMU = 'qemu'
     HYPER_V = 'hyper_v'
+
+class InstanceAuthStrategies(object):
+    PASSWORD = 'password'
+    KEY = 'key'
