@@ -22,6 +22,11 @@ class ServersConfig(ConfigSectionInterface):
     SECTION_NAME = 'servers'
 
     @property
+    def instance_auth_strategy(self):
+        """Strategy to use for authenticating to an instance (password|key)"""
+        return self.get("instance_auth_strategy")
+
+    @property
     def server_status_interval(self):
         """Amount of time to wait between polling the status of a server"""
         return int(self.get("server_status_interval"))

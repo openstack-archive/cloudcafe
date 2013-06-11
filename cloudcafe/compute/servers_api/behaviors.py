@@ -174,7 +174,7 @@ class ServerBehaviors(BaseBehavior):
             return server.addresses.public.ipv6
 
     def get_remote_instance_client(self, server, config=None, ip_address=None,
-                                   username=None, password=None):
+                                   username=None, password=None, key=None):
         """
         @summary: Gets an client of the server
         @param server: Instance uuid id of the server
@@ -189,15 +189,22 @@ class ServerBehaviors(BaseBehavior):
         @rtype: String
         """
 
-        if password is None:
-            password = server.admin_pass
         if ip_address is None:
             ip_address = self.get_public_ip_address(server)
 
-        # (TODO) dwalleck: Remove hard coding of distro
-        return InstanceClientFactory.get_instance_client(
-            ip_address=ip_address, username=username, password=password,
-            os_distro='linux', config=config)
+        if 'pass' in self.config.instance_auth_strategy.lower():
+
+            if password is None:
+                password = server.admin_pass
+
+            # (TODO) dwalleck: Remove hard coding of distro
+            return InstanceClientFactory.get_instance_client(
+                ip_address=ip_address, username=username, password=password,
+                os_distro='linux', config=config)
+        else:
+            return InstanceClientFactory.get_instance_client(
+                ip_address=ip_address, username=username, os_distro='linux',
+                config=config, key=key)
 
     def resize_and_await(self, server_id, new_flavor):
         """

@@ -23,10 +23,11 @@ from cloudcafe.compute.common.equality_tools import EqualityTools
 
 class Keypair(AutoMarshallingModel):
 
-    def __init__(self, public_key, name, fingerprint):
+    def __init__(self, public_key, name, fingerprint, private_key=None):
         self.public_key = public_key
         self.name = name
         self.fingerprint = fingerprint
+        self.private_key = private_key
 
     def __repr__(self):
         values = []
@@ -43,7 +44,8 @@ class Keypair(AutoMarshallingModel):
     def _dict_to_obj(cls, json_dict):
         return Keypair(json_dict.get('public_key'),
                        json_dict.get('name'),
-                       json_dict.get('fingerprint'))
+                       json_dict.get('fingerprint'),
+                       json_dict.get('private_key'))
 
     def __eq__(self, other):
         """
@@ -78,5 +80,6 @@ class Keypairs(Keypair):
             key = key.get('keypair')
             ret.append(Keypair(key.get('public_key'),
                                key.get('name'),
-                               key.get('fingerprint')))
+                               key.get('fingerprint'),
+                               key.get('private_key')))
         return ret
