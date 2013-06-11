@@ -16,9 +16,11 @@ limitations under the License.
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.compute.extensions.security_groups_api.models.requests \
-    import CreateSecurityGroup
+    import CreateSecurityGroup, CreateSecurityGroupRule
 from cloudcafe.compute.extensions.security_groups_api.models.security_group \
     import SecurityGroup, SecurityGroups
+from cloudcafe.compute.extensions.security_groups_api.models.\
+    security_group_rule import SecurityGroupRule
 
 
 class SecurityGroupsClient(AutoMarshallingRestClient):
@@ -67,5 +69,33 @@ class SecurityGroupsClient(AutoMarshallingRestClient):
         url = '{base_url}/os-security-groups/{group_id}'.format(
             base_url=self.url, group_id=group_id)
         resp = self.request('DELETE', url,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+
+class SecurityGroupRulesClient(AutoMarshallingRestClient):
+
+    def __init__(self, url, auth_token, serialize_format=None,
+                 deserialize_format=None):
+        super(SecurityGroupRulesClient, self).__init__(serialize_format,
+                                                       deserialize_format)
+        self.auth_token = auth_token
+        self.default_headers['X-Auth-Token'] = auth_token
+        ct = ''.join(['application/', self.serialize_format])
+        accept = ''.join(['application/', self.deserialize_format])
+        self.default_headers['Content-Type'] = ct
+        self.default_headers['Accept'] = accept
+        self.url = url
+
+    def create_rule(self, from_port, ip_protocol, to_port,
+                    parent_group_id, cidr, group_id,
+                    requestslib_kwargs=None):
+        url = '{base_url}/os-security-group-rules'.format(base_url=self.url)
+        create_sec_group_request = \
+            CreateSecurityGroupRule(from_port, ip_protocol, to_port,
+                                    parent_group_id, cidr, group_id)
+        resp = self.request('POST', url,
+                            response_entity_type=SecurityGroupRule,
+                            request_entity=create_sec_group_request,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

@@ -65,7 +65,7 @@ class QuotasClientTest(IntegrationTestFixture):
         actual_response = self.quotas_client.\
             update_quota(self.TENANT_ID, security_groups=45)
 
-        expected_request_body = '{"quota_set": {"security_groups": 45}}'
+        expected_request_body = '{"quota_set": {"security_group_rules": 45}}'
         self._assert_default_headers_in_request(HTTPretty.last_request)
         self.assertEqual(200, actual_response.status_code)
         self.assertEqual(HTTPretty.last_request.body,

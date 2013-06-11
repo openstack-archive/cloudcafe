@@ -74,4 +74,4 @@ class DefaultQuotaSetConfig(ConfigSectionInterface):
     @property
     def security_groups(self):
         """Default number of security groups"""
-        return int(self.get('security_groups'))
+        return int(self.get('security_group_rules'))

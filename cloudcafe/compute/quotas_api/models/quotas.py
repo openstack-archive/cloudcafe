@@ -43,13 +43,18 @@ class Quota(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(self, quota_dict):
-        return Quota(quota_dict.get('cores'), quota_dict.get('floating_ips'),
-                     quota_dict.get('id'), quota_dict.get('injected_file_content_bytes'),
+        return Quota(quota_dict.get('cores'),
+                     quota_dict.get('floating_ips'),
+                     quota_dict.get('id'),
+                     quota_dict.get('injected_file_content_bytes'),
                      quota_dict.get('injected_file_path_bytes'),
-                     quota_dict.get('injected_files'), quota_dict.get('instances'),
-                     quota_dict.get('key_pairs'), quota_dict.get('metadata_items'),
-                     quota_dict.get('ram'), quota_dict.get('security_group_rules'),
-                     quota_dict.get('security_groups'))
+                     quota_dict.get('injected_files'),
+                     quota_dict.get('instances'),
+                     quota_dict.get('key_pairs'),
+                     quota_dict.get('metadata_items'),
+                     quota_dict.get('ram'),
+                     quota_dict.get('security_group_rules'),
+                     quota_dict.get('security_group_rules'))
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -84,4 +89,4 @@ class Quota(AutoMarshallingModel):
          """
         element = ET.fromstring(serialized_str)
         quota = cls._xml_ele_to_obj(element)
-        return  quota
+        return quota

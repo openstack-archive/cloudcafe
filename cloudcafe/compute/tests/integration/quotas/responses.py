@@ -36,7 +36,7 @@ class QuotasMockResponse():
                '"metadata_items": 128,' \
                '"ram": 51200,' \
                '"security_group_rules": 20,' \
-               '"security_groups": 10}}'
+               '"security_group_rules": 10}}'
 
     def _xml_quota(self):
         return '<?xml version="1.0" encoding="UTF-8"?>' \
@@ -52,4 +52,4 @@ class QuotasMockResponse():
                '<metadata_items>128</metadata_items>' \
                '<ram>51200</ram>' \
                '<security_group_rules>20</security_group_rules>' \
-               '<security_groups>10</security_groups></quota_set>'
+               '<security_group_rules>10</security_group_rules></quota_set>'

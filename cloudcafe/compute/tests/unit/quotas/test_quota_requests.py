@@ -24,7 +24,7 @@ class QuotaRequestsTest(unittest.TestCase):
     def test_serialize_host_update_request_to_json(self):
         quota_obj = UpdateQuotaRequest(security_groups=45)
         json_serialized_quota = quota_obj.serialize("json")
-        expected_json = '{"quota_set": {"security_groups": 45}}'
+        expected_json = '{"quota_set": {"security_group_rules": 45}}'
         self.assertEqual(json_serialized_quota, expected_json)
 
     def test_serialize_host_update_request_to_xml(self):
@@ -32,7 +32,7 @@ class QuotaRequestsTest(unittest.TestCase):
         xml_serialized_quota = quota_obj.serialize("xml")
         expected_xml = '<?xml version=\'1.0\' encoding=\'UTF-8\'?>' \
                        '<quota_set id="fake_tenant">' \
-                       '<security_groups>45</security_groups>' \
+                       '<security_group_rules>45</security_group_rules>' \
                        '</quota_set>'
         self.assertEqual(xml_serialized_quota, expected_xml)
 

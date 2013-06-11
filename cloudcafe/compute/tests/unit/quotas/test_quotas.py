@@ -52,7 +52,7 @@ class QuotaDomainJSONTest(unittest.TestCase, QuotaDomainTest):
                          '"metadata_items": 128,' \
                          '"ram": 51200,' \
                          '"security_group_rules": 20,' \
-                         '"security_groups": 10}}'
+                         '"security_group_rules": 10}}'
         cls.quota = Quota.deserialize(cls.quota_json, "json")
 
 
@@ -64,15 +64,17 @@ class QuotaDomainXMLTest(unittest.TestCase, QuotaDomainTest):
                         '<quota_set id="fake_tenant">' \
                         '<cores>20</cores>' \
                         '<floating_ips>10</floating_ips>' \
-                        '<injected_file_content_bytes>10240</injected_file_content_bytes>' \
-                        '<injected_file_path_bytes>255</injected_file_path_bytes>' \
+                        '<injected_file_content_bytes>10240' \
+                        '</injected_file_content_bytes>' \
+                        '<injected_file_path_bytes>255' \
+                        '</injected_file_path_bytes>' \
                         '<injected_files>5</injected_files>' \
                         '<instances>10</instances>' \
                         '<key_pairs>100</key_pairs>' \
                         '<metadata_items>128</metadata_items>' \
                         '<ram>51200</ram>' \
                         '<security_group_rules>20</security_group_rules>' \
-                        '<security_groups>10</security_groups>' \
+                        '<security_group_rules>10</security_group_rules>' \
                         '</quota_set>'
         cls.quota = Quota.deserialize(cls.quota_xml, "xml")
 
