@@ -192,7 +192,7 @@ class Rebuild(CreateServer):
 
     def __init__(self, name, image_ref, admin_pass, disk_config=None,
                  metadata=None, personality=None, accessIPv4=None,
-                 accessIPv6=None):
+                 accessIPv6=None, key_name=None):
         super(Rebuild, self).__init__(name=name, imageRef=image_ref,
                                       flavorRef=None,
                                       adminPass=admin_pass,
@@ -200,7 +200,8 @@ class Rebuild(CreateServer):
                                       metadata=metadata,
                                       personality=personality,
                                       accessIPv4=accessIPv4,
-                                      accessIPv6=accessIPv6)
+                                      accessIPv6=accessIPv6,
+                                      key_name=key_name)
 
 
 class Resize(AutoMarshallingModel):
