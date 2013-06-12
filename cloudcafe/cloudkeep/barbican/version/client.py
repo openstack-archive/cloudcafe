@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.cloudkeep.barbican.models.version import Version
+from cloudcafe.cloudkeep.barbican.version.models.version import Version
 
 
 class VersionClient(AutoMarshallingRestClient):
