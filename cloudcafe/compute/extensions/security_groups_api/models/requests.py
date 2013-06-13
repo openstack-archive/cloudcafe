@@ -15,9 +15,10 @@ limitations under the License.
 """
 
 import json
-from xml.etree import ElementTree
+import xml.etree.ElementTree as ET
 
 from cafe.engine.models.base import AutoMarshallingModel
+from cloudcafe.compute.common.constants import Constants
 
 
 class CreateSecurityGroup(AutoMarshallingModel):
@@ -43,3 +44,38 @@ class CreateSecurityGroup(AutoMarshallingModel):
 
     def _obj_to_xml_ele(self):
         raise NotImplemented
+
+
+class CreateSecurityGroupRule(AutoMarshallingModel):
+
+    def __init__(self, from_port=None, ip_protocol=None,
+                 to_port=None, parent_group_id=None,
+                 cidr=None, group_id=None):
+
+        self.from_port = from_port
+        self.ip_protocol = ip_protocol
+        self.to_port = to_port
+        self.parent_group_id = parent_group_id
+        self.cidr = cidr
+        self.group_id = group_id
+
+    def _obj_to_json(self):
+        """
+        @summary: Converts the object to json.
+        """
+        ret = {'security_group_rule': self.__dict__}
+        print ret
+        return json.dumps(ret)
+
+    def _obj_to_xml(self):
+        """
+        @summary: Converts the object to xml.
+        """
+        xml = Constants.XML_HEADER
+        element = ET.Element('security_group_rule')
+        for key, value in self.__dict__.iteritems():
+            child = ET.Element(key)
+            child.text = str(value)
+            element.append(child)
+        xml += ET.tostring(element)
+        return xml
