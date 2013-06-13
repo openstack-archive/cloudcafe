@@ -301,7 +301,7 @@ class ServersClient(AutoMarshallingRestClient):
     def rebuild(self, server_id, image_ref, name=None,
                 admin_pass=None, disk_config=None, metadata=None,
                 personality=None, accessIPv4=None, accessIPv6=None,
-                requestslib_kwargs=None):
+                key_name=None, requestslib_kwargs=None):
         """
         @summary: Rebuilds the server
         @param server_id: The id of an existing server.
@@ -335,7 +335,8 @@ class ServersClient(AutoMarshallingRestClient):
                                          metadata=metadata,
                                          personality=personality,
                                          accessIPv4=accessIPv4,
-                                         accessIPv6=accessIPv6)
+                                         accessIPv6=accessIPv6,
+                                         key_name=key_name)
 
         resp = self.request('POST', url,
                             response_entity_type=Server,
