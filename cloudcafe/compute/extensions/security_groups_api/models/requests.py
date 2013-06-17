@@ -24,8 +24,6 @@ from cloudcafe.compute.common.constants import Constants
 class CreateSecurityGroup(AutoMarshallingModel):
 
     def __init__(self, name=None, description=None):
-
-        super(CreateSecurityGroup, self).__init__()
         self.name = name
         self.description = description
 
@@ -40,7 +38,14 @@ class CreateSecurityGroup(AutoMarshallingModel):
         return ret
 
     def _obj_to_xml(self):
-        raise NotImplemented
+        element = ET.Element('security_group')
+        element.set('name', self.name)
+
+        description_ele = ET.Element('description')
+        description_ele.text = self.description
+        element.append(description_ele)
+        xml = ET.tostring(element)
+        return xml
 
     def _obj_to_xml_ele(self):
         raise NotImplemented
