@@ -48,23 +48,15 @@ class CreateServer(AutoMarshallingModel):
         body['name'] = self.name
         body['imageRef'] = self.imageRef
         body['flavorRef'] = self.flavorRef
-
-        if self.diskConfig is not None:
-            body['OS-DCF:diskConfig'] = self.diskConfig
-        if self.adminPass is not None:
-            body['adminPass'] = self.adminPass
-        if self.metadata is not None:
-            body['metadata'] = self.metadata
-        if self.accessIPv4 is not None:
-            body['accessIPv4'] = self.accessIPv4
-        if self.accessIPv6 is not None:
-            body['accessIPv6'] = self.accessIPv6
-        if self.personality is not None:
-            body['personality'] = self.personality
-        if self.networks is not None:
-            body['networks'] = self.networks
-        if self.key_name is not None:
-            body['key_name'] = self.key_name
+        body['OS-DCF:diskConfig'] = self.diskConfig
+        body['adminPass'] = self.adminPass
+        body['metadata'] = self.metadata
+        body['accessIPv4'] = self.accessIPv4
+        body['accessIPv6'] = self.accessIPv6
+        body['personality'] = self.personality
+        body['networks'] = self.networks
+        body['key_name'] = self.key_name
+        body = self._remove_empty_values(body)
 
         return json.dumps({self.ROOT_TAG: body})
 

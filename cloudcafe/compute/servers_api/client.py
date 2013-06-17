@@ -592,8 +592,6 @@ class ServersClient(AutoMarshallingRestClient):
         @rtype: Requests.response
         """
 
-        if name is None:
-            name = rand_name("TestImage")
         url = '{base_url}/servers/{server_id}/action'.format(
             base_url=self.url, server_id=server_id)
         create_image_request_object = CreateImage(name, metadata)
