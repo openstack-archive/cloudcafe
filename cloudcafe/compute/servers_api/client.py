@@ -20,10 +20,13 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.compute.common.datagen import rand_name
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
+from cloudcafe.compute.extensions.security_groups_api.models.security_group\
+    import SecurityGroups, SecurityGroup
 from cloudcafe.compute.servers_api.models.servers import Server
 from cloudcafe.compute.servers_api.models.servers import Addresses
 from cloudcafe.compute.servers_api.models.servers import InstanceActions
-from cloudcafe.compute.servers_api.models.requests import CreateServer
+from cloudcafe.compute.servers_api.models.requests import CreateServer,\
+    AddSecurityGroup
 from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
@@ -759,5 +762,37 @@ class ServersClient(AutoMarshallingRestClient):
         url = '{base_url}/servers/{server_id}/os-instance-actions'.format(
             base_url=self.url, server_id=server_id)
         resp = self.request('GET', url, response_entity_type=InstanceActions,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def list_security_groups(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: Returns a list of security groups of a server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @return: A list of security groups
+        @rtype: Requests.response
+        """
+        url = '{base_url}/servers/{server_id}/os-security-groups'.format(
+            base_url=self.url, server_id=server_id)
+        resp = self.request('GET', url, response_entity_type=SecurityGroups,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def add_security_group(self, server_id, group_name,
+                           requestslib_kwargs=None):
+        """
+        @summary: Returns a list of security groups of a server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @return: A list of security groups
+        @rtype: Requests.response
+        """
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        add_security_group_request_object = AddSecurityGroup(name=group_name)
+        resp = self.request('POST', url,
+                            request_entity=add_security_group_request_object,
+                            response_entity_type=SecurityGroup,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

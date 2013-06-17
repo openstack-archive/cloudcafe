@@ -35,8 +35,11 @@ class SecurityGroupRulesClientTest(IntegrationTestFixture):
             auth_token=cls.AUTH_TOKEN,
             serialize_format=cls.FORMAT,
             deserialize_format=cls.FORMAT)
-        cls.security_group_rules_uri = "{0}/os-security-group-rules".\
-            format(cls.COMPUTE_API_ENDPOINT)
+        cls.security_group_rules_uri = "{0}/os-security-group-rules".format(
+            cls.COMPUTE_API_ENDPOINT)
+        cls.delete_security_group_rules_uri = \
+            "{0}/os-security-group-rules/{1}".format(
+                cls.COMPUTE_API_ENDPOINT, '123')
         cls.mock_response = SecurityGroupRulesMockResponse(cls.FORMAT)
 
     def test_create_security_group_rule(self):
@@ -56,6 +59,15 @@ class SecurityGroupRulesClientTest(IntegrationTestFixture):
         self._assert_default_headers_in_request(HTTPretty.last_request)
         self.assertEqual(200, actual_response.status_code)
         self.assertEqual(HTTPretty.last_request.body, expected_request_body)
+        self.assertEqual(self.mock_response._get_sec_group_rule(),
+                         actual_response.content)
+
+    def test_delete_security_group_rule(self):
+        HTTPretty.register_uri(
+            HTTPretty.DELETE, self.delete_security_group_rules_uri,
+            body=self.mock_response._get_sec_group_rule())
+        actual_response = self.security_groups_client.delete_rule('123')
+        self.assertEqual(200, actual_response.status_code)
         self.assertEqual(self.mock_response._get_sec_group_rule(),
                          actual_response.content)
 
