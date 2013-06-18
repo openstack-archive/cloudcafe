@@ -32,3 +32,7 @@ class V2_0Constants(object):
     XML_NS_RAX_KSGRP = \
         'http://docs.rackspace.com/identity/api/ext/RAX-KSGRP/v1.0'
     XML_NS_ATOM = 'http://www.w3.org/2005/Atom'
+
+
+class AdminExtensions(object):
+    OS_KS_ADM = 'OS-KSADM'
