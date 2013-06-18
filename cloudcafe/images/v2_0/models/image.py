@@ -30,7 +30,8 @@ class Image(AutoMarshallingModel):
                  status=None, protected=None, tags=None, checksum=None,
                  size=None, created_at=None, updated_at=None, file_=None,
                  self_=None, schema=None, container_format=None,
-                 disk_format=None, min_disk=None, min_ram=None):
+                 disk_format=None, min_disk=None, min_ram=None, kernel_id=None,
+                 ramdisk_id=None):
         """@Summary Construct an Image model
            @param visibility
            @type ImageVisibility
@@ -59,6 +60,8 @@ class Image(AutoMarshallingModel):
         self.disk_format = disk_format
         self.min_disk = min_disk
         self.min_ram = min_ram
+        self.kernel_id = kernel_id
+        self.ramdisk_id = ramdisk_id
 
     def __eq__(self, other):
         """
@@ -159,3 +162,39 @@ class Image(AutoMarshallingModel):
     def _obj_to_xml(self):
         raise NotImplementedError("Glance does not serve XML-formatted \
                                   resources.")
+
+
+class ImagePatch(AutoMarshallingModel):
+    """
+        JSON model for updating an image.
+        http://docs.openstack.org/api/ \
+        openstack-image-service/2.0/content/update-an-image.html
+    """
+
+    def __init__(self, add=None, replace=None, remove=None):
+        self.add_dict = add
+        self.replace_dict = replace
+        self.remove_list = remove
+
+    def _obj_to_json(self):
+        patch_list = []
+        if self.add_dict:
+            for key, val in self.add_dict.items():
+                patch_list.append(
+                    {'add': '/{0}'.format(key),
+                     'value': val}
+                )
+
+        if self.replace_dict:
+            for key, val in self.replace_dict.items():
+                patch_list.append(
+                    {'replace': '/{0}'.format(key),
+                     'value': val}
+                )
+
+        if self.remove_list:
+            for prop in self.remove_list:
+                patch_list.append(
+                    {'remove': '/{0}'.format(prop)})
+
+        return json.dumps(patch_list)
