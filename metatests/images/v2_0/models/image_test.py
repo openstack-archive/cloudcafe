@@ -2,14 +2,13 @@ import os
 import re
 from copy import deepcopy
 from datetime import datetime
-from unittest import TestCase
 
 from cloudcafe.images.common.types import ImageVisibility, \
     ImageStatus, ImageContainerFormat, ImageDiskFormat
 from cloudcafe.images.v2_0.models.image import Image
 
 
-class TestImage(TestCase):
+class TestImage(object):
 
     @classmethod
     def setup_class(cls):
