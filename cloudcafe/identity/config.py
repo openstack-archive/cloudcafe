@@ -47,3 +47,11 @@ class IdentityTokenConfig(ConfigSectionInterface):
     @property
     def authentication_endpoint(self):
         return self.get("authentication_endpoint")
+
+
+class IdentityExtensionConfig(ConfigSectionInterface):
+    SECTION_NAME = 'extension_api'
+
+    @property
+    def openstack_keystone_admin(self):
+        return self.get("openstack_keystone_admin")
