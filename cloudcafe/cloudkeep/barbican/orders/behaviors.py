@@ -26,7 +26,6 @@ class OrdersBehavior(object):
         self.orders_client = orders_client
         self.secrets_client = secrets_client
         self.config = config
-
         self.created_orders = []
 
     def get_id_from_ref(self, ref):
@@ -46,7 +45,8 @@ class OrdersBehavior(object):
             name=name, algorithm=algorithm, bit_length=bit_length,
             cypher_type=cypher_type, mime_type=mime_type)
 
-        get_order_resp = self.client.get_order(order_id=resp['order_id'])
+        get_order_resp = self.orders_client.get_order(
+            order_id=resp['order_id'])
 
         secret_href = get_order_resp.entity.secret_href
         secret_id = self.get_id_from_ref(ref=secret_href)
@@ -80,21 +80,13 @@ class OrdersBehavior(object):
         """
         Allows for testing individual parameters on creation.
         """
-        if name is None:
-            name = self.config.name
-        if algorithm is None:
-            algorithm = self.config.algorithm
-        if bit_length is None:
-            bit_length = self.config.bit_length
-        if cypher_type is None:
-            cypher_type = self.config.cypher_type
-        if mime_type is None:
-            mime_type = self.config.mime_type
-
         resp = self.create_order(
-            name=name, algorithm=algorithm,
-            bit_length=bit_length, cypher_type=cypher_type,
-            mime_type=mime_type, expiration=expiration)
+            name=name or self.config.name,
+            algorithm=algorithm or self.config.algorithm,
+            bit_length=bit_length or self.config.bit_length,
+            cypher_type=cypher_type or self.config.cypher_type,
+            mime_type=mime_type or self.config.mime_type,
+            expiration=expiration)
 
         return resp
 
@@ -156,18 +148,21 @@ class OrdersBehavior(object):
             self.delete_order(order_id)
 
     def delete_all_created_orders_and_secrets(self):
-        for order_id in self.created_orders:
+        for order_id in list(self.created_orders):
             self.delete_order(order_id, delete_secret=True)
-
         self.created_orders = []
 
+    def remove_from_created_orders(self, order_id):
+        if order_id in self.created_orders:
+            self.created_orders.remove(order_id)
+
     def find_order(self, order_id):
-        order_group = self.client.get_orders().entity
+        order_group = self.orders_client.get_orders().entity
 
         ids = order_group.get_ids()
         while order_id not in ids and order_group.next is not None:
             query = order_group.get_next_query_data()
-            order_group = self.client.get_orders(
+            order_group = self.orders_client.get_orders(
                 limit=query['limit'],
                 offset=query['offset']).entity
             ids = order_group.get_ids()
