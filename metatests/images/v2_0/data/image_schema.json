@@ -1,0 +1,128 @@
+{
+   "name" : "image",
+   "additionalProperties" : {
+      "type" : "string"
+   },
+   "properties" : {
+      "visibility" : {
+         "enum" : [
+            "public",
+            "private"
+         ],
+         "type" : "string",
+         "description" : "Scope of image accessibility"
+      },
+      "disk_format" : {
+         "enum" : [
+            "raw",
+            "vhd",
+            "vmdk",
+            "vdi",
+            "iso",
+            "qcow2",
+            "aki",
+            "ari",
+            "ami"
+         ],
+         "type" : "string",
+         "description" : ""
+      },
+      "status" : {
+         "enum" : [
+            "queued",
+            "saving",
+            "active",
+            "killed",
+            "deleted",
+            "pending_delete"
+         ],
+         "type" : "string",
+         "description" : "Status of the image"
+      },
+      "self" : {
+         "type" : "string"
+      },
+      "file" : {
+         "type" : "string"
+      },
+      "schema" : {
+         "type" : "string"
+      },
+      "size" : {
+         "type" : "integer",
+         "description" : "Size of image file in bytes"
+      },
+      "checksum" : {
+         "maxLength" : 32,
+         "type" : "string",
+         "description" : "md5 hash of image contents."
+      },
+      "created_at" : {
+         "type" : "string",
+         "description" : "Date and time of image registration"
+      },
+      "id" : {
+         "pattern" : "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+         "type" : "string",
+         "description" : "An identifier for the image"
+      },
+      "container_format" : {
+         "enum" : [
+            "bare",
+            "ovf",
+            "ami",
+            "aki",
+            "ari"
+         ],
+         "type" : "string",
+         "description" : ""
+      },
+      "name" : {
+         "maxLength" : 255,
+         "type" : "string",
+         "description" : "Descriptive name for the image"
+      },
+      "protected" : {
+         "type" : "boolean",
+         "description" : "If true, image will not be deletable."
+      },
+      "min_ram" : {
+         "type" : "integer",
+         "description" : "Amount of ram (in MB) required to boot image."
+      },
+      "tags" : {
+         "type" : "array",
+         "description" : "List of strings related to the image",
+         "items" : {
+            "maxLength" : 255,
+            "type" : "string"
+         }
+      },
+      "updated_at" : {
+         "type" : "string",
+         "description" : "Date and time of the last image modification"
+      },
+      "min_disk" : {
+         "type" : "integer",
+         "description" : "Amount of disk space (in GB) required to boot image."
+      },
+      "direct_url" : {
+         "type" : "string",
+         "description" : "URL to access the image file kept in external store"
+      }
+   },
+   "links" : [
+      {
+         "rel" : "self",
+         "href" : "{self}"
+      },
+      {
+         "rel" : "enclosure",
+         "href" : "{file}"
+      },
+      {
+         "rel" : "describedby",
+         "href" : "{schema}"
+      }
+   ]
+}
