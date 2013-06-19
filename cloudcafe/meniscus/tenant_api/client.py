@@ -15,7 +15,8 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.meniscus.tenant_api.models.tenant import Tenant, CreateTenant
+from cloudcafe.meniscus.tenant_api.models.tenant import \
+    Tenant, CreateTenant, ResetToken
 from cloudcafe.meniscus.tenant_api.models.producer import \
     CreateProducer, UpdateProducer, AllProducers, Producer
 from cloudcafe.meniscus.tenant_api.models.profile import \
@@ -64,6 +65,30 @@ class TenantClient(MeniscusClient):
                                           tenant_id=tenant_id)
         resp = self.request('GET', url, response_entity_type=Tenant)
         return resp
+
+    def validate_token(self, tenant_id, msg_token, worker_id, worker_token):
+        """
+        HEAD /v1/{tenant_id}/token
+        @summary: Checks to see if the token is valid
+        """
+        url = '{base}/{tenant_id}/token'.format(base=self._get_base_url(),
+                                                tenant_id=tenant_id)
+        headers = {
+            'MESSAGE-TOKEN': msg_token,
+            'WORKER-ID': worker_id,
+            'WORKER-TOKEN': worker_token
+        }
+        return self.request('HEAD', url, headers=headers)
+
+    def reset_token(self, tenant_id, invalidate_now):
+        """
+        POST /v1/{tenant_id}/token
+        @summary: Should activate the reset token functionality.
+        """
+        url = '{base}/{tenant_id}/token'.format(base=self._get_base_url(),
+                                                tenant_id=tenant_id)
+        req_obj = ResetToken(invalidate_now)
+        return self.request('POST', url, request_entity=req_obj)
 
 
 class ProducerClient(MeniscusClient):

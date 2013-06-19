@@ -110,3 +110,22 @@ class TenantToken(AutoMarshallingModel):
     @classmethod
     def _dict_to_obj(cls, json_dict):
         return TenantToken(**json_dict)
+
+    def __eq__(self, other):
+        return self.valid != other.valid
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class ResetToken(AutoMarshallingModel):
+
+    def __init__(self, invalidate_now=None):
+        super(ResetToken, self).__init__()
+        self.invalidate_now = invalidate_now
+
+    def _obj_to_json(self):
+        json_dict = {
+            'token': {' invalidate_now': self.invalidate_now}
+        }
+        return json_to_str(json_dict)
