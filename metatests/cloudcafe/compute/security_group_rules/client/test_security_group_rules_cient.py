@@ -14,18 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
 from httpretty import HTTPretty
 
 from cloudcafe.compute.extensions.security_groups_api.client\
     import SecurityGroupRulesClient
-from cloudcafe.compute.tests.integration.fixtures\
-    import IntegrationTestFixture
-from cloudcafe.compute.tests.integration.\
-    security_group_rules.responses import SecurityGroupRulesMockResponse
+from metatests.cloudcafe.compute.fixtures \
+    import ClientTestFixture
+from metatests.cloudcafe.compute.security_group_rules.\
+    client.responses import SecurityGroupRulesMockResponse
 
 
-class SecurityGroupRulesClientTest(IntegrationTestFixture):
+class SecurityGroupRulesClientTest(ClientTestFixture):
 
     @classmethod
     def setUpClass(cls):
@@ -58,7 +57,3 @@ class SecurityGroupRulesClientTest(IntegrationTestFixture):
         self.assertEqual(HTTPretty.last_request.body, expected_request_body)
         self.assertEqual(self.mock_response._get_sec_group_rule(),
                          actual_response.content)
-
-
-if __name__ == '__main__':
-    unittest.main()

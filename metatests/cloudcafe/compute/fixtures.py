@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import unittest2 as unittest
 from httpretty import HTTPretty
 
-from cafe.drivers.unittest.fixtures import BaseTestFixture
 
-
-class IntegrationTestFixture(BaseTestFixture):
+class ClientTestFixture(unittest.TestCase):
 
     AUTH_TOKEN = 'dda0e9d0a1084f67bb9ea4e91abcd4ec'
     COMPUTE_API_ENDPOINT = 'http://localhost:5000/v1'
@@ -29,16 +28,16 @@ class IntegrationTestFixture(BaseTestFixture):
     CONTENT_TYPE = 'application/{0}'.format(FORMAT)
     ACCEPT = 'application/{0}'.format(FORMAT)
 
+    @classmethod
     def setUp(cls):
-        super(IntegrationTestFixture, cls).setUp()
         HTTPretty.reset()
         HTTPretty.enable()
 
+    @classmethod
     def tearDown(cls):
-        super(IntegrationTestFixture, cls).tearDown()
         HTTPretty.disable()
 
     def _assert_default_headers_in_request(self, request):
-        self.assertEqual(request.headers['X-Auth-Token'], self.AUTH_TOKEN)
-        self.assertEqual(request.headers['Content-Type'], self.CONTENT_TYPE)
-        self.assertEqual(request.headers['Accept'], self.ACCEPT)
+        assert request.headers['X-Auth-Token'] == self.AUTH_TOKEN
+        assert request.headers['Content-Type'] == self.CONTENT_TYPE
+        assert request.headers['Accept'] == self.ACCEPT
