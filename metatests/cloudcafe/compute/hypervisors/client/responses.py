@@ -19,18 +19,18 @@ class HypervisorsClientMockResponse(object):
 
     @classmethod
     def list_hypervisors(cls):
-        return '{"hypervisors": [{' \
-               '"id": 1, ' \
-               '"hypervisor_hostname": "hypervisor_test"}' \
-               ']}'
+        return ('{"hypervisors": [{'
+                '"id": 1, '
+                '"hypervisor_hostname": "hypervisor_test"}'
+                ']}')
 
     @classmethod
     def list_hypervisor_servers(cls):
-        return '{"hypervisors": [{ '\
-               '"id": 1,' \
-               '"hypervisor_hostname": "hypervisor_test",' \
-               '"servers":' \
-               '[{"uuid": "b1ea4f1b-201c-47c5-95b9-c6fe2df39af0",' \
-               '"name": "instance-00000003"},' \
-               '{"uuid": "9327b134-b1f5-43ec-a8f1-2b6eb153c739",' \
-               '"name": "instance-00000005"}}]}]}'
+        return ('{"hypervisors": [{ '
+                '"id": 1,'
+                '"hypervisor_hostname": "hypervisor_test",'
+                '"servers":'
+                '[{"uuid": "b1ea4f1b-201c-47c5-95b9-c6fe2df39af0",'
+                '"name": "instance-00000003"},'
+                '{"uuid": "9327b134-b1f5-43ec-a8f1-2b6eb153c739",'
+                '"name": "instance-00000005"}}]}]}')
