@@ -30,14 +30,13 @@ class CreateSecurityGroupRuleRequestTest(unittest.TestCase):
                                                             group_id=1,
                                                             parent_group_id=2)
         json_serialized_obj = create_sec_group_rule_obj.serialize("json")
-        print json_serialized_obj
-        expected_json = '{"security_group_rule":' \
-                        ' {"from_port": 80,' \
-                        ' "ip_protocol": "tcp",' \
-                        ' "to_port": 8080,' \
-                        ' "parent_group_id": 2,' \
-                        ' "cidr": "0.0.0.0/0",' \
-                        ' "group_id": 1}}'
+        expected_json = ('{"security_group_rule":'
+                         ' {"from_port": 80,'
+                         ' "ip_protocol": "tcp",'
+                         ' "to_port": 8080,'
+                         ' "parent_group_id": 2,'
+                         ' "cidr": "0.0.0.0/0",'
+                         ' "group_id": 1}}')
         self.assertEqual(json_serialized_obj, expected_json)
 
     def test_serialize_host_update_request_to_xml(self):
@@ -48,16 +47,13 @@ class CreateSecurityGroupRuleRequestTest(unittest.TestCase):
                                                             group_id=1,
                                                             parent_group_id=2)
         xml_serialized_obj = create_sec_group_rule_obj.serialize("xml")
-        expected_xml = '<?xml version=\'1.0\' encoding=\'UTF-8\'?>' \
-                       '<security_group_rule>' \
-                       '<from_port>80</from_port>' \
-                       '<ip_protocol>tcp</ip_protocol>' \
-                       '<to_port>8080</to_port>' \
-                       '<parent_group_id>2</parent_group_id>' \
-                       '<cidr>0.0.0.0/0</cidr>' \
-                       '<group_id>1</group_id>' \
-                       '</security_group_rule>'
+        expected_xml = ('<?xml version=\'1.0\' encoding=\'UTF-8\'?>'
+                        '<security_group_rule>'
+                        '<from_port>80</from_port>'
+                        '<ip_protocol>tcp</ip_protocol>'
+                        '<to_port>8080</to_port>'
+                        '<parent_group_id>2</parent_group_id>'
+                        '<cidr>0.0.0.0/0</cidr>'
+                        '<group_id>1</group_id>'
+                        '</security_group_rule>')
         self.assertEqual(xml_serialized_obj, expected_xml)
-
-if __name__ == '__main__':
-    unittest.main()

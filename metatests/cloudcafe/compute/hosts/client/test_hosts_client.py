@@ -14,19 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
-import httpretty
+from httpretty import HTTPretty
 
 from cloudcafe.compute.hosts_api.client import HostsClient
-from cloudcafe.compute.tests.integration.fixtures import IntegrationTestFixture
-from cloudcafe.compute.tests.integration.hosts.responses\
+from metatests.cloudcafe.compute.fixtures import ClientTestFixture
+from metatests.cloudcafe.compute.hosts.client.responses \
     import HostsMockResponse
 
 
 HOST_NAME = "787f4f6dda1b409bb8b2f9082349690e"
 
 
-class HostsClientTest(IntegrationTestFixture):
+class HostsClientTest(ClientTestFixture):
 
     @classmethod
     def setUpClass(cls):
@@ -42,20 +41,15 @@ class HostsClientTest(IntegrationTestFixture):
         cls.mock_response = HostsMockResponse(cls.FORMAT)
 
     def test_list_hosts(self):
-        httpretty.register_uri(httpretty.GET, self.hosts_uri,
+        HTTPretty.register_uri(HTTPretty.GET, self.hosts_uri,
                                body=self.mock_response.list_hosts())
         response = self.hosts_client.list_hosts()
         self.assertEqual(200, response.status_code)
-        self.assertEqual(self.mock_response.list_hosts(),
-                         response.content)
+        self.assertEqual(self.mock_response.list_hosts(), response.content)
 
     def test_get_host(self):
-        httpretty.register_uri(httpretty.GET, self.host_uri,
+        HTTPretty.register_uri(HTTPretty.GET, self.host_uri,
                                body=self.mock_response.get_host())
         response = self.hosts_client.get_host(HOST_NAME)
         self.assertEqual(200, response.status_code)
         self.assertEqual(self.mock_response.get_host(), response.content)
-
-
-if __name__ == '__main__':
-    unittest.main()
