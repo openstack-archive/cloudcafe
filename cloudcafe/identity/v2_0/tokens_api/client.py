@@ -31,7 +31,7 @@ class BaseTokenAPI_Client(AutoMarshallingRestClient):
 
     def __init__(self, serialize_format, deserialize_format=None):
         super(BaseTokenAPI_Client, self).__init__(serialize_format,
-                                                 deserialize_format)
+                                                  deserialize_format)
 
     @property
     def token(self):
@@ -88,4 +88,18 @@ class TokenAPI_Client(BaseTokenAPI_Client):
         response = self.post(url, response_entity_type=AuthResponse,
                              request_entity=auth_request_entity,
                              requestslib_kwargs=requestslib_kwargs)
+
+        self.default_headers['X-Auth-Token'] = response.entity.token.id_
+
+        return response
+
+    def get_token_id(self, encoded_id, requestslib_kwargs=None):
+        '''
+        @summary Retrieves the short-form token id using the base64 encoded id
+        '''
+        url = '{0}/tokens/{1}'.format(self.base_url, encoded_id)
+
+        response = self.get(url, response_entity_type=AuthResponse,
+                            requestslib_kwargs=requestslib_kwargs)
+
         return response

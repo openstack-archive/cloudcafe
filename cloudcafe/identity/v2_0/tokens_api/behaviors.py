@@ -39,5 +39,7 @@ class TokenAPI_Behaviors(BaseBehavior):
                 username=username, password=password,
                 tenant_name=tenant_name)
             access_data = response.entity
+            # This is necessary to get the short-form token id
+            response = self._client.get_token_id(access_data.token.id_)
 
-        return access_data
+        return response.entity
