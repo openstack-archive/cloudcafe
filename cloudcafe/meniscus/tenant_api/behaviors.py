@@ -63,27 +63,28 @@ class ProducerBehaviors(TenantBehaviors):
         self.producer_client = producer_client
         self.producers_created = []
 
-    def create_producer(self, name=None, pattern=None, durable=None,
-                        encrypted=None):
+    def create_producer_from_cfg(self, name=None, pattern=None, durable=None,
+                                 encrypted=None):
         """
         @summary: Helper function to create a producer for fixtures. All
         parameters set to None will be loaded from configuration file.
         @return: Dictionary with request object, and producer id
         """
-        if name is None:
-            name = self.tenant_config.producer_name
-        if pattern is None:
-            pattern = self.tenant_config.producer_pattern
-        if durable is None:
-            durable = self.tenant_config.producer_durable
-        if encrypted is None:
-            encrypted = self.tenant_config.producer_encrypted
 
+        resp = self.create_producer(
+            name=name or self.tenant_config.producer_name,
+            pattern=pattern or self.tenant_config.producer_pattern,
+            durable=durable or self.tenant_config.producer_durable,
+            encrypted=encrypted or self.tenant_config.producer_encrypted)
+
+        return resp
+
+    def create_producer(self, name=None, pattern=None, durable=None,
+                        encrypted=None):
         req = self.producer_client.create_producer(
             name=name, pattern=pattern, durable=durable, encrypted=encrypted)
 
         producer_id = RequestUtilities.get_id(req)
-
         self.producers_created.append(producer_id)
 
         return {
@@ -93,6 +94,8 @@ class ProducerBehaviors(TenantBehaviors):
 
     def delete_producer(self, producer_id, remove_from_array=True):
         response = self.producer_client.delete_producer(producer_id)
+        assert response.status_code == 200
+
         if remove_from_array:
             self.producers_created.remove(producer_id)
 
@@ -111,15 +114,16 @@ class ProfileBehaviors(ProducerBehaviors):
         self.profile_client = profile_client
         self.profiles_created = []
 
-    def create_new_profile(self, name=None, producer_ids=None):
+    def create_profile_from_cfg(self, name=None, producer_ids=None):
+        return self.create_profile(
+            name=name or self.tenant_config.profile_name,
+            producer_ids=producer_ids)
 
-        if name is None:
-            name = self.tenant_config.profile_name
-
+    def create_profile(self, name=None, producer_ids=None):
         profile_req = self.profile_client.create_profile(
             name=name, producer_ids=producer_ids)
-        profile_id = RequestUtilities.get_id(profile_req)
 
+        profile_id = RequestUtilities.get_id(profile_req)
         self.profiles_created.append(profile_id)
 
         return {
@@ -156,13 +160,21 @@ class HostBehaviors(ProfileBehaviors):
 
         return response
 
-    def create_new_host(self, hostname=None, ip_v4=None, ip_v6=None,
-                        profile_id=None):
-        if hostname is None:
-            hostname = self.tenant_config.hostname
+    def create_host_from_cfg(self, hostname=None, ip_v4=None, ip_v6=None,
+                             profile_id=None):
+        resp = self.create_host(
+            hostname=hostname or self.tenant_config.hostname,
+            ip_v4=ip_v4,
+            ip_v6=ip_v6,
+            profile_id=profile_id)
 
+        return resp
+
+    def create_host(self, hostname, ip_v4=None, ip_v6=None, profile_id=None):
         host_req = self.host_client.create_host(
-            hostname=hostname, ip_v4=ip_v4, ip_v6=ip_v6,
+            hostname=hostname,
+            ip_v4=ip_v4,
+            ip_v6=ip_v6,
             profile_id=profile_id)
 
         host_id = RequestUtilities.get_id(host_req)
