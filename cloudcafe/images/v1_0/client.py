@@ -32,7 +32,7 @@ class ImagesClient(AutoMarshallingRestClient):
         self.url = url
 
     def list_images(self, requestslib_kwargs=None):
-        url = '{0}/images/'.format(self.url)
+        url = '{0}/images'.format(self.url)
         return self.request('GET', url, response_entity_type=ImageMin,
                             requestslib_kwargs=requestslib_kwargs)
 
@@ -67,6 +67,10 @@ class ImagesClient(AutoMarshallingRestClient):
                   requestslib_kwargs=None):
 
         headers = headers if headers else {}
+
+        if image_data:
+            headers['content-type'] = 'application/octet-stream'
+
         headers['x-image-meta-id'] = image_meta_id
         headers['x-image-meta-store'] = image_meta_store
         headers['x-image-meta-disk-format'] = image_meta_disk_format
@@ -79,7 +83,7 @@ class ImagesClient(AutoMarshallingRestClient):
         headers['x-image-meta-owner'] = image_meta_owner
         headers['x-image-meta-property'] = image_meta_property
 
-        url = '{0}/images/'.format(self.url)
+        url = '{0}/images'.format(self.url)
         headers['x-image-meta-name'] = image_name
         return self.request('POST', url, headers=headers, data=image_data,
                             requestslib_kwargs=requestslib_kwargs)
@@ -100,6 +104,10 @@ class ImagesClient(AutoMarshallingRestClient):
                      requestslib_kwargs=None):
 
         headers = headers if headers else {}
+
+        if image_data:
+            headers['content-type'] = 'application/octet-stream'
+
         headers['x-image-meta-name'] = image_meta_name
         headers['x-image-meta-store'] = image_meta_store
         headers['x-image-meta-disk-format'] = image_meta_disk_format
@@ -115,6 +123,7 @@ class ImagesClient(AutoMarshallingRestClient):
         url = '{0}/images/{1}'.format(self.url, image_id)
         return self.request('PUT', url, headers=headers,
                             data=image_data,
+                            response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_shared_images(self, member_id, requestslib_kwargs=None):
@@ -137,5 +146,5 @@ class ImagesClient(AutoMarshallingRestClient):
                             requestslib_kwargs=requestslib_kwargs)
 
     def replace_members_list(self, image_id, requestslib_kwargs=None):
-        url = '{0}/images/{1}/members/'.format(self.url, image_id)
+        url = '{0}/images/{1}/members'.format(self.url, image_id)
         return self.request('PUT', url, requestslib_kwargs=requestslib_kwargs)
