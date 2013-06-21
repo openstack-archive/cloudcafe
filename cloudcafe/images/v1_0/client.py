@@ -32,7 +32,7 @@ class ImagesClient(AutoMarshallingRestClient):
         self.url = url
 
     def list_images(self, requestslib_kwargs=None):
-        url = '{0}/images/'.format(self.url)
+        url = '{0}/images'.format(self.url)
         return self.request('GET', url, response_entity_type=ImageMin,
                             requestslib_kwargs=requestslib_kwargs)
 
@@ -79,7 +79,7 @@ class ImagesClient(AutoMarshallingRestClient):
         headers['x-image-meta-owner'] = image_meta_owner
         headers['x-image-meta-property'] = image_meta_property
 
-        url = '{0}/images/'.format(self.url)
+        url = '{0}/images'.format(self.url)
         headers['x-image-meta-name'] = image_name
         return self.request('POST', url, headers=headers, data=image_data,
                             requestslib_kwargs=requestslib_kwargs)
@@ -137,5 +137,5 @@ class ImagesClient(AutoMarshallingRestClient):
                             requestslib_kwargs=requestslib_kwargs)
 
     def replace_members_list(self, image_id, requestslib_kwargs=None):
-        url = '{0}/images/{1}/members/'.format(self.url, image_id)
+        url = '{0}/images/{1}/members'.format(self.url, image_id)
         return self.request('PUT', url, requestslib_kwargs=requestslib_kwargs)
