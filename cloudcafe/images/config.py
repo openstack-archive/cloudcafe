@@ -40,3 +40,11 @@ class ImagesConfig(ConfigSectionInterface):
     def secondary_image(self):
         """Secondary image ID"""
         return self.get('secondary_image')
+
+    @property
+    def image_status_interval(self):
+        return int(self.get('image_status_interval'))
+
+    @property
+    def snapshot_timeout(self):
+        return int(self.get('snapshot_timeout'))
