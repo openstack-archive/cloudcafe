@@ -12,23 +12,23 @@ class ImageTest(TestCase):
     @classmethod
     def setUp(self):
         self.raw_str = '{"images": ' \
-                       '[{"status": "active", ' \
-                       '"name": "precise", ' \
-                       '"deleted": false, ' \
-                       '"container_format": "bare", ' \
-                       '"created_at": "2013-04-29T19:32:56", ' \
-                       '"disk_format": "qcow2", ' \
-                       '"updated_at": "2013-04-29T19:32:56", ' \
-                       '"properties": {}, ' \
-                       '"min_disk": 0, ' \
-                       '"protected": false, ' \
-                       '"id": "46fd5b5c-b925-4316-a878-63cbbe7f0030", ' \
-                       '"checksum": null, ' \
-                       '"owner": "bd7531a57d3a47538fae1b89c169b293", ' \
-                       '"is_public": true, ' \
-                       '"deleted_at": null, ' \
-                       '"min_ram": 0, ' \
-                       '"size": 252116992}]}'
+            '[{"image":{"status": "active", ' \
+            '"name": "precise", ' \
+            '"deleted": false, ' \
+            '"container_format": "bare", ' \
+            '"created_at": "2013-04-29T19:32:56", ' \
+            '"disk_format": "qcow2", ' \
+            '"updated_at": "2013-04-29T19:32:56", ' \
+            '"properties": {}, ' \
+            '"min_disk": 0, ' \
+            '"protected": false, ' \
+            '"id": "46fd5b5c-b925-4316-a878-63cbbe7f0030", ' \
+            '"checksum": null, ' \
+            '"owner": "bd7531a57d3a47538fae1b89c169b293", ' \
+            '"is_public": true, ' \
+            '"deleted_at": null, ' \
+            '"min_ram": 0, ' \
+            '"size": 252116992}}]}'
 
         self.image_one = Image(
             id="46fd5b5c-b925-4316-a878-63cbbe7f0030",
