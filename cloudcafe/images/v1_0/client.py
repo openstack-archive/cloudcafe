@@ -68,7 +68,8 @@ class ImagesClient(AutoMarshallingRestClient):
                   image_meta_container_format=None, image_meta_size=None,
                   image_meta_checksum=None, image_meta_is_public=None,
                   image_meta_min_ram=None, image_meta_min_disk=None,
-                  image_meta_owner=None, image_meta_property=None,
+                  image_meta_owner=None, image_meta_property={},
+                  image_meta_location=None,
                   requestslib_kwargs=None):
 
         headers = headers if headers else {}
@@ -76,6 +77,7 @@ class ImagesClient(AutoMarshallingRestClient):
         if image_data:
             headers['content-type'] = 'application/octet-stream'
 
+        headers['x-image-meta-name'] = image_name
         headers['x-image-meta-id'] = image_meta_id
         headers['x-image-meta-store'] = image_meta_store
         headers['x-image-meta-disk-format'] = image_meta_disk_format
@@ -86,10 +88,12 @@ class ImagesClient(AutoMarshallingRestClient):
         headers['x-image-meta-min-ram'] = image_meta_min_ram
         headers['x-image-meta-min-disk'] = image_meta_min_disk
         headers['x-image-meta-owner'] = image_meta_owner
-        headers['x-image-meta-property'] = image_meta_property
+        headers['x-image-meta-location'] = image_meta_location
+        for key, val in image_meta_property.items():
+            headers['x-image-meta-property-{0}'.format(key)] = val
 
         url = '{0}/images'.format(self.url)
-        headers['x-image-meta-name'] = image_name
+        #import pdb; pdb.set_trace()
         return self.request('POST', url, headers=headers, data=image_data,
                             response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
@@ -106,7 +110,8 @@ class ImagesClient(AutoMarshallingRestClient):
                      image_meta_container_format=None, image_meta_size=None,
                      image_meta_checksum=None, image_meta_is_public=None,
                      image_meta_min_ram=None, image_meta_min_disk=None,
-                     image_meta_owner=None, image_meta_property=None,
+                     image_meta_owner=None, image_meta_property={},
+                     image_meta_location=None,
                      requestslib_kwargs=None):
 
         headers = headers if headers else {}
@@ -124,7 +129,9 @@ class ImagesClient(AutoMarshallingRestClient):
         headers['x-image-meta-min-ram'] = image_meta_min_ram
         headers['x-image-meta-min-disk'] = image_meta_min_disk
         headers['x-image-meta-owner'] = image_meta_owner
-        headers['x-image-meta-property'] = image_meta_property
+        headers['x-image-meta-location'] = image_meta_location
+        for key, val in image_meta_property.items():
+            headers['x-image-meta-property-{0}'.format(key)] = val
 
         url = '{0}/images/{1}'.format(self.url, image_id)
         return self.request('PUT', url, headers=headers,
