@@ -23,13 +23,13 @@ import json
 class Image(AutoMarshallingModel):
     """@Summary Complete model of an image"""
 
-    def __init__(self, id=None, status=None, name=None, container_format=None,
+    def __init__(self, id_=None, status=None, name=None, container_format=None,
                  disk_format=None, owner=None, checksum=None, min_ram=None,
                  min_disk=None, size=None, deleted=None, protected=None,
                  is_public=None, properties=None, created_at=None,
                  updated_at=None, deleted_at=None, members_list=None):
 
-        self.id = id
+        self.id_ = id_
         self.status = status
         self.name = name
         self.deleted = deleted
@@ -99,6 +99,9 @@ class Image(AutoMarshallingModel):
     @classmethod
     def _dict_to_obj(cls, json_dict):
         """@summary: Processing dates in converting string to date objects"""
+
+        json_dict['id_'] = json_dict['id']
+        del json_dict['id']
 
         for date_key in ['created_at', 'updated_at', 'deleted_at']:
             if json_dict[date_key]:

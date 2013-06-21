@@ -39,6 +39,7 @@ class ImageStatus(object):
     KILLED = "killed"
     PENDING_DELETE = "pending_delete"
     DELETED = "deleted"
+    ERROR = "error"
 
 
 class ImageDiskFormat(object):
