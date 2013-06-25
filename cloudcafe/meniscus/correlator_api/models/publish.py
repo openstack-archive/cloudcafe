@@ -19,7 +19,7 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class PublishMessage(AutoMarshallingModel):
 
-    def __init__(self, host, pname, time, native):
+    def __init__(self, host=None, pname=None, time=None, native=None):
         super(PublishMessage, self).__init__()
         self.host = host
         self.pname = pname
@@ -27,7 +27,17 @@ class PublishMessage(AutoMarshallingModel):
         self.native = native
 
     def _obj_to_json(self):
-        return json_to_str(self._auto_to_dict())
+        return json_to_str(self._obj_to_dict())
+
+    def _obj_to_dict(self):
+        body = {
+            'host': self.host,
+            'pname': self.pname,
+            'time': self.time,
+            'native': self.native
+        }
+
+        return self._remove_empty_values(body)
 
 
 class JobInformation(AutoMarshallingModel):
