@@ -99,3 +99,11 @@ class SecurityGroupRulesClient(AutoMarshallingRestClient):
                             request_entity=create_sec_group_request,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
+
+    def delete_rule(self, rule_id, requestslib_kwargs=None):
+        url = '{base_url}/os-security-group-rules/{rule_id}'.format(
+            base_url=self.url, rule_id=rule_id)
+        resp = self.request('DELETE', url,
+                            response_entity_type=SecurityGroupRule,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp

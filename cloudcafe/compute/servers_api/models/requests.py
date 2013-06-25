@@ -153,9 +153,9 @@ class Reboot(AutoMarshallingModel):
 
 
 class Personality(AutoMarshallingModel):
-    '''
+    """
     @summary: Personality Request Object for Server
-    '''
+    """
     ROOT_TAG = 'personality'
 
     def __init__(self, type):
@@ -197,9 +197,9 @@ class Rebuild(CreateServer):
 
 
 class Resize(AutoMarshallingModel):
-    '''
+    """
     @summary: Resize Request Object for Server
-    '''
+    """
     ROOT_TAG = 'resize'
 
     def __init__(self, flavorRef, diskConfig=None):
@@ -223,9 +223,9 @@ class Resize(AutoMarshallingModel):
 
 
 class ResetState(AutoMarshallingModel):
-    '''
+    """
     @summary: Reset State Request Object for Server
-    '''
+    """
     ROOT_TAG = 'os-resetState'
 
     def __init__(self, state):
@@ -245,9 +245,9 @@ class ResetState(AutoMarshallingModel):
 
 
 class ConfirmResize(AutoMarshallingModel):
-    '''
+    """
     @summary: Confirm Resize Request Object for Server
-    '''
+    """
     ROOT_TAG = 'confirmResize'
 
     def _obj_to_json(self):
@@ -265,10 +265,10 @@ class ConfirmResize(AutoMarshallingModel):
 
 
 class RevertResize(AutoMarshallingModel):
-    '''
+    """
     @summary: Revert Resize Request Object for Server
 
-    '''
+    """
     ROOT_TAG = 'revertResize'
 
     def _obj_to_json(self):
@@ -286,9 +286,9 @@ class RevertResize(AutoMarshallingModel):
 
 
 class MigrateServer(AutoMarshallingModel):
-    '''
+    """
     @summary: Migrate Server Request Object
-    '''
+    """
     ROOT_TAG = 'migrate'
 
     def _obj_to_json(self):
@@ -305,9 +305,9 @@ class MigrateServer(AutoMarshallingModel):
 
 
 class ConfirmServerMigration(AutoMarshallingModel):
-    '''
+    """
     @summary: Confirm Server Migration Request Object
-    '''
+    """
     ROOT_TAG = 'confirmResize'
 
     def _obj_to_json(self):
@@ -324,9 +324,9 @@ class ConfirmServerMigration(AutoMarshallingModel):
 
 
 class Lock(AutoMarshallingModel):
-    '''
+    """
     @summary: Lock Server Request Object
-    '''
+    """
     ROOT_TAG = 'lock'
 
     def _obj_to_json(self):
@@ -343,9 +343,9 @@ class Lock(AutoMarshallingModel):
 
 
 class Unlock(AutoMarshallingModel):
-    '''
+    """
     @summary: Unlock Server Request Object
-    '''
+    """
     ROOT_TAG = 'unlock'
 
     def _obj_to_json(self):
@@ -362,9 +362,9 @@ class Unlock(AutoMarshallingModel):
 
 
 class Start(AutoMarshallingModel):
-    '''
+    """
     @summary: Start Server Request Object
-    '''
+    """
     ROOT_TAG = 'os-start'
 
     def _obj_to_json(self):
@@ -381,9 +381,9 @@ class Start(AutoMarshallingModel):
 
 
 class Stop(AutoMarshallingModel):
-    '''
+    """
     @summary: Stop Server Request Object
-    '''
+    """
     ROOT_TAG = 'os-stop'
 
     def _obj_to_json(self):
@@ -400,9 +400,9 @@ class Stop(AutoMarshallingModel):
 
 
 class Suspend(AutoMarshallingModel):
-    '''
+    """
     @summary: Suspend Server Request Object
-    '''
+    """
     ROOT_TAG = 'suspend'
 
     def _obj_to_json(self):
@@ -419,9 +419,9 @@ class Suspend(AutoMarshallingModel):
 
 
 class Resume(AutoMarshallingModel):
-    '''
+    """
     @summary: Resume Server Request Object
-    '''
+    """
     ROOT_TAG = 'resume'
 
     def _obj_to_json(self):
@@ -438,9 +438,9 @@ class Resume(AutoMarshallingModel):
 
 
 class Pause(AutoMarshallingModel):
-    '''
+    """
     @summary: Pause Server Request Object
-    '''
+    """
     ROOT_TAG = 'pause'
 
     def _obj_to_json(self):
@@ -457,9 +457,9 @@ class Pause(AutoMarshallingModel):
 
 
 class Unpause(AutoMarshallingModel):
-    '''
+    """
     @summary: Unpause Server Request Object
-    '''
+    """
     ROOT_TAG = 'unpause'
 
     def _obj_to_json(self):
@@ -476,9 +476,9 @@ class Unpause(AutoMarshallingModel):
 
 
 class CreateImage(AutoMarshallingModel):
-    '''
+    """
     Create Image Server Action Request Object
-    '''
+    """
     ROOT_TAG = 'createImage'
 
     def __init__(self, name, metadata=None):
@@ -560,9 +560,9 @@ class ChangePassword(AutoMarshallingModel):
 
 
 class AddFixedIP(AutoMarshallingModel):
-    '''
+    """
     Add Fixed IP Action Request Object
-    '''
+    """
     ROOT_TAG = 'addFixedIp'
 
     def __init__(self, networkId):
@@ -578,9 +578,9 @@ class AddFixedIP(AutoMarshallingModel):
 
 
 class RemoveFixedIP(AutoMarshallingModel):
-    '''
+    """
     Remove Fixed IP Action Request Object
-    '''
+    """
     ROOT_TAG = 'removeFixedIp'
 
     def __init__(self, networkId):
@@ -593,3 +593,24 @@ class RemoveFixedIP(AutoMarshallingModel):
     def _obj_to_xml(self):
         #TODO: Implement when xml is known
         raise NotImplementedError
+
+
+class AddSecurityGroup(AutoMarshallingModel):
+    """
+    Add Security Group Action Request Object
+    """
+
+    def __init__(self, name):
+        self.name = name
+
+    def _obj_to_json(self):
+        json_dict = {"name": self.name}
+        return json.dumps({'addSecurityGroup': json_dict})
+
+    def _obj_to_xml(self):
+        element = ET.Element('addSecurityGroup')
+        name_ele = ET.Element('name')
+        name_ele.text = self.name
+        element.append(name_ele)
+        xml = ET.tostring(element)
+        return xml
