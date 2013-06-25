@@ -16,6 +16,7 @@ limitations under the License.
 from os import path
 from httplib import BadStatusLine
 from requests.exceptions import ConnectionError
+from datetime import datetime, timedelta
 
 
 class OrdersBehavior(object):
@@ -31,24 +32,82 @@ class OrdersBehavior(object):
     def get_id_from_ref(self, ref):
         return path.split(ref)[1]
 
-    def create_order_from_config(self):
+    def get_tomorrow_timestamp(self):
+        tomorrow = (datetime.today() + timedelta(days=1))
+        return tomorrow.isoformat()
+
+    def create_and_check_order(self, name=None, algorithm=None,
+                               bit_length=None, cypher_type=None,
+                               mime_type=None):
+        """
+        Creates order, gets order, and gets secret made by order.
+        """
+        resp = self.create_order_overriding_cfg(
+            name=name, algorithm=algorithm, bit_length=bit_length,
+            cypher_type=cypher_type, mime_type=mime_type)
+
+        get_order_resp = self.client.get_order(order_id=resp['order_id'])
+
+        secret_href = get_order_resp.entity.secret_href
+        secret_id = self.get_id_from_ref(ref=secret_href)
+        get_secret_resp = self.secrets_client.get_secret(
+            secret_id=secret_id, mime_type=mime_type)
+
+        return {
+            'create_resp': resp,
+            'get_order_resp': get_order_resp,
+            'get_secret_resp': get_secret_resp,
+            'secret_id': secret_id
+        }
+
+    def create_order_from_config(self, use_expiration=False):
+        expiration = None
+        if use_expiration:
+            expiration = self.get_tomorrow_timestamp()
+
         resp = self.create_order(
             name=self.config.name,
             algorithm=self.config.algorithm,
             bit_length=self.config.bit_length,
             cypher_type=self.config.cypher_type,
-            mime_type=self.config.mime_type)
+            mime_type=self.config.mime_type,
+            expiration=expiration)
+        return resp
+
+    def create_order_overriding_cfg(self, name=None, expiration=None,
+                                    algorithm=None, bit_length=None,
+                                    cypher_type=None, mime_type=None):
+        """
+        Allows for testing individual parameters on creation.
+        """
+        if name is None:
+            name = self.config.name
+        if algorithm is None:
+            algorithm = self.config.algorithm
+        if bit_length is None:
+            bit_length = self.config.bit_length
+        if cypher_type is None:
+            cypher_type = self.config.cypher_type
+        if mime_type is None:
+            mime_type = self.config.mime_type
+
+        resp = self.create_order(
+            name=name, algorithm=algorithm,
+            bit_length=bit_length, cypher_type=cypher_type,
+            mime_type=mime_type, expiration=expiration)
+
         return resp
 
     def create_order(self, name=None, algorithm=None, bit_length=None,
-                     cypher_type=None, mime_type=None):
+                     cypher_type=None, mime_type=None, expiration=None):
         try:
             resp = self.orders_client.create_order(
                 name=name,
                 algorithm=algorithm,
                 bit_length=bit_length,
                 cypher_type=cypher_type,
-                mime_type=mime_type)
+                mime_type=mime_type,
+                expiration=expiration)
         except ConnectionError as e:
             # Gracefully handling when Falcon doesn't properly handle our req
             if type(e.message.reason) is BadStatusLine:
@@ -101,3 +160,20 @@ class OrdersBehavior(object):
             self.delete_order(order_id, delete_secret=True)
 
         self.created_orders = []
+
+    def find_order(self, order_id):
+        order_group = self.client.get_orders().entity
+
+        ids = order_group.get_ids()
+        while order_id not in ids and order_group.next is not None:
+            query = order_group.get_next_query_data()
+            order_group = self.client.get_orders(
+                limit=query['limit'],
+                offset=query['offset']).entity
+            ids = order_group.get_ids()
+
+        for order in order_group.orders:
+            if order.get_id() == order_id:
+                return order
+        else:
+            return None

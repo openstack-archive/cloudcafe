@@ -15,7 +15,7 @@ limitations under the License.
 """
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.cloudkeep.barbican.secrets.models.secret \
-    import Secret, SecretGroup, SecretRef, UpdateSecret, SecretMetadata
+    import Secret, SecretGroup, SecretRef, SecretMetadata
 
 
 class SecretsClient(AutoMarshallingRestClient):
@@ -64,9 +64,8 @@ class SecretsClient(AutoMarshallingRestClient):
         """
         remote_url = self._get_secret_url(secret_id)
         headers = {'Content-Type': mime_type}
-        req_obj = UpdateSecret(plain_text)
         resp = self.request('PUT', remote_url, headers=headers,
-                            request_entity=req_obj)
+                            data=plain_text)
 
         return resp
 

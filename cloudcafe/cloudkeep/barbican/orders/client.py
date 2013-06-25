@@ -40,7 +40,7 @@ class OrdersClient(AutoMarshallingRestClient):
                                           order_id=order_id)
 
     def create_order(self, name, mime_type, algorithm, bit_length,
-                     cypher_type):
+                     cypher_type, expiration):
         """
         POST http://.../v1/{tenant_id}/orders/{order_uuid}
         Creates an order to generate a secret
@@ -48,7 +48,7 @@ class OrdersClient(AutoMarshallingRestClient):
         remote_url = self._get_base_url()
         secret = Secret(name=name,
                         mime_type=mime_type,
-                        expiration=None,
+                        expiration=expiration,
                         algorithm=algorithm,
                         bit_length=bit_length,
                         cypher_type=cypher_type)

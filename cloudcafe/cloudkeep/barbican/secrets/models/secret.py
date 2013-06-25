@@ -22,7 +22,7 @@ from cafe.engine.models.base import AutoMarshallingModel
 class Secret(AutoMarshallingModel):
 
     def __init__(self, name, mime_type, expiration, algorithm, bit_length,
-                 cypher_type, plain_text=None):
+                 cypher_type, plain_text=None, content_types=None):
         super(Secret, self).__init__()
 
         self.name = name
@@ -32,6 +32,7 @@ class Secret(AutoMarshallingModel):
         self.bit_length = bit_length
         self.cypher_type = cypher_type
         self.plain_text = plain_text
+        self.content_types = content_types
 
     def _obj_to_json(self):
         return dict_to_str(self._obj_to_dict())
@@ -55,6 +56,8 @@ class Secret(AutoMarshallingModel):
             converted['cypher_type'] = self.cypher_type
         if self.plain_text is not None:
             converted['plain_text'] = self.plain_text
+        if self.content_types is not None:
+            converted['content_types'] = self.content_types
 
         return converted
 
@@ -76,7 +79,8 @@ class SecretMetadata(Secret):
                  created=None, secret_ref=None, content_types=None):
         super(SecretMetadata, self).__init__(name, mime_type, expiration,
                                              algorithm, bit_length,
-                                             cypher_type, plain_text)
+                                             cypher_type, plain_text,
+                                             content_types)
         self.status = status
         self.updated = updated
         self.created = created
