@@ -593,3 +593,24 @@ class RemoveFixedIP(AutoMarshallingModel):
     def _obj_to_xml(self):
         #TODO: Implement when xml is known
         raise NotImplementedError
+
+
+class AddSecurityGroup(AutoMarshallingModel):
+    '''
+    Add Security Group Action Request Object
+    '''
+
+    def __init__(self, name):
+        self.name = name
+
+    def _obj_to_json(self):
+        json_dict = {"name": self.name}
+        return json.dumps({'addSecurityGroup': json_dict})
+
+    def _obj_to_xml(self):
+        element = ET.Element('addSecurityGroup')
+        name_ele = ET.Element('name')
+        name_ele.text = self.name
+        element.append(name_ele)
+        xml = ET.tostring(element)
+        return xml

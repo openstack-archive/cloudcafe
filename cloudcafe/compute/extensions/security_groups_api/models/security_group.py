@@ -86,7 +86,7 @@ class SecurityGroup(AutoMarshallingModel):
         name = xml_ele.attrib.get('name')
         description = xml_ele.find('description').text
         rules = []
-        for rule in xml_ele.findall('rules'):
+        for rule in xml_ele.find('rules').findall('rule'):
             rules.append(SecurityGroupRule._xml_ele_to_obj(rule))
         return SecurityGroup(id=id, name=name,
                              description=description,
@@ -146,7 +146,7 @@ class SecurityGroups(SecurityGroup):
          """
         ret = []
         json_dict = json.loads(serialized_str)
-        groups = json_dict.get('security_group_rules')
+        groups = json_dict.get('security_groups')
 
         for group in groups:
             ret.append(SecurityGroup._dict_to_obj(group))
