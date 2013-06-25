@@ -21,13 +21,12 @@ from cloudcafe.identity.v2_0.tokens_api.models.base import \
 
 
 class Tenants(BaseIdentityListModel):
-
     def __init__(self, tenants=None):
         """
         An object that represents a tenants response object.
         """
         super(Tenants, self).__init__()
-        self.extend(tenants)
+        self.extend(tenants or [])
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -55,7 +54,6 @@ class Tenants(BaseIdentityListModel):
 
 
 class Tenant(BaseIdentityModel):
-
     def __init__(self, id_=None, name=None, description=None,
                  enabled=None, created=None):
         """
@@ -99,10 +97,9 @@ class Tenant(BaseIdentityModel):
 
 
 class TenantsLinks(BaseIdentityListModel):
-
     def __init__(self, tenant_link=None):
         super(TenantsLinks, self).__init__()
-        self.extend(tenant_link)
+        self.extend(tenant_link or [])
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -110,7 +107,7 @@ class TenantsLinks(BaseIdentityListModel):
 
     @classmethod
     def _list_to_obj(cls, tenant_links_list_dict):
-        tenant_links = TenantsLinks([])
+        tenant_links = TenantsLinks()
         for tenant_link_dict in tenant_links_list_dict:
             tenant_link = TenantsLink._dict_to_obj(tenant_link_dict)
             tenant_links.append(tenant_link)
@@ -124,7 +121,6 @@ class TenantsLinks(BaseIdentityListModel):
 
 
 class TenantsLink(BaseIdentityModel):
-
     def __init__(self, href=None, type_=None, rel=None):
         self.href = href
         self.type = type_
