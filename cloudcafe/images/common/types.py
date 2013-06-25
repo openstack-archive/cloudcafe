@@ -33,12 +33,12 @@ class ImageStatus(object):
     @type DELETED: C{str}
     """
 
-    QUEUED = "QUEUED"
-    SAVING = "SAVING"
-    ACTIVE = "ACTIVE"
-    KILLED = "KILLED"
-    PENDING_DELETE = "PENDING_DELETE"
-    DELETED = "DELETED"
+    QUEUED = "queued"
+    SAVING = "saving"
+    ACTIVE = "active"
+    KILLED = "killed"
+    PENDING_DELETE = "pending_delete"
+    DELETED = "deleted"
 
 
 class ImageDiskFormat(object):
@@ -46,15 +46,15 @@ class ImageDiskFormat(object):
     @summary: Types denoting an Image's disk format.
     """
 
-    RAW = "RAW"
-    VHD = "VHD"
-    VMDK = "VMDK"
-    VDI = "VDI"
-    ISO = "ISO"
-    QCOW2 = "QCOW2"
-    AKI = "AKI"
-    AMI = "AMI"
-    ARI = "ARI"
+    RAW = "raw"
+    VHD = "vhd"
+    VMDK = "vmdk"
+    VDI = "vdi"
+    ISO = "iso"
+    QCOW2 = "qcow2"
+    AKI = "aki"
+    AMI = "ami"
+    ARI = "ari"
 
 
 class ImageContainerFormat(object):
@@ -62,13 +62,13 @@ class ImageContainerFormat(object):
     @summary: Types denoting an Image's container format.
     """
 
-    BARE = "BARE"
-    OVF = "OVF"
-    AKI = "AKI"
-    ARI = "ARI"
-    AMI = "AMI"
+    BARE = "bare"
+    OVF = "ovf"
+    AKI = "aki"
+    ARI = "ari"
+    AMI = "ami"
 
 
 class ImageVisibility(object):
-    PUBLIC = 'PUBLIC'
-    PRIVATE = 'PRIVATE'
+    PUBLIC = 'public'
+    PRIVATE = 'private'
