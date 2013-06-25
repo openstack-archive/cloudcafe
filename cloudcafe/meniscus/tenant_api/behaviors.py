@@ -33,13 +33,14 @@ class TenantBehaviors(object):
         self.db_client.disconnect()
         self.tenant_ids = []
 
-    def create_tenant(self, use_alternate=False):
+    def create_tenant(self, tenant_id=None, use_alternate=False):
         """
         Helper function for creating a tenant on a fixture
         @param self:
         @return: Returns tuple with tenant_id and response object
         """
-        tenant_id = str(random_int(1, 100000))
+        if tenant_id is None:
+            tenant_id = str(random_int(1, 100000))
         self.tenant_ids.append(tenant_id)
 
         if use_alternate:
