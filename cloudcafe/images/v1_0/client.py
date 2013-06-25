@@ -41,6 +41,11 @@ class ImagesClient(AutoMarshallingRestClient):
         return self.request('GET', url, response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
+    def delete_image(self, image_id, requestslib_kwargs=None):
+        url = '{0}/images/{1}'.format(self.url, image_id)
+        return self.request('DELETE', url, response_entity_type=Image,
+                            requestslib_kwargs=requestslib_kwargs)
+
     def filter_images_list(self, parameters_list, requestslib_kwargs=None):
         url = '{0}/images'.format(self.url)
         return self.request('GET', url, params=parameters_list,
@@ -86,6 +91,7 @@ class ImagesClient(AutoMarshallingRestClient):
         url = '{0}/images'.format(self.url)
         headers['x-image-meta-name'] = image_name
         return self.request('POST', url, headers=headers, data=image_data,
+                            response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_image_membership(self, image_id, requestslib_kwargs=None):
