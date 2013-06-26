@@ -76,8 +76,8 @@ class Image(AutoMarshallingModel):
                 date_string = 'None' or \
                     date_property.strftime('%Y-%m-%dT%H:%M:%S')
                 values.append("{0}: {1}".format(prop, date_string))
-        else:
-            values.append("{0}: {1}".format(prop, self.__dict__[prop]))
+            else:
+                values.append("{0}: {1}".format(prop, self.__dict__[prop]))
         return '[ {0} ]'.format(', '.join(values))
 
     @classmethod
@@ -89,8 +89,12 @@ class Image(AutoMarshallingModel):
         if 'images' in json_dict.keys():
             images = []
             for image_dict in json_dict['images']:
-                images.append(cls._dict_to_obj(image_dict))
+                image_str = image_dict['image']
+                images.append(cls._dict_to_obj(image_str))
             return images
+        else:
+            image_str = json_dict['image']
+            return cls._dict_to_obj(image_str)
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -98,8 +102,9 @@ class Image(AutoMarshallingModel):
 
         for date_key in ['created_at', 'updated_at', 'deleted_at']:
             if json_dict[date_key]:
-                json_dict[date_key] = datetime.strptime(json_dict[date_key],
-                                                        '%Y-%m-%dT%H:%M:%S')
+                json_dict[date_key] = None or \
+                    datetime.strptime(json_dict[date_key],
+                                      '%Y-%m-%dT%H:%M:%S')
         return Image(**json_dict)
 
     @classmethod
