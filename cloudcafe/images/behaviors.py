@@ -17,14 +17,14 @@ limitations under the License.
 import time
 
 from cloudcafe.compute.images_api.behaviors import \
-    ImageBehaviors as BaseImageBehaviors
+    ImageBehaviors as ImageAPIBehaviors
 
 from cloudcafe.images.common.types import ImageStatus
 from cloudcafe.compute.common.exceptions import \
     TimeoutException, BuildErrorException
 
 
-class ImageBehaviors(BaseImageBehaviors):
+class ImageBehaviors(ImageAPIBehaviors):
 
     def __init__(self, images_client, config):
         super(ImageBehaviors, self).__init__(images_client,
@@ -61,8 +61,8 @@ class ImageBehaviors(BaseImageBehaviors):
 
             if image_status == ImageStatus.ERROR:
                 raise BuildErrorException(
-                    'Build failed. Image with uuid %s entered ERROR status.'
-                    % image_id)
+                    'Build failed. Image with uuid {0} entered ERROR status.'
+                    .format(image_id))
 
             if image_status == desired_status:
                 break
