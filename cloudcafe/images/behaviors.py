@@ -61,7 +61,7 @@ class ImageBehaviors(ImageAPIBehaviors):
 
             if image_status == ImageStatus.ERROR:
                 raise BuildErrorException(
-                    'Build failed. Image with uuid %s entered ERROR status.'
+                    'Build failed. Image with uuid {0} entered ERROR status.'
                     .format(image_id))
 
             if image_status == desired_status:
