@@ -88,9 +88,8 @@ class Image(AutoMarshallingModel):
 
         if 'images' in json_dict.keys():
             images = []
-            for image_dict in json_dict['images']:
-                image_str = image_dict['image']
-                images.append(cls._dict_to_obj(image_str))
+            for image in json_dict['images']:
+                images.append(cls._dict_to_obj(image))
             return images
         else:
             image_str = json_dict['image']
@@ -101,7 +100,7 @@ class Image(AutoMarshallingModel):
         """@summary: Processing dates in converting string to date objects"""
 
         for date_key in ['created_at', 'updated_at', 'deleted_at']:
-            if json_dict[date_key]:
+            if json_dict.get(date_key):
                 json_dict[date_key] = None or \
                     datetime.strptime(json_dict[date_key],
                                       '%Y-%m-%dT%H:%M:%S')
@@ -139,13 +138,15 @@ class Image(AutoMarshallingModel):
 class ImageMin(Image):
 
     def __init__(self, name=None, container_format=None, disk_format=None,
+                 checksum=None, size=None, id=None,
                  status=None, min_disk=None, min_ram=None):
         self.name = name
         self.container = container_format
         self.disk_format = disk_format
+        self.checksum = checksum
+        self.id = id
         self.status = status
-        self.min_disk = min_disk
-        self.min_ram = min_ram
+        self.size = size
 
     def __repr__(self):
         values = []

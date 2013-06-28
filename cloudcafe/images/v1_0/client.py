@@ -1,5 +1,5 @@
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v1_0.models.image import Image, ImageMin
+from cloudcafe.images.v1_0.models.image import Image
 
 
 class ImagesClient(AutoMarshallingRestClient):
@@ -33,7 +33,13 @@ class ImagesClient(AutoMarshallingRestClient):
 
     def list_images(self, requestslib_kwargs=None):
         url = '{0}/images'.format(self.url)
-        return self.request('GET', url, response_entity_type=ImageMin,
+        return self.request('GET', url, response_entity_type=Image,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def list_images_detail(self, parameters_list, requestslib_kwargs=None):
+        url = '{0}/images/detail'.format(self.url)
+        return self.request('GET', url, params=parameters_list,
+                            response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_image(self, image_id, requestslib_kwargs=None):
@@ -75,7 +81,7 @@ class ImagesClient(AutoMarshallingRestClient):
         headers = headers if headers else {}
 
         if image_data:
-            headers['content-type'] = 'application/octet-stream'
+            headers['Content-Type'] = 'application/octet-stream'
 
         headers['x-image-meta-name'] = image_name
         headers['x-image-meta-id'] = image_meta_id
@@ -117,7 +123,7 @@ class ImagesClient(AutoMarshallingRestClient):
         headers = headers if headers else {}
 
         if image_data:
-            headers['content-type'] = 'application/octet-stream'
+            headers['Content-Type'] = 'application/octet-stream'
 
         headers['x-image-meta-name'] = image_meta_name
         headers['x-image-meta-store'] = image_meta_store
