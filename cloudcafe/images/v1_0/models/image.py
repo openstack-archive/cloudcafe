@@ -23,13 +23,13 @@ import json
 class Image(AutoMarshallingModel):
     """@Summary Complete model of an image"""
 
-    def __init__(self, id=None, status=None, name=None, container_format=None,
+    def __init__(self, id_=None, status=None, name=None, container_format=None,
                  disk_format=None, owner=None, checksum=None, min_ram=None,
                  min_disk=None, size=None, deleted=None, protected=None,
                  is_public=None, properties=None, created_at=None,
                  updated_at=None, deleted_at=None, members_list=None):
 
-        self.id = id
+        self.id_ = id_
         self.status = status
         self.name = name
         self.deleted = deleted
@@ -88,9 +88,8 @@ class Image(AutoMarshallingModel):
 
         if 'images' in json_dict.keys():
             images = []
-            for image_dict in json_dict['images']:
-                image_str = image_dict['image']
-                images.append(cls._dict_to_obj(image_str))
+            for image in json_dict['images']:
+                images.append(cls._dict_to_obj(image))
             return images
         else:
             image_str = json_dict['image']
@@ -99,9 +98,11 @@ class Image(AutoMarshallingModel):
     @classmethod
     def _dict_to_obj(cls, json_dict):
         """@summary: Processing dates in converting string to date objects"""
+        json_dict['id_'] = json_dict['id']
+        del json_dict['id']
 
         for date_key in ['created_at', 'updated_at', 'deleted_at']:
-            if json_dict[date_key]:
+            if json_dict.get(date_key):
                 json_dict[date_key] = None or \
                     datetime.strptime(json_dict[date_key],
                                       '%Y-%m-%dT%H:%M:%S')
@@ -134,22 +135,3 @@ class Image(AutoMarshallingModel):
 
     def replace_members_list(self, members_list):
         self.members_list = members_list
-
-
-class ImageMin(Image):
-
-    def __init__(self, name=None, container_format=None, disk_format=None,
-                 status=None, min_disk=None, min_ram=None):
-        self.name = name
-        self.container = container_format
-        self.disk_format = disk_format
-        self.status = status
-        self.min_disk = min_disk
-        self.min_ram = min_ram
-
-    def __repr__(self):
-        values = []
-        for prop in self.__dict__:
-            if self.__dict__[prop]:
-                values.append("{0}: {1}".format(prop, self.__dict__[prop]))
-        return '[{0}]'.format(', '.join(values))
