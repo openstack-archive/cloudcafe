@@ -134,21 +134,29 @@ class Image(AutoMarshallingModel):
 
     def _obj_to_json(self):
         obj_dict = {}
+
+        if self.created_at:
+            obj_dict['created_at'] = \
+                self.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+        else:
+            obj_dict['created_at'] = None
+
+        if self.updated_at:
+            obj_dict['updated_at'] = \
+                self.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+        else:
+            obj_dict['updated_at'] = None
+
         obj_dict['id'] = self.id_
         obj_dict['name'] = self.name
-        obj_dict['visibility'] = self.visibility.lower()
-        obj_dict['status'] = self.status.lower()
+        obj_dict['visibility'] = self.visibility
+        obj_dict['status'] = self.status
         obj_dict['protected'] = self.protected
         obj_dict['tags'] = self.tags
         obj_dict['checksum'] = self.checksum
         obj_dict['size'] = self.size
-        obj_dict['created_at'] = self.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
-        obj_dict['updated_at'] = self.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ')
-        obj_dict['file'] = self.file_
-        obj_dict['self'] = self.self_
-        obj_dict['schema'] = self.schema
-        obj_dict['container_format'] = self.container_format.lower()
-        obj_dict['disk_format'] = self.disk_format.lower()
+        obj_dict['container_format'] = self.container_format
+        obj_dict['disk_format'] = self.disk_format
         obj_dict['min_disk'] = self.min_disk
         obj_dict['min_ram'] = self.min_ram
 

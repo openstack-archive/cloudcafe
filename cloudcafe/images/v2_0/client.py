@@ -55,6 +55,7 @@ class ImageClient(AutoMarshallingRestClient):
         url = '{0}/images'.format(self.base_url)
 
         return self.request('POST', url, data=serialized_obj,
+                            response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
     def update_image(self, image_id, properties, requestslib_kwargs=None):
