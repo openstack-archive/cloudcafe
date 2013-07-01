@@ -1,5 +1,6 @@
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.images.v1_0.models.image import Image
+from cloudcafe.images.v1_0.models.member import Member
 
 
 class ImagesClient(AutoMarshallingRestClient):
@@ -108,6 +109,7 @@ class ImagesClient(AutoMarshallingRestClient):
             url = '{0}/images/{1}/members'.format(self.url, image_id)
 
             return self.request('GET', url,
+                                response_entity_type=Member,
                                 requestslib_kwargs=requestslib_kwargs)
 
     def update_image(self, image_id, image_data=None, headers=None,
