@@ -35,7 +35,11 @@ class Tenants(BaseIdentityListModel):
 
     @classmethod
     def _list_to_obj(cls, list_):
-        ret = {'tenants': [Tenant._dict_to_obj(tenant) for tenant in list_]}
+        for item in list_:
+            item['id_'] = item['id']
+            del item['id']
+
+        ret = {'tenants': [Tenant(**tenant) for tenant in list_]}
         return Tenants(**ret)
 
     @classmethod
