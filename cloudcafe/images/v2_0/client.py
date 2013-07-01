@@ -55,6 +55,7 @@ class ImageClient(AutoMarshallingRestClient):
         url = '{0}/images'.format(self.base_url)
 
         return self.request('POST', url, data=serialized_obj,
+                            response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
     def update_image(self, image_id, properties, requestslib_kwargs=None):
@@ -123,8 +124,11 @@ class ImageClient(AutoMarshallingRestClient):
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def store_raw_image_data(self, image_id, requestslib_kwargs=None):
-        raise NotImplementedError
+    def store_raw_image_data(self, image_id, image_data,
+                             requestslib_kwargs=None):
+        url = '{0}/images/{1}/file'.format(self.base_url, image_id)
+        headers = {'Content-Type': 'application/octet-stream'}
+        return self.request('PUT', url, headers=headers, data=image_data)
 
     def get_raw_image_data(self, image_id, requestslib_kwargs=None):
         raise NotImplementedError
