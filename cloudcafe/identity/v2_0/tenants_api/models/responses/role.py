@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
 from cloudcafe.identity.v2_0.common.models.base import \
     BaseIdentityModel, BaseIdentityListModel
 
@@ -32,8 +33,12 @@ class Roles(BaseIdentityListModel):
         for role_dict in role_dict_list:
             role = Role._dict_to_obj(role_dict)
             roles.append(role)
-
         return roles
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._list_to_obj(json_dict.get('roles'))
 
 
 class Role(BaseIdentityModel):
@@ -49,5 +54,9 @@ class Role(BaseIdentityModel):
     def _dict_to_obj(cls, json_dict):
         role = Role(id_=json_dict.get('id'),
                     name=json_dict.get('name'))
-
         return role
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._dict_to_obj(json_dict.get('role'))
