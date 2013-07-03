@@ -272,7 +272,7 @@ class ObjectStorageAPIClient(RestClient):
     #Storage Object------------------------------------------------------------
 
     def get_object(self, container_name, object_name, headers=None,
-                   prefetch=True, requestslib_kwargs=None):
+                   stream=False, requestslib_kwargs=None):
         """
         optional headers
 
@@ -304,8 +304,8 @@ class ObjectStorageAPIClient(RestClient):
         if requestslib_kwargs is None:
             requestslib_kwargs = {}
 
-        if requestslib_kwargs.get('prefetch') is None:
-            requestslib_kwargs['prefetch'] = prefetch
+        if requestslib_kwargs.get('stream') is None:
+            requestslib_kwargs['stream'] = stream
 
         response = self.get(
             url,
