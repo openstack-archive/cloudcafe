@@ -121,15 +121,6 @@ class Image(AutoMarshallingModel):
             json_dict['{0}_'.format(key)] = json_dict[key]
             del(json_dict[key])
 
-        json_dict['status'] = getattr(ImageStatus, json_dict['status'].upper())
-        json_dict['visibility'] = getattr(ImageVisibility,
-                                          json_dict['visibility'].upper())
-        json_dict['container_format'] = getattr(ImageContainerFormat,
-                                                json_dict['container_format']
-                                                .upper())
-        json_dict['disk_format'] = getattr(ImageDiskFormat,
-                                           json_dict['disk_format'].upper())
-
         return Image(**json_dict)
 
     def _obj_to_json(self):
