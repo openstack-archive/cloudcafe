@@ -35,7 +35,7 @@ class Tenants(BaseIdentityListModel):
 
     @classmethod
     def _list_to_obj(cls, list_):
-        ret = {'tenants': [Tenant(**tenant) for tenant in list_]}
+        ret = {'tenants': [Tenant._dict_to_obj(tenant) for tenant in list_]}
         return Tenants(**ret)
 
     @classmethod
@@ -55,19 +55,29 @@ class Tenants(BaseIdentityListModel):
 
 class Tenant(BaseIdentityModel):
     def __init__(self, id_=None, name=None, description=None,
-                 enabled=None, created=None):
+                 enabled=None):
         """
         An object that represents a tenant response object.
         """
+        super(Tenant, self).__init__()
         self.id_ = id_
         self.name = name
         self.description = description
         self.enabled = enabled
-        self.created = created
+
+    def _obj_to_json(self):
+        json_dict = {"tenant": {"id": self.id_,
+                                "name": self.name,
+                                "description": self.description,
+                                "enabled": self.enabled}}
+        return json.dumps(json_dict)
 
     @classmethod
     def _dict_to_obj(cls, dic):
-        return Tenant(**dic)
+        return Tenant(id_=dic.get("id"),
+                      name=dic.get("name"),
+                      description=dic.get("description"),
+                      enabled=dic.get("enabled"))
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -122,13 +132,22 @@ class TenantsLinks(BaseIdentityListModel):
 
 class TenantsLink(BaseIdentityModel):
     def __init__(self, href=None, type_=None, rel=None):
+        super(TenantsLink, self).__init__()
         self.href = href
-        self.type = type_
+        self.type_ = type_
         self.rel = rel
+
+    def _obj_to_json(self):
+        json_dict = {"tenantsLink": {"href": self.href,
+                                     "type": self.type_,
+                                     "rel": self.rel}}
+        return json.dumps(json_dict)
 
     @classmethod
     def _dict_to_obj(cls, tenant_dict):
-        return TenantsLink(**tenant_dict)
+        return TenantsLink(href=tenant_dict.get("href"),
+                           type_=tenant_dict.get("type"),
+                           rel=tenant_dict.get("rel"))
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
