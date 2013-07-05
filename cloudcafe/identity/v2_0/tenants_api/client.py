@@ -21,8 +21,10 @@ from cloudcafe.identity.v2_0.tenants_api.models.responses.role import \
     Roles, Role
 from cloudcafe.identity.v2_0.tenants_api.models.responses.user import \
     Users, User
+from cloudcafe.identity.v2_0.common.models.constants import AdminExtensions
 
 _version = 'v2.0'
+_admin_extensions = AdminExtensions.OS_KS_ADM
 
 
 class TenantsAPI_Client(AutoMarshallingRestClient):
@@ -177,7 +179,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @summary: Creates a user for a given tenant
         """
 
-        url = '{0}/tenants/{1}/users'.format(self.base_url, tenant_id)
+        url = '{0}/users'.format(self.base_url)
         user_request_object = User(id_=id_, tenant_id=tenant_id, name=name,
                                    enabled=enabled, email=email)
         response = self.request('POST', url,
@@ -250,20 +252,22 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
                                 requestslib_kwargs=requestslib_kwargs)
         return response
 
-    def create_role_for_tenant_user(self, id_=None, name=None,
-                                    tenant_id=None, user_id=None,
-                                    requestslib_kwargs=None):
+    def assign_role_to_tenant_user(self, role_id=None, name=None,
+                                   tenant_id=None, user_id=None,
+                                   requestslib_kwargs=None):
         """
-        @summary: Creates a role for a given tenant user
+        @summary: Assigns a role to a given tenant user
         """
 
-        url = '{0}/tenants/{1}/users/{2}/roles'.format(self.base_url,
-                                                       tenant_id, user_id)
+        url = '{0}/tenants/{1}/users/{2}/roles/{3}/{4}'.format(
+            self.base_url,
+            tenant_id,
+            user_id,
+            _admin_extensions,
+            role_id)
 
-        role_request_object = Role(id_=id_, name=name)
-        response = self.request('POST', url,
+        response = self.request('PUT', url,
                                 response_entity_type=Role,
-                                request_entity=role_request_object,
                                 requestslib_kwargs=requestslib_kwargs)
         return response
 
@@ -275,7 +279,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @type tenant_id: String
         @param user_id: The id of the user
         @type user_id: String
-        @return: server_response
+        @return: response
         @rtype: Response
         """
 
@@ -286,20 +290,28 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
                                 requestslib_kwargs=requestslib_kwargs)
         return response
 
-    def delete_role_of_tenant_user(self, tenant_id,
-                                   user_id, requestslib_kwargs=None):
+    def remove_role_of_tenant_user(self, tenant_id=None,
+                                   user_id=None, role_id=None,
+                                   requestslib_kwargs=None):
         """
         @summary: Deletes the specified roles for a tenant user
         @param tenant_id: The id of a tenant
         @type tenant_id: String
         @param user_id: The id of a user
         @type user_id: String
+        @param role_id: The id of a role
+        @type role_id: String
         @return: resp
         @rtype: Requests.response
         """
 
-        url = '{0}/tenants/{1}/users/{2}/roles'.format(self.base_url,
-                                                       tenant_id, user_id)
+        url = '{0}/tenants/{1}/users/{2}/roles/{3}/{4}'.format(
+            self.base_url,
+            tenant_id,
+            user_id,
+            _admin_extensions,
+            role_id)
+
         response = self.request('DELETE', url,
                                 requestslib_kwargs=requestslib_kwargs)
         return response
