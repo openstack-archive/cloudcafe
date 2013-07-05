@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cloudcafe.identity.config import IdentityTenantConfig
 from cloudcafe.identity.v2_0.tenants_api.models.responses.tenant import \
     Tenants, Tenant
 from cloudcafe.identity.v2_0.tenants_api.models.responses.role import \
@@ -27,7 +28,8 @@ _version = 'v2.0'
 
 class TenantsAPI_Client(AutoMarshallingRestClient):
     def __init__(self, url, auth_token,
-                 serialize_format=None, deserialize_format=None):
+                 serialize_format=None, deserialize_format=None,
+                 tenant_admin=None):
         """
         @param url: Base URL for the keystone service
         @type url: String
@@ -47,6 +49,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         self.default_headers['Accept'] = 'application/{0}'.format(
             serialize_format)
         self.default_headers['X-Auth-Token'] = auth_token
+        self.tenant_admin = tenant_admin or IdentityTenantConfig()
 
     def list_tenants(self, requestslib_kwargs=None):
         """
@@ -250,18 +253,22 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
                                 requestslib_kwargs=requestslib_kwargs)
         return response
 
-    def create_role_for_tenant_user(self, id_=None, name=None,
-                                    tenant_id=None, user_id=None,
-                                    requestslib_kwargs=None):
+    def assign_role_to_tenant_user(self, role_id=None, name=None,
+                                   tenant_id=None, user_id=None,
+                                   requestslib_kwargs=None):
         """
-        @summary: Creates a role for a given tenant user
+        @summary: Assigns a role to a given tenant user
         """
 
-        url = '{0}/tenants/{1}/users/{2}/roles'.format(self.base_url,
-                                                       tenant_id, user_id)
+        url = '{0}/tenants/{1}/users/{2}/roles/{3}/{4}'.format(
+            self.base_url,
+            tenant_id,
+            user_id,
+            self.tenant_admin,
+            role_id)
 
-        role_request_object = Role(id_=id_, name=name)
-        response = self.request('POST', url,
+        role_request_object = Role(id_=role_id, name=name)
+        response = self.request('PUT', url,
                                 response_entity_type=Role,
                                 request_entity=role_request_object,
                                 requestslib_kwargs=requestslib_kwargs)
