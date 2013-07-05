@@ -18,7 +18,7 @@ from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
 class IdentityTokenConfig(ConfigSectionInterface):
-    SECTION_NAME = 'token_api'
+    SECTION_NAME = 'tokens_api'
 
     @property
     def serialize_format(self):
@@ -47,3 +47,11 @@ class IdentityTokenConfig(ConfigSectionInterface):
     @property
     def authentication_endpoint(self):
         return self.get("authentication_endpoint")
+
+
+class IdentityTenantConfig(ConfigSectionInterface):
+    SECTION_NAME = 'tenants_api'
+
+    @property
+    def tenants_api_admin(self):
+        return self.get("tenants_api_admin")
