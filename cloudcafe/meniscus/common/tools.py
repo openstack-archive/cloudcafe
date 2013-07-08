@@ -24,5 +24,7 @@ class RequestUtilities(object):
         Utility to extract the producer id from location header
         """
         location = request.headers.get('location')
-        extracted_id = int(path.split(location)[1])
+        extracted_id = None
+        if location:
+            extracted_id = int(path.split(location)[1])
         return extracted_id
