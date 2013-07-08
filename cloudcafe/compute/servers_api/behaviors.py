@@ -126,8 +126,8 @@ class ServerBehaviors(BaseBehavior):
         else:
             raise TimeoutException(
                 "wait_for_server_status ran for {0} seconds and did not "
-                "observe the server achieving the {1} status.".format(
-                    timeout, desired_status))
+                "observe server {1} reach the {2} status.".format(
+                    timeout, server_id, desired_status))
 
         return resp
 
