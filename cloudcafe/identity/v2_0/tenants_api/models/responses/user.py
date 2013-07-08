@@ -13,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from cloudcafe.identity.v2_0.base import BaseIdentityListModel
+import json
+from cloudcafe.identity.v2_0.common.models.base import BaseIdentityListModel
 
 
 class Users(BaseIdentityListModel):
@@ -47,6 +48,27 @@ class User(BaseIdentityListModel):
         self.enabled = enabled
         self.email = email
 
+    def _obj_to_json(self):
+        json_dict = {"user": {"id": self.id_,
+                              "name": self.name,
+                              "tenantId": self.tenant_id,
+                              "enabled": self.enabled,
+                              "email": self.email}}
+
+        return json.dumps(json_dict)
+
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        return User(**json_dict)
+        user = User(id_=json_dict.get('id'),
+                    name=json_dict.get('name'),
+                    tenant_id=json_dict.get('tenantId'),
+                    enabled=json_dict.get('enabled'),
+                    email=json_dict.get('email'))
+
+        return user
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+
+        return cls._dict_to_obj(json_dict.get('user'))
