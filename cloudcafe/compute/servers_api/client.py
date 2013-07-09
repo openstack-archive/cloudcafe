@@ -14,10 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from urlparse import urlparse
-
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.compute.common.datagen import rand_name
+from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
 from cloudcafe.compute.extensions.security_groups_api.models.security_group\
