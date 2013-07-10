@@ -68,7 +68,8 @@ class ExceptionHandler:
             if 'cloudServersFault' in resp_body_dict:
                 message = resp_body_dict['cloudServersFault']['message']
             if 'x-compute-request-id' in resp_body_dict:
-                message += ' x-compute-request-id ' + resp_body_dict['x-compute-request-id']
+                message += ' x-compute-request-id ' + \
+                           resp_body_dict['x-compute-request-id']
             raise exceptions.ComputeFault(message)
 
         if resp.status_code == 404:
@@ -110,7 +111,8 @@ class ExceptionHandler:
             # Handle the case where the API returns the exception in HTML
             AutoMarshallingModel._remove_namespace(element, ns)
             type = 'xml'
-            return {element.tag: {'message': element.find('message').text}}, type
+            return ({element.tag: {'message': element.find('message').text}},
+                    type)
         except:
             pass
 

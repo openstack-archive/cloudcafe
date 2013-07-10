@@ -180,7 +180,8 @@ class ImageBehaviors(object):
                 break
 
             # If GET on deleted images is enabled, check for DELETED status
-            if self.config.can_get_deleted_image and image.status == ImageStates.DELETED:
+            if (self.config.can_get_deleted_image
+                    and image.status == ImageStates.DELETED):
                 break
             time.sleep(interval_time)
         else:
