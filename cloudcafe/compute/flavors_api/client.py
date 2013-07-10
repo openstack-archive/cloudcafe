@@ -131,7 +131,7 @@ class FlavorsClient(AutoMarshallingRestClient):
         url_scheme = urlparse(url_new).scheme
         url = url_new if url_scheme \
             else '{base_url}/flavors/{flavor_id}'.format(base_url=self.url,
-                                                flavor_id=flavor_id)
+                                                         flavor_id=flavor_id)
 
         flavor_response = self.request('GET', url, requestslib_kwargs,
                                        response_entity_type=Flavor,

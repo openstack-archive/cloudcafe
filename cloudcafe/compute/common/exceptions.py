@@ -155,15 +155,20 @@ class ServerUnreachable(Exception):
 
 class InvalidJSON(Exception):
     def __init__(self, message, expected_response):
-        self.message = 'Unexpected JSON response. Parsing of the following JSON failed ' + message + '. Expected response of type ' + expected_response
+        self.message = ('Unexpected JSON response. '
+                        'Parsing of the following JSON failed: {0}. '
+                        'Expected response of type {1}.'.format(
+                            message, expected_response))
 
 
 class AuthenticationTimeoutException(Exception):
     def __init__(self, server_id=None):
         if server_id is None:
-            self.message = 'Authentication to the desired failed due to timing out.'
+            self.message = ('Authentication to the desired server '
+                            'failed due to timing out.')
         else:
-            self.message = 'Authentication to server ' + server_id + ' failed due to timing out.'
+            self.message = ('Authentication to server {0} failed '
+                            'due to timing out.'.format(server_id))
 
     def __str__(self):
         return repr(self.message)
