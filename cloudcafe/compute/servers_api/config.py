@@ -27,6 +27,11 @@ class ServersConfig(ConfigSectionInterface):
         return self.get("instance_auth_strategy")
 
     @property
+    def disk_config_override(self):
+        """Optional override for the disk_config parameter (all actions)"""
+        return self.get("disk_config_override")
+
+    @property
     def server_status_interval(self):
         """Amount of time to wait between polling the status of a server"""
         return int(self.get("server_status_interval"))
