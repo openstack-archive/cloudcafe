@@ -54,7 +54,7 @@ class Quota(AutoMarshallingModel):
                      quota_dict.get('metadata_items'),
                      quota_dict.get('ram'),
                      quota_dict.get('security_group_rules'),
-                     quota_dict.get('security_group_rules'))
+                     quota_dict.get('security_groups'))
 
     @classmethod
     def _json_to_obj(cls, serialized_str):

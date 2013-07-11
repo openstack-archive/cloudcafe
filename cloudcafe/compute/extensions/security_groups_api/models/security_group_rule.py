@@ -34,7 +34,7 @@ class IpRange(AutoMarshallingModel):
     @classmethod
     def _xml_ele_to_obj(cls, xml_ele):
         cidr = xml_ele.find('cidr').text
-        return IpRange(cidr)
+        return IpRange(cidr=cidr)
 
 
 class SecurityGroupRule(AutoMarshallingModel):

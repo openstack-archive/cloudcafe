@@ -14,18 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
-import httpretty
+from httpretty import HTTPretty
 
 from cloudcafe.compute.hypervisors_api.client import HypervisorsClient
-from cloudcafe.compute.tests.integration.fixtures import IntegrationTestFixture
-from cloudcafe.compute.tests.integration.hypervisors.responses \
+from metatests.cloudcafe.compute.fixtures import ClientTestFixture
+from metatests.cloudcafe.compute.hypervisors.client.responses \
     import HypervisorsClientMockResponse
 
 HYPERVISOR_HOSTNAME = "hypervisor_test"
 
 
-class HypervisorsClientTest(IntegrationTestFixture):
+class HypervisorsClientTest(ClientTestFixture):
 
     @classmethod
     def setUpClass(cls):
@@ -42,31 +41,24 @@ class HypervisorsClientTest(IntegrationTestFixture):
                                      HYPERVISOR_HOSTNAME)
         cls.mock_response = HypervisorsClientMockResponse()
 
-    @httpretty.activate
     def test_list_hypervisors(self):
-        httpretty.register_uri(httpretty.GET, self.hypervisors_uri,
+        HTTPretty.register_uri(HTTPretty.GET, self.hypervisors_uri,
                                body=self.mock_response.
                                list_hypervisors())
         response = self.hypervisor_client.list_hypervisors()
         self.assertEqual(200, response.status_code)
-        self._assert_default_headers_in_request()
+        self._assert_default_headers_in_request(HTTPretty.last_request)
         self.assertEqual(HypervisorsClientMockResponse.list_hypervisors(),
                          response.content)
 
-    @httpretty.activate
     def test_list_hypervisor_servers(self):
-        httpretty.register_uri(httpretty.GET, self.hypervisor_servers_uri,
+        HTTPretty.register_uri(HTTPretty.GET, self.hypervisor_servers_uri,
                                body=self.mock_response.
                                list_hypervisor_servers())
         response = self.hypervisor_client.\
             list_hypervisor_servers(HYPERVISOR_HOSTNAME)
         self.assertEqual(200, response.status_code)
-        self._assert_default_headers_in_request()
-        self.assertEqual(HypervisorsClientMockResponse.
-                         list_hypervisor_servers(),
-                         response.content)
-
-
-if __name__ == '__main__':
-    unittest.main()
-
+        self._assert_default_headers_in_request(HTTPretty.last_request)
+        self.assertEqual(
+            HypervisorsClientMockResponse.list_hypervisor_servers(),
+            response.content)

@@ -19,9 +19,10 @@ import unittest2 as unittest
 from cloudcafe.compute.quotas_api.models.quotas import Quota
 
 
-class QuotaDomainTest(object):
+class QuotaDomainTest():
 
     def test_quota_attributes(self):
+        self.assertEqual(str(self.quota.cores), '20')
         self.assertEqual(str(self.quota.cores), '20')
         self.assertEqual(str(self.quota.floating_ips), '10')
         self.assertEqual(str(self.quota.id), 'fake_tenant')
@@ -40,19 +41,19 @@ class QuotaDomainJSONTest(unittest.TestCase, QuotaDomainTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.quota_json = '{"quota_set":' \
-                         ' {"cores": 20,' \
-                         '"floating_ips": 10,' \
-                         '"id": "fake_tenant",' \
-                         '"injected_file_content_bytes": 10240,' \
-                         '"injected_file_path_bytes": 255,' \
-                         '"injected_files": 5,' \
-                         '"instances": 10,' \
-                         '"key_pairs": 100,' \
-                         '"metadata_items": 128,' \
-                         '"ram": 51200,' \
-                         '"security_group_rules": 20,' \
-                         '"security_group_rules": 10}}'
+        cls.quota_json = ('{"quota_set":'
+                          ' {"cores": 20,'
+                          '"floating_ips": 10,'
+                          '"id": "fake_tenant",'
+                          '"injected_file_content_bytes": 10240,'
+                          '"injected_file_path_bytes": 255,'
+                          '"injected_files": 5,'
+                          '"instances": 10,'
+                          '"key_pairs": 100,'
+                          '"metadata_items": 128,'
+                          '"ram": 51200,'
+                          '"security_group_rules": 20,'
+                          '"security_groups": 10}}')
         cls.quota = Quota.deserialize(cls.quota_json, "json")
 
 
@@ -60,23 +61,20 @@ class QuotaDomainXMLTest(unittest.TestCase, QuotaDomainTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.quota_xml = '<?xml version="1.0" encoding="UTF-8"?>' \
-                        '<quota_set id="fake_tenant">' \
-                        '<cores>20</cores>' \
-                        '<floating_ips>10</floating_ips>' \
-                        '<injected_file_content_bytes>10240' \
-                        '</injected_file_content_bytes>' \
-                        '<injected_file_path_bytes>255' \
-                        '</injected_file_path_bytes>' \
-                        '<injected_files>5</injected_files>' \
-                        '<instances>10</instances>' \
-                        '<key_pairs>100</key_pairs>' \
-                        '<metadata_items>128</metadata_items>' \
-                        '<ram>51200</ram>' \
-                        '<security_group_rules>20</security_group_rules>' \
-                        '<security_group_rules>10</security_group_rules>' \
-                        '</quota_set>'
+        cls.quota_xml = ('<?xml version="1.0" encoding="UTF-8"?>'
+                         '<quota_set id="fake_tenant">'
+                         '<cores>20</cores>'
+                         '<floating_ips>10</floating_ips>'
+                         '<injected_file_content_bytes>10240'
+                         '</injected_file_content_bytes>'
+                         '<injected_file_path_bytes>255'
+                         '</injected_file_path_bytes>'
+                         '<injected_files>5</injected_files>'
+                         '<instances>10</instances>'
+                         '<key_pairs>100</key_pairs>'
+                         '<metadata_items>128</metadata_items>'
+                         '<ram>51200</ram>'
+                         '<security_group_rules>20</security_group_rules>'
+                         '<security_groups>10</security_groups>'
+                         '</quota_set>')
         cls.quota = Quota.deserialize(cls.quota_xml, "xml")
-
-if __name__ == '__main__':
-    unittest.main()
