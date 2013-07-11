@@ -35,7 +35,7 @@ class UpdateProfile(AutoMarshallingModel):
         if hasattr(self, 'name'):
             converted['name'] = self.name
         if hasattr(self, 'producer_ids'):
-            converted['producer_ids'] = self.producer_ids
+            converted['event_producer_ids'] = self.producer_ids
 
         return converted
 
