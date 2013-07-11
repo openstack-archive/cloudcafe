@@ -66,8 +66,7 @@ class Tenant(BaseIdentityModel):
         self.enabled = enabled
 
     def _obj_to_json(self):
-        json_dict = {"tenant": {"id": self.id_,
-                                "name": self.name,
+        json_dict = {"tenant": {"name": self.name,
                                 "description": self.description,
                                 "enabled": self.enabled}}
         return json.dumps(json_dict)
