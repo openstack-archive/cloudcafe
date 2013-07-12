@@ -52,6 +52,7 @@ class Server(AutoMarshallingModel):
         self.task_state = task_state or ComputeTaskStates.NONE
         self.vm_state = vm_state
         self.name = name
+        self.hypervisor_name = hypervisor_name
         self.id = id
         self.tenant_id = tenant_id
         self.status = status
@@ -76,16 +77,24 @@ class Server(AutoMarshallingModel):
         self.key_name = key_name
         self.host = host
         self.instance_name = instance_name
-        self.hypervisor_name = hypervisor_name
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
+        """
+        Returns an instance of a Server based on the json serialized_str
+        passed in
+        """
+        ret = None
         json_dict = json.loads(serialized_str)
         ret = cls._dict_to_obj(json_dict['server'])
         return ret
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
+        """
+        Returns an instance of a Server based on the xml serialized_str
+        passed in
+        """
         element = ET.fromstring(serialized_str)
         cls._remove_xml_etree_namespace(
             element, Constants.XML_API_NAMESPACE)
@@ -100,6 +109,7 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
+        """Helper method to turn ElementTree instance to Server instance."""
         server = element.attrib
 
         addresses = None
@@ -128,7 +138,7 @@ class Server(AutoMarshallingModel):
             power_state=server.get('power_state'), progress=progress,
             task_state=server.get('task_state').lower(),
             vm_state=server.get('vm_state'), name=server.get('name'),
-            tenant_id=server.get('tenantId'), status=server.get('status'),
+            tenant_id=server.get('tenant_id'), status=server.get('status'),
             updated=server.get('updated'), created=server.get('created'),
             host_id=server.get('hostId'), user_id=server.get('userId'),
             accessIPv4=server.get('accessIPv4'),
@@ -144,6 +154,7 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, server_dict):
+        """Helper method to turn dictionary into Server instance."""
 
         addresses = None
         flavor = None
@@ -263,9 +274,36 @@ class Servers(AutoMarshallingListModel):
         return servers
 
 
-class ServerMins(Servers):
+class ServerMins(AutoMarshallingListModel):
 
     server_type = ServerMin
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._list_to_obj(json_dict.get('servers'))
+
+    @classmethod
+    def _list_to_obj(cls, server_dict_list):
+        servers = ServerMin()
+        for server_dict in server_dict_list:
+            server = cls.server_type._dict_to_obj(server_dict)
+            servers.append(server)
+        return servers
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        element = ET.fromstring(serialized_str)
+        if element.tag != 'servers':
+            return None
+        return cls._xml_list_to_obj(element.findall('server'))
+
+    @classmethod
+    def _xml_list_to_obj(cls, xml_list):
+        servers = ServerMin()
+        for ele in xml_list:
+            servers.append(cls.server_type._xml_ele_to_obj(ele))
+        return servers
 
 
 class Addresses(AutoMarshallingModel):
