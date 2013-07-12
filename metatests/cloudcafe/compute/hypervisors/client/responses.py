@@ -34,3 +34,34 @@ class HypervisorsClientMockResponse(object):
                 '"name": "instance-00000003"},'
                 '{"uuid": "9327b134-b1f5-43ec-a8f1-2b6eb153c739",'
                 '"name": "instance-00000005"}}]}]}')
+
+    @classmethod
+    def list_hypervisors_in_detail(cls):
+        return """
+        {
+            "hypervisors":[
+                {
+                "service":
+                {
+                    "host":"parentcell",
+                    "id":7
+                },
+                "vcpus_used":2,
+                "hypervisor_type":"xen",
+                "local_gb_used":21,
+                "hypervisor_hostname":"hypervisor_test",
+                "memory_mb_used":4608,
+                "memory_mb":12285,
+                "current_workload":0,
+                "vcpus":0,
+                "cpu_info": 2,
+                "running_vms":2,
+                "free_disk_gb":888,
+                "hypervisor_version":6000,
+                "disk_available_least":"None",
+                "local_gb":909,
+                "free_ram_mb":7677,
+                "id":1
+                }
+            ]
+        }"""

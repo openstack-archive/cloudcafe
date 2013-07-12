@@ -31,9 +31,9 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 class Server(AutoMarshallingModel):
 
-    def __init__(self, id=None, disk_config=None, config_drive=None,
-                 power_state=None, progress=None, task_state=None,
-                 vm_state=None, name=None, tenant_id=None, status=None,
+    def __init__(self, id=None, disk_config=None, config_drive=None, power_state=None,
+                 progress=None, task_state=None, vm_state=None, name=None,
+                 hypervisor_hostname=None, tenant_id=None, status=None,
                  updated=None, created=None, host_id=None, user_id=None,
                  accessIPv4=None, accessIPv6=None, addresses=None,
                  flavor=None, image=None, links=None, metadata=None,
@@ -48,6 +48,7 @@ class Server(AutoMarshallingModel):
         self.task_state = task_state
         self.vm_state = vm_state
         self.name = name
+        self.hypervisor_hostname = hypervisor_hostname
         self.id = id
         self.tenant_id = tenant_id
         self.status = status
@@ -75,10 +76,10 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
-        '''
+        """
         Returns an instance of a Server based on the json serialized_str
         passed in
-        '''
+        """
         ret = None
         json_dict = json.loads(serialized_str)
         if 'server' in json_dict.keys():
@@ -92,10 +93,10 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
-        '''
+        """
         Returns an instance of a Server based on the xml serialized_str
         passed in
-        '''
+        """
         element = ET.fromstring(serialized_str)
         cls._remove_xml_etree_namespace(
             element, Constants.XML_API_NAMESPACE)
@@ -116,7 +117,7 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
-        '''Helper method to turn ElementTree instance to Server instance.'''
+        """Helper method to turn ElementTree instance to Server instance."""
         server = element.attrib
 
         addresses = None
@@ -145,6 +146,7 @@ class Server(AutoMarshallingModel):
             power_state=server.get('power_state'), progress=progress,
             task_state=server.get('task_state'),
             vm_state=server.get('vm_state'), name=server.get('name'),
+            hypervisor_hostname=server.get('hypervisor_hostname'),
             tenant_id=server.get('tenant_id'), status=server.get('status'),
             updated=server.get('updated'), created=server.get('created'),
             host_id=server.get('hostId'), user_id=server.get('user_id'),
@@ -159,7 +161,7 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, server_dict):
-        '''Helper method to turn dictionary into Server instance.'''
+        """Helper method to turn dictionary into Server instance."""
 
         addresses = None
         flavor = None
@@ -187,6 +189,8 @@ class Server(AutoMarshallingModel):
             vm_state=server_dict.get('OS-EXT-STS:vm_state'),
             name=server_dict.get('name'),
             config_drive=server_dict.get('config_drive'),
+            hypervisor_hostname=server_dict.get(
+                'OS-EXT-SRV-ATTR:hypervisor_hostname'),
             tenant_id=server_dict.get('tenant_id'),
             status=server_dict.get('status'),
             updated=server_dict.get('updated'),
@@ -262,7 +266,7 @@ class ServerMin(Server):
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
-        '''Helper method to turn ElementTree instance to Server instance.'''
+        """Helper method to turn ElementTree instance to Server instance."""
         if element.find('server') is not None:
             element = element.find('server')
             server_dict = element.attrib
@@ -272,16 +276,17 @@ class ServerMin(Server):
 
     @classmethod
     def _dict_to_obj(cls, server_dict):
-        '''Helper method to turn dictionary into Server instance.'''
+        """Helper method to turn dictionary into Server instance."""
+
         servermin = ServerMin(**server_dict)
         if hasattr(servermin, 'links'):
             servermin.links = Links._dict_to_obj(servermin.links)
-        '''
-        Parse for those keys which have the namespace prefixed,
-        strip the namespace out
-        and take only the actual values such as diskConfig,
-        power_state and assign to server obj
-        '''
+
+        # Parse for those keys which have the namespace prefixed,
+        # strip the namespace out
+        # and take only the actual values such as diskConfig,
+        # power_state and assign to server obj
+
         for each in server_dict:
             if each.startswith("{"):
                 newkey = re.split("}", each)[1]
