@@ -13,14 +13,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from cafe.engine.behaviors import BaseBehavior, behavior
-
-from cloudcafe.compute.servers_api.client import ServersClient
-
-
-class ComputeBlockStorageBehaviors(BaseBehavior):
-
-    @behavior(ServersClient)
-    def attach_volume_to_server(*args, **kwargs):
-        pass
