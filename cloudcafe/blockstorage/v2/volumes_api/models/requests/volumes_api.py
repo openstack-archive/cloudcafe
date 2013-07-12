@@ -23,14 +23,13 @@ from cafe.engine.models.base import AutoMarshallingModel
 class Volume(AutoMarshallingModel):
 
     def __init__(
-            self, size=None, volume_type=None, display_name=None,
-            display_description=None, metadata=None, availability_zone=None,
-            snapshot_id=None, attachments=None):
+            self, size=None, volume_type=None, name=None,
+            description=None, metadata=None, availability_zone=None):
 
         self.size = size
         self.volume_type = volume_type
-        self.display_name = display_name
-        self.display_description = display_description
+        self.name = name
+        self.description = description
         self.metadata = metadata or dict()
         self.availability_zone = availability_zone
 
@@ -41,8 +40,8 @@ class Volume(AutoMarshallingModel):
         volume_attrs = {
             "size": self.size,
             "volume_type": self.volume_type,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "name": self.name,
+            "description": self.description,
             "metadata": self.metadata,
             "availability_zone": self.availability_zone}
 
@@ -53,8 +52,8 @@ class Volume(AutoMarshallingModel):
         volume_attrs = {
             "size": self.size,
             "volume_type": self.volume_type,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "name": self.name,
+            "description": self.description,
             "availability_zone": self.availability_zone}
         element = self._set_xml_etree_element(element, volume_attrs)
 
@@ -76,12 +75,12 @@ class Volume(AutoMarshallingModel):
 class VolumeSnapshot(AutoMarshallingModel):
 
     def __init__(
-            self, volume_id, display_name=None,
-            display_description=None, force=True):
+            self, volume_id, force=True, name=None,
+            description=None):
 
         self.volume_id = volume_id
-        self.display_name = display_name
-        self.display_description = display_description
+        self.name = name
+        self.description = description
         self.force = force
 
     def _obj_to_json(self):
@@ -90,8 +89,8 @@ class VolumeSnapshot(AutoMarshallingModel):
     def _obj_to_json_dict(self):
         snapshot_attrs = {
             "volume_id": self.volume_id,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "name": self.name,
+            "description": self.description,
             "force": self.force}
 
         return {"snapshot": self._remove_empty_values(snapshot_attrs)}
@@ -103,7 +102,7 @@ class VolumeSnapshot(AutoMarshallingModel):
         element = ElementTree.Element('snapshot')
         snapshot_attrs = {
             "volume_id": self.volume_id,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "name": self.name,
+            "description": self.description,
             "force": str(self.force)}
         return self._set_xml_etree_element(element, snapshot_attrs)

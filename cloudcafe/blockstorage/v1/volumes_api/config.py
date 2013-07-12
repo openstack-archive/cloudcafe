@@ -46,7 +46,7 @@ class VolumesAPIConfig(ConfigSectionInterface):
         return self.get("volume_status_poll_frequency", default=None)
 
     @property
-    def volume_create_max_timeout(self):
+    def volume_create_timeout(self):
         return self.get("volume_create_timeout", default=None)
 
     @property
@@ -79,7 +79,7 @@ class VolumesAPIConfig(ConfigSectionInterface):
     def snapshot_create_base_timeout(self):
         """Amount of time added by default to calculated snapshot create
         timeouts"""
-        return self.get("snapshot_create_min_timeout", default=0)
+        return self.get("snapshot_create_base_timeout", default=0)
 
     @property
     def snapshot_create_wait_per_gigabyte(self):

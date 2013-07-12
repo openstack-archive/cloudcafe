@@ -101,10 +101,8 @@ class Volume(_VolumesAPIBaseModel):
     def __init__(
             self, id_=None, display_name=None, size=None, volume_type=None,
             display_description=None, metadata=None, availability_zone=None,
-            snapshot_id=None, attachments=None, created_at=None, status=None,
-            xmlns=None):
+            snapshot_id=None, attachments=None, created_at=None, status=None):
 
-        #Common attributes
         self.id_ = id_
         self.display_name = display_name
         self.display_description = display_description
@@ -116,7 +114,6 @@ class Volume(_VolumesAPIBaseModel):
         self.attachments = attachments
         self.created_at = created_at
         self.status = status
-        self.xmlns = xmlns
 
 
 class VolumeSnapshot(_VolumesAPIBaseModel):
