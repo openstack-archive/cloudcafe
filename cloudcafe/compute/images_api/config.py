@@ -32,6 +32,12 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get("secondary_image")
 
     @property
+    def xen_server_image(self):
+        """Image with xentools baked it. To be used for xenserver specific
+        tests"""
+        return self.get("xen_server_image")
+
+    @property
     def image_status_interval(self):
         """Amount of time to wait between polling the status of an image"""
         return int(self.get("image_status_interval"))

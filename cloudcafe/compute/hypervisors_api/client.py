@@ -15,7 +15,8 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.compute.hypervisors_api.model.hypervisors import Hypervisor
+from cloudcafe.compute.hypervisors_api.model.hypervisor\
+    import HypervisorMin, Hypervisor
 
 
 class HypervisorsClient(AutoMarshallingRestClient):
@@ -50,6 +51,18 @@ class HypervisorsClient(AutoMarshallingRestClient):
         """
         url = "{url}/os-hypervisors".format(url=self.url)
         hypervisor_res = self.request('GET', url,
+                                      response_entity_type=HypervisorMin,
+                                      requestslib_kwargs=requestslib_kwargs)
+        return hypervisor_res
+
+    def list_hypervisors_in_detail(self, requestslib_kwargs=None):
+        """
+        @summary: Returns a list of hypervisors
+        @return: List of hypervisors
+        @rtype: C{list}
+        """
+        url = "{url}/os-hypervisors/detail".format(url=self.url)
+        hypervisor_res = self.request('GET', url,
                                       response_entity_type=Hypervisor,
                                       requestslib_kwargs=requestslib_kwargs)
         return hypervisor_res
@@ -64,6 +77,6 @@ class HypervisorsClient(AutoMarshallingRestClient):
         url = "{url}/os-hypervisors/{hypervisor_hostname}/servers".\
             format(url=self.url, hypervisor_hostname=hypervisor_hostname)
         hypervisor_res = self.request('GET', url,
-                                      response_entity_type=Hypervisor,
+                                      response_entity_type=HypervisorMin,
                                       requestslib_kwargs=requestslib_kwargs)
         return hypervisor_res
