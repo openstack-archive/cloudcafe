@@ -15,91 +15,84 @@ limitations under the License.
 """
 
 import unittest2 as unittest
-from cloudcafe.compute.hypervisors_api.model.hypervisors import Hypervisor
+from cloudcafe.compute.hypervisors_api.model.hypervisor import Hypervisor
 
 
 class HypervisorDomainTest(object):
 
     def test_hypervisor_attr(self):
-        self.assertEqual(self.hypervisor[0].id, "1")
-        self.assertEqual(self.hypervisor[0].hypervisor_hostname,
+        self.assertEqual(int(self.hypervisors[0].id), 1)
+        self.assertEqual(self.hypervisors[0].hypervisor_hostname,
                          "hypervisor_test")
+        self.assertEqual(int(self.hypervisors[0].vcpus_used), 2)
+        self.assertEqual(self.hypervisors[0].hypervisor_type, "xen")
+        self.assertEqual(int(self.hypervisors[0].local_gb_used), 21)
+        self.assertEqual(int(self.hypervisors[0].memory_mb_used), 4608)
+        self.assertEqual(int(self.hypervisors[0].memory_mb), 12285)
+        self.assertEqual(int(self.hypervisors[0].current_workload), 0)
+        self.assertEqual(int(self.hypervisors[0].vcpus), 0)
+        self.assertEqual(int(self.hypervisors[0].cpu_info), 2)
+        self.assertEqual(int(self.hypervisors[0].running_vms), 2)
+        self.assertEqual(int(self.hypervisors[0].free_disk_gb), 888)
+        self.assertEqual(int(self.hypervisors[0].hypervisor_version), 6000)
+        self.assertEqual(self.hypervisors[0].disk_available_least, "None")
+        self.assertEqual(int(self.hypervisors[0].local_gb), 909)
+        self.assertEqual(int(self.hypervisors[0].free_ram_mb), 7677)
+        self.assertEqual(self.hypervisors[0].service.host, "parentcell")
+        self.assertEqual(int(self.hypervisors[0].service.id), 7)
 
 
 class HypervisorDomainJSONTest(unittest.TestCase, HypervisorDomainTest):
 
     @classmethod
     def setUp(cls):
-        cls.hypervisor_json = ('{"hypervisors": [{'
-                               '"id": "1", '
-                               '"hypervisor_hostname": "hypervisor_test"}]}')
-        cls.hypervisor = Hypervisor.deserialize(cls.hypervisor_json, "json")
+        cls.hypervisor_json = """
+        {
+            "hypervisors":[
+                {
+                "service":
+                {
+                    "host":"parentcell",
+                    "id":7
+                },
+                "vcpus_used":2,
+                "hypervisor_type":"xen",
+                "local_gb_used":21,
+                "hypervisor_hostname":"hypervisor_test",
+                "memory_mb_used":4608,
+                "memory_mb":12285,
+                "current_workload":0,
+                "vcpus":0,
+                "cpu_info": 2,
+                "running_vms":2,
+                "free_disk_gb":888,
+                "hypervisor_version":6000,
+                "disk_available_least":"None",
+                "local_gb":909,
+                "free_ram_mb":7677,
+                "id":1
+                }
+            ]
+        }"""
+
+        cls.hypervisors = Hypervisor.deserialize(cls.hypervisor_json, "json")
 
 
 class HypervisorDomainXMLTest(unittest.TestCase, HypervisorDomainTest):
 
     @classmethod
     def setUp(cls):
-        cls.hypervisor_xml = ('<?xml version="1.0" encoding="UTF-8"?>'
-                              '<hypervisors><hypervisor id="1" '
-                              'hypervisor_hostname="hypervisor_test"/>'
-                              '</hypervisors>')
-        cls.hypervisor = Hypervisor.deserialize(cls.hypervisor_xml, "xml")
-
-
-class HypervisorServerCollectionDomainTest(object):
-
-    def test_hypervisor_servers_length(self):
-        self.assertEqual(len(self.hypervisor.servers), 2)
-
-    def test_hypervisor_servers_attr(self):
-        self.assertTrue(
-            "server_one" in
-            [server.name for server in self.hypervisor.servers])
-        self.assertTrue(
-            "server_two" in
-            [server.name for server in self.hypervisor.servers])
-        self.assertTrue(
-            "b1ea4f1b-201c-47c5-95b9-c6fe2df39af0" in
-            [server.id for server in self.hypervisor.servers])
-        self.assertTrue(
-            "9327b134-b1f5-43ec-a8f1-2b6eb153c739" in
-            [server.id for server in self.hypervisor.servers])
-
-
-class ServersDomainCollectionJSONTest(unittest.TestCase,
-                                      HypervisorServerCollectionDomainTest):
-
-    @classmethod
-    def setUp(cls):
-        cls.hypervisor_json = ('{"hypervisors": [{'
-                               '"id": 1, '
-                               '"hypervisor_hostname": "hypervisor_test", '
-                               '"servers": [{'
-                               '"uuid": '
-                               '"b1ea4f1b-201c-47c5-95b9-c6fe2df39af0", '
-                               '"name": "server_one"}, '
-                               '{"uuid": '
-                               '"9327b134-b1f5-43ec-a8f1-2b6eb153c739", '
-                               '"name": "server_two"}]}]}')
-        cls.hypervisor = Hypervisor.deserialize(cls.hypervisor_json, "json")
-
-
-class ServersDomainCollectionXMLTest(unittest.TestCase,
-                                     HypervisorServerCollectionDomainTest):
-
-    @classmethod
-    def setUp(cls):
-        cls.hypervisor_xml = ('<?xml version="1.0" encoding="UTF-8"?>'
-                              '<hypervisors>'
-                              '<hypervisor '
-                              'id="1" '
-                              'hypervisor_hostname="hypervisor_test">'
-                              '<servers>'
-                              '<server name="server_one" '
-                              'uuid="b1ea4f1b-201c-47c5-95b9-c6fe2df39af0"/>'
-                              '<server name="server_two" '
-                              'uuid="9327b134-b1f5-43ec-a8f1-2b6eb153c739"/>'
-                              '</servers></hypervisor></hypervisors>')
-        cls.hypervisor = Hypervisor.deserialize(cls.hypervisor_xml,
-                                                "xml")
+        cls.hypervisor_xml = """<?xml version="1.0" encoding="UTF-8"?>
+        <hypervisors>
+                <hypervisor
+                    vcpus_used="2" hypervisor_type="xen"
+                    local_gb_used="21" hypervisor_hostname="hypervisor_test"
+                    memory_mb_used="4608" memory_mb="12285"
+                    current_workload="0" vcpus="0" cpu_info="2"
+                    running_vms="2" free_disk_gb="888"
+                    hypervisor_version="6000" disk_available_least="None"
+                    local_gb="909" free_ram_mb="7677" id="1">
+                        <service host="parentcell" id="7" />
+                </hypervisor>
+        </hypervisors>"""
+        cls.hypervisors = Hypervisor.deserialize(cls.hypervisor_xml, "xml")
