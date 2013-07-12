@@ -30,8 +30,8 @@ from cloudcafe.identity.v2_0.tokens_api.behaviors import \
 
 class AuthProvider(object):
 
-    @classmethod
-    def get_access_data(self, endpoint_config=None, user_config=None):
+    @staticmethod
+    def get_access_data(endpoint_config=None, user_config=None):
         endpoint_config = endpoint_config or UserAuthConfig()
         user_config = user_config or UserConfig()
 
