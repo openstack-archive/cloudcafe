@@ -68,8 +68,8 @@ class ImageBehaviors(object):
         else:
             raise TimeoutException(
                 "wait_for_image_status ran for {0} seconds and did not "
-                "observe the image achieving the {1} status.".format(
-                    timeout, desired_status))
+                "observe image {1} reach the {2} status.".format(
+                    timeout, image_id, desired_status))
 
         return resp
 
@@ -106,8 +106,8 @@ class ImageBehaviors(object):
         else:
             raise TimeoutException(
                 "wait_for_image_resp_code ran for {0} seconds and did not "
-                "receive a response with status code {1}.".format(
-                    timeout, response_code))
+                "receive a response with status {1} for image {2}.".format(
+                    timeout, response_code, image_id))
         return resp
 
     def create_active_image(self, server_id):
@@ -186,6 +186,6 @@ class ImageBehaviors(object):
         else:
             raise TimeoutException(
                 "wait_for_image_to_be_deleted ran for {0} seconds "
-                "and did not observe the image reaching the "
-                "{1} status.".format(
-                    timeout, ImageStates.DELETED))
+                "and did not observe image {1} reach the "
+                "{2} status.".format(
+                    timeout, image_id, ImageStates.DELETED))
