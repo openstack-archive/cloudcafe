@@ -22,7 +22,7 @@ from cafe.engine.clients.remote_instance.instance_client import \
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
-from cloudcafe.compute.common.datagen import rand_name
+from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException
 

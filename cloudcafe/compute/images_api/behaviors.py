@@ -16,7 +16,7 @@ limitations under the License.
 
 import time
 
-from cloudcafe.compute.common.datagen import rand_name
+from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.types import NovaImageStatusTypes as ImageStates
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException
