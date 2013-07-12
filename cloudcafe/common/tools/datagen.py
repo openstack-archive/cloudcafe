@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from uuid import uuid4
 import random
-from math import pow
+import string
 import time
+from math import pow
 
 SOURCE_RANDOM = '/dev/urandom'
 SOURCE_ZEROS = '/dev/zero'
@@ -65,30 +65,13 @@ def timestamp_string(prefix=None, suffix=None, decimal_precision=6):
 
 def random_string(prefix=None, suffix=None, size=8):
     """
-    Return exactly size bytes worth of base_text as a string
-    surrounded by any defined pre or suf-fixes
+    Return a random string of alphanumeric characaters of 'size' length.
     """
 
-    base_text = str(uuid4()).replace('-', '0')
-
-    if size <= 0:
-        return '%s%s' % (prefix, suffix)
-
-    extra = size % len(base_text)
-    body = ''
-
-    if extra == 0:
-        body = base_text * size
-
-    if extra == size:
-        body = base_text[:size]
-
-    if (extra > 0) and (extra < size):
-        body = (size / len(base_text)) * base_text + base_text[:extra]
-
-    body = str(prefix) + str(body) if prefix is not None else body
-    body = str(body) + str(suffix) if suffix is not None else body
-    return body
+    charpool = [s for s in string.ascii_letters]
+    charpool.extend([d for d in string.digits])
+    rstr = "".join(random.sample((charpool), random.randrange(size, size+1)))
+    return "{0}{1}{2}".format(prefix or '', rstr, suffix or '')
 
 
 def random_ip(pattern=None):
