@@ -19,8 +19,7 @@ from time import time, sleep
 from cafe.engine.behaviors import BaseBehavior, behavior
 from cloudcafe.blockstorage.v1.volumes_api.client import VolumesClient
 from cloudcafe.blockstorage.v1.volumes_api.config import VolumesAPIConfig
-from cloudcafe.blockstorage.v1.volumes_api.models.statuses import \
-    VolumeStatuses, SnapshotStatuses
+from cloudcafe.blockstorage.v1.volumes_api.models import statuses
 
 
 class VolumesAPIBehaviorException(Exception):
@@ -39,25 +38,25 @@ class VolumesAPI_Behaviors(BaseBehavior):
             size=None, timeout=None, min_timeout=None, max_timeout=None,
             wait_per_gb=None):
 
-        if wait_per_gb is not None:
-            if size is not None:
+        if wait_per_gb is not None and size is not None:
                 timeout = timeout or size * wait_per_gb
 
         if min_timeout is not None:
-            timeout = timeout if timeout > min_timeout else min_timeout
+            timeout = max(timeout, min_timeout)
 
         if max_timeout is not None:
-            timeout = timeout if timeout < max_timeout else max_timeout
+            timeout = min(timeout, max_timeout)
 
         return timeout
 
     @behavior(VolumesClient)
     def wait_for_volume_status(
             self, volume_id, expected_status, timeout, wait_period=None):
-        ''' Waits for a specific status and returns a BehaviorResponse object
-        when that status is observed.
-        Note:  Shouldn't be used for transient statuses like 'deleting'.
-        '''
+        """ Waits for a specific status and returns None when that status is
+        observed.
+        Note:  Unreliable for transient statuses like 'deleting'.
+        """
+
         wait_period = float(
             wait_period or self.config.volume_status_poll_frequency)
         end_time = time() + int(timeout)
@@ -67,21 +66,24 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
             if not resp.ok:
                 msg = (
-                    "get_volume_info() call failed with status_code {0} "
-                    "while waiting for volume to reach the {1} status".format(
+                    "wait_for_volume_status() failure: "
+                    "get_volume_info() call failed with status_code {0} while "
+                    "waiting for volume to reach the {1} status".format(
                         resp.status_code, expected_status))
                 self._log.error(msg)
                 raise VolumesAPIBehaviorException(msg)
 
             if resp.entity is None:
                 msg = (
+                    "wait_for_volume_status() failure: "
                     "get_volume_info() response body did not deserialize.")
                 self._log.error(msg)
                 raise VolumesAPIBehaviorException(msg)
 
             if resp.entity.status == expected_status:
                 self._log.info(
-                    'Volume status "{0}" observed as expected'.format(
+                    "wait_for_volume_status() failure: "
+                    'Expected Volume status "{0}" observed as expected'.format(
                         expected_status))
                 break
 
@@ -98,10 +100,11 @@ class VolumesAPI_Behaviors(BaseBehavior):
     @behavior(VolumesClient)
     def wait_for_snapshot_status(
             self, snapshot_id, expected_status, timeout, wait_period=None):
-        ''' Waits for a specific status and returns a BehaviorResponse object
-        when that status is observed.
-        Note:  Shouldn't be used for transient statuses like 'deleting'.
-        '''
+        """ Waits for a specific status and returns None when that status is
+        observed.
+        Note:  Unreliable for transient statuses like 'deleting'.
+        """
+
         wait_period = float(
             wait_period or self.config.snapshot_status_poll_frequency)
         end_time = time() + int(timeout)
@@ -111,6 +114,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
             if not resp.ok:
                 msg = (
+                    "wait_for_snapshot_status() failure: "
                     "get_snapshot_info() call failed with status_code {0} "
                     "while waiting for snapshot status".format(
                         resp.status_code))
@@ -119,14 +123,15 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
             if resp.entity is None:
                 msg = (
+                    "wait_for_snapshot_status() failure: "
                     "get_snapshot_info() response body did not deserialize as "
                     "expected")
                 self._log.error(msg)
                 raise VolumesAPIBehaviorException(msg)
 
             if resp.entity.status == expected_status:
-                self._log.info('Snapshot status "{0}" observed'.format(
-                    expected_status))
+                self._log.info('Expected Snapshot status "{0}" observed'
+                    .format(expected_status))
                 break
 
             sleep(wait_period)
@@ -141,19 +146,18 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def create_available_volume(
-            self, display_name, size, volume_type, display_description=None,
-            metadata=None, availability_zone=None, timeout=None):
+            self, size, volume_type, display_name=None,
+            display_description=None, availability_zone=None, metadata=None,
+            timeout=None):
 
-        expected_status = VolumeStatuses.AVAILABLE
+        expected_status = statuses.Volume.AVAILABLE
         metadata = metadata or {}
 
-        timeout = self._calculate_timeout(
-            size=size, timeout=timeout,
-            max_timeout=self.config.volume_create_max_timeout)
+        timeout = timeout or self.config.volume_create_timeout
 
         self._log.info("create_available_volume() is creating a volume")
         resp = self.client.create_volume(
-            display_name=display_name, size=size, volume_type=volume_type,
+            size, volume_type, display_name=display_name,
             display_description=display_description, metadata=metadata,
             availability_zone=availability_zone)
 
@@ -179,9 +183,9 @@ class VolumesAPI_Behaviors(BaseBehavior):
     @behavior(VolumesClient)
     def create_available_snapshot(
             self, volume_id, display_name=None, display_description=None,
-            force_create='False', name=None, timeout=None):
+            force_create=True, timeout=None):
 
-        expected_status = SnapshotStatuses.AVAILABLE
+        expected_status = statuses.Snapshot.AVAILABLE
 
         #Try and get volume size
         vol_size = None
@@ -201,11 +205,10 @@ class VolumesAPI_Behaviors(BaseBehavior):
         self._log.debug(
             "create_available_snapshot() timeout set to {0}".format(timeout))
 
-        self._log.info("create_available_snapshot() is creating a snapshot")
+        self._log.info("create_available_snapshot is creating a snapshot")
         resp = self.client.create_snapshot(
-            volume_id, display_name=display_name,
-            display_description=display_description,
-            force_create=force_create, name=name)
+            volume_id, force=force_create, display_name=display_name,
+            display_description=display_description)
 
         if not resp.ok:
             msg = (
@@ -253,7 +256,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
     @behavior(VolumesClient)
     def delete_volume_confirmed(
             self, volume_id, size=None, timeout=None, wait_period=None):
-        '''Returns True if volume deleted, False otherwise'''
+        """Returns True if volume deleted, False otherwise"""
 
         timeout = self._calculate_timeout(
             size=size, timeout=timeout,
@@ -272,7 +275,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
         while time() < end:
             #issue DELETE request on volume
             resp = self.client.delete_volume(volume_id)
-            if not resp.ok:
+            if not resp.ok and resp.status_code != 404:
                 msg = (
                     "delete_volume_confirmed() call to delete_volume() failed "
                     "with a '{0}'".format(resp.status_code))
@@ -309,7 +312,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
     @behavior(VolumesClient)
     def delete_snapshot_confirmed(
             self, snapshot_id, vol_size=None, timeout=None, wait_period=None):
-        '''Returns True if snapshot deleted, False otherwise'''
+        """Returns True if snapshot deleted, False otherwise"""
 
         timeout = self._calculate_timeout(
             size=vol_size, timeout=timeout,
@@ -365,7 +368,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def delete_volume_with_snapshots_confirmed(self, volume_id):
-        '''Returns True if volume deleted, False otherwise'''
+        """Returns True if volume deleted, False otherwise"""
 
         #Attempt to delete all snapshots associated with provided volume_id
         snapshots = self.list_volume_snapshots(volume_id)

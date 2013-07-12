@@ -83,7 +83,7 @@ class _VolumesAPIBaseListModel(AutoMarshallingListModel):
         return obj_list
 
 
-class Volume(_VolumesAPIBaseModel):
+class VolumeResponse(_VolumesAPIBaseModel):
     obj_model_key = 'volume'
     kwarg_map = {
         "id_": "id",
@@ -101,10 +101,8 @@ class Volume(_VolumesAPIBaseModel):
     def __init__(
             self, id_=None, display_name=None, size=None, volume_type=None,
             display_description=None, metadata=None, availability_zone=None,
-            snapshot_id=None, attachments=None, created_at=None, status=None,
-            xmlns=None):
+            snapshot_id=None, attachments=None, created_at=None, status=None):
 
-        #Common attributes
         self.id_ = id_
         self.display_name = display_name
         self.display_description = display_description
@@ -116,10 +114,9 @@ class Volume(_VolumesAPIBaseModel):
         self.attachments = attachments
         self.created_at = created_at
         self.status = status
-        self.xmlns = xmlns
 
 
-class VolumeSnapshot(_VolumesAPIBaseModel):
+class VolumeSnapshotResponse(_VolumesAPIBaseModel):
     obj_model_key = 'snapshot'
     kwarg_map = {
         "id_": "id",
@@ -128,13 +125,11 @@ class VolumeSnapshot(_VolumesAPIBaseModel):
         "display_description": "display_description",
         "status": "status",
         "size": "size",
-        "created_at": "created_at",
-        "name": "name"}
+        "created_at": "created_at"}
 
     def __init__(
             self, id_=None, volume_id=None, display_name=None,
-            display_description=None, status=None, size=None, created_at=None,
-            name=None):
+            display_description=None, status=None, size=None, created_at=None):
 
         self.id_ = id_
         self.volume_id = volume_id
@@ -143,10 +138,9 @@ class VolumeSnapshot(_VolumesAPIBaseModel):
         self.status = status
         self.size = size
         self.created_at = created_at
-        self.name = name
 
 
-class VolumeType(_VolumesAPIBaseModel):
+class VolumeTypeResponse(_VolumesAPIBaseModel):
     obj_model_key = "volume_type"
     kwarg_map = {
         "id_": "id",
@@ -160,16 +154,16 @@ class VolumeType(_VolumesAPIBaseModel):
         self.extra_specs = extra_specs
 
 
-class VolumeList(_VolumesAPIBaseListModel):
+class VolumeListResponse(_VolumesAPIBaseListModel):
     list_model_key = 'volumes'
-    ObjectModel = Volume
+    ObjectModel = VolumeResponse
 
 
-class VolumeSnapshotList(_VolumesAPIBaseListModel):
+class VolumeSnapshotListResponse(_VolumesAPIBaseListModel):
     list_model_key = 'snapshots'
-    ObjectModel = VolumeSnapshot
+    ObjectModel = VolumeSnapshotResponse
 
 
-class VolumeTypeList(_VolumesAPIBaseListModel):
+class VolumeTypeListResponse(_VolumesAPIBaseListModel):
     list_model_key = 'volume_types'
-    ObjectModel = VolumeType
+    ObjectModel = VolumeTypeResponse

@@ -15,14 +15,13 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.blockstorage.v1.volumes_api.models.requests.volumes_api import (
-    Volume as VolumeRequest,
-    VolumeSnapshot as VolumeSnapshotRequest)
+from cloudcafe.blockstorage.v1.volumes_api.models.requests import (
+    VolumeRequest,
+    VolumeSnapshotRequest)
 
-from cloudcafe.blockstorage.v1.volumes_api.models.responses.volumes_api import(
-    Volume as VolumeResponse,
-    VolumeSnapshot as VolumeSnapshotResponse,
-    VolumeType, VolumeList, VolumeTypeList, VolumeSnapshotList)
+from cloudcafe.blockstorage.v1.volumes_api.models.responses import(
+    VolumeResponse, VolumeSnapshotResponse, VolumeTypeResponse,
+    VolumeListResponse, VolumeTypeListResponse, VolumeSnapshotListResponse)
 
 
 class VolumesClient(AutoMarshallingRestClient):
@@ -36,14 +35,14 @@ class VolumesClient(AutoMarshallingRestClient):
         self.url = url
         self.auth_token = auth_token
         self.default_headers['X-Auth-Token'] = auth_token
-        self.default_headers['Content-Type'] = 'application/%s' % \
-                                               self.serialize_format
-        self.default_headers['Accept'] = 'application/%s' % \
-                                         self.deserialize_format
+        self.default_headers['Content-Type'] = 'application/{0}'.format(
+            self.serialize_format)
+        self.default_headers['Accept'] = 'application/{0}'.format(
+            self.deserialize_format)
 
     def create_volume(
-            self, display_name, size, volume_type, availability_zone=None,
-            metadata={}, display_description=None, snapshot_id=None,
+            self, size, volume_type, display_name=None,
+            display_description=None, availability_zone=None, metadata=None,
             requestslib_kwargs=None):
 
         '''POST v1/{tenant_id}/volumes'''
@@ -51,22 +50,22 @@ class VolumesClient(AutoMarshallingRestClient):
         url = '{0}/volumes'.format(self.url)
 
         volume_request_entity = VolumeRequest(
-            display_name=display_name,
             size=size,
             volume_type=volume_type,
+            display_name=display_name,
             display_description=display_description,
-            metadata=metadata,
             availability_zone=availability_zone,
-            snapshot_id=snapshot_id)
+            metadata=metadata)
 
         return self.request(
-            'POST', url, response_entity_type=VolumeResponse,
+            'POST', url,
+            response_entity_type=VolumeResponse,
             request_entity=volume_request_entity,
             requestslib_kwargs=requestslib_kwargs)
 
     def create_volume_from_snapshot(
-            self, snapshot_id, size, display_name='', volume_type=None,
-            availability_zone=None, display_description='', metadata={},
+            self, snapshot_id, size, volume_type, display_name=None,
+            display_description=None, availability_zone=None, metadata=None,
             requestslib_kwargs=None):
 
         '''POST v1/{tenant_id}/volumes'''
@@ -74,16 +73,17 @@ class VolumesClient(AutoMarshallingRestClient):
         url = '{0}/volumes'.format(self.url)
 
         volume_request_entity = VolumeRequest(
-            display_name=display_name,
             size=size,
             volume_type=volume_type,
+            display_name=display_name,
             display_description=display_description,
-            metadata=metadata,
             availability_zone=availability_zone,
+            metadata=metadata,
             snapshot_id=snapshot_id)
 
         return self.request(
-            'POST', url, response_entity_type=VolumeResponse,
+            'POST', url,
+            response_entity_type=VolumeResponse,
             request_entity=volume_request_entity,
             requestslib_kwargs=requestslib_kwargs)
 
@@ -93,7 +93,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
         url = '{0}/volumes'.format(self.url)
         return self.request(
-            'GET', url, response_entity_type=VolumeList,
+            'GET', url, response_entity_type=VolumeListResponse,
             requestslib_kwargs=requestslib_kwargs)
 
     def list_all_volumes_info(self, requestslib_kwargs=None):
@@ -102,7 +102,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
         url = '{0}/volumes/detail'.format(self.url)
         return self.request(
-            'GET', url, response_entity_type=VolumeList,
+            'GET', url, response_entity_type=VolumeListResponse,
             requestslib_kwargs=requestslib_kwargs)
 
     def get_volume_info(self, volume_id, requestslib_kwargs=None):
@@ -130,7 +130,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
         url = '{0}/types'.format(self.url)
         return self.request(
-            'GET', url, response_entity_type=VolumeTypeList,
+            'GET', url, response_entity_type=VolumeTypeListResponse,
             requestslib_kwargs=requestslib_kwargs)
 
     def get_volume_type_info(self, volume_type_id, requestslib_kwargs=None):
@@ -139,13 +139,13 @@ class VolumesClient(AutoMarshallingRestClient):
 
         url = '{0}/types/{1}'.format(self.url, volume_type_id)
         return self.request(
-            'GET', url, response_entity_type=VolumeType,
+            'GET', url, response_entity_type=VolumeTypeResponse,
             requestslib_kwargs=requestslib_kwargs)
 
 #Volume Snapshot API
     def create_snapshot(
             self, volume_id, display_name=None, display_description=None,
-            force_create=False, name=None, requestslib_kwargs=None):
+            force_create=False, requestslib_kwargs=None):
 
         '''POST v1/{tenant_id}/snapshots'''
 
@@ -155,11 +155,11 @@ class VolumesClient(AutoMarshallingRestClient):
             volume_id,
             force=force_create,
             display_name=display_name,
-            name=name,
             display_description=display_description)
 
         return self.request(
-            'POST', url, response_entity_type=VolumeSnapshotResponse,
+            'POST', url,
+            response_entity_type=VolumeSnapshotResponse,
             request_entity=volume_snapshot_request_entity,
             requestslib_kwargs=requestslib_kwargs)
 
@@ -170,7 +170,7 @@ class VolumesClient(AutoMarshallingRestClient):
         url = '{0}/snapshots'.format(self.url)
 
         return self.request(
-            'GET', url, response_entity_type=VolumeSnapshotList,
+            'GET', url, response_entity_type=VolumeSnapshotListResponse,
             requestslib_kwargs=requestslib_kwargs)
 
     def list_all_snapshots_info(self, requestslib_kwargs=None):
@@ -179,7 +179,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
         url = '{0}/snapshots/detail'.format(self.url)
         return self.request(
-            'GET', url, response_entity_type=VolumeSnapshotList,
+            'GET', url, response_entity_type=VolumeSnapshotListResponse,
             requestslib_kwargs=requestslib_kwargs)
 
     def get_snapshot_info(self, snapshot_id, requestslib_kwargs=None):

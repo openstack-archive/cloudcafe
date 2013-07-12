@@ -15,15 +15,16 @@ limitations under the License.
 """
 
 import json
+from xml.etree import ElementTree
 
 from cafe.engine.models.base import \
     AutoMarshallingModel, AutoMarshallingListModel
 
 
-class VolumeAttachment(AutoMarshallingModel):
+class VolumeAttachmentResponse(AutoMarshallingModel):
 
     def __init__(self, id_=None, volume_id=None, server_id=None, device=None):
-        super(VolumeAttachment, self).__init__()
+        super(VolumeAttachmentResponse, self).__init__()
         self.id_ = None
         self.server_id = None
         self.volume_id = volume_id
@@ -31,46 +32,36 @@ class VolumeAttachment(AutoMarshallingModel):
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
-        json_dict = json.loads(serialized_str)
-        return VolumeAttachment(
-            id_=json_dict.get('id'),
-            volume_id=json_dict.get('volumeId'),
-            server_id=json_dict.get('serverId'),
-            device=json_dict.get('device'))
+        return cls._dict_to_obj(json.loads(serialized_str))
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        return cls._dict_to_obj(ElementTree.fromstring(serialized_str))
+
+    @classmethod
+    def _dict_to_obj(obj_dict):
+        return VolumeAttachmentResponse(
+            id_=obj_dict.get('id'),
+            volume_id=obj_dict.get('volumeId'),
+            server_id=obj_dict.get('serverId'),
+            device=obj_dict.get('device'))
 
 
 class VolumeAttachmentListResponse(AutoMarshallingListModel):
+    """Represents a list of VolumeAttachmentResponse objects"""
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        return cls._xml_ele_to_obj(ElementTree.fromstring(serialized_str))
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
-        '''
-            Handles both the single and list version of the Volume
-            call, obviating the need for separate domain objects for "Volumes"
-            and "Lists of Volumes" responses.
-            Returns a list-like VolumeAttachmentListResponse
-            of VolumeAttachment objects, even if there is only one volume
-            attachment present.
-        '''
-        json_dict = json.loads(serialized_str)
+        return cls._dict_to_obj(json.loads(serialized_str))
 
-        is_list = True if json_dict.get('volumeAttachments', None) else False
-
-        va_list = VolumeAttachmentListResponse()
-        if is_list:
-            for volume_attachment in json_dict.get('volumeAttachments'):
-                va = VolumeAttachment(
-                    id_=volume_attachment.get('id'),
-                    volume_id=volume_attachment.get('volumeId'),
-                    server_id=volume_attachment.get('serverId'),
-                    device=volume_attachment.get('device'))
-                va_list.append(va)
-        else:
-            volume_attachment = json_dict.get('volumeAttachment')
-            va_list.append(
-                VolumeAttachment(
-                    id_=volume_attachment.get('id'),
-                    volume_id=volume_attachment.get('volumeId'),
-                    server_id=volume_attachment.get('serverId'),
-                    device=volume_attachment.get('device')))
-            va_list.append(va)
-        return va_list
+    @classmethod
+    def _dict_to_obj(cls, obj_dict):
+        obj_list = cls()
+        for obj_element in obj_dict:
+            obj_list.append(
+                VolumeAttachmentResponse._dict_to_obj(obj_element))
+        return obj_list
