@@ -82,8 +82,15 @@ class ServerBehaviors(BaseBehavior):
                                                  networks=networks,
                                                  key_name=key_name)
         server_obj = resp.entity
-        resp = self.wait_for_server_status(server_obj.id,
-                                           ServerStates.ACTIVE)
+
+        try:
+            resp = self.wait_for_server_status(
+                server_obj.id, ServerStates.ACTIVE)
+        except:
+            # Delete the server before raising the exception
+            self.servers_client.delete_server(server_obj.id)
+            raise
+
         # Add the password from the create request into the final response
         resp.entity.admin_pass = server_obj.admin_pass
         return resp

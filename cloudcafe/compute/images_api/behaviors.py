@@ -127,7 +127,14 @@ class ImageBehaviors(object):
 
         # Retrieve the image id from the response header
         image_id = resp.headers['location'].rsplit('/')[-1]
-        resp = self.wait_for_image_status(image_id, ImageStates.ACTIVE)
+
+        try:
+            resp = self.wait_for_image_status(image_id, ImageStates.ACTIVE)
+        except:
+            # Delete the image before raising the exception
+            self.images_client.delete_image(image_id)
+            raise
+
         return resp
 
     def create_active_backup(self, server_id, backup_type, backup_rotation):
