@@ -18,7 +18,7 @@ import os
 from cafe.engine.models.data_interfaces import\
     BaseConfigSectionInterface, ConfigEnvironmentVariableError
 
-_TEST_CONFIG_FILE_ENV_VAR = 'CONFIG_FILE'
+_TEST_CONFIG_FILE_ENV_VAR = 'CLOUDCAFE_CONFIG_FILE'
 
 
 class ConfigSectionInterface(BaseConfigSectionInterface):
