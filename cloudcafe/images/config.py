@@ -48,3 +48,11 @@ class ImagesConfig(ConfigSectionInterface):
     @property
     def snapshot_timeout(self):
         return int(self.get('snapshot_timeout'))
+
+    @property
+    def remote_image(self):
+        return self.get('remote_image')
+
+    @property
+    def http_image(self):
+        return self.get('http_image')
