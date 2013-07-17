@@ -91,8 +91,9 @@ class ContainerObjectsList(AutoMarshallingModel):
                 name=storage_object.get('name'),
                 bytes=storage_object.get('bytes'),
                 hash=storage_object.get('hash'))
-            ret.append(
-                storage_obj,
-                last_modified=storage_object.get('last_modified'),
-                content_type=storage_object.get('content_type'))
+            last_modified = storage_object.get('last_modified')
+            content_type = storage_object.get('content_type')
+            ret.append(storage_obj)
+            ret.append(last_modified)
+            ret.append(content_type)
         return ret
