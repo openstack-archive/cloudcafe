@@ -16,20 +16,22 @@ limitations under the License.
 
 import time
 
-from cloudcafe.compute.images_api.behaviors import \
-    ImageBehaviors as ImageAPIBehaviors
+from cafe.engine.behaviors import BaseBehavior
 
 from cloudcafe.images.common.types import ImageStatus
-from cloudcafe.compute.common.exceptions import \
+from cloudcafe.common.exceptions import \
     TimeoutException, BuildErrorException
 
 
-class ImageBehaviors(ImageAPIBehaviors):
+class ImagesV1Behaviors(BaseBehavior):
+    """
+    @summary: Base Behaviors class for Images V1 API tests
+    """
 
-    def __init__(self, images_client, config):
-        super(ImageBehaviors, self).__init__(images_client,
-                                             None,
-                                             config)
+    def __init__(self, images_client, images_config):
+        super(ImagesV1Behaviors, self).__init__()
+        self.config = images_config
+        self.client = images_client
 
     def wait_for_image_status(self, image_id, desired_status,
                               interval_time=None, timeout=None):
@@ -55,7 +57,7 @@ class ImageBehaviors(ImageAPIBehaviors):
         end_time = time.time() + timeout
 
         while time.time() < end_time:
-            resp = self.images_client.retrieve_metadata(image_id)
+            resp = self.client.retrieve_metadata(image_id)
             image_id = resp.headers['x-image-meta-id']
             image_status = resp.headers['x-image-meta-status']
 
