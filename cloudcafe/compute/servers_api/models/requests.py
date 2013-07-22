@@ -614,3 +614,43 @@ class AddSecurityGroup(AutoMarshallingModel):
         element.append(name_ele)
         xml = ET.tostring(element)
         return xml
+
+
+class GetConsole(AutoMarshallingModel):
+    """
+    Get Console Request Object
+    """
+
+    def __init__(self, type):
+        self.type = type
+
+    def _obj_to_json(self):
+        json_dict = {"type": self.type}
+        return json.dumps({"os-getVNCConsole": json_dict})
+
+    def _obj_to_xml(self):
+        xml = Constants.XML_HEADER
+        element = ET.Element("os-getVNCConsole")
+        element.set("type", self.type)
+        xml += ET.tostring(element)
+        return xml
+
+
+class GetConsoleOutput(AutoMarshallingModel):
+    """
+    Get Console Output Request Object
+    """
+
+    def __init__(self, length):
+        self.length = length
+
+    def _obj_to_json(self):
+        json_dict = {"length": self.length}
+        return json.dumps({"os-getConsoleOutput": json_dict})
+
+    def _obj_to_xml(self):
+        xml = Constants.XML_HEADER
+        element = ET.Element("os-getConsoleOutput")
+        element.set("length", str(self.length))
+        xml += ET.tostring(element)
+        return xml

@@ -21,7 +21,7 @@ from cloudcafe.compute.quotas_api.models.requests import UpdateQuotaRequest
 
 class QuotaRequestsTest(unittest.TestCase):
 
-    def test_serialize_host_update_request_to_json(self):
+    def test_serialize_get_console_request_to_json(self):
         quota_obj = UpdateQuotaRequest(security_groups=45)
         json_serialized_quota = quota_obj.serialize("json")
         expected_json = '{"quota_set": {"security_groups": 45}}'
