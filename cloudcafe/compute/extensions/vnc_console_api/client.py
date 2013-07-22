@@ -15,8 +15,12 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.compute.extensions.vnc_console_api.models.vnc_console import \
-    GetConsole, VncConsole
+
+from cloudcafe.compute.extensions.vnc_console_api.models.requests\
+    import GetConsoleOutput, GetConsole
+
+from cloudcafe.compute.extensions.vnc_console_api.models.vnc_console \
+    import VncConsole, VncConsoleOutput
 
 
 class VncConsoleClient(AutoMarshallingRestClient):
@@ -35,6 +39,15 @@ class VncConsoleClient(AutoMarshallingRestClient):
 
     def get_vnc_console(self, server_id, vnc_type, tenant_id=None,
                         requestslib_kwargs=None):
+        """
+        @summary: Returns Console for a server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @param type: Type of console, i.e, novnc, xvnc
+        @type type: String
+        @return: A console for the server
+        @rtype: Requests.response
+        """
         request = GetConsole(vnc_type=vnc_type, tenant_id=tenant_id)
 
         url = '{base_url}/servers/{server_id}/action'.format(
@@ -42,5 +55,24 @@ class VncConsoleClient(AutoMarshallingRestClient):
         resp = self.request('POST', url,
                             response_entity_type=VncConsole,
                             request_entity=request,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def get_console_output(self, server_id, length, requestslib_kwargs=None):
+        """
+        @summary: Returns Console Output for a server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @param length: Number of lines of console output
+        @type length: String
+        @return: Console Output for the server
+        @rtype: Requests.response
+        """
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        get_console_output_request_object = GetConsoleOutput(length=length)
+        resp = self.request('POST', url,
+                            request_entity=get_console_output_request_object,
+                            response_entity_type=VncConsoleOutput,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
