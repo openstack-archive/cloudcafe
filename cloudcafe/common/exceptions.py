@@ -15,7 +15,19 @@ limitations under the License.
 """
 
 
-class ImagesBehaviors(object):
+class TimeoutException(Exception):
+    """Exception on timeout"""
+    def __init__(self, message='Request timed out'):
+        self.message = message
 
-    def __init__(self, config):
-        self.config = config
+    def __str__(self):
+        return repr(self.message)
+
+
+class BuildErrorException(Exception):
+    """Exception on server build"""
+    def __init__(self, message='Build Error'):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
