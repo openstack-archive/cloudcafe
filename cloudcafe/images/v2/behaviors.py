@@ -14,8 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from cloudcafe.images.behaviors import ImagesBehaviors
 
-class ImagesBehaviors(object):
 
-    def __init__(self, config):
-        self.config = config
+class ImagesV2Behaviors(ImagesBehaviors):
+    """
+    @summary: Base Behaviors class for Images V2 API tests
+    """
+
+    def __init__(self, images_client, config):
+        super(ImagesV1Behaviors, self).__init__(config)
+        self.images_client = images_client
