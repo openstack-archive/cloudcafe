@@ -58,12 +58,34 @@ class OrdersClient(AutoMarshallingRestClient):
                             response_entity_type=OrderRef)
         return resp
 
-    def get_order(self, order_id):
+    def create_order_w_plain_text(self, name, mime_type, algorithm, bit_length,
+                                  cypher_type, expiration, plain_text):
+        """
+        POST http://.../v1/{tenant_id}/orders/{order_uuid}
+        Creates an order to generate a secret with plain text. This is
+        separate from the create_order method because it is used for
+        negative testing only and is expected to fail.
+        """
+        remote_url = self._get_base_url()
+        secret = Secret(name=name,
+                        mime_type=mime_type,
+                        expiration=expiration,
+                        algorithm=algorithm,
+                        bit_length=bit_length,
+                        cypher_type=cypher_type,
+                        plain_text=plain_text)
+        req_obj = Order(secret=secret)
+
+        resp = self.request('POST', remote_url, request_entity=req_obj,
+                            response_entity_type=OrderRef)
+        return resp
+
+    def get_order(self, order_id=None, ref=None):
         """
         GET http://.../v1/{tenant_id}/orders/{order_uuid}
         Retrieves an order
         """
-        remote_url = self._get_order_url(order_id)
+        remote_url = ref or self._get_order_url(order_id)
         return self.request('GET', remote_url, response_entity_type=Order)
 
     def delete_order(self, order_id):
@@ -73,9 +95,24 @@ class OrdersClient(AutoMarshallingRestClient):
         """
         return self.request('DELETE', self._get_order_url(order_id))
 
-    def get_orders(self, limit=None, offset=None):
-        remote_url = self._get_base_url()
+    def get_orders(self, limit=None, offset=None, ref=None):
+        """
+        GET http://.../v1/orders?limit={limit}&offset={offset} or {ref}
+        Gets a list of orders
+        """
+        remote_url = ref or self._get_base_url()
         resp = self.request('GET', remote_url,
                             params={'limit': limit, 'offset': offset},
                             response_entity_type=OrderGroup)
+        return resp
+
+    def update_order(self, order_id, mime_type, data):
+        """
+        PUT http://.../v1/{tenant_id}/orders/{order_uuid}
+        Attempts to update order similar to how secrets are updated.
+        """
+        remote_url = self._get_order_url(order_id)
+        headers = {'Content-Type': mime_type}
+        resp = self.request('PUT', remote_url, headers=headers,
+                            data=data)
         return resp
