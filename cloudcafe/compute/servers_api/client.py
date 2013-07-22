@@ -20,16 +20,15 @@ from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
 from cloudcafe.compute.extensions.security_groups_api.models.security_group\
     import SecurityGroups, SecurityGroup
-from cloudcafe.compute.servers_api.models.servers import Server
-from cloudcafe.compute.servers_api.models.servers import Addresses
-from cloudcafe.compute.servers_api.models.servers import InstanceActions
+
+from cloudcafe.compute.servers_api.models.servers import Server, Addresses,\
+    InstanceActions
+
 from cloudcafe.compute.servers_api.models.requests import CreateServer,\
-    AddSecurityGroup
-from cloudcafe.compute.servers_api.models.requests import UpdateServer
-from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
-    ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
-    Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
-    Rebuild, ResetState, CreateBackup
+    AddSecurityGroup, UpdateServer, ChangePassword, ConfirmResize,\
+    RevertResize, Resize, Reboot, MigrateServer, Lock, Unlock, Start,\
+    Stop, Suspend, Resume, Pause, Unpause, CreateImage, Rebuild, \
+    ResetState, CreateBackup
 
 
 class ServersClient(AutoMarshallingRestClient):
