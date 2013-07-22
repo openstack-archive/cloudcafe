@@ -24,6 +24,7 @@ class ClientTestFixture(unittest.TestCase):
     COMPUTE_API_ENDPOINT = 'http://localhost:5000/v1'
     HOST_NAME = '787f4f6dda1b409bb8b2f9082349690e'
     TENANT_ID = 'c34dbd5940514344b54747487266a4b6'
+    SERVER_ID = '1234'
     FORMAT = 'json'
     CONTENT_TYPE = 'application/{0}'.format(FORMAT)
     ACCEPT = 'application/{0}'.format(FORMAT)
