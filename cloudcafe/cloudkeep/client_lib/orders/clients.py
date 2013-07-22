@@ -39,10 +39,7 @@ class ClientLibOrdersClient():
         return order
 
     def list_orders(self, limit=None, offset=None):
-        if limit is not None and offset is not None:
-            return self.conn.list_orders(limit=limit, offset=offset)
-        else:
-            return self.conn.list_orders()
+        return self.conn.list_orders(limit=limit, offset=offset)
 
     def list_orders_by_href(self, href=None):
         if href is None:

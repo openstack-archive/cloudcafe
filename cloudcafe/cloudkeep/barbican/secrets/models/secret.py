@@ -93,8 +93,9 @@ class SecretMetadata(Secret):
         return not self == other
 
     def get_id(self):
+        """Returns secret id."""
         ref_id = None
-        if len(self.secret_ref) > 0:
+        if self.secret_ref is not None and len(self.secret_ref) > 0:
             ref_id = path.split(self.secret_ref)[1]
         return ref_id
 

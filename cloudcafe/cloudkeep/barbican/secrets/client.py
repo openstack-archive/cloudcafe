@@ -69,7 +69,7 @@ class SecretsClient(AutoMarshallingRestClient):
 
         return resp
 
-    def get_secret(self, secret_id, mime_type=None):
+    def get_secret(self, secret_id=None, mime_type=None, ref=None):
         """
         GET http://.../v1/{tenant_id}/secrets/{secret_uuid}
         @param mime_type: if not set, it'll only retrieve the metadata
@@ -80,20 +80,20 @@ class SecretsClient(AutoMarshallingRestClient):
             resp_type = SecretMetadata
             mime_type = 'application/json'
 
-        remote_url = self._get_secret_url(secret_id)
+        remote_url = ref or self._get_secret_url(secret_id)
         headers = {'Accept': mime_type}
         resp = self.request('GET', remote_url, headers=headers,
                             response_entity_type=resp_type)
         return resp
 
-    def get_secrets(self, limit=None, offset=None):
-        remote_url = '{base}/secrets'.format(base=self._get_base_url())
-        if limit is not None and offset is not None:
-            remote_url = '{path}?limit={limit}&offset={offset}'.format(
-                path=remote_url,
-                limit=limit,
-                offset=offset)
+    def get_secrets(self, limit=None, offset=None, ref=None):
+        """
+        GET http://.../v1/secrets?limit={limit}&offset={offset} or {ref}
+        Gets a list of secrets
+        """
+        remote_url = ref or '{base}/secrets'.format(base=self._get_base_url())
         resp = self.request('GET', remote_url,
+                            params={'limit': limit, 'offset': offset},
                             response_entity_type=SecretGroup)
         return resp
 

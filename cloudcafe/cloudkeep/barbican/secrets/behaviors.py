@@ -16,6 +16,9 @@ limitations under the License.
 from os import path
 from datetime import datetime, timedelta
 
+from cloudcafe.common.tools import time
+from cloudcafe.cloudkeep.common.responses import CloudkeepResponse
+
 
 class SecretsBehaviors(object):
 
@@ -27,10 +30,6 @@ class SecretsBehaviors(object):
     def get_secret_id_from_ref(self, secret_ref):
         return path.split(secret_ref)[1]
 
-    def get_tomorrow_timestamp(self):
-        tomorrow = (datetime.today() + timedelta(days=1))
-        return tomorrow.isoformat()
-
     def create_and_check_secret(self, name=None, expiration=None,
                                 algorithm=None, bit_length=None,
                                 cypher_type=None, plain_text=None,
@@ -39,7 +38,7 @@ class SecretsBehaviors(object):
             name=name, expiration=expiration, algorithm=algorithm,
             bit_length=bit_length, cypher_type=cypher_type,
             plain_text=plain_text, mime_type=mime_type)
-        get_resp = self.client.get_secret(resp['secret_id'])
+        get_resp = self.client.get_secret(resp.id)
         return {
             'create_resp': resp,
             'get_resp': get_resp
@@ -50,7 +49,7 @@ class SecretsBehaviors(object):
         expiration = None
         data = None
         if use_expiration:
-            expiration = self.get_tomorrow_timestamp()
+            expiration = time.get_tomorrow_timestamp()
         if use_plain_text:
             data = self.config.plain_text
 
@@ -93,18 +92,11 @@ class SecretsBehaviors(object):
             plain_text=plain_text,
             mime_type=mime_type)
 
-        secret_ref = resp.entity.reference
-        secret_id = None
-        if secret_ref:
-            secret_id = self.get_secret_id_from_ref(secret_ref)
+        behavior_response = CloudkeepResponse(resp=resp)
+        secret_id = behavior_response.id
+        if secret_id is not None:
             self.created_secrets.append(secret_id)
-
-        return {
-            'status_code': resp.status_code,
-            'secret_ref': secret_ref,
-            'secret_id': secret_id,
-            'resp_obj': resp
-        }
+        return behavior_response
 
     def delete_secret(self, secret_id):
         self.remove_from_created_secrets(secret_id=secret_id)
