@@ -20,16 +20,13 @@ from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
 from cloudcafe.compute.extensions.security_groups_api.models.security_group\
     import SecurityGroups, SecurityGroup
-from cloudcafe.compute.servers_api.models.servers import Server
-from cloudcafe.compute.servers_api.models.servers import Addresses
-from cloudcafe.compute.servers_api.models.servers import InstanceActions
+from cloudcafe.compute.servers_api.models.servers import Server, Console,\
+    Addresses, InstanceActions, ConsoleOutput
 from cloudcafe.compute.servers_api.models.requests import CreateServer,\
-    AddSecurityGroup
-from cloudcafe.compute.servers_api.models.requests import UpdateServer
-from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
-    ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
-    Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
-    Rebuild, ResetState, CreateBackup
+    AddSecurityGroup, GetConsole, GetConsoleOutput, UpdateServer,\
+    ChangePassword, ConfirmResize, RevertResize, Resize, Reboot,\
+    MigrateServer, Lock, Unlock, Start, Stop, Suspend, Resume,\
+    Pause, Unpause, CreateImage, Rebuild, ResetState, CreateBackup
 
 
 class ServersClient(AutoMarshallingRestClient):
@@ -790,5 +787,43 @@ class ServersClient(AutoMarshallingRestClient):
         resp = self.request('POST', url,
                             request_entity=add_security_group_request_object,
                             response_entity_type=SecurityGroup,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def get_console(self, server_id, type, requestslib_kwargs=None):
+        """
+        @summary: Returns Console for a server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @param type: Type of console, i.e, novnc, xvnc
+        @type type: String
+        @return: A console for the server
+        @rtype: Requests.response
+        """
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        get_console_request_object = GetConsole(type=type)
+        resp = self.request('POST', url,
+                            request_entity=get_console_request_object,
+                            response_entity_type=Console,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def get_console_output(self, server_id, length, requestslib_kwargs=None):
+        """
+        @summary: Returns Console for a server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @param type: Type of console, i.e, novnc, xvnc
+        @type type: String
+        @return: A console for the server
+        @rtype: Requests.response
+        """
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        get_console_output_request_object = GetConsoleOutput(length=length)
+        resp = self.request('POST', url,
+                            request_entity=get_console_output_request_object,
+                            response_entity_type=ConsoleOutput,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
