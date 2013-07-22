@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from cloudcafe.images.behaviors import ImagesBehaviors
 
-class ImagesBehaviors(object):
+
+class ImagesV2Behaviors(ImagesBehaviors):
     """
-    @summary: Base Behaviors class for having common methods for V1 and V2 api
-    For example: is_valid_image_status(image.status) method is common for 
-    image model response returned from v1 and v2 api calls.
+    @summary: Base Behaviors class for Images V2 API tests
     """
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, images_client, config):
+        super(ImagesV2Behaviors, self).__init__(config)
+        self.images_client = images_client

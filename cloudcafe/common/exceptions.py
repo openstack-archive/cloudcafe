@@ -15,12 +15,19 @@ limitations under the License.
 """
 
 
-class ImagesBehaviors(object):
-    """
-    @summary: Base Behaviors class for having common methods for V1 and V2 api
-    For example: is_valid_image_status(image.status) method is common for 
-    image model response returned from v1 and v2 api calls.
-    """
+class TimeoutException(Exception):
+    """Exception on timeout"""
+    def __init__(self, message='Request timed out'):
+        self.message = message
 
-    def __init__(self, config):
-        self.config = config
+    def __str__(self):
+        return repr(self.message)
+
+
+class BuildErrorException(Exception):
+    """Exception on server build"""
+    def __init__(self, message='Build Error'):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
