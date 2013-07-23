@@ -131,3 +131,8 @@ class ComputeHypervisors(object):
 class InstanceAuthStrategies(object):
     PASSWORD = 'password'
     KEY = 'key'
+
+
+class VncConsoleTypes(object):
+    NOVNC = 'novnc'
+    XVPVNC = 'xvpvnc'
