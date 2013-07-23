@@ -17,6 +17,11 @@ class TenantTest(TestCase):
             "description": self.tenant_description,
             "enabled": self.tenant_enabled}
 
+        self.tenant_json_dict = {
+            "name": self.tenant_name,
+            "description": self.tenant_description,
+            "enabled": self.tenant_enabled}
+
         self.href = "HREF"
         self.type = "TYPE"
         self.rel = "REL"
@@ -46,7 +51,8 @@ class TenantTest(TestCase):
                                       '"enabled": false, ' \
                                       '"name": "TENANT_NAME", ' \
                                       '"description": "TENANT_DESCRIPTION"}]}'
-        self.expected_tenant_json = json.dumps({"tenant": self.tenant_dict})
+        self.expected_tenant_json = json.dumps(
+            {"tenant": self.tenant_json_dict})
         self.expected_tenants_link_json = \
             json.dumps({"tenantsLink": self.tenants_link_dict})
 
