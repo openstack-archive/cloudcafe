@@ -15,8 +15,15 @@ limitations under the License.
 """
 
 import time
+import cStringIO as StringIO
 
 from cafe.engine.behaviors import BaseBehavior
+
+from cloudcafe.auth.config import UserAuthConfig
+from cloudcafe.auth.provider import AuthProvider
+from cloudcafe.identity.v2_0.tenants_api.client import \
+    TenantsAPI_Client
+from cloudcafe.images.config import ImagesConfig
 
 from cloudcafe.images.common.types import ImageStatus
 from cloudcafe.common.exceptions import \
@@ -33,10 +40,15 @@ class ImagesV1Behaviors(BaseBehavior):
         self.config = images_config
         self.client = images_client
 
+        access_data = AuthProvider().get_access_data()
+        self.tenants_client = TenantsAPI_Client(
+            UserAuthConfig().auth_endpoint,
+            access_data.token.id_,
+            'json', 'json')
+
     def wait_for_image_status(self, image_id, desired_status,
                               interval_time=None, timeout=None):
-        """
-        @summary: Waits for a image to reach a desired status
+        """Waits for a image to reach a desired status
         @param image_id: The uuid of the image
         @type image_id: String
         @param desired_status: The desired final status of the image
@@ -76,3 +88,35 @@ class ImagesV1Behaviors(BaseBehavior):
                     timeout, desired_status))
 
         return resp
+
+    def create_remote_image(self, name, container_format, disk_format):
+        """Create new remote image.
+        @return ID of the newly registered image
+        """
+        name = 'New Remote Image {0}'.format(name)
+
+        response = self.images_client.add_image(
+            name,
+            None,
+            image_meta_container_format=container_format,
+            image_meta_disk_format=disk_format,
+            image_meta_is_public=True,
+            image_meta_location=ImagesConfig.remote_image)
+
+        return response.entity.id_
+
+    def create_standard_image(cls, name, container_format, disk_format, size):
+        """Create new standard image.
+        @return ID of the newly registered image
+        """
+        image_data = StringIO.StringIO('*' * size)
+        name = 'New Standard Image {0}'.format(name)
+
+        response = cls.images_client.add_image(
+            name,
+            image_data,
+            image_meta_container_format=container_format,
+            image_meta_disk_format=disk_format,
+            image_meta_is_public=True)
+
+        return response.entity.id_
