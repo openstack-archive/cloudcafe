@@ -140,9 +140,9 @@ class ServerBehaviors(BaseBehavior):
         @param interval_time: The amount of time in seconds to wait
                               between polling
         @type interval_time: Integer
-        @param interval_time: The amount of time in seconds to wait
+        @param timeout: The amount of time in seconds to wait
                               before aborting
-        @type interval_time: Integer
+        @type timeout: Integer
         """
 
         interval_time = interval_time or self.config.server_status_interval
@@ -160,6 +160,39 @@ class ServerBehaviors(BaseBehavior):
                 "wait_for_server_status ran for {0} seconds and did not "
                 "observe the server achieving the {1} status.".format(
                     timeout, 'DELETED'))
+
+    def confirm_server_deletion(self, server_id, response_code,
+                                interval_time=None, timeout=None):
+        """
+        @summary: confirm server deletion based on response code.
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param: response code to wait for to confirm server deletion
+        @type: Integer
+        @param interval_time: The amount of time in seconds to wait
+                              between polling
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait
+                              before aborting
+        @type timeout: Integer
+        """
+        interval_time = interval_time or self.config.server_status_interval
+        timeout = timeout or self.config.server_build_timeout
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            try:
+                resp = self.servers_client.get_server(server_id)
+                if resp.status_code == response_code:
+                    return
+            except ItemNotFound:
+                pass
+            finally:
+                time.sleep(interval_time)
+        raise TimeoutException(
+            "wait_for_server_status ran for {0} seconds and did not "
+            "observe the server achieving the {1} status based on "
+            "response code.".format(timeout, 'DELETED'))
 
     def get_public_ip_address(self, server):
         """
