@@ -19,6 +19,7 @@ import time
 from cafe.engine.behaviors import BaseBehavior
 from cafe.engine.clients.remote_instance.instance_client import \
     InstanceClientFactory
+from cloudcafe.compute.common.constants import HTTPResponseCodes
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
@@ -160,6 +161,22 @@ class ServerBehaviors(BaseBehavior):
                 "wait_for_server_status ran for {0} seconds and did not "
                 "observe the server achieving the {1} status.".format(
                     timeout, 'DELETED'))
+
+    def wait_for_server_to_be_deleted_response_code(self, server_id):
+        """
+        @summary: Waits for server to be deleted based on response code.
+        """
+        interval_time = self.config.server_status_interval
+        timeout = time.time() + self.config.server_build_timeout
+        while time.time() < timeout:
+            try:
+                resp = self.servers_client.get_server(server_id)
+                if resp.status_code == HTTPResponseCodes.NOT_FOUND:
+                    return
+            except ItemNotFound:
+                pass
+            finally:
+                time.sleep(interval_time)
 
     def get_public_ip_address(self, server):
         """
