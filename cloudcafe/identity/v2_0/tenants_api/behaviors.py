@@ -56,3 +56,12 @@ class TenantsBehaviors(object):
             return role[0]
         if len(role) > 1:
             raise Exception("There is more than one role with the given name")
+
+    def get_all_tenant_ids(self):
+        """ Get a list of all tenants
+        @return list of Tenant IDs
+        """
+        response = self.tenant_client.list_tenants()
+        tenants = response.entity
+
+        return [tenant.id_ for tenant in tenants]

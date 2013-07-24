@@ -27,11 +27,6 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('base_url')
 
     @property
-    def api_version(self):
-        """API Version to use"""
-        return self.get('api_version')
-
-    @property
     def primary_image(self):
         """Primary image ID"""
         return self.get('primary_image')

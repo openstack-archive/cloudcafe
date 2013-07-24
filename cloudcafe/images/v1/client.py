@@ -1,6 +1,6 @@
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v1_0.models.image import Image
-from cloudcafe.images.v1_0.models.member import MemberList
+from cloudcafe.images.v1.models.image import Image
+from cloudcafe.images.v1.models.member import MemberList
 
 
 class ImagesClient(AutoMarshallingRestClient):
