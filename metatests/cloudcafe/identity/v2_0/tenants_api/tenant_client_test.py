@@ -104,11 +104,11 @@ class TenantsClientTest(TestCase):
         self._build_assertions(actual_response, self.user_url)
 
     def test_create_user_for_tenant(self):
-        HTTPretty.register_uri(HTTPretty.POST, self.tenant_users_url)
+        HTTPretty.register_uri(HTTPretty.POST, self.users_url)
 
         actual_response = self.tenant_api_client.create_user_for_a_tenant(
             name="Admin", tenant_id=self.tenant_id)
-        self._build_assertions(actual_response, self.tenant_users_url)
+        self._build_assertions(actual_response, self.users_url)
 
     def test_update_user(self):
         HTTPretty.register_uri(HTTPretty.PUT, self.user_url)

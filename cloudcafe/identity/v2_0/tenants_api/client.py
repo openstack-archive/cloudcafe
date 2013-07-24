@@ -177,7 +177,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @summary: Creates a user for a given tenant
         """
 
-        url = '{0}/tenants/{1}/users'.format(self.base_url, tenant_id)
+        url = '{0}/users'.format(self.base_url)
         user_request_object = User(id_=id_, tenant_id=tenant_id, name=name,
                                    enabled=enabled, email=email)
         response = self.request('POST', url,
