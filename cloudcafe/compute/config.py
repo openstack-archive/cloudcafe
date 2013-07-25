@@ -38,6 +38,11 @@ class ComputeEndpointConfig(ConfigSectionInterface):
     def compute_endpoint_name(self):
         return self.get("compute_endpoint_name")
 
+    @property
+    def compute_endpoint_url(self):
+        """Optional override of the Compute url"""
+        return self.get("compute_endpoint_url")
+
 
 class ComputeAdminEndpointConfig(ComputeEndpointConfig):
 
