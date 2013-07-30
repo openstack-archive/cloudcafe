@@ -81,8 +81,8 @@ class Links(AutoMarshallingModel):
 
     def __repr__(self):
         values = []
-        for prop in __dict__:
-            values.append("%s: %s" % (prop, __dict__[prop]))
+        for prop in self.__dict__:
+            values.append("%s: %s" % (prop, self.__dict__[prop]))
         return '[' + ', '.join(values) + ']'
 
     @classmethod
