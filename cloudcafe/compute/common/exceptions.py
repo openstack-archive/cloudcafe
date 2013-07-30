@@ -82,7 +82,7 @@ class ItemNotFound(Exception):
 
 
 class BadMethod(Exception):
-    def __init__(self, message):
+    def __init__(self):
         self.message = "405 - Bad Method."
 
     def __str__(self):
@@ -98,8 +98,8 @@ class Unauthorized(Exception):
 
 
 class Forbidden(Exception):
-    def __init__(self, message):
-        self.message = "403 - Forbidden Operation"
+    def __init__(self):
+        self.message = "403 - Forbidden."
 
     def __str__(self):
         return repr(self.message)
@@ -175,7 +175,7 @@ class AuthenticationTimeoutException(Exception):
 
 
 class BadMediaType(Exception):
-    def __init__(self, message):
+    def __init__(self):
         self.message = '415 - Bad media type.'
 
     def __str__(self):
