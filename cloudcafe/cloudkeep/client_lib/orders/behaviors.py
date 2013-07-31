@@ -13,7 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from os import path
+
 from cloudcafe.cloudkeep.barbican.orders.behaviors import OrdersBehavior
+from cloudcafe.cloudkeep.common.responses import CloudkeepResponse
 
 
 class ClientLibOrdersBehaviors(OrdersBehavior):
@@ -25,6 +28,13 @@ class ClientLibOrdersBehaviors(OrdersBehavior):
         self.secrets_client = secrets_client
         self.cl_client = cl_client
 
+    def get_id_from_ref(self, ref):
+        """Returns id from reference."""
+        ref_id = None
+        if ref is not None and len(ref) > 0:
+            ref_id = path.split(ref)[1]
+        return ref_id
+
     def create_and_check_order(self, name=None, expiration=None,
                                algorithm=None, bit_length=None,
                                cypher_type=None, mime_type=None):
@@ -33,10 +43,10 @@ class ClientLibOrdersBehaviors(OrdersBehavior):
             algorithm=algorithm, bit_length=bit_length,
             cypher_type=cypher_type, mime_type=mime_type)
         resp = self.barb_client.get_order(order.id)
-        return {
-            'order': order,
-            'get_resp': resp
-        }
+
+        behavior_response = CloudkeepResponse(entity=order,
+                                              get_resp=resp)
+        return behavior_response
 
     def create_order(self, name=None, expiration=None, algorithm=None,
                      bit_length=None, cypher_type=None, mime_type=None):

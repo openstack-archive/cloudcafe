@@ -21,17 +21,25 @@ from cafe.engine.models.behavior_response import BehaviorResponse
 
 class CloudkeepResponse(BehaviorResponse):
 
-    def __init__(self, resp):
+    def __init__(self, resp=None, get_resp=None, entity=None):
         super(CloudkeepResponse, self).__init__()
-
-        self.response = resp
+        self.create_resp = resp
+        self.entity = entity
         self.ref = None
+        self.id = None
+        self.status_code = None
+        self.get_resp = None
         if resp is not None:
             self.ref = resp.entity.reference
-        self.id = None
-        if self.ref is not None:
+            self.status_code = resp.status_code
             self.id = self._get_id_from_ref(ref=self.ref)
-        self.status_code = resp.status_code
+        if get_resp is not None:
+            self.get_resp = get_resp
+            self.get_status_code = get_resp.status_code
 
     def _get_id_from_ref(self, ref):
-        return path.split(ref)[1]
+        """Returns id from reference."""
+        ref_id = None
+        if ref is not None and len(ref) > 0:
+            ref_id = path.split(ref)[1]
+        return ref_id
