@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from os import path
 from httplib import BadStatusLine
 from requests.exceptions import ConnectionError
 
@@ -30,9 +29,6 @@ class OrdersBehavior(object):
         self.config = config
         self.created_orders = []
 
-    def get_id_from_ref(self, ref):
-        return path.split(ref)[1]
-
     def create_and_check_order(self, name=None, algorithm=None,
                                bit_length=None, cypher_type=None,
                                mime_type=None):
@@ -40,20 +36,10 @@ class OrdersBehavior(object):
         resp = self.create_order_overriding_cfg(
             name=name, algorithm=algorithm, bit_length=bit_length,
             cypher_type=cypher_type, mime_type=mime_type)
-
         get_order_resp = self.orders_client.get_order(order_id=resp.id)
-
-        secret_href = get_order_resp.entity.secret_href
-        secret_id = self.get_id_from_ref(ref=secret_href)
-        get_secret_resp = self.secrets_client.get_secret(
-            secret_id=secret_id, mime_type=mime_type)
-
-        return {
-            'create_resp': resp,
-            'get_order_resp': get_order_resp,
-            'get_secret_resp': get_secret_resp,
-            'secret_id': secret_id
-        }
+        behavior_response = CloudkeepResponse(resp=resp.create_resp,
+                                              get_resp=get_order_resp)
+        return behavior_response
 
     def create_order_from_config(self, use_expiration=False):
         """Creates order from configuration."""
@@ -139,8 +125,7 @@ class OrdersBehavior(object):
     def delete_order(self, order_id, delete_secret=True):
         if delete_secret:
             order = self.orders_client.get_order(order_id).entity
-            secret_href = order.secret_href
-            secret_id = self.get_id_from_ref(secret_href)
+            secret_id = order.get_secret_id()
             self.secrets_client.delete_secret(secret_id)
 
         resp = self.orders_client.delete_order(order_id)
