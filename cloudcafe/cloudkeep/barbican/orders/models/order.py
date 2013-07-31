@@ -32,11 +32,20 @@ class Order(AutoMarshallingModel):
         self.status = status
         self.order_ref = order_ref
 
-    def get_id(self):
+    def get_id_from_ref(self, ref):
+        """Returns id from reference."""
         ref_id = None
-        if len(self.order_ref) > 0:
-            ref_id = path.split(self.order_ref)[1]
+        if ref is not None and len(ref) > 0:
+            ref_id = path.split(ref)[1]
         return ref_id
+
+    def get_id(self):
+        """Returns order id."""
+        return self.get_id_from_ref(ref=self.order_ref)
+
+    def get_secret_id(self):
+        """Returns id of secret created by order."""
+        return self.get_id_from_ref(ref=self.secret_href)
 
     def _obj_to_json(self):
         secret_dict = self.secret._obj_to_dict()

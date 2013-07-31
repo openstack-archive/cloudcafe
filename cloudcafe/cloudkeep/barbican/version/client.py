@@ -21,16 +21,17 @@ from cloudcafe.cloudkeep.barbican.version.models.version import Version
 class VersionClient(AutoMarshallingRestClient):
     def __init__(self, url, serialize_format=None, deserialize_format=None):
         """
-        @param url: Base URL of meniscus api
+        @param url: Base URL of Barbican api
         @type url: String
         """
         super(VersionClient, self).__init__(serialize_format,
                                             deserialize_format)
         self.url = url
 
-    def get_version(self):
+    def get_version(self, headers=None):
         """
         @summary: Retrieves the version information from the API
         """
-        resp = self.request('GET', self.url, response_entity_type=Version)
+        resp = self.request('GET', self.url, headers=headers,
+                            response_entity_type=Version)
         return resp

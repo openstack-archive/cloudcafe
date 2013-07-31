@@ -71,3 +71,47 @@ class CloudKeepSecretsConfig(ConfigSectionInterface):
     @property
     def mime_type(self):
         return self.get("mime_type")
+
+
+class CloudKeepOrdersConfig(ConfigSectionInterface):
+    SECTION_NAME = 'cloudkeep-orders'
+
+    @property
+    def name(self):
+        return self.get("name")
+
+    @property
+    def algorithm(self):
+        return self.get("algorithm")
+
+    @property
+    def bit_length(self):
+        return int(self.get("bit_length"))
+
+    @property
+    def cypher_type(self):
+        return self.get("cypher_type")
+
+    @property
+    def mime_type(self):
+        return self.get("mime_type")
+
+
+class CloudKeepClientLibConfig(ConfigSectionInterface):
+    SECTION_NAME = 'cloudkeep-client-lib'
+
+    @property
+    def authentication_endpoint(self):
+        return self.get("authentication_endpoint")
+
+    @property
+    def username(self):
+        return self.get("username")
+
+    @property
+    def key(self):
+        return self.get("key")
+
+    @property
+    def token(self):
+        return self.get("token")
