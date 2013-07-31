@@ -13,45 +13,53 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import json
 
-from unittest import TestCase
+import json
 from cloudcafe.identity.v2_0.tenants_api.models.responses.user \
     import User, Users
 
 
-class UserTest(TestCase):
-    def setUp(self):
-        self.user_id = "USER_ID"
-        self.user_name = "TEST_USER"
-        self.user_tenant_id = None
-        self.user_enabled = True
-        self.user_email = "user@test.com"
-        self.user_dict = {
-            "name": self.user_name,
-            "id": self.user_id,
-            "tenantId": self.user_tenant_id,
-            "enabled": self.user_enabled,
-            "email": self.user_email}
+class TestUser(object):
 
-        self.expected_user = User(id_=self.user_id,
-                                  name=self.user_name,
-                                  tenant_id=self.user_tenant_id,
-                                  enabled=self.user_enabled,
-                                  email=self.user_email)
-        self.user_dict_list = [self.user_dict]
-        self.expected_users = Users(users=[self.expected_user])
-        self.serialized_str = json.dumps({"user": self.user_dict})
-        self.expected_json = json.loads(self.serialized_str)
+    @classmethod
+    def setup_class(cls):
+        cls.user_id = "USER_ID"
+        cls.user_name = "TEST_USER"
+        cls.user_tenant_id = None
+        cls.user_enabled = True
+        cls.user_email = "user@test.com"
+        cls.user_dict = {
+            "id": cls.user_id,
+            "name": cls.user_name,
+            "tenantId": cls.user_tenant_id,
+            "enabled": cls.user_enabled,
+            "email": cls.user_email}
+
+        cls.json_dict = {
+            "name": cls.user_name,
+            "tenantId": cls.user_tenant_id,
+            "enabled": cls.user_enabled,
+            "email": cls.user_email}
+
+        cls.expected_user = User(id_=cls.user_id,
+                                 name=cls.user_name,
+                                 tenant_id=cls.user_tenant_id,
+                                 enabled=cls.user_enabled,
+                                 email=cls.user_email)
+        cls.user_dict_list = [cls.user_dict]
+        cls.expected_users = Users(users=[cls.expected_user])
+        cls.expected_user_json = json.dumps({"user": cls.json_dict})
+        cls.users_json = json.dumps({"users": cls.user_dict_list})
 
     def test_dict_to_obj(self):
         assert self.expected_user == User._dict_to_obj(self.user_dict)
 
     def test_list_to_obj(self):
-        self.expected_users == Users._list_to_obj(self.user_dict_list)
+        assert self.expected_users == Users._list_to_obj(self.user_dict_list)
 
     def test_json_to_obj(self):
-        self.expected_user == User._json_to_obj(self.serialized_str)
+        assert self.expected_user == User._json_to_obj(self.expected_user_json)
+        assert self.expected_users == Users._json_to_obj(self.users_json)
 
     def test_obj_to_json(self):
-        self.expected_json == self.expected_user._obj_to_json()
+        assert self.expected_user_json == self.expected_user._obj_to_json()
