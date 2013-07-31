@@ -22,12 +22,12 @@ IDENTITY_ENDPOINT_URL = "http://localhost:5000"
 
 
 class TenantsClientTest(TestCase):
-
     def setUp(self):
         self.url = IDENTITY_ENDPOINT_URL
         self.serialize_format = "json"
         self.deserialize_format = "json"
         self.auth_token = "AUTH_TOKEN"
+        self.admin_extensions = "OS-KSADM"
 
         self.tenant_api_client = TenantsAPI_Client(
             url=self.url,
@@ -45,6 +45,10 @@ class TenantsClientTest(TestCase):
         self.tenant_users_url = "{0}/users".format(self.tenant_url)
         self.user_role_url = "{0}/{1}/roles".format(self.tenant_users_url,
                                                     self.user_id)
+        self.role_id = "ROLE_ID"
+        self.tenant_user_role_url = "{0}/{1}/{2}".format(self.user_role_url,
+                                                         self.admin_extensions,
+                                                         self.role_id)
 
         HTTPretty.enable()
 
@@ -104,11 +108,12 @@ class TenantsClientTest(TestCase):
         self._build_assertions(actual_response, self.user_url)
 
     def test_create_user_for_tenant(self):
-        HTTPretty.register_uri(HTTPretty.POST, self.users_url)
+        url = "{0}/v2.0/users".format(self.url)
+        HTTPretty.register_uri(HTTPretty.POST, url)
 
         actual_response = self.tenant_api_client.create_user_for_a_tenant(
             name="Admin", tenant_id=self.tenant_id)
-        self._build_assertions(actual_response, self.users_url)
+        self._build_assertions(actual_response, url)
 
     def test_update_user(self):
         HTTPretty.register_uri(HTTPretty.PUT, self.user_url)
@@ -133,12 +138,15 @@ class TenantsClientTest(TestCase):
             tenant_id=self.tenant_id)
         self._build_assertions(actual_response, self.tenant_users_url)
 
-    def test_create_role_for_tenant_user(self):
-        HTTPretty.register_uri(HTTPretty.POST, self.user_role_url)
+    def test_assign_role_to_tenant_user(self):
+        HTTPretty.register_uri(HTTPretty.PUT, self.tenant_user_role_url)
 
-        actual_response = self.tenant_api_client.create_role_for_tenant_user(
-            name="Admin", user_id=self.user_id, tenant_id=self.tenant_id)
-        self._build_assertions(actual_response, self.user_role_url)
+        actual_response = self.tenant_api_client.assign_role_to_tenant_user(
+            name="Admin",
+            user_id=self.user_id,
+            tenant_id=self.tenant_id,
+            role_id=self.role_id)
+        self._build_assertions(actual_response, self.tenant_user_role_url)
 
     def test_get_users_roles_for_tenant(self):
         HTTPretty.register_uri(HTTPretty.GET,
@@ -150,12 +158,14 @@ class TenantsClientTest(TestCase):
             user_id=self.user_id)
         self._build_assertions(actual_response, self.user_role_url)
 
-    def test_delete_role_of_tenant_user(self):
-        HTTPretty.register_uri(HTTPretty.DELETE, self.user_role_url)
+    def test_remove_role_of_tenant_user(self):
+        HTTPretty.register_uri(HTTPretty.DELETE, self.tenant_user_role_url)
 
-        actual_response = self.tenant_api_client.delete_role_of_tenant_user(
-            tenant_id=self.tenant_id, user_id=self.user_id)
-        self._build_assertions(actual_response, self.user_role_url)
+        actual_response = self.tenant_api_client.remove_role_of_tenant_user(
+            tenant_id=self.tenant_id,
+            user_id=self.user_id,
+            role_id=self.role_id)
+        self._build_assertions(actual_response, self.tenant_user_role_url)
 
     def _build_assertions(self, actual_response, url):
         assert HTTPretty.last_request.headers['Content-Type'] == \
