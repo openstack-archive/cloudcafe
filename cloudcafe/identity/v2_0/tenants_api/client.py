@@ -22,6 +22,8 @@ from cloudcafe.identity.v2_0.tenants_api.models.responses.role import \
 from cloudcafe.identity.v2_0.tenants_api.models.responses.user import \
     Users, User
 from cloudcafe.identity.v2_0.common.models.constants import AdminExtensions
+from cloudcafe.identity.v2_0.tenants_api.models.responses.service import \
+    Service
 
 _version = 'v2.0'
 _admin_extensions = AdminExtensions.OS_KS_ADM
@@ -314,4 +316,49 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
 
         response = self.request('DELETE', url,
                                 requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def create_service(self, name=None, type_=None,
+                       description=None, requestslib_kwargs=None):
+        """
+        @summary: Creates a service given the provided parameters
+         Maps to /services
+        @param name: The name for the service
+        @type name: String
+        @param type_: The type of the service
+        @type type_: String
+        @param description: The description of the service
+        @type description: String
+        @return: response
+        @rtype: Response
+        """
+
+        url = '{0}/{1}/services'.format(self.base_url,
+                                        _admin_extensions)
+        service_request_object = Service(name=name,
+                                         type_=type_,
+                                         description=description)
+
+        response = self.request('POST', url,
+                                response_entity_type=Service,
+                                request_entity=service_request_object,
+                                requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
+    def delete_service(self, service_id, requestslib_kwargs=None):
+        """
+        @summary: Deletes the specified service
+        @param service_id: The id of a service
+        @type service_id: String
+        @return: resp
+        @rtype: Requests.response
+        """
+
+        url = '{0}/{1}/services/{2}'.format(self.base_url,
+                                            _admin_extensions,
+                                            service_id)
+        response = self.request('DELETE', url,
+                                requestslib_kwargs=requestslib_kwargs)
+
         return response
