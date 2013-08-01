@@ -16,11 +16,9 @@ limitations under the License.
 
 
 class SecretsStates(object):
-    STATUS_ACTIVE = "ACTIVE"
-    STATUS_ERROR = "ERROR"
+    ACTIVE = "ACTIVE"
+    ERROR = "ERROR"
 
 
-class OrdersStates(object):
-    STATUS_ACTIVE = "ACTIVE"
-    STATUS_PENDING = "PENDING"
-    STATUS_ERROR = "ERROR"
+class OrdersStates(SecretsStates):
+    PENDING = "PENDING"
