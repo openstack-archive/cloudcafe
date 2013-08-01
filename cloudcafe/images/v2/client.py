@@ -91,12 +91,15 @@ class ImageClient(AutoMarshallingRestClient):
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def list_images(self, filters={}, sort_key='updated_at', sort_dir='desc',
+    def list_images(self, filters={}, sort_key=None, sort_dir=None,
                     requestslib_kwargs=None):
         url = '{base_url}/images'.format(base_url=self.base_url)
         params = filters
-        params['sort_key'] = sort_key
-        params['sort_dir'] = sort_dir
+        if sort_key is not None:
+            params['sort_key'] = sort_key
+        if sort_dir is not None:
+            params['sort_dir'] = sort_dir
+
         return self.request('GET', url, params=params,
                             response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
