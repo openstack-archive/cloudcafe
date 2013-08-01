@@ -21,9 +21,6 @@ from cloudcafe.cloudkeep.barbican.secrets.models.secret import Secret
 
 
 class Order(AutoMarshallingModel):
-    STATUS_PENDING = 'PENDING'
-    STATUS_ACTIVE = 'ACTIVE'
-    STATUS_ERROR = 'ERROR'
 
     def __init__(self, secret, secret_href=None, status=None, order_ref=None):
         super(Order, self).__init__()
