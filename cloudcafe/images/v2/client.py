@@ -1,5 +1,5 @@
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v2_0.models.image import Image, ImagePatch
+from cloudcafe.images.v2.models.image import Image, ImagePatch
 
 
 class ImageClient(AutoMarshallingRestClient):
@@ -91,12 +91,39 @@ class ImageClient(AutoMarshallingRestClient):
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def list_images(self, filters={}, sort_key='updated_at', sort_dir='desc',
+    def list_images(self, name=None, visibility=None, status=None,
+                    size_min=None, size_max=None, sort_key=None,
+                    sort_dir=None, marker=None, limit=None,
                     requestslib_kwargs=None):
+        """
+        @summary: List all details for all available images.
+        @param name: Image Name
+        @type name: String
+        @param status: Image Status
+        @type status: String
+        @param visibility: Image Visibility
+        @type visibility: String
+        @param size_min: Value of the minimum size of the image in bytes
+        @type size_min: String
+        @param size_max: Value of the maximum size of the image in bytes
+        @type size_max: String
+        @param sort_key: Sort Key. Default is 'created_at'
+        @type sort_key: String
+        @param sort_dir: Sort Direction. Default is 'desc'
+        @type sort_dir: String
+        @param marker: The ID of the last item in the previous list
+        @type marker: String
+        @param limit: Sets the page size.
+        @type limit: int
+        @return: lists all images visible by the account filtered by the params
+        @rtype: Response with Image List as response.entity
+        """
         url = '{base_url}/images'.format(base_url=self.base_url)
-        params = filters
-        params['sort_key'] = sort_key
-        params['sort_dir'] = sort_dir
+
+        params = {'name': name, 'visibility': visibility, 'status': status,
+                  'size_min': size_min, 'size_max': size_max, 'marker': marker,
+                  'sort_key': sort_key, 'sort_dir': sort_dir, 'limit': limit}
+
         return self.request('GET', url, params=params,
                             response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
