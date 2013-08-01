@@ -34,6 +34,10 @@ class BaseIdentityModel(AutoMarshallingModel):
         cls._remove_namespace(element, V2_0Constants.XML_NS_OPENSTACK_COMMON)
         cls._remove_namespace(element, V2_0Constants.XML_NS_ATOM)
 
+    @classmethod
+    def _remove_namespace(cls, element, XML_NS):
+        raise NotImplementedError
+
 
 class BaseIdentityListModel(AutoMarshallingListModel):
 
