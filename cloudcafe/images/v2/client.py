@@ -1,5 +1,5 @@
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v2_0.models.image import Image, ImagePatch
+from cloudcafe.images.v2.models.image import Image, ImagePatch
 
 
 class ImageClient(AutoMarshallingRestClient):
@@ -91,12 +91,66 @@ class ImageClient(AutoMarshallingRestClient):
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def list_images(self, filters={}, sort_key='updated_at', sort_dir='desc',
-                    requestslib_kwargs=None):
+    def list_images(self, name=None, disk_format=None, container_format=None,
+                    visibility=None, status=None, checksum=None, owner=None,
+                    min_ram=None, min_disk=None, changes_since=None,
+                    protected=None, type=None, server_ref=None, size_min=None,
+                    size_max=None,  sort_key=None, sort_dir=None, marker=None,
+                    limit=None, requestslib_kwargs=None):
+        """
+        @summary: List all details for all available images.
+        @param name: Image Name
+        @type name: String
+        @param disk_format: Disk_format
+        @type disk_format: String
+        @param container_format: Container_format
+        @type container_format: String
+        @param visibility: Image Visibility
+        @type visibility: String
+        @param status: Image Status
+        @type status: String
+        @param checksum: Image Checksum
+        @type checksum: String
+        @param owner: Image Owner
+        @type owner: String
+        @param min_ram: Value of the minimum ram of the image in bytes
+        @type min_ram: String
+        @param min_disk: Value of the minimum disk of the image in bytes
+        @type min_disk: String
+        @param changes_since: changed since the changes-since time
+        @type changes_since: DateTime
+        @param protected: 0|1
+        @type type: int
+        @param type: BASE|SERVER
+        @type type: String
+        @param server_ref: Server id or Url to server
+        @type server_ref: String
+        @param size_min: Value of the minimum size of the image in bytes
+        @type size_min: String
+        @param size_max: Value of the maximum size of the image in bytes
+        @type size_max: String
+        @param sort_key: Sort Key. Default is 'created_at'
+        @type sort_key: String
+        @param sort_dir: Sort Direction. Default is 'desc'
+        @type sort_dir: String
+        @param marker: The ID of the last item in the previous list
+        @type marker: String
+        @param limit: Sets the page size.
+        @type limit: int
+        @return: lists all images visible by the account filtered by the params
+        @rtype: Response with Image List as response.entity
+        """
         url = '{base_url}/images'.format(base_url=self.base_url)
-        params = filters
-        params['sort_key'] = sort_key
-        params['sort_dir'] = sort_dir
+
+        params = {'name': name, 'disk_format': disk_format, 'status': status,
+                  'container_format': container_format, 'checksum': checksum,
+                  'visibility': visibility, 'owner': owner, 'min_ram': min_ram,
+                  'min_disk': min_disk, 'changes_since': changes_since,
+                  'protected': protected, 'type': type, 'size_min': size_min,
+                  'server_ref': server_ref, 'size_max': size_max,
+                  'marker': marker, 'sort_key': sort_key,'sort_dir': sort_dir,
+                  'limit': limit}
+
         return self.request('GET', url, params=params,
                             response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
