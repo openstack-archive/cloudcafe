@@ -15,89 +15,88 @@ limitations under the License.
 """
 
 import os
-from unittest import TestCase
 import json
 from cloudcafe.identity.v2_0.tokens_api.models.responses.access import \
     ServiceCatalog, Access, Service, Endpoint, EndpointList, User, Role, \
     RoleList, Token, Tenant
 
 
-class AccessTest(TestCase):
-    def setUp(self):
-        self.access_json_dict = \
-            open(os.path.join(os.path.dirname(__file__),
-                              "../../data/access.json")).read()
+class TestAccess(object):
 
-        self.access_dict = json.loads(self.access_json_dict).get('access')
-        self.token_dict = self.access_dict.get('token')
-        self.tenant_dict = self.token_dict.get('tenant')
-        self.tenant = Tenant(id_=self.tenant_dict.get('id'),
-                             name=self.tenant_dict.get('name'),
-                             enabled=self.tenant_dict.get('enabled'),
-                             description=self.tenant_dict.get('description'))
+    @classmethod
+    def setup_class(cls):
+        cls.access_json_dict = (open(os.path.join(
+            os.path.dirname(__file__), "../../data/access.json")).read())
+        cls.access_dict = json.loads(cls.access_json_dict).get('access')
+        cls.token_dict = cls.access_dict.get('token')
+        cls.tenant_dict = cls.token_dict.get('tenant')
+        cls.tenant = Tenant(id_=cls.tenant_dict.get('id'),
+                            name=cls.tenant_dict.get('name'),
+                            enabled=cls.tenant_dict.get('enabled'),
+                            description=cls.tenant_dict.get('description'))
 
-        self.token = Token(id_=self.token_dict.get('id'),
-                           issued_at=self.token_dict.get('issued_at'),
-                           expires=self.token_dict.get('expires'),
-                           tenant=self.tenant)
-        self.service_catalog_dict = self.access_dict.get('serviceCatalog')
-        self.user_dict = self.access_dict.get('user')
-        self.roles_dict = self.user_dict.get('roles')
-        self.role_dict = self.roles_dict[0]
-        self.service_dict = self.service_catalog_dict[0]
-        self.another_service_dict = self.service_catalog_dict[1]
-        self.endpoint_dict = self.service_dict.get('endpoints')[0]
-        self.endpoint = Endpoint(id_=self.endpoint_dict.get('id'),
-                                 admin_url=self.endpoint_dict.get('adminURL'),
-                                 internal_url=self.endpoint_dict.get(
-                                     'internalURL'),
-                                 public_url=self.endpoint_dict.get(
-                                     'publicURL'),
-                                 region=self.endpoint_dict.get('region'))
-        self.region = self.endpoint_dict.get('region')
-        self.endpoints = EndpointList(endpoints=[self.endpoint])
-        self.endpoints_links = self.service_dict.get('endpoints_links')
+        cls.token = Token(id_=cls.token_dict.get('id'),
+                          issued_at=cls.token_dict.get('issued_at'),
+                          expires=cls.token_dict.get('expires'),
+                          tenant=cls.tenant)
+        cls.service_catalog_dict = cls.access_dict.get('serviceCatalog')
+        cls.user_dict = cls.access_dict.get('user')
+        cls.roles_dict = cls.user_dict.get('roles')
+        cls.role_dict = cls.roles_dict[0]
+        cls.service_dict = cls.service_catalog_dict[0]
+        cls.another_service_dict = cls.service_catalog_dict[1]
+        cls.endpoint_dict = cls.service_dict.get('endpoints')[0]
+        cls.endpoint = Endpoint(id_=cls.endpoint_dict.get('id'),
+                                admin_url=cls.endpoint_dict.get('adminURL'),
+                                internal_url=cls.endpoint_dict.get(
+                                    'internalURL'),
+                                public_url=cls.endpoint_dict.get(
+                                    'publicURL'),
+                                region=cls.endpoint_dict.get('region'))
+        cls.region = cls.endpoint_dict.get('region')
+        cls.endpoints = EndpointList(endpoints=[cls.endpoint])
+        cls.endpoints_links = cls.service_dict.get('endpoints_links')
 
-        self.role = Role(id_=self.role_dict.get('id'),
-                         name=self.role_dict.get('name'))
+        cls.role = Role(id_=cls.role_dict.get('id'),
+                        name=cls.role_dict.get('name'))
 
-        self.roles = RoleList(roles=[self.role])
-        self.roles_links = self.user_dict.get('roles_links')
-        self.user = User(id_=self.user_dict.get('id'),
-                         name=self.user_dict.get('name'),
-                         username=self.user_dict.get('username'),
-                         roles=self.roles,
-                         roles_links=self.roles_links)
+        cls.roles = RoleList(roles=[cls.role])
+        cls.roles_links = cls.user_dict.get('roles_links')
+        cls.user = User(id_=cls.user_dict.get('id'),
+                        name=cls.user_dict.get('name'),
+                        username=cls.user_dict.get('username'),
+                        roles=cls.roles,
+                        roles_links=cls.roles_links)
 
-        self.metadata_dict = self.access_dict.get('metadata')
-        self.service_name = self.service_dict.get('name')
-        self.service = Service(name=self.service_name,
-                               type_=self.service_dict.get('type'),
-                               endpoints=self.endpoints,
-                               endpoint_links=self.endpoints_links)
+        cls.metadata_dict = cls.access_dict.get('metadata')
+        cls.service_name = cls.service_dict.get('name')
+        cls.service = Service(name=cls.service_name,
+                              type_=cls.service_dict.get('type'),
+                              endpoints=cls.endpoints,
+                              endpoint_links=cls.endpoints_links)
 
-        self.another_service = Service(name=self.service_name,
-                                       type_=self.another_service_dict.get(
-                                           'type'),
-                                       endpoints=self.endpoints,
-                                       endpoint_links=self.endpoints_links)
+        cls.another_service = Service(name=cls.service_name,
+                                      type_=cls.another_service_dict.get(
+                                          'type'),
+                                      endpoints=cls.endpoints,
+                                      endpoint_links=cls.endpoints_links)
 
-        self.services = [Service(name=service_dict.get('name'),
-                                 type_=service_dict.get('type'),
-                                 endpoints=EndpointList._list_to_obj(
-                                     [service_dict.get('endpoints')[0]]),
-                                 endpoint_links=service_dict.get(
-                                     'endpoints_links'))
-                         for service_dict in self.service_catalog_dict]
+        cls.services = [Service(name=service_dict.get('name'),
+                                type_=service_dict.get('type'),
+                                endpoints=EndpointList._list_to_obj(
+                                    [service_dict.get('endpoints')[0]]),
+                                endpoint_links=service_dict.get(
+                                    'endpoints_links'))
+                        for service_dict in cls.service_catalog_dict]
 
-        self.service_catalog = ServiceCatalog(services=[self.service])
-        self.another_service_catalog = ServiceCatalog(services=self.services)
+        cls.service_catalog = ServiceCatalog(services=[cls.service])
+        cls.another_service_catalog = ServiceCatalog(services=cls.services)
 
-        self.access = Access(metadata=self.metadata_dict,
-                             service_catalog=self.another_service_catalog,
-                             user=self.user, token=self.token)
+        cls.access = Access(metadata=cls.metadata_dict,
+                            service_catalog=cls.another_service_catalog,
+                            user=cls.user, token=cls.token)
 
-        self.glance_service = Service(name="Glance")
+        cls.glance_service = Service(name="Glance")
 
     def test_get_service(self):
         assert self.service == self.access.get_service(name=self.service_name)
