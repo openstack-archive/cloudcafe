@@ -21,18 +21,20 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class Secret(AutoMarshallingModel):
 
-    def __init__(self, name, mime_type, expiration, algorithm, bit_length,
-                 cypher_type, plain_text=None, content_types=None):
+    def __init__(self, name, expiration, algorithm, bit_length, cypher_type,
+                 payload_content_type=None, payload=None, content_types=None,
+                 payload_content_encoding=None):
         super(Secret, self).__init__()
 
         self.name = name
-        self.mime_type = mime_type
+        self.payload_content_type = payload_content_type
         self.expiration = expiration
         self.algorithm = algorithm
         self.bit_length = bit_length
         self.cypher_type = cypher_type
-        self.plain_text = plain_text
+        self.payload = payload
         self.content_types = content_types
+        self.payload_content_encoding = payload_content_encoding
 
     def _obj_to_json(self):
         return dict_to_str(self._obj_to_dict())
@@ -44,8 +46,8 @@ class Secret(AutoMarshallingModel):
         converted = {}
         if self.name is not None:
             converted['name'] = self.name
-        if self.mime_type is not None:
-            converted['mime_type'] = self.mime_type
+        if self.payload_content_type is not None:
+            converted['payload_content_type'] = self.payload_content_type
         if self.expiration is not None:
             converted['expiration'] = self.expiration
         if self.algorithm is not None:
@@ -54,10 +56,13 @@ class Secret(AutoMarshallingModel):
             converted['bit_length'] = self.bit_length
         if self.cypher_type is not None:
             converted['cypher_type'] = self.cypher_type
-        if self.plain_text is not None:
-            converted['plain_text'] = self.plain_text
+        if self.payload is not None:
+            converted['payload'] = self.payload
         if self.content_types is not None:
             converted['content_types'] = self.content_types
+        if self.payload_content_encoding is not None:
+            converted['payload_content_encoding'] = \
+                self.payload_content_encoding
 
         return converted
 
@@ -74,13 +79,15 @@ class Secret(AutoMarshallingModel):
 
 class SecretMetadata(Secret):
 
-    def __init__(self, name, mime_type, expiration, algorithm, bit_length,
-                 cypher_type, plain_text=None, status=None, updated=None,
-                 created=None, secret_ref=None, content_types=None):
-        super(SecretMetadata, self).__init__(name, mime_type, expiration,
-                                             algorithm, bit_length,
-                                             cypher_type, plain_text,
-                                             content_types)
+    def __init__(self, name, expiration, algorithm, bit_length, cypher_type,
+                 payload_content_type=None, payload=None, status=None,
+                 updated=None, created=None, secret_ref=None,
+                 content_types=None, content_encodings=None):
+        super(SecretMetadata, self).__init__(name, expiration, algorithm,
+                                             bit_length, cypher_type,
+                                             payload_content_type,
+                                             payload, content_types,
+                                             content_encodings)
         self.status = status
         self.updated = updated
         self.created = created
@@ -136,15 +143,15 @@ class SecretRef(AutoMarshallingModel):
 
 class UpdateSecret(AutoMarshallingModel):
 
-    def __init__(self, plain_text):
+    def __init__(self, payload):
         super(UpdateSecret, self).__init__()
-        self.plain_text = plain_text
+        self.payload = payload
 
     def _obj_to_json(self):
         return dict_to_str(self._obj_to_dict())
 
     def _obj_to_dict(self):
-        return {'plain_text': self.plain_text}
+        return {'payload': self.payload}
 
 
 class SecretGroup(AutoMarshallingModel):
