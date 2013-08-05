@@ -65,12 +65,16 @@ class CloudKeepSecretsConfig(ConfigSectionInterface):
         return self.get("cypher_type")
 
     @property
-    def plain_text(self):
-        return self.get("plain_text")
+    def payload(self):
+        return self.get("payload")
 
     @property
-    def mime_type(self):
-        return self.get("mime_type")
+    def payload_content_type(self):
+        return self.get("payload_content_type")
+
+    @property
+    def payload_content_encoding(self):
+        return self.get("payload_content_encoding")
 
 
 class CloudKeepOrdersConfig(ConfigSectionInterface):
@@ -91,10 +95,6 @@ class CloudKeepOrdersConfig(ConfigSectionInterface):
     @property
     def cypher_type(self):
         return self.get("cypher_type")
-
-    @property
-    def mime_type(self):
-        return self.get("mime_type")
 
 
 class CloudKeepClientLibConfig(ConfigSectionInterface):

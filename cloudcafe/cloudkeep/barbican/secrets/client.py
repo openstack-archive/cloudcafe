@@ -39,49 +39,55 @@ class SecretsClient(AutoMarshallingRestClient):
         return remote_url
 
     def create_secret(self, name=None, expiration=None, algorithm=None,
-                      bit_length=None, cypher_type=None, plain_text=None,
-                      mime_type=None):
+                      bit_length=None, cypher_type=None, payload=None,
+                      payload_content_type=None,
+                      payload_content_encoding=None):
         """
         POST http://.../v1/{tenant_id}/secrets
         Allows a user to create a new secret
         """
         remote_url = '{base}/secrets'.format(base=self._get_base_url())
-        req_obj = Secret(name=name, mime_type=mime_type,
+        req_obj = Secret(name=name, payload_content_type=payload_content_type,
+                         payload_content_encoding=payload_content_encoding,
                          expiration=expiration, algorithm=algorithm,
                          bit_length=bit_length, cypher_type=cypher_type,
-                         plain_text=plain_text)
+                         payload=payload)
 
         resp = self.request('POST', remote_url, request_entity=req_obj,
                             response_entity_type=SecretRef)
 
         return resp
 
-    def add_secret_plain_text(self, secret_id, mime_type, plain_text):
+    def add_secret_payload(self, secret_id, payload_content_type, payload,
+                           payload_content_encoding=None):
         """
         PUT http://.../v1/{tenant_id}/secrets/{secret_uuid}
         Allows the user to upload secret data for a specified secret if
         the secret doesn't already exist
         """
         remote_url = self._get_secret_url(secret_id)
-        headers = {'Content-Type': mime_type}
+        headers = {'Content-Type': payload_content_type,
+                   'Content-Encoding': payload_content_encoding}
         resp = self.request('PUT', remote_url, headers=headers,
-                            data=plain_text)
+                            data=payload)
 
         return resp
 
-    def get_secret(self, secret_id=None, mime_type=None, ref=None):
+    def get_secret(self, secret_id=None, payload_content_type=None, ref=None,
+                   payload_content_encoding=None):
         """
         GET http://.../v1/{tenant_id}/secrets/{secret_uuid}
-        @param mime_type: if not set, it'll only retrieve the metadata
-        for the secret.
+        @param payload_content_type: if not set, it'll only retrieve
+        the metadata for the secret.
         """
         resp_type = None
-        if mime_type is None:
+        if payload_content_type is None:
             resp_type = SecretMetadata
-            mime_type = 'application/json'
+            payload_content_type = 'application/json'
 
         remote_url = ref or self._get_secret_url(secret_id)
-        headers = {'Accept': mime_type}
+        headers = {'Accept': payload_content_type,
+                   'Accept-Encoding': payload_content_encoding}
         resp = self.request('GET', remote_url, headers=headers,
                             response_entity_type=resp_type)
         return resp
