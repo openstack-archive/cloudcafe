@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+1: iccha-sethi <iccha.sethi@rackspace.com>
+Approved+1: Sam Danes <sam.danes@rackspace.com>
+Code-Review+2: Sam Danes <sam.danes@rackspace.com>
+Code-Review+1: Sett <sett.wai@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 07 Aug 2013 17:05:41 +0000
+Reviewed-on: https://review.openstack.org/39767
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
