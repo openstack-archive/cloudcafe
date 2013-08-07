@@ -37,6 +37,9 @@ class NovaServerStatusTypes(object):
     INVALID_OPTION = "INVALID_OPTION"
     RESIZE = "RESIZE"
     VERIFY_RESIZE = "VERIFY_RESIZE"
+    SUSPENDED = "SUSPENDED"
+    SHUTOFF = "SHUTOFF"
+    PAUSED = "PAUSED"
 
 
 class NovaImageStatusTypes(object):
