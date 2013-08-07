@@ -23,7 +23,7 @@ from cloudcafe.identity.v2_0.tenants_api.models.responses.user import \
     Users, User
 from cloudcafe.identity.v2_0.common.models.constants import AdminExtensions
 from cloudcafe.identity.v2_0.tenants_api.models.responses.service import \
-    Service
+    Service, Services
 
 _version = 'v2.0'
 _admin_extensions = AdminExtensions.OS_KS_ADM
@@ -359,6 +359,20 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
                                             _admin_extensions,
                                             service_id)
         response = self.request('DELETE', url,
+                                requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
+    def list_services(self, requestslib_kwargs=None):
+        """
+        @summary: Lists all services. Maps to /services
+        @return: response
+        @rtype: Response
+        """
+
+        url = '{0}/{1}/services'.format(self.base_url, _admin_extensions)
+        response = self.request('GET', url,
+                                response_entity_type=Services,
                                 requestslib_kwargs=requestslib_kwargs)
 
         return response
