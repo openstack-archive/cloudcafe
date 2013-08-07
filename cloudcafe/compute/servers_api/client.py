@@ -23,7 +23,7 @@ from cloudcafe.compute.extensions.security_groups_api.models.security_group\
 from cloudcafe.compute.servers_api.models.servers import Server
 from cloudcafe.compute.servers_api.models.servers import Addresses
 from cloudcafe.compute.servers_api.models.servers import InstanceActions
-from cloudcafe.compute.servers_api.models.requests import CreateServer,\
+from cloudcafe.compute.servers_api.models.requests import CreateServer, \
     AddSecurityGroup
 from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
@@ -50,8 +50,12 @@ class ServersClient(AutoMarshallingRestClient):
                                             deserialize_format)
         self.auth_token = auth_token
         self.default_headers['X-Auth-Token'] = auth_token
-        ct = ''.join(['application/', self.serialize_format])
-        accept = ''.join(['application/', self.deserialize_format])
+        ct = '{content_type}/{content_subtype}'.format(
+            content_type='application',
+            content_subtype=self.serialize_format)
+        accept = '{content_type}/{content_subtype}'.format(
+            content_type='application',
+            content_subtype=self.deserialize_format)
         self.default_headers['Content-Type'] = ct
         self.default_headers['Accept'] = accept
         self.url = url
