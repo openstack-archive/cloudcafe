@@ -25,16 +25,17 @@ class TestService(object):
         cls.name = "keystone-test"
         cls.type = "identity-test"
         cls.description = "Keystone Identity Service Test"
+        cls.admin_ext = "OS-KSADM"
         cls.service_dict = {"name": cls.name,
                             "type": cls.type,
                             "description": cls.description}
         cls.expected_service = Service(name=cls.name,
                                        type_=cls.type,
                                        description=cls.description)
-        cls.json_dict = json.dumps({"service": cls.service_dict})
+        cls.json_dict = json.dumps({
+            "{0}:service".format(cls.admin_ext): cls.service_dict})
         cls.expected_services = Services(services=[cls.expected_service])
         cls.service_dict_list = [cls.service_dict]
-        cls.admin_ext = "OS-KSADM"
         cls.services_json_dict = json.dumps({
             "{0}:services".format(cls.admin_ext): cls.service_dict_list})
 
