@@ -26,10 +26,11 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 class Image(AutoMarshallingModel):
 
-    def __init__(self, diskConfig, id, name, status, updated, created,
+    def __init__(self, diskConfig, size, id, name, status, updated, created,
                  minDisk, minRam, progress, links=None, metadata=None,
                  server=None):
         self.diskConfig = diskConfig
+        self.size = size
         self.id = id
         self.name = name
         self.status = status
@@ -83,7 +84,9 @@ class Image(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        image = Image(json_dict.get('OS-DCF:diskConfig'), json_dict.get('id'),
+        image = Image(json_dict.get('OS-DCF:diskConfig'),
+                      json_dict.get('OS-EXT-IMG-SIZE:size'),
+                      json_dict.get('id'),
                       json_dict.get('name'), json_dict.get('status'),
                       json_dict.get('updated'), json_dict.get('created'),
                       json_dict.get('minDisk'), json_dict.get('minRam'),
