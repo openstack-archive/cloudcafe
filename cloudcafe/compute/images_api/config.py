@@ -32,6 +32,11 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get("secondary_image")
 
     @property
+    def old_image(self):
+        """old version of the image used for images testing only"""
+        return self.get("old_image")
+
+    @property
     def image_status_interval(self):
         """Amount of time to wait between polling the status of an image"""
         return int(self.get("image_status_interval"))
@@ -40,6 +45,11 @@ class ImagesConfig(ConfigSectionInterface):
     def snapshot_timeout(self):
         """Length of time to wait before giving up on reaching a status"""
         return int(self.get("snapshot_timeout"))
+
+    @property
+    def delta_image_size(self):
+        """Get the max limit percentage tolerance for image version sizes"""
+        return float(self.get("delta_image_size"))
 
     @property
     def can_get_deleted_image(self):
