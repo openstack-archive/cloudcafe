@@ -131,6 +131,39 @@ class ServerBehaviors(BaseBehavior):
 
         return resp
 
+    def wait_for_server_task_state(self, server_id, state_to_wait_for,
+                                   interval_time=None, timeout=None):
+        """
+        @summary: Polls server task state until state_to_wait_for is met
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param state_to_wait_for: The desired task state of the server
+        @type state_to_wait_for: String
+        @param timeout: The amount of time in seconds to wait
+                              between polling
+        @type timeout: Integer
+        """
+        server_response = self.servers_client.get_server(server_id)
+        task_state = server_response.entity.task_state
+        time_waited = 0
+        interval_time = interval_time or self.config.server_status_interval
+        timeout = timeout or self.config.server_build_timeout
+        while (task_state.lower() != state_to_wait_for.lower() and
+               task_state.lower() != ServerStates.ERROR.lower() and
+               time_waited <= timeout):
+            server_response = self.servers_client.get_server(server_id)
+            task_state = server_response.entity.task_state
+            time.sleep(interval_time)
+            time_waited += interval_time
+        if time_waited > timeout:
+            raise TimeoutException('Request timed out waiting on Task State: '
+                                   'uuid: {0},'
+                                   'timeout: {1},'
+                                   'state_to_wait_for: {2}'
+                                   .format(server_id,
+                                           timeout,
+                                           state_to_wait_for))
+
     def wait_for_server_to_be_deleted(self, server_id, interval_time=None,
                                       timeout=None):
         """
