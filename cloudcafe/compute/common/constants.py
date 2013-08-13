@@ -27,6 +27,8 @@ class Constants:
     XML_API_NAMESPACE = 'http://docs.openstack.org/compute/api/v1.1'
     XML_API_DISK_CONFIG_NAMESPACE = ('http://docs.openstack.org/compute/ext'
                                      '/disk_config/api/v1.1')
+    XML_API_SIZE_NAMESPACE = ('http://docs.openstack.org/compute/ext'
+                              '/image_size/api/v1.1')
     XML_API_EXTENDED_STATUS_NAMESPACE = ('http://docs.openstack.org/compute'
                                          '/ext/extended_status/api/v1.1')
     XML_API_ATOM_NAMESPACE = 'http://www.w3.org/2005/Atom'
