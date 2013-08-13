@@ -31,13 +31,15 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 class Server(AutoMarshallingModel):
 
-    def __init__(self, id=None, disk_config=None, power_state=None,
-                 progress=None, task_state=None, vm_state=None, name=None,
-                 tenant_id=None, status=None, updated=None, created=None,
-                 host_id=None, user_id=None, accessIPv4=None, accessIPv6=None,
-                 addresses=None, flavor=None, image=None, links=None,
-                 metadata=None, admin_pass=None, key_name=None):
+    def __init__(self, id=None, disk_config=None, config_drive=None,
+                 power_state=None, progress=None, task_state=None,
+                 vm_state=None, name=None, tenant_id=None, status=None,
+                 updated=None, created=None, host_id=None, user_id=None,
+                 accessIPv4=None, accessIPv6=None, addresses=None,
+                 flavor=None, image=None, links=None, metadata=None,
+                 admin_pass=None, key_name=None):
         self.diskConfig = disk_config
+        self.config_drive = config_drive
         try:
             self.power_state = int(power_state)
         except TypeError:
@@ -138,10 +140,16 @@ class Server(AutoMarshallingModel):
         else:
             progress = None
 
+        if 'config_drive' in server:
+            config_drive = (server.get('config_drive')
+                            and int(server.get('config_drive')))
+        else:
+            config_drive = None
+
         server = Server(
             id=server.get('id'), disk_config=server.get('diskConfig'),
             power_state=server.get('power_state'), progress=progress,
-            task_state=server.get('task_state'),
+            task_state=server.get('task_state'), config_drive=config_drive,
             vm_state=server.get('vm_state'), name=server.get('name'),
             tenant_id=server.get('tenant_id'), status=server.get('status'),
             updated=server.get('updated'), created=server.get('created'),
@@ -183,6 +191,7 @@ class Server(AutoMarshallingModel):
             task_state=server_dict.get('OS-EXT-STS:task_state'),
             vm_state=server_dict.get('OS-EXT-STS:vm_state'),
             name=server_dict.get('name'),
+            config_drive=server_dict.get('config_drive'),
             tenant_id=server_dict.get('tenant_id'),
             status=server_dict.get('status'),
             updated=server_dict.get('updated'),

@@ -161,7 +161,8 @@ class ServersClient(AutoMarshallingRestClient):
     def create_server(self, name, image_ref, flavor_ref, personality=None,
                       metadata=None, accessIPv4=None, accessIPv6=None,
                       disk_config=None, networks=None, admin_pass=None,
-                      key_name=None, requestslib_kwargs=None):
+                      key_name=None, config_drive=None,
+                      requestslib_kwargs=None):
         """
         @summary: Creates an instance of a server given the
          provided parameters
@@ -182,6 +183,8 @@ class ServersClient(AutoMarshallingRestClient):
         @type accessIPv6: String
         @param disk_config: MANUAL/AUTO/None
         @type disk_config: String
+        @param config_drive: false/true
+        @type config_drive: String
         @return: Response Object containing response code and
          the server domain object
         @rtype: Requests.response
@@ -191,7 +194,7 @@ class ServersClient(AutoMarshallingRestClient):
             name=name, flavorRef=flavor_ref, imageRef=image_ref,
             personality=personality, metadata=metadata, accessIPv4=accessIPv4,
             accessIPv6=accessIPv6, diskConfig=disk_config, networks=networks,
-            adminPass=admin_pass, key_name=key_name)
+            adminPass=admin_pass, key_name=key_name, config_drive=config_drive)
 
         url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('POST', url,
