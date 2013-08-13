@@ -28,7 +28,7 @@ class CreateServer(AutoMarshallingModel):
     def __init__(self, name, imageRef, flavorRef, adminPass=None,
                  diskConfig=None, metadata=None, personality=None,
                  accessIPv4=None, accessIPv6=None, networks=None,
-                 key_name=None):
+                 key_name=None, config_drive=None):
 
         super(CreateServer, self).__init__()
         self.name = name
@@ -42,6 +42,7 @@ class CreateServer(AutoMarshallingModel):
         self.accessIPv6 = accessIPv6
         self.networks = networks
         self.key_name = key_name
+        self.config_drive = config_drive
 
     def _obj_to_json(self):
         body = {}
@@ -56,6 +57,7 @@ class CreateServer(AutoMarshallingModel):
         body['personality'] = self.personality
         body['networks'] = self.networks
         body['key_name'] = self.key_name
+        body['config_drive'] = self.config_drive
         body = self._remove_empty_values(body)
 
         return json.dumps({self.ROOT_TAG: body})
@@ -95,6 +97,8 @@ class CreateServer(AutoMarshallingModel):
             element.set('accessIPv6', self.accessIPv6)
         if self.key_name is not None:
             element.set('key_name', self.key_name)
+        if self.config_drive is not None:
+            element.set('config_drive', self.config_drive)
         xml += ET.tostring(element)
         return xml
 
