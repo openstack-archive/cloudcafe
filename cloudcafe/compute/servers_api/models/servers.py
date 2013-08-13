@@ -31,13 +31,15 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 class Server(AutoMarshallingModel):
 
-    def __init__(self, id=None, disk_config=None, power_state=None,
-                 progress=None, task_state=None, vm_state=None, name=None,
-                 tenant_id=None, status=None, updated=None, created=None,
-                 host_id=None, user_id=None, accessIPv4=None, accessIPv6=None,
-                 addresses=None, flavor=None, image=None, links=None,
-                 metadata=None, admin_pass=None, key_name=None):
+    def __init__(self, id=None, disk_config=None, config_drive=None,
+                 power_state=None, progress=None, task_state=None,
+                 vm_state=None, name=None, tenant_id=None, status=None,
+                 updated=None, created=None, host_id=None, user_id=None,
+                 accessIPv4=None, accessIPv6=None, addresses=None,
+                 flavor=None, image=None, links=None, metadata=None,
+                 admin_pass=None, key_name=None):
         self.diskConfig = disk_config
+        self.config_drive = config_drive
         try:
             self.power_state = int(power_state)
         except TypeError:
@@ -147,6 +149,7 @@ class Server(AutoMarshallingModel):
             updated=server.get('updated'), created=server.get('created'),
             host_id=server.get('hostId'), user_id=server.get('user_id'),
             accessIPv4=server.get('accessIPv4'),
+            config_drive=server.get('config_drive'),
             accessIPv6=server.get('accessIPv6'), addresses=addresses,
             flavor=flavor, image=image, links=links, metadata=metadata,
             admin_pass=server.get('adminPass'),
@@ -183,6 +186,7 @@ class Server(AutoMarshallingModel):
             task_state=server_dict.get('OS-EXT-STS:task_state'),
             vm_state=server_dict.get('OS-EXT-STS:vm_state'),
             name=server_dict.get('name'),
+            config_drive=server_dict.get('config_drive'),
             tenant_id=server_dict.get('tenant_id'),
             status=server_dict.get('status'),
             updated=server_dict.get('updated'),
