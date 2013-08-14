@@ -42,6 +42,24 @@ class NovaServerStatusTypes(object):
     PAUSED = "PAUSED"
 
 
+class ComputeTaskStates(object):
+    NONE = 'none'
+    SCHEDULING = 'scheduling'
+    SPAWNING = 'spawning'
+    BLOCK_DEVICE_MAPPING = 'block_device_mapping'
+    REBUILDING = 'rebuilding'
+    REBUILD_BLOCK_DEVICE_MAPPING = 'rebuild_block_device_mapping'
+    REBUILD_SPAWNING = 'rebuild_spawning'
+    RESIZE_PREP = 'resize_prep'
+    RESIZE_MIGRATING = 'resize_migrating'
+    RESIZE_MIGRATED = 'resize_migrated'
+    RESIZE_FINISH = 'resize_finish'
+    RESIZE_REVERTING = 'resize_reverting'
+    RESCUING = 'rescuing'
+    UNRESCUING = 'unrescuing'
+    UPDATING_PASSWORD = 'updating_password'
+
+
 class NovaImageStatusTypes(object):
     """
     @summary: Types dictating an individual Server Status
