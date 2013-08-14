@@ -16,17 +16,18 @@ limitations under the License.
 
 import IPy
 import json
-import re
 import xml.etree.ElementTree as ET
 
+from cafe.engine.models.base import AutoMarshallingModel, \
+    AutoMarshallingListModel
 from cafe.engine.models.base import BaseModel
-from cafe.engine.models.base import AutoMarshallingModel
+from cloudcafe.compute.common.constants import Constants
+from cloudcafe.compute.common.types import ComputeTaskStates
+from cloudcafe.compute.common.equality_tools import EqualityTools
 from cloudcafe.compute.common.models.link import Links
+from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.flavors_api.models.flavor import Flavor, FlavorMin
 from cloudcafe.compute.images_api.models.image import Image, ImageMin
-from cloudcafe.compute.common.equality_tools import EqualityTools
-from cloudcafe.compute.common.constants import Constants
-from cloudcafe.compute.common.models.metadata import Metadata
 
 
 class Server(AutoMarshallingModel):
@@ -37,13 +38,14 @@ class Server(AutoMarshallingModel):
                  host_id=None, user_id=None, accessIPv4=None, accessIPv6=None,
                  addresses=None, flavor=None, image=None, links=None,
                  metadata=None, admin_pass=None, key_name=None):
+        super(Server, self).__init__()
         self.diskConfig = disk_config
         try:
             self.power_state = int(power_state)
         except TypeError:
             self.power_state = 0
         self.progress = progress
-        self.task_state = task_state
+        self.task_state = task_state or ComputeTaskStates.NONE
         self.vm_state = vm_state
         self.name = name
         self.id = id
@@ -57,12 +59,10 @@ class Server(AutoMarshallingModel):
             self.accessIPv4 = str(IPy.IP(accessIPv4))
         else:
             self.accessIPv4 = None
-
         if accessIPv6:
             self.accessIPv6 = str(IPy.IP(accessIPv6))
         else:
             self.accessIPv6 = None
-
         self.addresses = addresses
         self.flavor = flavor
         self.image = image
@@ -73,27 +73,12 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
-        '''
-        Returns an instance of a Server based on the json serialized_str
-        passed in
-        '''
-        ret = None
         json_dict = json.loads(serialized_str)
-        if 'server' in json_dict.keys():
-            ret = cls._dict_to_obj(json_dict['server'])
-        if 'servers' in json_dict.keys():
-            ret = []
-            for server in json_dict['servers']:
-                s = cls._dict_to_obj(server)
-                ret.append(s)
+        ret = cls._dict_to_obj(json_dict['server'])
         return ret
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
-        '''
-        Returns an instance of a Server based on the xml serialized_str
-        passed in
-        '''
         element = ET.fromstring(serialized_str)
         cls._remove_xml_etree_namespace(
             element, Constants.XML_API_NAMESPACE)
@@ -103,18 +88,11 @@ class Server(AutoMarshallingModel):
             element, Constants.XML_API_DISK_CONFIG_NAMESPACE)
         cls._remove_xml_etree_namespace(
             element, Constants.XML_API_ATOM_NAMESPACE)
-        if element.tag == 'server':
-            ret = cls._xml_ele_to_obj(element)
-        if element.tag == 'servers':
-            ret = []
-            for server in element.findall('server'):
-                s = cls._xml_ele_to_obj(server)
-                ret.append(s)
+        ret = cls._xml_ele_to_obj(element)
         return ret
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
-        '''Helper method to turn ElementTree instance to Server instance.'''
         server = element.attrib
 
         addresses = None
@@ -133,19 +111,20 @@ class Server(AutoMarshallingModel):
             metadata = Metadata._xml_ele_to_obj(element)
 
         if 'progress' in server:
-            progress = server.get('progress') \
-                and int(server.get('progress'))
+            progress = (server.get('progress')
+                        and int(server.get('progress')))
         else:
             progress = None
 
+        print server
         server = Server(
             id=server.get('id'), disk_config=server.get('diskConfig'),
             power_state=server.get('power_state'), progress=progress,
-            task_state=server.get('task_state'),
+            task_state=server.get('task_state').lower(),
             vm_state=server.get('vm_state'), name=server.get('name'),
-            tenant_id=server.get('tenant_id'), status=server.get('status'),
+            tenant_id=server.get('tenantId'), status=server.get('status'),
             updated=server.get('updated'), created=server.get('created'),
-            host_id=server.get('hostId'), user_id=server.get('user_id'),
+            host_id=server.get('hostId'), user_id=server.get('userId'),
             accessIPv4=server.get('accessIPv4'),
             accessIPv6=server.get('accessIPv6'), addresses=addresses,
             flavor=flavor, image=image, links=links, metadata=metadata,
@@ -156,7 +135,6 @@ class Server(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, server_dict):
-        '''Helper method to turn dictionary into Server instance.'''
 
         addresses = None
         flavor = None
@@ -198,92 +176,82 @@ class Server(AutoMarshallingModel):
         return server
 
     def __eq__(self, other):
-        """
-        @summary: Overrides the default equals
-        @param other: Server object to compare with
-        @type other: Server
-        @return: True if Server objects are equal, False otherwise
-        @rtype: bool
-        """
         return EqualityTools.are_objects_equal(self, other,
                                                ['admin_pass', 'updated',
                                                 'progress'])
 
     def __ne__(self, other):
-        """
-        @summary: Overrides the default not-equals
-        @param other: Server object to compare with
-        @type other: Server
-        @return: True if Server objects are not equal, False otherwise
-        @rtype: bool
-        """
         return not self == other
 
     def min_details(self):
-        """
-        @summary: Get the Minimum details of server
-        @return: Minimum details of server
-        @rtype: ServerMin
-        """
         return ServerMin(name=self.name, id=self.id, links=self.links)
 
 
 class ServerMin(Server):
-    """
-    @summary: Represents minimum details of a server
-    """
-    def __init__(self, **kwargs):
-        for keys, values in kwargs.items():
-            setattr(self, keys, values)
+
+    def __init__(self, id=None, name=None, links=None):
+        super(ServerMin, self).__init__()
+        self.id = id
+        self.name = name
+        self.links = links
 
     def __eq__(self, other):
-        """
-        @summary: Overrides the default equals
-        @param other: ServerMin object to compare with
-        @type other: ServerMin
-        @return: True if ServerMin objects are equal, False otherwise
-        @rtype: bool
-        """
         return EqualityTools.are_objects_equal(self, other)
 
     def __ne__(self, other):
-        """
-        @summary: Overrides the default equals
-        @param other: ServerMin object to compare with
-        @type other: ServerMin
-        @return: True if ServerMin objects are not equal, False otherwise
-        @rtype: bool
-        """
         return not self == other
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
-        '''Helper method to turn ElementTree instance to Server instance.'''
-        if element.find('server') is not None:
-            element = element.find('server')
-            server_dict = element.attrib
-            servermin = ServerMin(**server_dict)
-            servermin.links = Links._xml_ele_to_obj(element)
-        return servermin
+        server_dict = element.attrib
+        links = Links._xml_ele_to_obj(element)
+        server = ServerMin(id=server_dict.get('id'),
+                           name=server_dict.get('name'), links=links)
+        return server
 
     @classmethod
     def _dict_to_obj(cls, server_dict):
-        '''Helper method to turn dictionary into Server instance.'''
-        servermin = ServerMin(**server_dict)
-        if hasattr(servermin, 'links'):
-            servermin.links = Links._dict_to_obj(servermin.links)
-        '''
-        Parse for those keys which have the namespace prefixed,
-        strip the namespace out
-        and take only the actual values such as diskConfig,
-        power_state and assign to server obj
-        '''
-        for each in server_dict:
-            if each.startswith("{"):
-                newkey = re.split("}", each)[1]
-                setattr(servermin, newkey, server_dict[each])
+        links = Links._dict_to_obj(server_dict['links'])
+        server = ServerMin(id=server_dict.get('id'),
+                           name=server_dict.get('name'), links=links)
+        return server
 
-        return servermin
+
+class Servers(AutoMarshallingListModel):
+
+    server_type = Server
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._list_to_obj(json_dict.get('servers'))
+
+    @classmethod
+    def _list_to_obj(cls, server_dict_list):
+        servers = Servers()
+        for server_dict in server_dict_list:
+            server = cls.server_type._dict_to_obj(server_dict)
+            servers.append(server)
+        return servers
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        element = ET.fromstring(serialized_str)
+        if element.tag != 'servers':
+            return None
+        return cls._xml_list_to_obj(element.findall('server'))
+
+    @classmethod
+    def _xml_list_to_obj(cls, xml_list):
+        servers = Servers()
+        for ele in xml_list:
+            servers.append(cls.server_type._xml_ele_to_obj(ele))
+        return servers
+
+
+class ServerMins(Servers):
+
+    server_type = ServerMin
 
 
 class Addresses(AutoMarshallingModel):
