@@ -42,6 +42,55 @@ class NovaServerStatusTypes(object):
     PAUSED = "PAUSED"
 
 
+class ComputeTaskStates(object):
+    NONE = 'none'
+
+    # Basic server lifecycle
+    SCHEDULING = 'scheduling'
+    SPAWNING = 'spawning'
+    BLOCK_DEVICE_MAPPING = 'block_device_mapping'
+    DELETING = 'deleting'
+    SOFT_DELETING = 'soft-deleting'
+    RESTORING = 'restoring'
+    SHELVING = 'shelving'
+    SHELVING_IMAGE_PENDING_UPLOAD = 'shelving_image_pending_upload'
+    SHELVING_IMAGE_UPLOADING = 'shelving_image_uploading'
+    SHELVING_OFFLOADING = 'shelving_offloading'
+    UNSHELVING = 'unshelving'
+
+    # Server Actions
+    REBUILDING = 'rebuilding'
+    REBUILD_BLOCK_DEVICE_MAPPING = 'rebuild_block_device_mapping'
+    REBUILD_SPAWNING = 'rebuild_spawning'
+    RESIZE_PREP = 'resize_prep'
+    RESIZE_MIGRATING = 'resize_migrating'
+    RESIZE_MIGRATED = 'resize_migrated'
+    RESIZE_FINISH = 'resize_finish'
+    RESIZE_REVERTING = 'resize_reverting'
+    RESIZE_CONFIRMING = 'resize_confirming'
+    RESCUING = 'rescuing'
+    UNRESCUING = 'unrescuing'
+    UPDATING_PASSWORD = 'updating_password'
+    PAUSING = 'pausing'
+    UNPAUSING = 'unpausing'
+    SUSPENDING = 'suspending'
+    RESUMING = 'resuming'
+    STOPPING = 'stopping'
+    STARTING = 'starting'
+    POWERING_OFF = 'powering-off'
+    POWERING_ON = 'powering-on'
+    MIGRATING = 'migrating'
+    REBOOTING = 'rebooting'
+    REBOOTING_HARD = 'rebooting_hard'
+
+    # Imaging
+    IMAGE_SNAPSHOT = 'image_snapshot'
+    IMAGE_PENDING_UPLOAD = 'image_pending_upload'
+    IMAGE_UPLOADING = 'image_uploading'
+    IMAGE_BACKUP = 'image_backup'
+    IMAGE_LIVE_SNAPSHOT = 'image_live_snapshot'
+
+
 class NovaImageStatusTypes(object):
     """
     @summary: Types dictating an individual Server Status
