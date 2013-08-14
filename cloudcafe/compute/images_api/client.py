@@ -17,7 +17,7 @@ limitations under the License.
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
-from cloudcafe.compute.images_api.models.image import Image, ImageMin
+from cloudcafe.compute.images_api.models.image import Image, Images, ImageMins
 
 
 class ImagesClient(AutoMarshallingRestClient):
@@ -77,7 +77,7 @@ class ImagesClient(AutoMarshallingRestClient):
                   'status': status, 'type': image_type, 'marker': marker,
                   'changes-since': changes_since, 'limit': limit}
         return self.request('GET', url, params=params,
-                            response_entity_type=ImageMin,
+                            response_entity_type=ImageMins,
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_images_with_detail(self, server_ref=None, image_name=None,
@@ -110,7 +110,7 @@ class ImagesClient(AutoMarshallingRestClient):
                   'status': status, 'type': image_type, 'marker': marker,
                   'changes-since': changes_since, 'limit': limit}
         return self.request('GET', url, params=params,
-                            response_entity_type=Image,
+                            response_entity_type=Images,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_image(self, image_id, requestslib_kwargs=None):
