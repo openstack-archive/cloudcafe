@@ -67,11 +67,11 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
 
     def get_tenant(self, tenant_id, requestslib_kwargs=None):
         """
-        @summary: Returns a tenant based off passed tenant_id.
-         Maps to /tenants/{tenantid}
+        @summary: Returns a tenant based on a passed tenant_id.
+         Maps to /tenants/{tenant_id}
         @param tenant_id: The ID for the tenant
         @type tenant_id: String
-        @return: server_response
+        @return: response
         @rtype: Response
         """
 
@@ -108,9 +108,9 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
     def update_tenant(self, tenant_id, name=None, description=None,
                       enabled=None, requestslib_kwargs=None):
         """
-        @summary: Creates a tenant given the provided parameters
+        @summary: Updates a tenant given the provided parameters
          Maps to /tenants
-        @param tenant_id: The id of an existing tenant.
+        @param tenant_id: The ID of an existing tenant.
         @type tenant_id: String
         @param name: The name for the tenant
         @type name: String
@@ -134,7 +134,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
     def delete_tenant(self, tenant_id, requestslib_kwargs=None):
         """
         @summary: Deletes the specified tenant
-        @param tenant_id: The id of a tenant
+        @param tenant_id: The ID of a tenant
         @type tenant_id: String
         @return: resp
         @rtype: Requests.response
@@ -160,7 +160,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
 
     def get_user(self, user_id, requestslib_kwargs=None):
         """
-        @summary: Returns a user based off passed user_id.
+        @summary: Returns a user based on a passed user_id.
          Maps to /users/{user_id}
         @param user_id: The ID for the user
         @type user_id: String
@@ -195,7 +195,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         """
         @summary: Updates a user given the provided parameters
          Maps to /users/{user_id}
-        @param user_id: The id of an existing tenant.
+        @param user_id: The ID of an existing tenant.
         @type user_id: String
         @param name: The name for the user
         @type name: String
@@ -220,7 +220,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
     def delete_user(self, user_id, requestslib_kwargs=None):
         """
         @summary: Deletes the specified user
-        @param user_id: The id of a user
+        @param user_id: The ID of a user
         @type user_id: String
         @return: resp
         @rtype: Requests.response
@@ -277,9 +277,9 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
                                   requestslib_kwargs=None):
         """
         @summary: Returns a specific roles for a given tenant user
-        @param tenant_id: The id of the tenant
+        @param tenant_id: The ID of the tenant
         @type tenant_id: String
-        @param user_id: The id of the user
+        @param user_id: The ID of the user
         @type user_id: String
         @return: response
         @rtype: Response
@@ -299,9 +299,9 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         @summary: Deletes the specified roles for a tenant user
         @param tenant_id: The id of a tenant
         @type tenant_id: String
-        @param user_id: The id of a user
+        @param user_id: The ID of a user
         @type user_id: String
-        @param role_id: The id of a role
+        @param role_id: The ID of a role
         @type role_id: String
         @return: resp
         @rtype: Requests.response
@@ -349,7 +349,7 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
     def delete_service(self, service_id, requestslib_kwargs=None):
         """
         @summary: Deletes the specified service
-        @param service_id: The id of a service
+        @param service_id: The ID of a service
         @type service_id: String
         @return: resp
         @rtype: Requests.response
@@ -373,6 +373,57 @@ class TenantsAPI_Client(AutoMarshallingRestClient):
         url = '{0}/{1}/services'.format(self.base_url, _admin_extensions)
         response = self.request('GET', url,
                                 response_entity_type=Services,
+                                requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
+    def get_service(self, service_id, requestslib_kwargs=None):
+        """
+        @summary: Returns a service based of passed service_id.
+         Maps to /services/{service_id}
+        @param service_id: The ID for the service
+        @type service_id: String
+        @return: response
+        @rtype: Response
+        """
+
+        url = '{0}/{1}/services/{2}'.format(self.base_url,
+                                            _admin_extensions,
+                                            service_id)
+        response = self.request('GET', url,
+                                response_entity_type=Service,
+                                requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
+    def update_service(self, service_id, name=None, type_=None,
+                       description=None, requestslib_kwargs=None):
+        """
+        @summary: Updates a service given the provided parameters
+         Maps to /services
+        @param service_id: The ID of an existing service.
+        @type service_id: String
+        @param name: The name for the service
+        @type name: String
+        @param description: The description of the service
+        @type description: String
+        @param type_: The type of the service
+        @type type_: String
+        @return: response
+        @rtype: Response
+        """
+
+        url = '{0}/{1}/services/{2}'.format(self.base_url,
+                                            _admin_extensions,
+                                            service_id)
+        service_request_object = Service(id_=service_id,
+                                         name=name,
+                                         type_=type_,
+                                         description=description)
+
+        response = self.request('PUT', url,
+                                response_entity_type=Service,
+                                request_entity=service_request_object,
                                 requestslib_kwargs=requestslib_kwargs)
 
         return response

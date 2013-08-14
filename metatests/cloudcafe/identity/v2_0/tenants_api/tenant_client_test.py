@@ -203,6 +203,23 @@ class TestTenantsClient(object):
             service_id=self.service_id)
         self._build_assertions(actual_response, self.service_url)
 
+    def test_get_service(self):
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            self.service_url,
+            body=self._build_get_service_expected_response())
+
+        actual_response = self.tenant_api_client.get_service(
+            service_id=self.service_id)
+        self._build_assertions(actual_response, self.service_url)
+
+    def test_update_service(self):
+        HTTPretty.register_uri(HTTPretty.PUT, self.service_url)
+
+        actual_response = self.tenant_api_client.update_service(
+            service_id=self.service_id)
+        self._build_assertions(actual_response, self.service_url)
+
     def _build_assertions(self, actual_response, url):
         assert HTTPretty.last_request.headers['Content-Type'] == (
             'application/{0}'.format(self.serialize_format))
@@ -255,3 +272,10 @@ class TestTenantsClient(object):
              "type": "volume",
              "name": "cinder",
              "description": "Cinder Volume Service"}]}
+
+    def _build_get_service_expected_response(self):
+        return {"OS-KSADM:service": {
+            "id": "665f687a9dbd41018149e48b31f4ea09",
+            "type": "compute",
+            "name": "nova",
+            "description": "Nova Compute Service"}}
