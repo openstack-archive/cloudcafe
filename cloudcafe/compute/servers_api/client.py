@@ -18,9 +18,10 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
-from cloudcafe.compute.extensions.security_groups_api.models.security_group\
+from cloudcafe.compute.extensions.security_groups_api.models.security_group \
     import SecurityGroups, SecurityGroup
-from cloudcafe.compute.servers_api.models.servers import Server
+from cloudcafe.compute.servers_api.models.servers import Server, Servers, \
+    ServerMins
 from cloudcafe.compute.servers_api.models.servers import Addresses
 from cloudcafe.compute.servers_api.models.servers import InstanceActions
 from cloudcafe.compute.servers_api.models.requests import CreateServer, \
@@ -89,7 +90,7 @@ class ServersClient(AutoMarshallingRestClient):
                   'limit': limit, 'changes-since': changes_since}
         url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('GET', url, params=params,
-                            response_entity_type=Server,
+                            response_entity_type=ServerMins,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
@@ -123,7 +124,7 @@ class ServersClient(AutoMarshallingRestClient):
                   'changes-since': changes_since}
         url = '{base_url}/servers/detail'.format(base_url=self.url)
         resp = self.request('GET', url, params=params,
-                            response_entity_type=Server,
+                            response_entity_type=Servers,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 

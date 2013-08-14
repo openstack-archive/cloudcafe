@@ -16,6 +16,7 @@ limitations under the License.
 
 import unittest2 as unittest
 
+from cloudcafe.compute.common.types import ComputeTaskStates
 from cloudcafe.compute.servers_api.models.servers import Server
 
 
@@ -31,7 +32,7 @@ class ServerDomainTest(object):
         self.assertEqual(self.server.progress, 100)
 
     def test_server_task_state(self):
-        self.assertEqual(self.server.task_state, None)
+        self.assertEqual(self.server.task_state, ComputeTaskStates.NONE)
 
     def test_server_vm_state(self):
         self.assertEqual(self.server.vm_state, "active")
