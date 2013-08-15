@@ -1,0 +1,8 @@
+{"image": {
+    "name": "cirros-0.3.1-x86_64-uec",
+    "container_format": "ami",
+    "disk_format": "ami",
+    "checksum": "f8a2eeee2dc65b3d9b6e63678955bd83",
+    "id": "48dd25eb-ada4-47e7-8b8c-9547c9263b52",
+    "size": 25165824
+}}
