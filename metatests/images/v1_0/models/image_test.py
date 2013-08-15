@@ -67,7 +67,7 @@ class TestImage(object):
         assert member1 in self.image_one.members_list
 
     def test_remove_member_from_an_image(self):
-        image = Image._json_to_obj(self.raw_image_str)
+        image = Image._dict_to_obj(self._dict)
         member1 = Member(member_id='1')
         member2 = Member(member_id='2')
 
