@@ -42,6 +42,10 @@ class UserConfig(ConfigSectionInterface):
     def user_id(self):
         return self.get("user_id")
 
+    @property
+    def project_id(self):
+        return self.get("project_id")
+
 
 class ComputeAdminAuthConfig(UserAuthConfig):
 
