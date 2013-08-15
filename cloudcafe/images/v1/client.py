@@ -1,12 +1,10 @@
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v1.models.image import Image
+from cloudcafe.images.v1.models.image import Image, ImageMinList
 from cloudcafe.images.v1.models.member import MemberList
 
 
 class ImagesClient(AutoMarshallingRestClient):
-    '''
-    Client for Image API
-    '''
+    """Client for Image API."""
 
     def __init__(self, url, auth_token, serialize_format, deserialize_format):
         """
@@ -25,11 +23,9 @@ class ImagesClient(AutoMarshallingRestClient):
         self.auth_token = auth_token
         self.default_headers['X-Auth-Token'] = auth_token
         self.default_headers['Content-Type'] = 'application/{0}'.format(
-            self.serialize_format
-        )
+            self.serialize_format)
         self.default_headers['Accept'] = 'application/{0}'.format(
-            self.deserialize_format
-        )
+            self.deserialize_format)
         self.url = url
 
     def list_images(self, requestslib_kwargs=None):
@@ -151,7 +147,7 @@ class ImagesClient(AutoMarshallingRestClient):
     def list_shared_images(self, member_id, requestslib_kwargs=None):
         url = '{0}/shared-images/{1}'.format(self.url, member_id)
 
-        return self.request('GET', url, response_entity_type=Image,
+        return self.request('GET', url, response_entity_type=ImageMinList,
                             requestslib_kwargs=requestslib_kwargs)
 
     def add_member_to_image(self, image_id, member_id,

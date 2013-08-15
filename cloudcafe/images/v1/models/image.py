@@ -28,6 +28,7 @@ class Image(AutoMarshallingModel):
                  min_disk=None, size=None, deleted=None, protected=None,
                  is_public=None, properties=None, created_at=None,
                  updated_at=None, deleted_at=None, members_list=None):
+        super(Image, self).__init__()
 
         self.id_ = id_
         self.status = status
@@ -74,7 +75,7 @@ class Image(AutoMarshallingModel):
             if prop in ['created_at', 'updated_at', 'deleted_at']:
                 date_property = self.__dict__[prop]
                 date_string = 'None' or \
-                    date_property.strftime('%Y-%m-%dT%H:%M:%S')
+                              date_property.strftime('%Y-%m-%dT%H:%M:%S')
                 values.append("{0}: {1}".format(prop, date_string))
             else:
                 values.append("{0}: {1}".format(prop, self.__dict__[prop]))
@@ -103,15 +104,16 @@ class Image(AutoMarshallingModel):
 
         for date_key in ['created_at', 'updated_at', 'deleted_at']:
             if json_dict.get(date_key):
-                json_dict[date_key] = None or \
-                    datetime.strptime(json_dict[date_key],
-                                      '%Y-%m-%dT%H:%M:%S')
+                json_dict[date_key] = None or datetime.strptime(
+                    json_dict[date_key],
+                    '%Y-%m-%dT%H:%M:%S')
         return Image(**json_dict)
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
-        '''Returns an instance of a Image based on the xml serialized_str
-        passed in.'''
+        """Returns an instance of a Image based on the xml serialized_str
+        passed in.
+        """
         raise NotImplementedError("Glance does not serve XML-formatted \
                                   resources.")
 
@@ -135,3 +137,40 @@ class Image(AutoMarshallingModel):
 
     def replace_members_list(self, members_list):
         self.members_list = members_list
+
+
+class ImageMin(AutoMarshallingModel):
+    """A mini Image model returned on certain calls to Images API """
+
+    def __init__(self, id_=None, can_share=None):
+        super(ImageMin, self).__init__()
+
+        self.id_ = id_
+        self.can_share = can_share
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._dict_to_obj(json_dict)
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        return ImageMin(
+            id_=json_dict['image_id'],
+            can_share=json_dict['can_share'])
+
+
+class ImageList(AutoMarshallingModel):
+    """Model class that allows automarshalling of list of Image."""
+    raise NotImplemented
+
+
+class ImageMinList(AutoMarshallingModel):
+    """Model class that allows automarshalling of list of MinImage."""
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_list = json.loads(serialized_str)
+
+        return [ImageMin._dict_to_obj(image_json) for image_json in
+                json_list['shared_images']]
