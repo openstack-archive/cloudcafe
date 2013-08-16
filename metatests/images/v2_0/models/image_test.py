@@ -1,16 +1,13 @@
 import os
-import re
 from copy import deepcopy
 from datetime import datetime
-from unittest import TestCase
 
 from cloudcafe.images.common.types import ImageVisibility, \
     ImageStatus, ImageContainerFormat, ImageDiskFormat
-from cloudcafe.images.v2_0.models.image import Image
+from cloudcafe.images.v2.models.image import Image
 
 
-class TestImage(TestCase):
-
+class TestImage(object):
     @classmethod
     def setup_class(cls):
         cls.raw_image_str = open(os.path.join(
@@ -41,33 +38,33 @@ class TestImage(TestCase):
         )
 
     def test_positive_equality(self):
-        duplicate_obj = deepcopy(self.image_obj)
-        assert duplicate_obj == self.image_obj
+        assert self.image_obj == deepcopy(self.image_obj)
 
     def test_negative_equality(self):
         different_obj = deepcopy(self.image_obj)
-        different_obj.created_at = datetime.now()
-        different_obj.updated_at = datetime.now()
         different_obj.name = 'cirros-fake'
 
-        assert different_obj != self.image_obj
-
-    def test_string_representation(self):
-        regex = """(?x)\[([\w\d]+:\s(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z|
-                [\w\d\-\.\/\[\]]*)(,\s){0,1})*\]"""
-        matches = re.match(regex, self.image_obj.__repr__())
-        assert matches is not None
+        assert self.image_obj != different_obj
 
     def test_deserialization_from_json(self):
         deserialized_obj = Image._json_to_obj(self.raw_image_str)
 
-        print self.image_obj
-        print deserialized_obj
         assert self.image_obj == deserialized_obj
+
+    def test_dict_to_obj(self):
+        obj_dict = deepcopy(self.image_obj.__dict__)
+        obj_dict['created_at'] = '2013-05-22T14:24:36Z'
+        obj_dict['updated_at'] = '2013-05-22T14:24:36Z'
+        obj_dict['id'] = obj_dict.pop('id_')
+        obj_dict['self'] = obj_dict.pop('self_')
+        obj_dict['file'] = obj_dict.pop('file_')
+        image_obj = Image._dict_to_obj(obj_dict)
+
+        assert self.image_obj == image_obj
 
     def test_serialization_to_json(self):
         serialized_obj = self.image_obj._obj_to_json()
         # we do this to overcome the property ordering:
         deserialized_obj = Image._json_to_obj(serialized_obj)
 
-        assert self.image_obj == deserialized_obj
+        assert set(self.image_obj.__dict__) == set(deserialized_obj.__dict__)
