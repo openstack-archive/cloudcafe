@@ -56,7 +56,7 @@ class Image(AutoMarshallingModel):
         @return: True if Image objects are equal, False otherwise
         @rtype: bool
         """
-        return EqualityTools.are_objects_equal(self, other)
+        return EqualityTools.are_objects_equal(self, other, '_log')
 
     def __ne__(self, other):
         """
@@ -66,7 +66,7 @@ class Image(AutoMarshallingModel):
         @return: True if Image objects are not equal, False otherwise
         @rtype: bool
         """
-        return not self == other
+        return not self.__eq__(other)
 
     def __repr__(self):
         values = []
