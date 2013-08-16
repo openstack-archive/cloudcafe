@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from copy import deepcopy
 
 from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.compute.common.equality_tools import EqualityTools
@@ -98,8 +99,8 @@ class Image(AutoMarshallingModel):
     @classmethod
     def _dict_to_obj(cls, json_dict):
         """@summary: Processing dates in converting string to date objects"""
-        json_dict['id_'] = json_dict['id']
-        del json_dict['id']
+        json_dict = deepcopy(json_dict)
+        json_dict['id_'] = json_dict.pop('id')
 
         for date_key in ['created_at', 'updated_at', 'deleted_at']:
             if json_dict.get(date_key):
