@@ -18,7 +18,7 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
-from cloudcafe.compute.extensions.security_groups_api.models.security_group\
+from cloudcafe.compute.extensions.security_groups_api.models.security_group \
     import SecurityGroups, SecurityGroup
 from cloudcafe.compute.servers_api.models.servers import Server
 from cloudcafe.compute.servers_api.models.servers import Addresses

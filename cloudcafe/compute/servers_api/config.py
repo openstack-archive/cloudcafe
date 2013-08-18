@@ -45,6 +45,13 @@ class ServersConfig(ConfigSectionInterface):
         return int(self.get("server_build_timeout"))
 
     @property
+    def server_boot_timeout(self):
+        """
+        Length of time to wait before timing out on a server boot
+        """
+        return int(self.get("server_boot_timeout"))
+
+    @property
     def server_resize_timeout(self):
         """
         Length of time to wait before timing out on a server reaching
