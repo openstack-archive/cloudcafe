@@ -23,19 +23,18 @@ from cloudcafe.compute.common.models.metadata import Metadata
 
 
 class CreateServer(AutoMarshallingModel):
-    ROOT_TAG = 'server'
 
-    def __init__(self, name, imageRef, flavorRef, adminPass=None,
-                 diskConfig=None, metadata=None, personality=None,
+    def __init__(self, name, image_ref, flavor_ref, admin_pass=None,
+                 disk_config=None, metadata=None, personality=None,
                  accessIPv4=None, accessIPv6=None, networks=None,
                  key_name=None, config_drive=None):
 
         super(CreateServer, self).__init__()
         self.name = name
-        self.imageRef = imageRef
-        self.flavorRef = flavorRef
-        self.diskConfig = diskConfig
-        self.adminPass = adminPass
+        self.image_ref = image_ref
+        self.flavor_ref = flavor_ref
+        self.disk_config = disk_config
+        self.admin_pass = admin_pass
         self.metadata = metadata
         self.personality = personality
         self.accessIPv4 = accessIPv4
@@ -45,36 +44,37 @@ class CreateServer(AutoMarshallingModel):
         self.config_drive = config_drive
 
     def _obj_to_json(self):
-        body = {}
-        body['name'] = self.name
-        body['imageRef'] = self.imageRef
-        body['flavorRef'] = self.flavorRef
-        body['OS-DCF:diskConfig'] = self.diskConfig
-        body['adminPass'] = self.adminPass
-        body['metadata'] = self.metadata
-        body['accessIPv4'] = self.accessIPv4
-        body['accessIPv6'] = self.accessIPv6
-        body['personality'] = self.personality
-        body['networks'] = self.networks
-        body['key_name'] = self.key_name
-        body['config_drive'] = self.config_drive
-        body = self._remove_empty_values(body)
+        body = {
+            'name': self.name,
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
+            'OS-DCF:diskConfig': self.disk_config,
+            'adminPass': self.admin_pass,
+            'metadata': self.metadata,
+            'accessIPv4': self.accessIPv4,
+            'accessIPv6': self.accessIPv6,
+            'personality': self.personality,
+            'networks': self.networks,
+            'key_name': self.key_name,
+            'config_drive': self.config_drive
+        }
 
-        return json.dumps({self.ROOT_TAG: body})
+        body = self._remove_empty_values(body)
+        return json.dumps({'server': body})
 
     def _obj_to_xml(self):
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('server')
         xml = Constants.XML_HEADER
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('name', self.name)
-        element.set('imageRef', self.imageRef)
-        element.set('flavorRef', self.flavorRef)
-        if self.adminPass is not None:
-            element.set('adminPass', self.adminPass)
-        if self.diskConfig is not None:
+        element.set('imageRef', self.image_ref)
+        element.set('flavorRef', self.flavor_ref)
+        if self.admin_pass is not None:
+            element.set('adminPass', self.admin_pass)
+        if self.disk_config is not None:
             element.set('xmlns:OS-DCF',
                         Constants.XML_API_DISK_CONFIG_NAMESPACE)
-            element.set('OS-DCF:diskConfig', self.diskConfig)
+            element.set('OS-DCF:diskConfig', self.disk_config)
         if self.metadata is not None:
             meta_ele = ET.Element('metadata')
             for key, value in self.metadata.items():
@@ -105,20 +105,27 @@ class CreateServer(AutoMarshallingModel):
 
 class UpdateServer(AutoMarshallingModel):
 
-    ROOT_TAG = 'server'
-
     def __init__(self, name=None, metadata=None,
                  accessIPv4=None, accessIPv6=None):
+        super(UpdateServer, self).__init__()
         self.name = name
         self.metadata = metadata
         self.accessIPv4 = accessIPv4
         self.accessIPv6 = accessIPv6
 
     def _obj_to_json(self):
-        return json.dumps(self._auto_to_dict())
+        body = {
+            'name': self.name,
+            'metadata': self.metadata,
+            'accessIPv4': self.accessIPv4,
+            'accessIPv6': self.accessIPv6,
+        }
+
+        body = self._remove_empty_values(body)
+        return json.dumps({'server': body})
 
     def _obj_to_xml(self):
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('server')
         xml = Constants.XML_HEADER
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         if self.name is not None:
@@ -138,18 +145,17 @@ class UpdateServer(AutoMarshallingModel):
 
 class Reboot(AutoMarshallingModel):
 
-    ROOT_TAG = 'reboot'
-
     def __init__(self, reboot_type):
+        super(Reboot, self).__init__()
         self.type = reboot_type
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        body = {'type': self.type}
+        return json.dumps({'reboot': body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('reboot')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('type', self.type)
         xml += ET.tostring(element)
@@ -163,6 +169,7 @@ class Personality(AutoMarshallingModel):
     ROOT_TAG = 'personality'
 
     def __init__(self, type):
+        super(Personality, self).__init__()
         self.type = type
 
     @classmethod
@@ -179,49 +186,108 @@ class Personality(AutoMarshallingModel):
         return pers_element
 
 
-class Rebuild(CreateServer):
+class Rebuild(AutoMarshallingModel):
     """
     @summary: Rebuild Request Object for Server
     """
 
-    ROOT_TAG = 'rebuild'
+    def __init__(self, name, image_ref, admin_pass=None,
+                 disk_config=None, metadata=None, personality=None,
+                 accessIPv4=None, accessIPv6=None, networks=None,
+                 key_name=None):
+        super(Rebuild, self).__init__()
+        self.name = name
+        self.image_ref = image_ref
+        self.disk_config = disk_config
+        self.admin_pass = admin_pass
+        self.metadata = metadata
+        self.personality = personality
+        self.accessIPv4 = accessIPv4
+        self.accessIPv6 = accessIPv6
+        self.networks = networks
+        self.key_name = key_name
 
-    def __init__(self, name, image_ref, admin_pass, disk_config=None,
-                 metadata=None, personality=None, accessIPv4=None,
-                 accessIPv6=None, key_name=None):
-        super(Rebuild, self).__init__(name=name, imageRef=image_ref,
-                                      flavorRef=None,
-                                      adminPass=admin_pass,
-                                      diskConfig=disk_config,
-                                      metadata=metadata,
-                                      personality=personality,
-                                      accessIPv4=accessIPv4,
-                                      accessIPv6=accessIPv6,
-                                      key_name=key_name)
+    def _obj_to_json(self):
+        body = {
+            'name': self.name,
+            'imageRef': self.image_ref,
+            'OS-DCF:diskConfig': self.disk_config,
+            'adminPass': self.admin_pass,
+            'metadata': self.metadata,
+            'accessIPv4': self.accessIPv4,
+            'accessIPv6': self.accessIPv6,
+            'personality': self.personality,
+            'networks': self.networks,
+            'key_name': self.key_name
+        }
+
+        body = self._remove_empty_values(body)
+        return json.dumps({'rebuild': body})
+
+    def _obj_to_xml(self):
+        element = ET.Element('rebuild')
+        xml = Constants.XML_HEADER
+        element.set('xmlns', Constants.XML_API_NAMESPACE)
+        element.set('name', self.name)
+        element.set('imageRef', self.image_ref)
+        if self.admin_pass is not None:
+            element.set('adminPass', self.admin_pass)
+        if self.disk_config is not None:
+            element.set('xmlns:OS-DCF',
+                        Constants.XML_API_DISK_CONFIG_NAMESPACE)
+            element.set('OS-DCF:diskConfig', self.disk_config)
+        if self.metadata is not None:
+            meta_ele = ET.Element('metadata')
+            for key, value in self.metadata.items():
+                meta_ele.append(Metadata._dict_to_xml(key, value))
+            element.append(meta_ele)
+        if self.networks is not None:
+            networks_ele = ET.Element('networks')
+            for network_id in self.networks:
+                network = ET.Element('network')
+                network.set('uuid', network_id['uuid'])
+                networks_ele.append(network)
+            element.append(networks_ele)
+        if self.personality is not None:
+            personality_ele = ET.Element('personality')
+            personality_ele.append(Personality._obj_to_xml(self.personality))
+            element.append(personality_ele)
+        if self.accessIPv4 is not None:
+            element.set('accessIPv4', self.accessIPv4)
+        if self.accessIPv6 is not None:
+            element.set('accessIPv6', self.accessIPv6)
+        if self.key_name is not None:
+            element.set('key_name', self.key_name)
+        xml += ET.tostring(element)
+        return xml
 
 
 class Resize(AutoMarshallingModel):
     """
     @summary: Resize Request Object for Server
     """
-    ROOT_TAG = 'resize'
 
-    def __init__(self, flavorRef, diskConfig=None):
-        self.flavorRef = flavorRef
-        self.diskConfig = diskConfig
+    def __init__(self, flavor_ref, disk_config=None):
+        super(Resize, self).__init__()
+        self.flavor_ref = flavor_ref
+        self.disk_config = disk_config
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        body = {
+            'flavorRef': self.flavor_ref,
+            'diskConfig': self.disk_config
+        }
+        body = self._remove_empty_values(body)
+        return json.dumps({'resize': body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('resize')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
-        element.set('flavorRef', self.flavorRef)
-        if self.diskConfig is not None:
+        element.set('flavorRef', self.flavor_ref)
+        if self.disk_config is not None:
             element.set('xmlns:OS-DCF', Constants.XML_API_ATOM_NAMESPACE)
-            element.set('OS-DCF:diskConfig', self.diskConfig)
+            element.set('OS-DCF:diskConfig', self.disk_config)
         xml += ET.tostring(element)
         return xml
 
@@ -230,18 +296,18 @@ class ResetState(AutoMarshallingModel):
     """
     @summary: Reset State Request Object for Server
     """
-    ROOT_TAG = 'os-resetState'
 
     def __init__(self, state):
+        super(ResetState, self).__init__()
         self.state = state
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        body = {'state': self.state}
+        return json.dumps({'os-resetState': body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('os-resetState')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('state', self.state)
         xml += ET.tostring(element)
@@ -252,16 +318,13 @@ class ConfirmResize(AutoMarshallingModel):
     """
     @summary: Confirm Resize Request Object for Server
     """
-    ROOT_TAG = 'confirmResize'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'confirmResize': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        #        element = self._auto_to_xml()
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('confirmResize')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -273,16 +336,13 @@ class RevertResize(AutoMarshallingModel):
     @summary: Revert Resize Request Object for Server
 
     """
-    ROOT_TAG = 'revertResize'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'revertResize': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
-        #        element = self._auto_to_xml()
+        element = ET.Element('revertResize')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -293,15 +353,13 @@ class MigrateServer(AutoMarshallingModel):
     """
     @summary: Migrate Server Request Object
     """
-    ROOT_TAG = 'migrate'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'migrate': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('migrate')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -312,15 +370,13 @@ class ConfirmServerMigration(AutoMarshallingModel):
     """
     @summary: Confirm Server Migration Request Object
     """
-    ROOT_TAG = 'confirmResize'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'confirmResize': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('confirmResize')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -331,15 +387,13 @@ class Lock(AutoMarshallingModel):
     """
     @summary: Lock Server Request Object
     """
-    ROOT_TAG = 'lock'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'lock': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('lock')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -350,15 +404,13 @@ class Unlock(AutoMarshallingModel):
     """
     @summary: Unlock Server Request Object
     """
-    ROOT_TAG = 'unlock'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'unlock': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('unlock')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -369,15 +421,13 @@ class Start(AutoMarshallingModel):
     """
     @summary: Start Server Request Object
     """
-    ROOT_TAG = 'os-start'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'os-start': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('os-start')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -388,15 +438,13 @@ class Stop(AutoMarshallingModel):
     """
     @summary: Stop Server Request Object
     """
-    ROOT_TAG = 'os-stop'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'os-stop': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('os-stop')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -407,15 +455,13 @@ class Suspend(AutoMarshallingModel):
     """
     @summary: Suspend Server Request Object
     """
-    ROOT_TAG = 'suspend'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'suspend': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('suspend')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -426,15 +472,13 @@ class Resume(AutoMarshallingModel):
     """
     @summary: Resume Server Request Object
     """
-    ROOT_TAG = 'resume'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'resume': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('resume')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -445,15 +489,13 @@ class Pause(AutoMarshallingModel):
     """
     @summary: Pause Server Request Object
     """
-    ROOT_TAG = 'pause'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'pause': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('pause')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -464,15 +506,13 @@ class Unpause(AutoMarshallingModel):
     """
     @summary: Unpause Server Request Object
     """
-    ROOT_TAG = 'unpause'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'unpause': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = self._auto_to_xml()
+        element = ET.Element('unpause')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         xml += ET.tostring(element)
@@ -483,20 +523,23 @@ class CreateImage(AutoMarshallingModel):
     """
     Create Image Server Action Request Object
     """
-    ROOT_TAG = 'createImage'
 
     def __init__(self, name, metadata=None):
+        super(CreateImage, self).__init__()
         self.name = name
         self.metadata = metadata
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-
-        return json.dumps(ret)
+        body = {
+            'name': self.name,
+            'metadata': self.metadata
+        }
+        body = self._remove_empty_values(body)
+        return json.dumps({'createImage': body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('createImage')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         element.set('xmlns:atom', Constants.XML_API_ATOM_NAMESPACE)
         element.set('name', self.name)
@@ -513,18 +556,23 @@ class CreateBackup(AutoMarshallingModel):
     """
     Create Backup Server Action Request Object
     """
-    ROOT_TAG = 'createBackup'
 
     def __init__(self, name, backup_type, backup_rotation, metadata=None):
+        super(CreateBackup, self).__init__()
         self.name = name
         self.backup_type = backup_type
         self.rotation = backup_rotation
         self.metadata = metadata
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-
-        return json.dumps(ret)
+        body = {
+            'name': self.name,
+            'backup_type': self.backup_type,
+            'rotation': self.rotation,
+            'metadata': self.metadata
+        }
+        body = self._remove_empty_values(body)
+        return json.dumps({'createBackup': body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
@@ -545,20 +593,19 @@ class CreateBackup(AutoMarshallingModel):
 
 class ChangePassword(AutoMarshallingModel):
 
-    ROOT_TAG = 'changePassword'
-
-    def __init__(self, adminPassword):
-        self.adminPass = adminPassword
+    def __init__(self, admin_password):
+        super(ChangePassword, self).__init__()
+        self.admin_pass = admin_password
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        body = {'adminPass': self.admin_pass}
+        return json.dumps({'changePassword': body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
         element = ET.Element(self.ROOT_TAG)
         element.set('xmlns', Constants.XML_API_NAMESPACE)
-        element.set('adminPass', self.adminPass)
+        element.set('adminPass', self.admin_pass)
         xml += ET.tostring(element)
         return xml
 
@@ -567,36 +614,28 @@ class AddFixedIP(AutoMarshallingModel):
     """
     Add Fixed IP Action Request Object
     """
-    ROOT_TAG = 'addFixedIp'
 
-    def __init__(self, networkId):
-        self.networkId = networkId
+    def __init__(self, network_id):
+        super(AddFixedIP, self).__init__()
+        self.network_id = network_id
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
-
-    def _obj_to_xml(self):
-        #TODO: Implement when xml is known
-        raise NotImplementedError
+        body = {'networkId': self.network_id}
+        return json.dumps({'addFixedIp': body})
 
 
 class RemoveFixedIP(AutoMarshallingModel):
     """
     Remove Fixed IP Action Request Object
     """
-    ROOT_TAG = 'removeFixedIp'
 
-    def __init__(self, networkId):
-        self.networkId = networkId
+    def __init__(self, network_id):
+        super(RemoveFixedIP, self).__init__()
+        self.network_id = network_id
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
-
-    def _obj_to_xml(self):
-        #TODO: Implement when xml is known
-        raise NotImplementedError
+        body = {'networkId': self.network_id}
+        return json.dumps({'removeFixedIp': body})
 
 
 class AddSecurityGroup(AutoMarshallingModel):
@@ -605,6 +644,7 @@ class AddSecurityGroup(AutoMarshallingModel):
     """
 
     def __init__(self, name):
+        super(AddSecurityGroup, self).__init__()
         self.name = name
 
     def _obj_to_json(self):
