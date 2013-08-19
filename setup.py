@@ -41,7 +41,7 @@ setup(
     version=cloudcafe.__version__,
     description='CloudCAFE is an implementation of the Open CAFE Framework specifically designed to test deployed versions of OpenStack',
     long_description='{0}\n\n{1}'.format(
-        open('README.md').read(),
+        open('README.txt').read(),
         open('HISTORY.rst').read()),
     author='Rackspace Cloud QE',
     author_email='cloud-cafe@lists.rackspace.com',
@@ -51,7 +51,7 @@ setup(
     package_dir={'cloudcafe': 'cloudcafe'},
     include_package_data=True,
     install_requires=requires,
-    license=open('LICENSE').read(),
+    license=open('LICENSE.txt').read(),
     zip_safe=False,
     #https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=(
@@ -73,9 +73,19 @@ setup(
 # real_prefix should only be set under a virtualenv
 using_virtualenv = hasattr(sys, 'real_prefix')
 
+# Get uid and gid of the current user to set permissions (Linux/OSX only)
+if platform.system().lower() != 'windows':
+            if using_virtualenv:
+                working_user = os.getenv("USER")
+            else:
+                working_user = os.getenv("SUDO_USER")
+
+            uid = pwd.getpwnam(working_user).pw_uid
+            gid = pwd.getpwnam(working_user).pw_gid
+
 ''' @todo: need to clean this up or do it with puppet/chef '''
 # Default Config Options
-root_dir = "{0}/.cloudcafe".format(os.path.expanduser("~"))
+root_dir = "{0}/.cloudcafe".format(os.path.expanduser("~{0}/".format(working_user)))
 config_dir = "{0}/configs".format(root_dir)
 
 # Build Default directories
@@ -108,16 +118,6 @@ else:
         temp = open("~install", "w")
         temp.close()
 
-        # Get uid and gid of the current user to set permissions (Linux/OSX only)
-        if platform.system().lower() != 'windows':
-            if using_virtualenv:
-                working_user = os.getenv("USER")
-            else:
-                working_user = os.getenv("SUDO_USER")
-
-            uid = pwd.getpwnam(working_user).pw_uid
-            gid = pwd.getpwnam(working_user).pw_gid
-
         config_dirs = os.listdir("configs")
         for dir in config_dirs:
             if not os.path.exists("{0}/{1}".format(config_dir, dir)):
@@ -132,3 +132,4 @@ else:
                 # Fix the directory permissions
                 if platform.system().lower() != 'windows':
                     os.chown("{0}/{1}/{2}".format(config_dir, dir, file), uid, gid)
+

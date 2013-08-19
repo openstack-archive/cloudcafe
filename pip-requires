@@ -2,3 +2,5 @@ httpretty
 mock
 unittest2
 IPy
+pytest
+flake8
