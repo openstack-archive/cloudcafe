@@ -1,17 +1,16 @@
 import re
 import os
 from copy import deepcopy
-from unittest import TestCase
 from httpretty import HTTPretty
 
-from cloudcafe.images.v2_0.client import ImageClient
-from cloudcafe.images.v2_0.models.image import Image
+from cloudcafe.images.v2.client import ImageClient
+from cloudcafe.images.v2.models.image import Image
 
 GLANCE_API_SERVER_ENDPOINT = 'localhost/v2'
 IS_MOCK = bool(os.environ['MOCK']) or None
 
 
-class TestImageClient(TestCase):
+class TestImageClient(object):
     image_id_regex = '([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-' \
         '([0-9a-fA-F]){4}-([0-9a-fA-F]){12}'
     tag_regex = '[\w\d]*'
@@ -67,7 +66,10 @@ class TestImageClient(TestCase):
                              '/v2/images/21c697d1-2cc5-4a45-ba50-61fab15ab9b7'
                          },
                          response_body=cls.raw_image_str,
-                         response_code=201)
+                         response_code=201),
+            MockEndpoint(HTTPretty.GET,
+                         response_body=cls.raw_images_str,
+                         response_code=200)
         ]
 
         endpoints['/images/{image_id}'.format(image_id=cls.image_id_regex)] = [
@@ -179,7 +181,10 @@ class TestImageClient(TestCase):
         assert 404 == response.status_code
 
     def test_list_images(self):
-        raise NotImplementedError
+        response = self.images_client.list_images()
+
+        assert 200 == response.status_code
+        assert self.raw_images_str == response.content
 
     def test_get_image(self):
         image_id = self.image_obj.id_
@@ -235,7 +240,7 @@ class MockEndpoint:
 class InvalidRequestHeaderError(AssertionError):
 
     def __init__(self, expected_key, expected_value, actual_value):
-        super(self).__init__()
+        super(InvalidRequestHeaderError, self).__init__()
         self.message = '''Invalid request header. \n
             Expected ({0}: {1})\n
             Received ({0}: {2})''' \
