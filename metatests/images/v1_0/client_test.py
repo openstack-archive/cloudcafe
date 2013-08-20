@@ -1,12 +1,11 @@
 import re
-from unittest import TestCase
-from cloudcafe.images.v1_0.client import ImagesClient
+from cloudcafe.images.v1.client import ImagesClient
 from httpretty import HTTPretty
 
 GLANCE_API_SERVER_ENDPOINT = 'http://localhost:9292/v1'
 
 
-class ClientTest(TestCase):
+class TestClient(object):
 
     @classmethod
     def setup_class(cls):
@@ -20,8 +19,8 @@ class ClientTest(TestCase):
         )
 
         cls.image_id = '1c675abd94f49cda114e12490b328d9'
-        cls.images_uri = '{0}/images/'.format(GLANCE_API_SERVER_ENDPOINT)
-        cls.image_uri = ''.join([cls.images_uri, cls.image_id])
+        cls.images_uri = '{0}/images'.format(GLANCE_API_SERVER_ENDPOINT)
+        cls.image_uri = '{0}/{1}'.format(cls.images_uri, cls.image_id)
 
     @classmethod
     def teardown_class(cls):
@@ -65,8 +64,6 @@ class ClientTest(TestCase):
         assert HTTPretty.last_request.headers['Accept'] == 'application/json'
 
         assert 200 == actual_response.status_code
-        assert self._build_response_body() == actual_response.content
-        assert self.images_uri == actual_response.url
         assert self._build_response_body() == actual_response.content
         assert self.images_uri == actual_response.url
 
@@ -136,7 +133,8 @@ class ClientTest(TestCase):
             actual_response.__dict__['headers'].keys()
 
     def test_retrieve_image_metadata(self):
-        url = '{0}71c675ab-d94f-49cd-a114-e12490b328d9'.format(self.images_uri)
+        url = '{0}/71c675ab-d94f-49cd-a114-e12490b328d9'.format(
+            self.images_uri)
         HTTPretty.register_uri(HTTPretty.HEAD, url, body='Raw Image Data',
                                headers=self.expected_headers)
 
@@ -144,7 +142,7 @@ class ClientTest(TestCase):
             '71c675ab-d94f-49cd-a114-e12490b328d9'
         )
         uri_regex = re.compile(
-            '{0}[\w\d]{{8}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{12}}'
+            '{0}/[\w\d]{{8}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{12}}'
             .format(self.images_uri)
         )
         assert re.match(uri_regex, actual_response.url) is not None
@@ -156,7 +154,8 @@ class ClientTest(TestCase):
         assert 200 == actual_response.status_code
 
     def test_retrieve_raw_image_data(self):
-        url = '{0}71c675ab-d94f-49cd-a114-e12490b328d9'.format(self.images_uri)
+        url = '{0}/71c675ab-d94f-49cd-a114-e12490b328d9'.format(
+            self.images_uri)
         HTTPretty.register_uri(HTTPretty.GET, url, body='Raw Image Data',
                                headers=self.expected_headers)
 
@@ -164,7 +163,7 @@ class ClientTest(TestCase):
             '71c675ab-d94f-49cd-a114-e12490b328d9'
         )
         uri_regex = re.compile(
-            '{0}[\w\d]{{8}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{12}}'
+            '{0}/[\w\d]{{8}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{12}}'
             .format(self.images_uri)
         )
         assert re.match(uri_regex, actual_response.url) is not None
@@ -221,7 +220,8 @@ class ClientTest(TestCase):
         return {'members': 'members_list'}
 
     def test_update_image(self):
-        url = '{0}71c675ab-d94f-49cd-a114-e12490b328d9'.format(self.images_uri)
+        url = '{0}/71c675ab-d94f-49cd-a114-e12490b328d9'.format(
+            self.images_uri)
         HTTPretty.register_uri(HTTPretty.PUT, url, body='Updated Image',
                                headers=self.expected_headers)
 
@@ -230,7 +230,7 @@ class ClientTest(TestCase):
             image_meta_is_public=False)
 
         uri_regex = re.compile(
-            '{0}[\w\d]{{8}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{12}}'
+            '{0}/[\w\d]{{8}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{4}}-[\w\d]{{12}}'
             .format(self.images_uri)
         )
         assert re.match(uri_regex, actual_response.url) is not None
@@ -283,7 +283,7 @@ class ClientTest(TestCase):
         assert url == actual_response.url
 
     def test_replace_members_list_for_an_image(self):
-        url = '{0}/members/'.format(self.image_uri)
+        url = '{0}/members'.format(self.image_uri)
         HTTPretty.register_uri(HTTPretty.PUT, url,
                                body=self._build_members_list())
 
