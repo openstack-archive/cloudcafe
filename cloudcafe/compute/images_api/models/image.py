@@ -126,7 +126,7 @@ class Image(AutoMarshallingModel):
         if element.find('link') is not None:
             links = Links._xml_ele_to_obj(element)
         if element.find('metadata') is not None:
-            metadata = Metadata._xml_ele_to_obj(element)
+            metadata = Metadata._xml_ele_to_obj(element.find('metadata'))
         if element.find('server') is not None:
             # Prevents circular import issue import just in time
             from cloudcafe.compute.servers_api.models.servers import ServerMin

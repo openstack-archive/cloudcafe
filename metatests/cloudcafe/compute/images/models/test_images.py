@@ -49,8 +49,9 @@ class ImageDomainTest(object):
         self.assertEqual(self.image.progress, 100)
 
     def test_image_metadata(self):
-        self.assertEqual(self.image.metadata.meta1, "value1")
-        self.assertEqual(self.image.metadata.meta2, "value2")
+        self.assertIsNotNone(self.image.metadata)
+        self.assertEqual(self.image.metadata.get('meta1'), "value1")
+        self.assertEqual(self.image.metadata.get('meta2'), "value2")
 
     def test_image_links(self):
         base_url = 'https://127.0.0.1'
