@@ -22,7 +22,7 @@ from cloudcafe.compute.images_api.models.image import Image
 class ImageDomainTest(object):
 
     def test_image_disk_config(self):
-        self.assertEqual(self.image.diskConfig, "AUTO")
+        self.assertEqual(self.image.disk_config, "AUTO")
 
     def test_image_id(self):
         self.assertEqual(self.image.id, "1")
@@ -40,10 +40,10 @@ class ImageDomainTest(object):
         self.assertEqual(self.image.created, "2012-06-29T17:38:07Z")
 
     def test_image_min_disk(self):
-        self.assertEqual(self.image.minDisk, 10)
+        self.assertEqual(self.image.min_disk, 10)
 
     def test_image_min_ram(self):
-        self.assertEqual(self.image.minRam, 256)
+        self.assertEqual(self.image.min_ram, 256)
 
     def test_image_progress(self):
         self.assertEqual(self.image.progress, 100)
