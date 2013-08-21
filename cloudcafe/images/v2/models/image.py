@@ -81,7 +81,7 @@ class Image(AutoMarshallingModel):
         @return: True if Image objects are not equal, False otherwise
         @rtype: bool
         """
-        return not self == other
+        return not self.__eq__(other)
 
     def __repr__(self):
         values = []
@@ -119,7 +119,7 @@ class Image(AutoMarshallingModel):
                                                         '%Y-%m-%dT%H:%M:%SZ')
         for key in ['id', 'self', 'file']:
             json_dict['{0}_'.format(key)] = json_dict[key]
-            del(json_dict[key])
+            del (json_dict[key])
 
         return Image(**json_dict)
 
@@ -131,6 +131,10 @@ class Image(AutoMarshallingModel):
         if self.updated_at:
             obj_dict['updated_at'] = \
                 self.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+        if self.self_:
+            obj_dict['self'] = self.self_
+        if self.file_:
+            obj_dict['file'] = self.file_
 
         obj_dict['id'] = self.id_
         obj_dict['name'] = self.name
