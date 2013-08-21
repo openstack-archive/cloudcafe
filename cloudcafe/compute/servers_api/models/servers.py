@@ -132,7 +132,7 @@ class Server(AutoMarshallingModel):
         if element.find('image') is not None:
             image = Image._xml_ele_to_obj(element.find('image'))
         if element.find('metadata') is not None:
-            metadata = Metadata._xml_ele_to_obj(element)
+            metadata = Metadata._xml_ele_to_obj(element.find('metadata'))
 
         if 'progress' in server:
             progress = server.get('progress') \

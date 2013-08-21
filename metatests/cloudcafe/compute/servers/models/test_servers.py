@@ -95,7 +95,7 @@ class ServerDomainTest(object):
             self.server.links.bookmark, "https://127.0.0.1/660/servers/5")
 
     def test_server_metadata(self):
-        self.assertEqual(self.server.metadata.meta1, "value1")
+        self.assertEqual(self.server.metadata.get('meta1'), "value1")
 
     def test_server_keypair(self):
         self.assertEqual(self.server.key_name, "ssh_key")
