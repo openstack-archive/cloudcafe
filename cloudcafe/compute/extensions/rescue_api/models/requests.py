@@ -22,30 +22,26 @@ from cloudcafe.compute.common.constants import Constants
 
 
 class RescueMode(AutoMarshallingModel):
-    ROOT_TAG = 'rescue'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'rescue': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('rescue')
         element.set('xmlns', Constants.XML_API_RESCUE)
         xml += ET.tostring(element)
         return xml
 
 
 class ExitRescueMode(AutoMarshallingModel):
-    ROOT_TAG = 'unrescue'
 
     def _obj_to_json(self):
-        ret = self._auto_to_dict()
-        return json.dumps(ret)
+        return json.dumps({'unrescue': {}})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
+        element = ET.Element('unrescue')
         element.set('xmlns', Constants.XML_API_UNRESCUE)
         xml += ET.tostring(element)
         return xml
