@@ -16,44 +16,116 @@ limitations under the License.
 
 import os
 import sys
-import cloudcafe
-import platform
 import shutil
+import textwrap
 
-# These imports are only possible on Linux/OSX
-if platform.system().lower() != 'windows':
-    import pwd
-    import grp
 
 try:
     from setuptools import setup, find_packages
+    from setuptools.command.install import install as _install
 except ImportError:
     from distutils.core import setup, find_packages
+    from distutils.command.install import install as _install
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-requires = open('pip-requires').readlines()
 
+def print_cafe_mug():
+    print('\n'.join(["\t\t   _ _ _",
+                     "\t\t  ( `   )_ ",
+                     "\t\t (    )   `)  _",
+                     "\t\t(____(__.___`)__)",
+                     "\t\t",
+                     "\t\t    ( (",
+                     "\t\t       ) )",
+                     "\t\t    .........    ",
+                     "\t\t    |       |___ ",
+                     "\t\t    |       |_  |",
+                     "\t\t    |  :-)  |_| |",
+                     "\t\t    |       |___|",
+                     "\t\t    |_______|",
+                     "\t\t=== CloudCAFE ==="]))
+    print("========================================================")
+    print("CloudCAFE Framework installed")
+    print("========================================================")
+
+
+def install_default_configs():
+    from cafe.configurator.managers import (
+        EngineDirectoryManager, PlatformManager)
+
+    opencafe_root_dir = EngineDirectoryManager.OPENCAFE_ROOT_DIR
+
+    twrap = textwrap.TextWrapper(
+        initial_indent='* ', subsequent_indent='  ', break_long_words=False)
+    print twrap.fill(
+        'Installing reference configuration files in ...'.format(
+            opencafe_root_dir))
+
+    twrap = textwrap.TextWrapper(
+        initial_indent='  ', subsequent_indent='  ', break_long_words=False)
+
+    _printed = []
+    for root, subFolders, files in os.walk('configs'):
+        for file_ in files:
+            source = os.path.join(root, file_)
+            destination_dir = os.path.join(opencafe_root_dir, root)
+            destination_file = os.path.join(destination_dir, file_)
+
+            try:
+                #Create the expected directory structure if it doesn't already
+                #exist.
+                os.makedirs(destination_dir)
+                print twrap.fill('Creating path: {0}'.format(destination_dir))
+            except OSError:
+                #File exsits.  This is ok and expected.
+                pass
+
+            shutil.copyfile(source, destination_file)
+            if destination_dir not in _printed:
+                print twrap.fill('{0}'.format(destination_dir))
+                _printed.append(destination_dir)
+
+            if not PlatformManager.USING_WINDOWS:
+                uid = PlatformManager.get_user_uid()
+                gid = PlatformManager.get_user_gid()
+                os.chown(destination_file, uid, gid)
+
+
+#Post-install engine configuration
+def _post_install(dir):
+    install_default_configs()
+    print_cafe_mug()
+
+
+class install(_install):
+    def run(self):
+        _install.run(self)
+        self.execute(
+            _post_install, (self.install_lib,),
+            msg="Running post install tasks...")
+
+
+requires = open('pip-requires').readlines()
 setup(
     name='cloudcafe',
-    version=cloudcafe.__version__,
-    description='CloudCAFE is an implementation of the Open CAFE Framework specifically designed to test deployed versions of OpenStack',
+    version='0.0.1',
+    description=(
+        'CloudCAFE is an implementation of the Open CAFE Framework '
+        'specifically designed to test deployed versions of OpenStack'),
     long_description='{0}\n\n{1}'.format(
         open('README.md').read(),
         open('HISTORY.rst').read()),
     author='Rackspace Cloud QE',
     author_email='cloud-cafe@lists.rackspace.com',
     url='http://rackspace.com',
-    packages=find_packages(exclude=[]),
-    package_data={'': ['LICENSE', 'NOTICE']},
-    package_dir={'cloudcafe': 'cloudcafe'},
+    packages=find_packages(),
     include_package_data=True,
     install_requires=requires,
     license=open('LICENSE').read(),
     zip_safe=False,
-    #https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=(
         'Development Status :: 1 - Planning',
         'Intended Audience :: Developers',
@@ -62,73 +134,5 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        #'Programming Language :: Python :: 3',
-        #'Programming Language :: Python :: 3.0',
-        #'Programming Language :: Python :: 3.1',
-        #'Programming Language :: Python :: 3.2',
-        #'Programming Language :: Python :: 3.3',
-    )
-)
-# real_prefix should only be set under a virtualenv
-using_virtualenv = hasattr(sys, 'real_prefix')
-
-''' @todo: need to clean this up or do it with puppet/chef '''
-# Default Config Options
-root_dir = "{0}/.cloudcafe".format(os.path.expanduser("~"))
-config_dir = "{0}/configs".format(root_dir)
-
-# Build Default directories
-if(os.path.exists("{0}/engine.config".format(config_dir)) == False):
-    raise Exception("Core CAFE Engine configuration not found")
-else:
-    # Copy over the default configurations
-    if(os.path.exists("~install")):
-        os.remove("~install")
-        # Report
-        print('\n'.join(["\t\t   _ _ _",
-                         "\t\t  ( `   )_ ",
-                         "\t\t (    )   `)  _",
-                         "\t\t(____(__.___`)__)",
-                         "\t\t",
-                         "\t\t    ( (",
-                         "\t\t       ) )",
-                         "\t\t    .........    ",
-                         "\t\t    |       |___ ",
-                         "\t\t    |       |_  |",
-                         "\t\t    |  :-)  |_| |",
-                         "\t\t    |       |___|",
-                         "\t\t    |_______|",
-                         "\t\t=== CloudCAFE ==="]))
-        print("========================================================")
-        print("CloudCAFE Framework installed")
-        print("========================================================")
-    else:
-        # State file
-        temp = open("~install", "w")
-        temp.close()
-
-        # Get uid and gid of the current user to set permissions (Linux/OSX only)
-        if platform.system().lower() != 'windows':
-            if using_virtualenv:
-                working_user = os.getenv("USER")
-            else:
-                working_user = os.getenv("SUDO_USER")
-
-            uid = pwd.getpwnam(working_user).pw_uid
-            gid = pwd.getpwnam(working_user).pw_gid
-
-        config_dirs = os.listdir("configs")
-        for dir in config_dirs:
-            if not os.path.exists("{0}/{1}".format(config_dir, dir)):
-                print("Installing configurations for: {0}".format("{0}/{1}".format(config_dir, dir)))
-                os.makedirs("{0}/{1}".format(config_dir, dir))
-                # Fix the directory permissions
-                if platform.system().lower() != 'windows':
-                    os.chown("{0}/{1}".format(config_dir, dir), uid, gid)
-            for file in os.listdir("configs/{0}".format(dir)):
-                print("Installing {0}/{1}/{2}".format(config_dir, dir, file))
-                shutil.copy2("configs/{0}/{1}".format(dir, file), "{0}/{1}/{2}".format(config_dir, dir, file))
-                # Fix the directory permissions
-                if platform.system().lower() != 'windows':
-                    os.chown("{0}/{1}/{2}".format(config_dir, dir, file), uid, gid)
+        'Programming Language :: Python :: 2.7',),
+    cmdclass={'install': install})
