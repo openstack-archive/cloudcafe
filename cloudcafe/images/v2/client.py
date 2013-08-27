@@ -67,8 +67,12 @@ class ImageClient(AutoMarshallingRestClient):
         url = '{0}/images/{1}'.format(self.base_url, image_id)
 
         image_patch = ImagePatch(add, replace, remove)
+        headers = self.default_headers
+        headers['Content-Type'] = (
+            'application/openstack-images-v2.0-json-patch')
 
         return self.request('PATCH', url,
+                            headers=headers,
                             request_entity=image_patch,
                             response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
