@@ -67,8 +67,12 @@ class ImageClient(AutoMarshallingRestClient):
         url = '{0}/images/{1}'.format(self.base_url, image_id)
 
         image_patch = ImagePatch(add, replace, remove)
+        headers = self.default_headers
+        headers['Content-Type'] = (
+            'application/openstack-images-v2.0-json-patch')
 
         return self.request('PATCH', url,
+                            headers=headers,
                             request_entity=image_patch,
                             response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
@@ -94,7 +98,8 @@ class ImageClient(AutoMarshallingRestClient):
     def list_images(self, name=None, disk_format=None, container_format=None,
                     visibility=None, status=None, checksum=None, owner=None,
                     min_ram=None, min_disk=None, changes_since=None,
-                    protected=None, size_min=None, size_max=None, sort_key=None,
+                    protected=None, size_min=None, size_max=None,
+                    sort_key=None,
                     sort_dir=None, marker=None, limit=None,
                     requestslib_kwargs=None, **param_kwargs):
         """
