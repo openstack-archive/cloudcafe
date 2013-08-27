@@ -1,0 +1,8 @@
+recursive-include configs *.config
+include LICENSE
+include README.md
+include HISTORY.rst
+include pip-requires
+exclude .gitignore
+exclude .gitreview
+global-exclude *.pyc
