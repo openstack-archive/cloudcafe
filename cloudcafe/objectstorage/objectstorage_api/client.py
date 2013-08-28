@@ -405,6 +405,12 @@ class ObjectStorageAPIClient(RestClient):
     def set_temp_url_key(self, headers=None, requestslib_kwargs=None):
         return self.post(self.storage_url, headers=headers)
 
+    def auth_off(self):
+        self.default_headers.pop('X-Auth-Token')
+
+    def auth_on(self):
+        self.default_headers['X-Auth-Token'] = self.auth_token
+
     def create_temp_url(self, method, container, obj, seconds, key,
                         headers=None, requestslib_kwargs=None):
         method = method.upper()
