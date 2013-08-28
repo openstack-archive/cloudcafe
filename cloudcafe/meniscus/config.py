@@ -57,6 +57,18 @@ class MeniscusConfig(ConfigSectionInterface):
         return self.get("db_password")
 
 
+class StorageConfig(ConfigSectionInterface):
+    SECTION_NAME = 'meniscus-storage'
+
+    @property
+    def address(self):
+        return self.get('address')
+
+    @property
+    def index(self):
+        return self.get('index')
+
+
 class TenantConfig(ConfigSectionInterface):
     SECTION_NAME = 'meniscus-tenant'
 
