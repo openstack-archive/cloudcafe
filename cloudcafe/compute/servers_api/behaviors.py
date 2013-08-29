@@ -40,7 +40,7 @@ class ServerBehaviors(BaseBehavior):
     def create_active_server(self, name=None, image_ref=None, flavor_ref=None,
                              personality=None, metadata=None, accessIPv4=None,
                              accessIPv6=None, disk_config=None, networks=None,
-                             key_name=None):
+                             key_name=None, config_drive=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -54,6 +54,8 @@ class ServerBehaviors(BaseBehavior):
         @param personality: A list of dictionaries for files to be
          injected into the server.
         @type personality: List
+        @param config_drive: Config Drive flag
+        @type config_drive: String
         @param accessIPv4: IPv4 address for the server.
         @type accessIPv4: String
         @param accessIPv6: IPv6 address for the server.
@@ -75,6 +77,7 @@ class ServerBehaviors(BaseBehavior):
         resp = self.servers_client.create_server(name, image_ref,
                                                  flavor_ref,
                                                  personality=personality,
+                                                 config_drive=config_drive,
                                                  metadata=metadata,
                                                  accessIPv4=accessIPv4,
                                                  accessIPv6=accessIPv6,
