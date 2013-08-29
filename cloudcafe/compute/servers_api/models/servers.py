@@ -38,8 +38,10 @@ class Server(AutoMarshallingModel):
                  host_id=None, user_id=None, accessIPv4=None, accessIPv6=None,
                  addresses=None, flavor=None, image=None, links=None,
                  metadata=None, admin_pass=None, key_name=None,
-                 config_drive=None):
+                 config_drive=None, host=None, instance_name=None,
+                 hypervisor_name=None):
         super(Server, self).__init__()
+
         self.disk_config = disk_config
         self.config_drive = config_drive
         try:
@@ -72,6 +74,9 @@ class Server(AutoMarshallingModel):
         self.metadata = metadata
         self.admin_pass = admin_pass
         self.key_name = key_name
+        self.host = host
+        self.instance_name = instance_name
+        self.hypervisor_name = hypervisor_name
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -131,7 +136,9 @@ class Server(AutoMarshallingModel):
             accessIPv6=server.get('accessIPv6'), addresses=addresses,
             flavor=flavor, image=image, links=links, metadata=metadata,
             admin_pass=server.get('adminPass'),
-            key_name=server.get('key_name'))
+            key_name=server.get('key_name'), host=server.get('host'),
+            instance_name=server.get('instance_name'),
+            hypervisor_name=server.get('hypervisor_hostname'))
 
         return server
 
@@ -174,7 +181,11 @@ class Server(AutoMarshallingModel):
             accessIPv6=server_dict.get('accessIPv6'), addresses=addresses,
             flavor=flavor, image=image, links=links, metadata=metadata,
             admin_pass=server_dict.get('adminPass'),
-            key_name=server_dict.get('key_name'))
+            key_name=server_dict.get('key_name'),
+            host=server_dict.get('OS-EXT-SRV-ATTR:host'),
+            instance_name=server_dict.get('OS-EXT-SRV-ATTR:instance_name'),
+            hypervisor_name=server_dict.get(
+                'OS-EXT-SRV-ATTR:hypervisor_hostname'))
 
         return server
 
