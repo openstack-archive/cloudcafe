@@ -38,23 +38,15 @@ class PublishingBehaviors(object):
                                   host=None, pname=None, time=None,
                                   native=None):
 
-        if tenant_id is None:
-            tenant_id = self.tenant_id
-        if tenant_token is None:
-            tenant_token = self.tenant_token
-        if host is None:
-            host = self.correlation_config.host
-        if pname is None:
-            pname = self.correlation_config.pname
-        if time is None:
-            time = self.correlation_config.time
+        # Native could be an empty dict or list.
         if native is None:
             native = self.correlation_config.native
 
-        resp = self.publish_client.publish(tenant_id=tenant_id,
-                                           message_token=tenant_token,
-                                           host=host,
-                                           pname=pname,
-                                           time=time,
-                                           native=native)
+        resp = self.publish_client.publish(
+            tenant_id=tenant_id or self.tenant_id,
+            message_token=tenant_token or self.tenant_token,
+            host=host or self.correlation_config.host,
+            pname=pname or self.correlation_config.pname,
+            time=time or self.correlation_config.time,
+            native=native)
         return resp

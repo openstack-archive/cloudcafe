@@ -14,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cloudcafe.meniscus.common.models.system import SystemInfo
 from cloudcafe.meniscus.status_api.models.status \
-    import WorkerLoadAverage, WorkerDiskUsage, AllWorkersStatus, WorkerStatus
+    import (AllWorkersStatus, WorkerStatus, WorkerLoadAverage,
+            WorkerDiskUsage, WorkerStatusUpdate)
 
 
 class WorkerStatusClient(AutoMarshallingRestClient):
@@ -32,21 +34,34 @@ class WorkerStatusClient(AutoMarshallingRestClient):
             base=self.url, version=self.api_version, worker_id=worker_id)
         return url
 
-    def update_load(self, worker_id, worker_token, one, five, fifteen):
+    def update_status(self, worker_id, worker_token, status=None,
+                      os_type=None, memory_mb=None, architecture=None,
+                      cpu_cores=None, timestamp=None, one=None,
+                      five=None, fifteen=None, disks=None):
+
         url = self._get_remote_url(worker_id)
-        req_obj = WorkerLoadAverage(one, five, fifteen)
+        disk_usage = WorkerDiskUsage._dict_to_obj(disks)
+        load_average = WorkerLoadAverage(one, five, fifteen)
+        system_info = SystemInfo(
+            disk_usage=disk_usage,
+            os_type=os_type,
+            memory_mb=memory_mb,
+            architecture=architecture,
+            cpu_cores=cpu_cores,
+            load_average=load_average,
+            timestamp=timestamp)
+
+        req_obj = WorkerStatusUpdate(status=status, system_info=system_info)
         headers = {'WORKER-TOKEN': worker_token}
         resp = self.request('PUT', url, headers=headers,
                             request_entity=req_obj)
         return resp
 
-    def update_usage(self, worker_id, worker_token, disks):
+    def direct_update(self, worker_id, worker_token, body):
+        """Allows direct access for negative testing ONLY!"""
         url = self._get_remote_url(worker_id)
-        req_obj = WorkerDiskUsage._dict_to_obj(disks)
         headers = {'WORKER-TOKEN': worker_token}
-        resp = self.request('PUT', url, headers=headers,
-                            request_entity=req_obj)
-        return resp
+        return self.request('PUT', url, headers=headers)
 
     def get_worker_status(self, worker_id):
         url = '{base}/{version}/worker/{worker_id}/status'.format(

@@ -126,7 +126,7 @@ class PairingConfig(ConfigSectionInterface):
 
     @property
     def memory_mb(self):
-        return self.get('memory_mb')
+        return int(self.get('memory_mb'))
 
     @property
     def arch(self):
@@ -142,7 +142,7 @@ class PairingConfig(ConfigSectionInterface):
 
     @property
     def cpu_cores(self):
-        return self.get('cpu_cores')
+        return int(self.get('cpu_cores'))
 
     @property
     def load_average(self):
@@ -174,4 +174,4 @@ class CorrelationConfig(ConfigSectionInterface):
 
     @property
     def native(self):
-        return self.get('native')
+        return json_to_dict(self.get('native'))

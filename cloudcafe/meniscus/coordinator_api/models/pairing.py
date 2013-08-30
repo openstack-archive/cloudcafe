@@ -19,12 +19,11 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class WorkerRegistration(AutoMarshallingModel):
 
-    def __init__(self, hostname=None, callback=None, ip_v4=None, ip_v6=None,
+    def __init__(self, hostname=None, ip_v4=None, ip_v6=None,
                  personality=None, status=None, system_info=None):
         super(WorkerRegistration, self).__init__()
 
         self.hostname = hostname
-        self.callback = callback
         self.ip_address_v4 = ip_v4
         self.ip_address_v6 = ip_v6
         self.personality = personality
@@ -37,7 +36,6 @@ class WorkerRegistration(AutoMarshallingModel):
     def _obj_to_dict(self):
         return {
             'hostname': self.hostname,
-            'callback': self.callback,
             'ip_address_v4': self.ip_address_v4,
             'ip_address_v6': self.ip_address_v6,
             'personality': self.personality,
@@ -47,6 +45,7 @@ class WorkerRegistration(AutoMarshallingModel):
 
 
 class WorkerPairing(AutoMarshallingModel):
+    ROOT_TAG = 'worker_identity'
 
     def __init__(self, personality_module, worker_id, worker_token):
         super(WorkerPairing, self).__init__()
@@ -58,7 +57,7 @@ class WorkerPairing(AutoMarshallingModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = str_to_json(serialized_str)
-        return cls._dict_to_obj(json_dict)
+        return cls._dict_to_obj(json_dict.get(cls.ROOT_TAG))
 
     @classmethod
     def _dict_to_obj(cls, json_dict):

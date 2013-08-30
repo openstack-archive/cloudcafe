@@ -13,14 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+from datetime import datetime
 from json import dumps as json_to_str
-from cafe.engine.models.base import AutoMarshallingModel
+from cafe.engine.models.base import (AutoMarshallingModel,
+                                     AutoMarshallingListModel)
 
 
 class SystemInfo(AutoMarshallingModel):
     def __init__(self, disk_usage=None, os_type=None, memory_mb=None,
-                 architecture=None, cpu_cores=None, load_average=None):
+                 architecture=None, cpu_cores=None, load_average=None,
+                 timestamp=None):
         super(SystemInfo, self).__init__()
 
         self.os_type = os_type
@@ -29,6 +31,7 @@ class SystemInfo(AutoMarshallingModel):
         self.cpu_cores = cpu_cores
         self.load_average = load_average
         self.disk_usage = disk_usage
+        self.timestamp = timestamp
 
     def _obj_to_json(self):
         return json_to_str(self._obj_to_dict())
@@ -40,7 +43,8 @@ class SystemInfo(AutoMarshallingModel):
             'architecture': self.architecture,
             'cpu_cores': self.cpu_cores,
             'disk_usage': self.disk_usage._obj_to_dict(),
-            'load_average': self.load_average._obj_to_dict()
+            'load_average': self.load_average._obj_to_dict(),
+            'timestamp': self.timestamp or datetime.utcnow().isoformat()
         }
 
     @classmethod
@@ -54,7 +58,8 @@ class SystemInfo(AutoMarshallingModel):
             'architecture': dic.get('architecture'),
             'cpu_cores': dic.get('cpu_cores'),
             'disk_usage': disk_usage,
-            'load_average': load_average
+            'load_average': load_average,
+            'timestamp': dic.get('timestamp')
         }
         return SystemInfo(**kwargs)
 
@@ -71,11 +76,9 @@ class LoadAverage(AutoMarshallingModel):
 
     def _obj_to_dict(self):
         return {
-            'load_average': {
-                '1': self.one_average,
-                '5': self.five_average,
-                '15': self.fifteen_average
-            }
+            '1': self.one_average,
+            '5': self.five_average,
+            '15': self.fifteen_average
         }
 
     def _obj_to_json(self):
@@ -91,20 +94,10 @@ class LoadAverage(AutoMarshallingModel):
         return LoadAverage(**kwargs)
 
 
-class DiskUsage(AutoMarshallingModel):
-    def __init__(self):
-        super(DiskUsage, self).__init__()
-        self.partitions = []
-
-    def add_disk(self, partition):
-        if partition is not None:
-            self.partitions.append(partition)
+class DiskUsage(AutoMarshallingListModel):
 
     def _obj_to_dict(self):
-        body = {}
-        for partition in self.partitions:
-            body.update(partition._obj_to_dict())
-        return body
+        return [disk._obj_to_dict() for disk in self]
 
     def _obj_to_json(self):
         return json_to_str(self._obj_to_dict())
@@ -113,10 +106,10 @@ class DiskUsage(AutoMarshallingModel):
     def _dict_to_obj(cls, json_dict):
         usage = cls()
         for disk in json_dict:
-            part = Partition(name=disk,
-                             used=json_dict[disk]['used'],
-                             total=json_dict[disk]['total'])
-            usage.add_disk(part)
+            part = Partition(name=disk.get('device'),
+                             used=disk.get('used'),
+                             total=disk.get('total'))
+            usage.append(part)
         return usage
 
 
@@ -130,10 +123,11 @@ class Partition(AutoMarshallingModel):
         self.used = used
 
     def _obj_to_dict(self):
-        body = {self.name: {
+        body = {
+            'device': self.name,
             'total': self.total,
             'used': self.used
-        }}
+        }
         return body
 
     def _obj_to_json(self):
