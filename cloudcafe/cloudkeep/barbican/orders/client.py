@@ -40,7 +40,7 @@ class OrdersClient(AutoMarshallingRestClient):
                                           order_id=order_id)
 
     def create_order(self, name, payload_content_type, algorithm,
-                     bit_length, cypher_type, expiration,
+                     bit_length, mode, expiration,
                      payload_content_encoding):
         """
         POST http://.../v1/{tenant_id}/orders/{order_uuid}
@@ -53,7 +53,7 @@ class OrdersClient(AutoMarshallingRestClient):
                         expiration=expiration,
                         algorithm=algorithm,
                         bit_length=bit_length,
-                        cypher_type=cypher_type)
+                        mode=mode)
         req_obj = Order(secret=secret)
 
         resp = self.request('POST', remote_url, request_entity=req_obj,
@@ -61,7 +61,7 @@ class OrdersClient(AutoMarshallingRestClient):
         return resp
 
     def create_order_w_payload(self, name, payload_content_type, algorithm,
-                               bit_length, cypher_type, expiration,
+                               bit_length, mode, expiration,
                                payload_content_encoding, payload):
         """
         POST http://.../v1/{tenant_id}/orders/{order_uuid}
@@ -76,7 +76,7 @@ class OrdersClient(AutoMarshallingRestClient):
                         expiration=expiration,
                         algorithm=algorithm,
                         bit_length=bit_length,
-                        cypher_type=cypher_type,
+                        mode=mode,
                         payload=payload)
         req_obj = Order(secret=secret)
 

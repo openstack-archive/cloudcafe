@@ -61,8 +61,8 @@ class CloudKeepSecretsConfig(ConfigSectionInterface):
         return int(self.get("bit_length"))
 
     @property
-    def cypher_type(self):
-        return self.get("cypher_type")
+    def mode(self):
+        return self.get("mode")
 
     @property
     def payload(self):
@@ -93,8 +93,8 @@ class CloudKeepOrdersConfig(ConfigSectionInterface):
         return int(self.get("bit_length"))
 
     @property
-    def cypher_type(self):
-        return self.get("cypher_type")
+    def mode(self):
+        return self.get("mode")
 
     @property
     def payload_content_type(self):

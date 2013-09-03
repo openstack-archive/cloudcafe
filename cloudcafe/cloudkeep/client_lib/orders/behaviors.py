@@ -28,11 +28,11 @@ class ClientLibOrdersBehaviors(OrdersBehavior):
 
     def create_and_check_order(self, name=None, expiration=None,
                                algorithm=None, bit_length=None,
-                               cypher_type=None, mime_type=None):
+                               mode=None, mime_type=None):
         order = self.create_order_overriding_cfg(
             name=name, expiration=expiration,
             algorithm=algorithm, bit_length=bit_length,
-            cypher_type=cypher_type, mime_type=mime_type)
+            mode=mode, mime_type=mime_type)
         resp = self.barb_client.get_order(order.id)
 
         behavior_response = CloudkeepResponse(entity=order,
@@ -40,13 +40,13 @@ class ClientLibOrdersBehaviors(OrdersBehavior):
         return behavior_response
 
     def create_order(self, name=None, expiration=None, algorithm=None,
-                     bit_length=None, cypher_type=None, mime_type=None):
+                     bit_length=None, mode=None, mime_type=None):
         order = self.cl_client.create_order(
             name=name,
             expiration=expiration,
             algorithm=algorithm,
             bit_length=bit_length,
-            cypher_type=cypher_type,
+            mode=mode,
             mime_type=mime_type)
 
         self.created_orders.append(order.id)

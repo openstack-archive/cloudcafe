@@ -26,11 +26,11 @@ class SecretsBehaviors(object):
 
     def create_and_check_secret(self, name=None, expiration=None,
                                 algorithm=None, bit_length=None,
-                                cypher_type=None, payload=None,
+                                mode=None, payload=None,
                                 payload_content_type=None):
         resp = self.create_secret_overriding_cfg(
             name=name, expiration=expiration, algorithm=algorithm,
-            bit_length=bit_length, cypher_type=cypher_type,
+            bit_length=bit_length, mode=mode,
             payload=payload, payload_content_type=payload_content_type)
         get_resp = self.client.get_secret(resp.id)
         behavior_resp = CloudkeepResponse(resp=resp.create_resp,
@@ -51,7 +51,7 @@ class SecretsBehaviors(object):
             expiration=expiration,
             algorithm=self.config.algorithm,
             bit_length=self.config.bit_length,
-            cypher_type=self.config.cypher_type,
+            mode=self.config.mode,
             payload=data,
             payload_content_type=self.config.payload_content_type,
             payload_content_encoding=self.config.payload_content_encoding)
@@ -59,7 +59,7 @@ class SecretsBehaviors(object):
 
     def create_secret_overriding_cfg(self, name=None, expiration=None,
                                      algorithm=None, bit_length=None,
-                                     cypher_type=None, payload=None,
+                                     mode=None, payload=None,
                                      payload_content_type=None,
                                      payload_content_encoding=None):
         """
@@ -69,7 +69,7 @@ class SecretsBehaviors(object):
             name=name or self.config.name,
             algorithm=algorithm or self.config.algorithm,
             bit_length=bit_length or self.config.bit_length,
-            cypher_type=cypher_type or self.config.cypher_type,
+            mode=mode or self.config.mode,
             payload=payload or self.config.payload,
             payload_content_type=
             payload_content_type or self.config.payload_content_type,
@@ -79,7 +79,7 @@ class SecretsBehaviors(object):
         return resp
 
     def create_secret(self, name=None, expiration=None, algorithm=None,
-                      bit_length=None, cypher_type=None, payload=None,
+                      bit_length=None, mode=None, payload=None,
                       payload_content_type=None,
                       payload_content_encoding=None):
         resp = self.client.create_secret(
@@ -87,7 +87,7 @@ class SecretsBehaviors(object):
             expiration=expiration,
             algorithm=algorithm,
             bit_length=bit_length,
-            cypher_type=cypher_type,
+            mode=mode,
             payload=payload,
             payload_content_type=payload_content_type,
             payload_content_encoding=payload_content_encoding)

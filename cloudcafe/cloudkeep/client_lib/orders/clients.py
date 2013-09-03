@@ -31,10 +31,10 @@ class ClientLibOrdersClient():
             authenticate=authenticate, request=request, **kwargs)
 
     def create_order(self, name=None, expiration=None, algorithm=None,
-                     bit_length=None, cypher_type=None, mime_type=None):
+                     bit_length=None, mode=None, mime_type=None):
         order = self.conn.create_order(
             name=name, algorithm=algorithm, bit_length=bit_length,
-            cypher_type=cypher_type, mime_type=mime_type)
+            mode=mode, mime_type=mime_type)
 
         return order
 

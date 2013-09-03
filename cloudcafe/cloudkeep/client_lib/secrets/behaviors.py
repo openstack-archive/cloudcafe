@@ -28,11 +28,11 @@ class ClientLibSecretsBehaviors(SecretsBehaviors):
 
     def create_and_check_secret(self, name=None, expiration=None,
                                 algorithm=None, bit_length=None,
-                                cypher_type=None, plain_text=None,
+                                mode=None, plain_text=None,
                                 mime_type=None):
         secret = self.create_secret_overriding_cfg(
             name=name, expiration=expiration, algorithm=algorithm,
-            bit_length=bit_length, cypher_type=cypher_type,
+            bit_length=bit_length, mode=mode,
             plain_text=plain_text, mime_type=mime_type)
         resp = self.barb_client.get_secret(secret.id)
 
@@ -41,14 +41,14 @@ class ClientLibSecretsBehaviors(SecretsBehaviors):
         return behavior_response
 
     def create_secret(self, name=None, expiration=None, algorithm=None,
-                      bit_length=None, cypher_type=None, plain_text=None,
+                      bit_length=None, mode=None, plain_text=None,
                       mime_type=None):
         secret = self.cl_client.create_secret(
             name=name,
             expiration=expiration,
             algorithm=algorithm,
             bit_length=bit_length,
-            cypher_type=cypher_type,
+            mode=mode,
             plain_text=plain_text,
             mime_type=mime_type)
 

@@ -39,7 +39,7 @@ class SecretsClient(AutoMarshallingRestClient):
         return remote_url
 
     def create_secret(self, name=None, expiration=None, algorithm=None,
-                      bit_length=None, cypher_type=None, payload=None,
+                      bit_length=None, mode=None, payload=None,
                       payload_content_type=None,
                       payload_content_encoding=None):
         """
@@ -50,7 +50,7 @@ class SecretsClient(AutoMarshallingRestClient):
         req_obj = Secret(name=name, payload_content_type=payload_content_type,
                          payload_content_encoding=payload_content_encoding,
                          expiration=expiration, algorithm=algorithm,
-                         bit_length=bit_length, cypher_type=cypher_type,
+                         bit_length=bit_length, mode=mode,
                          payload=payload)
 
         resp = self.request('POST', remote_url, request_entity=req_obj,

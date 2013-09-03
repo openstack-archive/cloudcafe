@@ -21,7 +21,7 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class Secret(AutoMarshallingModel):
 
-    def __init__(self, name, expiration, algorithm, bit_length, cypher_type,
+    def __init__(self, name, expiration, algorithm, bit_length, mode,
                  payload_content_type=None, payload=None, content_types=None,
                  payload_content_encoding=None):
         super(Secret, self).__init__()
@@ -31,7 +31,7 @@ class Secret(AutoMarshallingModel):
         self.expiration = expiration
         self.algorithm = algorithm
         self.bit_length = bit_length
-        self.cypher_type = cypher_type
+        self.mode = mode
         self.payload = payload
         self.content_types = content_types
         self.payload_content_encoding = payload_content_encoding
@@ -54,8 +54,8 @@ class Secret(AutoMarshallingModel):
             converted['algorithm'] = self.algorithm
         if self.bit_length is not None:
             converted['bit_length'] = self.bit_length
-        if self.cypher_type is not None:
-            converted['cypher_type'] = self.cypher_type
+        if self.mode is not None:
+            converted['mode'] = self.mode
         if self.payload is not None:
             converted['payload'] = self.payload
         if self.content_types is not None:
@@ -79,12 +79,12 @@ class Secret(AutoMarshallingModel):
 
 class SecretMetadata(Secret):
 
-    def __init__(self, name, expiration, algorithm, bit_length, cypher_type,
+    def __init__(self, name, expiration, algorithm, bit_length, mode,
                  payload_content_type=None, payload=None, status=None,
                  updated=None, created=None, secret_ref=None,
                  content_types=None, content_encodings=None):
         super(SecretMetadata, self).__init__(name, expiration, algorithm,
-                                             bit_length, cypher_type,
+                                             bit_length, mode,
                                              payload_content_type,
                                              payload, content_types,
                                              content_encodings)
