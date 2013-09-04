@@ -23,7 +23,7 @@ from cloudcafe.compute.servers_api.models.servers import Server
 class ServerDomainTest(object):
 
     def test_server_disk_config(self):
-        self.assertEqual(self.server.diskConfig, "AUTO")
+        self.assertEqual(self.server.disk_config, "AUTO")
 
     def test_server_power_state(self):
         self.assertEqual(self.server.power_state, 1)
