@@ -40,7 +40,8 @@ class ServerBehaviors(BaseBehavior):
     def create_active_server(self, name=None, image_ref=None, flavor_ref=None,
                              personality=None, metadata=None, accessIPv4=None,
                              accessIPv6=None, disk_config=None, networks=None,
-                             key_name=None, config_drive=None):
+                             key_name=None, config_drive=None,
+                             scheduler_hints=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -74,16 +75,12 @@ class ServerBehaviors(BaseBehavior):
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
 
-        resp = self.servers_client.create_server(name, image_ref,
-                                                 flavor_ref,
-                                                 personality=personality,
-                                                 config_drive=config_drive,
-                                                 metadata=metadata,
-                                                 accessIPv4=accessIPv4,
-                                                 accessIPv6=accessIPv6,
-                                                 disk_config=disk_config,
-                                                 networks=networks,
-                                                 key_name=key_name)
+        resp = self.servers_client.create_server(
+            name, image_ref, flavor_ref, personality=personality,
+            config_drive=config_drive, metadata=metadata,
+            accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+            disk_config=disk_config, networks=networks, key_name=key_name,
+            scheduler_hints=scheduler_hints)
         server_obj = resp.entity
         resp = self.wait_for_server_status(server_obj.id,
                                            ServerStates.ACTIVE)
