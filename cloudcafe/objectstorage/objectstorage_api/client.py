@@ -403,10 +403,23 @@ class ObjectStorageAPIClient(RestClient):
         return response
 
     def set_temp_url_key(self, headers=None, requestslib_kwargs=None):
-        return self.post(self.storage_url, headers=headers)
+        response = self.post(
+            self.storage_url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
-    def create_temp_url(self, method, container, obj, seconds, key,
-                        headers=None, requestslib_kwargs=None):
+        return response
+
+    def auth_off(self):
+        try:
+            self.default_headers.pop('X-Auth-Token')
+        except KeyError:
+            pass
+
+    def auth_on(self):
+        self.default_headers['X-Auth-Token'] = self.auth_token
+
+    def create_temp_url(self, method, container, obj, seconds, key):
         method = method.upper()
         base_url = '{0}/{1}/{2}'.format(self.storage_url, container, obj)
         account_hash = self.storage_url.split('/v1/')[1]
