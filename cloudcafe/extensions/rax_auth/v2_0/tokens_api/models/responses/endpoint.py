@@ -125,6 +125,3 @@ class Version(BaseIdentityModel):
         self.id = id
         self.info = info
         self.list = list
-
-
-

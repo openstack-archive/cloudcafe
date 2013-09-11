@@ -16,12 +16,12 @@ limitations under the License.
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 
-from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests.auth import \
-    Auth as AuthRequest
-from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.responses.access import \
-    Access as AuthResponse
-from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests.credentials \
-    import ApiKeyCredentials
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests. \
+    auth import Auth as AuthRequest
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.responses. \
+    access import Access as AuthResponse
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests. \
+    credentials import ApiKeyCredentials
 
 _version = 'v2.0'
 _tokens = 'tokens'

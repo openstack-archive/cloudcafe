@@ -72,4 +72,3 @@ class VolumeAttachmentListResponse(AutoMarshallingListModel):
                     device=volume_attachment.get('device')))
             va_list.append(va)
         return va_list
-
