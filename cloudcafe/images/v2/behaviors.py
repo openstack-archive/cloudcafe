@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
 from cafe.engine.behaviors import BaseBehavior
+
 
 class ImagesV2Behaviors(BaseBehavior):
     """

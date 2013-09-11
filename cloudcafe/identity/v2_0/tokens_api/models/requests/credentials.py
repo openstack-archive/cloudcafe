@@ -56,4 +56,3 @@ class PasswordCredentials(BaseIdentityModel):
         if self.password is not None:
             element.set('password', self.password)
         return element
-

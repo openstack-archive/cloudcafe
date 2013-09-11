@@ -195,7 +195,8 @@ class ServersClient(AutoMarshallingRestClient):
             name=name, flavor_ref=flavor_ref, image_ref=image_ref,
             personality=personality, metadata=metadata, accessIPv4=accessIPv4,
             accessIPv6=accessIPv6, disk_config=disk_config, networks=networks,
-            admin_pass=admin_pass, key_name=key_name, config_drive=config_drive)
+            admin_pass=admin_pass, key_name=key_name,
+            config_drive=config_drive)
 
         url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('POST', url,

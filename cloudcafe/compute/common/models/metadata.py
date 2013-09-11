@@ -17,8 +17,7 @@ limitations under the License.
 import json
 import xml.etree.ElementTree as ET
 
-from cafe.engine.models.base import AutoMarshallingModel, \
-    AutoMarshallingDictModel
+from cafe.engine.models.base import AutoMarshallingDictModel
 from cloudcafe.compute.common.constants import Constants
 
 
@@ -98,5 +97,3 @@ class MetadataItem(AutoMarshallingDictModel):
         meta_contents = json.loads(json_body)
         metadata.update(meta_contents.get('meta'))
         return metadata
-
-

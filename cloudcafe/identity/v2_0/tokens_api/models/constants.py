@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+
 class V2_0Constants(object):
     XML_NS = 'http://docs.openstack.org/identity/api/v2.0'
     XML_NS_OPENSTACK_COMMON = 'http://docs.openstack.org/common/api/v1.0'

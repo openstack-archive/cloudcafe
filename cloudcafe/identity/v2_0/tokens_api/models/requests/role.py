@@ -75,7 +75,8 @@ class Role(BaseIdentityModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        json_dict['role']['propagate'] = json_dict['role'].pop('RAX-AUTH:propagate')
+        json_dict['role']['propagate'] = \
+            json_dict['role'].pop('RAX-AUTH:propagate')
         json_dict['role']['weight'] = json_dict['role'].pop('RAX-AUTH:Weight')
         return Role(**json_dict.get(cls.ROOT_TAG))
 

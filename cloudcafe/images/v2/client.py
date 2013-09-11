@@ -94,8 +94,8 @@ class ImageClient(AutoMarshallingRestClient):
     def list_images(self, name=None, disk_format=None, container_format=None,
                     visibility=None, status=None, checksum=None, owner=None,
                     min_ram=None, min_disk=None, changes_since=None,
-                    protected=None, size_min=None, size_max=None, sort_key=None,
-                    sort_dir=None, marker=None, limit=None,
+                    protected=None, size_min=None, size_max=None,
+                    sort_key=None, sort_dir=None, marker=None, limit=None,
                     requestslib_kwargs=None, **param_kwargs):
         """
         @summary: List all details for all available images.
