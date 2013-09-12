@@ -15,8 +15,10 @@ limitations under the License.
 """
 
 from cafe.engine.behaviors import BaseBehavior, behavior
-from cloudcafe.extensions.rax_auth.v2_0.tokens_api.client import TokenAPI_Client
-from cloudcafe.extensions.rax_auth.v2_0.tokens_api.config import TokenAPI_Config
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.client \
+    import TokenAPI_Client
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.config \
+    import TokenAPI_Config
 
 
 class TokenAPI_Behaviors(BaseBehavior):

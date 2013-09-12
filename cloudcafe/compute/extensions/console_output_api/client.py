@@ -38,7 +38,7 @@ class ConsoleOutputClient(AutoMarshallingRestClient):
         self.url = url
 
     def get_console_output(self, server_id, length,
-                               requestslib_kwargs=None):
+                           requestslib_kwargs=None):
         """
         @summary: Returns Console Output for a server
         @param server_id: The id of an existing server

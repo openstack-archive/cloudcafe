@@ -18,8 +18,8 @@ import json
 from xml.etree import ElementTree
 from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.base import \
     BaseIdentityModel, BaseIdentityListModel
-from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.responses.role import \
-    Roles, Role
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.responses. \
+    role import Roles, Role
 
 
 class Users(BaseIdentityListModel):

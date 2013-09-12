@@ -17,7 +17,8 @@ limitations under the License.
 
 class Resource:
     """
-    @summary: Keeps details of a resource like server or image and how to delete it.
+    @summary: Keeps details of a resource like server
+              or image and how to delete it.
     """
 
     def __init__(self, resource_id, delete_function):

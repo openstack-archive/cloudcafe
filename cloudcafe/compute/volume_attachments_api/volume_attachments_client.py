@@ -15,11 +15,10 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.compute.volume_attachments_api.models.requests.volume_attachments \
-    import VolumeAttachmentRequest
-
-from cloudcafe.compute.volume_attachments_api.models.responses.volume_attachments \
-    import VolumeAttachmentListResponse
+from cloudcafe.compute.volume_attachments_api.models. \
+    requests.volume_attachments import VolumeAttachmentRequest
+from cloudcafe.compute.volume_attachments_api.models. \
+    responses.volume_attachments import VolumeAttachmentListResponse
 
 
 class VolumeAttachmentsAPIClient(AutoMarshallingRestClient):

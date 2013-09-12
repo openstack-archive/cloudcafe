@@ -25,10 +25,10 @@ class Roles(BaseIdentityListModel):
     ROOT_TAG = 'roles'
 
     def __init__(self, roles=None):
-        '''
+        """
         An object that represents an users response object.
         Keyword arguments:
-        '''
+        """
         super(Roles, self).__init__()
         self.extend(roles)
 
@@ -62,7 +62,7 @@ class Role(BaseIdentityModel):
     ROOT_TAG = 'role'
 
     def __init__(self, id=None, name=None, description=None, serviceId=None,
-                 tenantId=None, propagate = None, weight = None):
+                 tenantId=None, propagate=None, weight=None):
         super(Role, self).__init__()
         self.id = id
         self.name = name
@@ -75,7 +75,8 @@ class Role(BaseIdentityModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        json_dict['role']['propagate'] = json_dict['role'].pop('RAX-AUTH:propagate')
+        json_dict['role']['propagate'] = \
+            json_dict['role'].pop('RAX-AUTH:propagate')
         json_dict['role']['weight'] = json_dict['role'].pop('RAX-AUTH:Weight')
         return Role(**json_dict.get(cls.ROOT_TAG))
 

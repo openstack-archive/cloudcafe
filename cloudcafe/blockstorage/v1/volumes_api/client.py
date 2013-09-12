@@ -200,4 +200,3 @@ class VolumesClient(AutoMarshallingRestClient):
         return self.request(
             'DELETE', url, response_entity_type=VolumeSnapshotResponse,
             requestslib_kwargs=requestslib_kwargs)
-

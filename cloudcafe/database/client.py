@@ -38,13 +38,16 @@ class DBaaSAPIClient(AutoMarshallingRestClient):
                  insecure=False,
                  serialize_format=None,
                  deserialize_format=None):
-        super(DBaaSAPIClient, self).__init__(serialize_format, deserialize_format)
+        super(DBaaSAPIClient, self).__init__(serialize_format,
+                                             deserialize_format)
         self.url = url
         self.tenant_id = tenant_id
         self.auth_token = auth_token
         self.default_headers['X-Auth-Token'] = auth_token
-        self.default_headers['Content-Type'] = 'application/%s' % self.serialize_format
-        self.default_headers['Accept'] = 'application/%s' % self.deserialize_format
+        self.default_headers['Content-Type'] = 'application/%s' % \
+                                               self.serialize_format
+        self.default_headers['Accept'] = 'application/%s' % \
+                                         self.deserialize_format
 
         if self.serialize_format == 'xml':
             print "using the xml client!"
@@ -95,7 +98,8 @@ class DBaaSAPIClient(AutoMarshallingRestClient):
 
     def enable_root(self, instanceId, requestslib_kwargs=None):
 
-        url = '%s/%s/instances/%s/root' % (self.url, self.tenant_id, instanceId)
+        url = '%s/%s/instances/%s/root' % (self.url, self.tenant_id,
+                                           instanceId)
 
         return self.request('POST', url,
                             requestslib_kwargs=requestslib_kwargs)

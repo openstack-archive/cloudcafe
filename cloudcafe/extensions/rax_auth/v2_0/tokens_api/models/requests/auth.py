@@ -21,8 +21,8 @@ from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.base \
     import BaseIdentityModel
 from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.constants \
     import V2_0Constants
-from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests.credentials \
-    import ApiKeyCredentials
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests. \
+    credentials import ApiKeyCredentials
 
 
 class Auth(BaseIdentityModel):

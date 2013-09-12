@@ -19,8 +19,6 @@ from datetime import datetime
 
 from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.compute.common.equality_tools import EqualityTools
-from cloudcafe.images.common.types import ImageStatus, ImageVisibility, \
-    ImageContainerFormat, ImageDiskFormat
 
 
 class Image(AutoMarshallingModel):
