@@ -142,8 +142,8 @@ class User(BaseIdentityModel):
             kwargs['enabled'] = json.loads(xml_ele.get('enabled').lower())
         roles = xml_ele.find(Roles.ROOT_TAG)
         if roles is not None:
-            #if roles is not a list it is a single element with a list of
-            #role elements
+            # if roles is not a list it is a single element with a list of
+            # role elements
             roles = roles.findall(Role.ROOT_TAG)
         if roles is not None:
             kwargs['roles'] = Roles._xml_list_to_obj(roles)
