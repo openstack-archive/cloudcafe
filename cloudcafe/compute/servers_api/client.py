@@ -160,6 +160,7 @@ class ServersClient(AutoMarshallingRestClient):
         return resp
 
     def create_server(self, name, image_ref, flavor_ref, personality=None,
+                      user_data=None,
                       metadata=None, accessIPv4=None, accessIPv6=None,
                       disk_config=None, networks=None, admin_pass=None,
                       key_name=None, config_drive=None,
@@ -178,6 +179,8 @@ class ServersClient(AutoMarshallingRestClient):
         @param personality: A list of dictionaries for files to be
          injected into the server.
         @type personality: List
+        @param user_data: Config Init User data
+        @type user_data: String
         @param accessIPv4: IPv4 address for the server.
         @type accessIPv4: String
         @param accessIPv6: IPv6 address for the server.
@@ -193,7 +196,8 @@ class ServersClient(AutoMarshallingRestClient):
 
         server_request_object = CreateServer(
             name=name, flavor_ref=flavor_ref, image_ref=image_ref,
-            personality=personality, metadata=metadata, accessIPv4=accessIPv4,
+            personality=personality, user_data=user_data,
+            metadata=metadata, accessIPv4=accessIPv4,
             accessIPv6=accessIPv6, disk_config=disk_config, networks=networks,
             admin_pass=admin_pass, key_name=key_name,
             config_drive=config_drive)
@@ -310,7 +314,8 @@ class ServersClient(AutoMarshallingRestClient):
 
     def rebuild(self, server_id, image_ref, name=None,
                 admin_pass=None, disk_config=None, metadata=None,
-                personality=None, accessIPv4=None, accessIPv6=None,
+                personality=None, user_data=None,
+                accessIPv4=None, accessIPv6=None,
                 key_name=None, requestslib_kwargs=None):
         """
         @summary: Rebuilds the server
@@ -328,6 +333,8 @@ class ServersClient(AutoMarshallingRestClient):
         @type metadata: Dictionary
         @param personality:The file path and file contents
         @type personality: String
+        @param user_data: Config Init User data
+        @type user_data: String
         @param accessIPv4:The IP version 4 address.
         @type accessIPv4: String
         @param accessIPv6:The IP version 6 address
@@ -344,6 +351,7 @@ class ServersClient(AutoMarshallingRestClient):
                                          disk_config=disk_config,
                                          metadata=metadata,
                                          personality=personality,
+                                         user_data=user_data,
                                          accessIPv4=accessIPv4,
                                          accessIPv6=accessIPv6,
                                          key_name=key_name)
