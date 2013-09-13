@@ -26,8 +26,8 @@ class CreateServer(AutoMarshallingModel):
 
     def __init__(self, name, image_ref, flavor_ref, admin_pass=None,
                  disk_config=None, metadata=None, personality=None,
-                 accessIPv4=None, accessIPv6=None, networks=None,
-                 key_name=None, config_drive=None):
+                 user_data=None, accessIPv4=None, accessIPv6=None,
+                 networks=None, key_name=None, config_drive=None):
 
         super(CreateServer, self).__init__()
         self.name = name
@@ -37,6 +37,7 @@ class CreateServer(AutoMarshallingModel):
         self.admin_pass = admin_pass
         self.metadata = metadata
         self.personality = personality
+        self.user_data = user_data
         self.accessIPv4 = accessIPv4
         self.accessIPv6 = accessIPv6
         self.networks = networks
@@ -54,6 +55,7 @@ class CreateServer(AutoMarshallingModel):
             'accessIPv4': self.accessIPv4,
             'accessIPv6': self.accessIPv6,
             'personality': self.personality,
+            'user_data': self.user_data,
             'networks': self.networks,
             'key_name': self.key_name,
             'config_drive': self.config_drive
@@ -91,6 +93,8 @@ class CreateServer(AutoMarshallingModel):
             personality_ele = ET.Element('personality')
             personality_ele.append(Personality._obj_to_xml(self.personality))
             element.append(personality_ele)
+        if self.user_data is not None:
+            element.set('user_data', self.user_data)
         if self.accessIPv4 is not None:
             element.set('accessIPv4', self.accessIPv4)
         if self.accessIPv6 is not None:
@@ -193,8 +197,8 @@ class Rebuild(AutoMarshallingModel):
 
     def __init__(self, name, image_ref, admin_pass=None,
                  disk_config=None, metadata=None, personality=None,
-                 accessIPv4=None, accessIPv6=None, networks=None,
-                 key_name=None):
+                 user_data=None, accessIPv4=None, accessIPv6=None,
+                 networks=None, key_name=None):
         super(Rebuild, self).__init__()
         self.name = name
         self.image_ref = image_ref
@@ -202,6 +206,7 @@ class Rebuild(AutoMarshallingModel):
         self.admin_pass = admin_pass
         self.metadata = metadata
         self.personality = personality
+        self.user_data = user_data
         self.accessIPv4 = accessIPv4
         self.accessIPv6 = accessIPv6
         self.networks = networks
@@ -217,6 +222,7 @@ class Rebuild(AutoMarshallingModel):
             'accessIPv4': self.accessIPv4,
             'accessIPv6': self.accessIPv6,
             'personality': self.personality,
+            'user_data': self.user_data,
             'networks': self.networks,
             'key_name': self.key_name
         }
@@ -252,6 +258,8 @@ class Rebuild(AutoMarshallingModel):
             personality_ele = ET.Element('personality')
             personality_ele.append(Personality._obj_to_xml(self.personality))
             element.append(personality_ele)
+        if self.user_data is not None:
+            element.set('user_data', self.user_data)
         if self.accessIPv4 is not None:
             element.set('accessIPv4', self.accessIPv4)
         if self.accessIPv6 is not None:
