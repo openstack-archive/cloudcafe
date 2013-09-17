@@ -1,5 +1,6 @@
+import json
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v2.models.image import Image, ImagePatch
+from cloudcafe.images.v2.models.image import Image, ImagePatch, Member, Members
 
 
 class ImageClient(AutoMarshallingRestClient):
@@ -86,6 +87,14 @@ class ImageClient(AutoMarshallingRestClient):
         return self.request('PUT', url,
                             requestslib_kwargs=requestslib_kwargs)
 
+    def list_members(self, image_id):
+        url = '{base_url}/images/{image_id}/members'.format(
+            base_url=self.base_url,
+            image_id=image_id
+        )
+
+        return self.request('GET', url, response_entity_type=Members)
+
     def delete_tag(self, image_id, tag, requestslib_kwargs=None):
         url = '{base_url}/images/{image_id}/tags/{tag}'.format(
             base_url=self.base_url,
@@ -94,6 +103,38 @@ class ImageClient(AutoMarshallingRestClient):
 
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
+
+    def add_member(self, image_id, member_id):
+        url = '{base_url}/images/{image_id}/members'.format(
+            base_url=self.base_url,
+            image_id=image_id
+        )
+
+        data = json.dumps({"member": member_id})
+        return self.request('POST', url,
+                            data=data,
+                            response_entity_type=Member)
+
+    def update_member(self, image_id, member_id, status):
+        url = '{base_url}/images/{image_id}/members/{member_id}'.format(
+            base_url=self.base_url,
+            image_id=image_id,
+            member_id=member_id
+        )
+
+        data = json.dumps({"status": status})
+        return self.request('PUT', url,
+                            data=data,
+                            response_entity_type=Member)
+
+    def delete_member(self, image_id, member_id):
+        url = '{base_url}/images/{image_id}/members/{member_id}'.format(
+            base_url=self.base_url,
+            image_id=image_id,
+            member_id=member_id
+        )
+
+        return self.request('DELETE', url)
 
     def list_images(self, name=None, disk_format=None, container_format=None,
                     visibility=None, status=None, checksum=None, owner=None,

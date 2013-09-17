@@ -17,7 +17,8 @@ limitations under the License.
 import json
 from datetime import datetime
 
-from cafe.engine.models.base import AutoMarshallingModel
+from cafe.engine.models.base import AutoMarshallingModel, \
+    AutoMarshallingListModel
 from cloudcafe.compute.common.equality_tools import EqualityTools
 
 
@@ -195,3 +196,46 @@ class ImagePatch(AutoMarshallingModel):
                     {'remove': '/{0}'.format(prop)})
 
         return json.dumps(replace_list)
+
+
+class Member(AutoMarshallingModel):
+    """Image member model"""
+
+    def __init__(self, member_id=None, status=None, created_at=None,
+                 updated_at=None, image_id=None):
+        self.member_id = member_id
+        self.status = status
+        self.created_at = created_at
+        self.updated_at = updated_at
+        self.image_id = image_id
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+
+        return cls._dict_to_obj(json_dict)
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        del json_dict['schema']
+        json_dict['created_at'] = datetime.strptime(json_dict['created_at'],
+                                                    '%Y-%m-%dT%H:%M:%SZ')
+        json_dict['updated_at'] = datetime.strptime(json_dict['updated_at'],
+                                                    '%Y-%m-%dT%H:%M:%SZ')
+
+        return Member(**json_dict)
+
+
+class Members(AutoMarshallingListModel):
+    """ An object that represents a members response object."""
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._list_to_obj(json_dict.get('members'))
+
+    @classmethod
+    def _list_to_obj(cls, dict_list):
+        ret = [Member._dict_to_obj(member_dict) for member_dict in dict_list]
+
+        return ret
