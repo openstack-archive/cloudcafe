@@ -12,7 +12,8 @@ IS_MOCK = bool(os.environ['MOCK']) or None
 
 class TestImageClient(object):
     image_id_regex = '([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-' \
-        '([0-9a-fA-F]){4}-([0-9a-fA-F]){12}'
+                     '([0-9a-fA-F]){4}-([0-9a-fA-F]){12}'
+    member_id_regex = '[\w\d-]+'
     tag_regex = '[\w\d]*'
 
     @classmethod
@@ -62,8 +63,7 @@ class TestImageClient(object):
         endpoints['/images/?$'] = [
             MockEndpoint(HTTPretty.POST,
                          response_headers={
-                             'Location':
-                             '/v2/images/21c697d1-2cc5-4a45-ba50-61fab15ab9b7'
+                             'Location': '/v2/images/21c697d1-2cc5-4a45-ba50-61fab15ab9b7'
                          },
                          response_body=cls.raw_image_str,
                          response_code=201),
@@ -72,9 +72,10 @@ class TestImageClient(object):
                          response_code=200)
         ]
 
-        endpoints['/images/{image_id}'.format(image_id=cls.image_id_regex)] = [
+        endpoints[
+            '/images/{image_id}$'.format(image_id=cls.image_id_regex)] = [
             MockEndpoint(
-                HTTPretty.PATCH,  # TODO: validate request maybe
+                HTTPretty.PATCH, # TODO: validate request maybe
                 response_body=cls.raw_image_str,
                 response_code=201),
             MockEndpoint(
@@ -86,8 +87,8 @@ class TestImageClient(object):
         ]
 
         url = '/images/{image_id}/tags/{tag}'.format(
-              image_id=cls.image_id_regex,
-              tag=cls.tag_regex)
+            image_id=cls.image_id_regex,
+            tag=cls.tag_regex)
         endpoints[url] = [
             MockEndpoint(HTTPretty.PUT, response_code=204),
             MockEndpoint(HTTPretty.DELETE,
@@ -95,6 +96,22 @@ class TestImageClient(object):
                                                        status=204),
                                     HTTPretty.Response('already deleted',
                                                        status=404)])
+        ]
+
+        url = '/images/{image_id}/members'.format(
+            image_id=cls.image_id_regex)
+
+        endpoints[url] = [
+            MockEndpoint(HTTPretty.GET, response_code=200),
+            MockEndpoint(HTTPretty.POST, response_code=200)
+        ]
+
+        url = '/images/{image_id}/members/{member_id}$'.format(
+            image_id=cls.image_id_regex,
+            member_id=cls.member_id_regex)
+
+        endpoints[url] = [
+            MockEndpoint(HTTPretty.DELETE, response_code=204)
         ]
 
         # register the endpoints
@@ -203,6 +220,27 @@ class TestImageClient(object):
         assert response is not None
         assert 204 == response.status_code
 
+    def test_list_members_from_image(self):
+        image_id = self.image_obj.id_
+
+        response = self.images_client.list_members(image_id)
+        assert response is not None
+        assert 200 == response.status_code
+
+    def test_add_member_to_image(self):
+        image_id = self.image_obj.id_
+
+        response = self.images_client.add_member(image_id, 'someguy')
+        assert response is not None
+        assert 200 == response.status_code
+
+    def test_delete_member_from_image(self):
+        image_id = self.image_obj.id_
+
+        response = self.images_client.delete_member(image_id, 'someguy')
+        assert response is not None
+        assert 204 == response.status_code
+
 
 class MockEndpoint:
     def __init__(self, request_method, request_headers={}, request_body='',
@@ -225,7 +263,7 @@ class MockEndpoint:
             self.response_headers.update({'server': 'HTTPretty Mock Server'})
 
             return self.response_code, self.response_headers, \
-                self.response_body
+                   self.response_body
 
         if self.responses:
             HTTPretty.register_uri(self.valid_request_method, re.compile(uri),
@@ -238,7 +276,6 @@ class MockEndpoint:
 
 
 class InvalidRequestHeaderError(AssertionError):
-
     def __init__(self, expected_key, expected_value, actual_value):
         super(InvalidRequestHeaderError, self).__init__()
         self.message = '''Invalid request header. \n
