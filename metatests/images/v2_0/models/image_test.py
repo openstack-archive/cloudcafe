@@ -4,7 +4,7 @@ from datetime import datetime
 
 from cloudcafe.images.common.types import ImageVisibility, \
     ImageStatus, ImageContainerFormat, ImageDiskFormat
-from cloudcafe.images.v2.models.image import Image
+from cloudcafe.images.v2.models.image import Image, Member
 
 
 class TestImage(object):
