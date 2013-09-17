@@ -17,6 +17,18 @@ limitations under the License.
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
+class MiscConfig(ConfigSectionInterface):
+    SECTION_NAME = 'misc'
+
+    @property
+    def serializer(self):
+        return self.get("serializer")
+
+    @property
+    def deserializer(self):
+        return self.get("deserializer")
+
+
 class StacktachConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'stacktach'
