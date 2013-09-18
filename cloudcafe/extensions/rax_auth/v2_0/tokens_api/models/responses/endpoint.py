@@ -60,7 +60,6 @@ class Endpoint(BaseIdentityModel):
     def __init__(self, tenantId=None, region=None, id=None, publicURL=None,
                  name=None, adminURL=None, type=None, internalURL=None,
                  versionId=None, versionInfo=None, versionList=None):
-    #                 version=None
         super(Endpoint, self).__init__()
         self.tenantId = tenantId
         self.region = region
@@ -73,9 +72,8 @@ class Endpoint(BaseIdentityModel):
         self.versionId = versionId
         self.versionInfo = versionInfo
         self.versionList = versionList
-        #currently json has version attributes as part of the Endpoint
-        #xml has it as a seprate element.
-    #        self.version = version
+        # currently json has version attributes as part of the Endpoint
+        # xml has it as a separate element.
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -122,6 +120,7 @@ class Version(BaseIdentityModel):
     ROOT_TAG = 'version'
 
     def __init__(self, id=None, info=None, list=None):
+        super(Version, self).__init__()
         self.id = id
         self.info = info
         self.list = list

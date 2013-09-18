@@ -31,6 +31,7 @@ class Auth(BaseIdentityModel):
 
     def __init__(self, apiKeyCredentials=None,
                  tenantId=None, token=None):
+        super(Auth, self).__init__()
         self.apiKeyCredentials = apiKeyCredentials
         self.token = token
         self.tenantId = tenantId

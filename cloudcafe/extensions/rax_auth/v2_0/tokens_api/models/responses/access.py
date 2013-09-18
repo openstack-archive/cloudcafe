@@ -24,6 +24,7 @@ class Access(BaseIdentityModel):
     TAG = 'access'
 
     def __init__(self):
+        super(Access, self).__init__()
         self.metadata = {}
         self.service_catalog = ServiceCatalog()
         self.user = User()
@@ -68,6 +69,7 @@ class ServiceCatalog(BaseIdentityListModel):
 class Service(BaseIdentityModel):
 
     def __init__(self):
+        super(Service, self).__init__()
         self.endpoints = EndpointList()
         self.endpoint_links = []
         self.name = None
@@ -112,6 +114,7 @@ class Endpoint(BaseIdentityModel):
 
     def __init__(self, admin_url, internal_url, public_url,
                  region, id, tenant_id=None):
+        super(Endpoint, self).__init__()
         self.admin_url = admin_url
         self.internal_url = internal_url
         self.public_url = public_url
@@ -134,6 +137,7 @@ class Token(BaseIdentityModel):
     TAG = 'token'
 
     def __init__(self):
+        super(Token, self).__init__()
         self.expires = None
         self.issued_at = None
         self.id_ = None
@@ -154,6 +158,7 @@ class Tenant(BaseIdentityModel):
     TAG = 'tenant'
 
     def __init__(self):
+        super(Tenant, self).__init__()
         self.description = None
         self.enabled = None
         self.id_ = None
@@ -174,6 +179,7 @@ class User(BaseIdentityModel):
     TAG = 'user'
 
     def __init__(self):
+        super(User, self).__init__()
         self.id_ = None
         self.name = None
         self.roles = RoleList()
@@ -208,4 +214,5 @@ class RoleList(BaseIdentityListModel):
 class Role(BaseIdentityListModel):
 
     def __init__(self, name=None):
+        super(Role, self).__init__()
         self.name = name
