@@ -18,7 +18,7 @@ from urlparse import urlparse
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.compute.flavors_api.models.flavor import \
-    Flavor, FlavorMin, CreateFlavor
+    Flavor, CreateFlavor, Flavors, FlavorMins
 
 
 class FlavorsClient(AutoMarshallingRestClient):
@@ -88,7 +88,7 @@ class FlavorsClient(AutoMarshallingRestClient):
         params = {'minDisk': min_disk, 'minRam': min_ram, 'marker': marker,
                   'limit': limit}
         flavor_response = self.request('GET', url, params=params,
-                                       response_entity_type=FlavorMin,
+                                       response_entity_type=FlavorMins,
                                        requestslib_kwargs=requestslib_kwargs)
         return flavor_response
 
@@ -114,7 +114,7 @@ class FlavorsClient(AutoMarshallingRestClient):
         params = {'minDisk': min_disk, 'minRam': min_ram, 'marker': marker,
                   'limit': limit}
         flavor_response = self.request('GET', url, params=params,
-                                       response_entity_type=Flavor,
+                                       response_entity_type=Flavors,
                                        requestslib_kwargs=requestslib_kwargs)
         return flavor_response
 
