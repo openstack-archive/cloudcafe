@@ -19,6 +19,8 @@ from urlparse import urlparse
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.compute.flavors_api.models.flavor import \
     Flavor, FlavorMin, CreateFlavor
+from cloudcafe.compute.flavors_api.models.flavor_extra_specs import \
+    FlavorExtraSpecs
 
 
 class FlavorsClient(AutoMarshallingRestClient):
@@ -137,3 +139,15 @@ class FlavorsClient(AutoMarshallingRestClient):
                                        response_entity_type=Flavor,
                                        requestslib_kwargs=requestslib_kwargs)
         return flavor_response
+
+    def get_flavor_extra_specs(self, flavor_id, requestslib_kwargs=None):
+            url_new = str(flavor_id)
+            url_scheme = urlparse(url_new).scheme
+            url = url_new if url_scheme \
+                else '{base_url}/flavors/{flavor_id}/os-extra_specs'.format(
+                    base_url=self.url, flavor_id=flavor_id)
+
+            response = self.request('GET', url, requestslib_kwargs,
+                                    response_entity_type=FlavorExtraSpecs,
+                                    requestslib_kwargs=requestslib_kwargs)
+            return response
