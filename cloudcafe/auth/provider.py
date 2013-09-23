@@ -13,16 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+from cloudcafe.auth.config import UserAuthConfig, UserConfig
 from cloudcafe.extensions.rax_auth.v2_0.tokens_api.client import \
     TokenAPI_Client as RaxTokenAPI_Client
 from cloudcafe.extensions.rax_auth.v2_0.tokens_api.behaviors import \
     TokenAPI_Behaviors as RaxTokenAPI_Behaviors
+from cloudcafe.extensions.saio_tempauth.v1_0.client import \
+    TempauthAPI_Client as SaioAuthAPI_Client
+from cloudcafe.extensions.saio_tempauth.v1_0.behaviors import \
+    TempauthAPI_Behaviors as SaioAuthAPI_Behaviors
 from cloudcafe.identity.v2_0.tokens_api.client import \
     TokenAPI_Client as OSTokenAPI_Client
 from cloudcafe.identity.v2_0.tokens_api.behaviors import \
     TokenAPI_Behaviors as OSTokenAPI_Behaviors
-from cloudcafe.auth.config import UserAuthConfig, UserConfig
 
 
 class AuthProvider(object):
@@ -47,5 +50,12 @@ class AuthProvider(object):
             return token_behaviors.get_access_data(user_config.username,
                                                    user_config.api_key,
                                                    user_config.tenant_id)
+
+        elif endpoint_config.strategy.lower() == 'saio_tempauth':
+            auth_client = SaioAuthAPI_Client(endpoint_config.auth_endpoint)
+            auth_behaviors = SaioAuthAPI_Behaviors(auth_client)
+            return auth_behaviors.get_access_data(
+                user_config.username, user_config.password)
+
         else:
             raise NotImplementedError
