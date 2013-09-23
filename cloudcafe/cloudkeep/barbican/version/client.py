@@ -13,19 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cloudcafe.cloudkeep.barbican.client import BarbicanRestClient
 from cloudcafe.cloudkeep.barbican.version.models.version import Version
 
 
-class VersionClient(AutoMarshallingRestClient):
-    def __init__(self, url, serialize_format=None, deserialize_format=None):
+class VersionClient(BarbicanRestClient):
+    def __init__(self, url, token=None, serialize_format=None,
+                 deserialize_format=None):
         """
         @param url: Base URL of Barbican api
         @type url: String
         """
-        super(VersionClient, self).__init__(serialize_format,
-                                            deserialize_format)
+        super(VersionClient, self).__init__(
+            token=token, serialize_format=serialize_format,
+            deserialize_format=deserialize_format)
         self.url = url
 
     def get_version(self, headers=None):
