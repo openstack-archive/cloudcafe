@@ -13,16 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cloudcafe.cloudkeep.barbican.client import BarbicanRestClient
 from cloudcafe.cloudkeep.barbican.secrets.models.secret \
     import Secret, SecretGroup, SecretRef, SecretMetadata
 
 
-class SecretsClient(AutoMarshallingRestClient):
-    def __init__(self, url, api_version, tenant_id, serialize_format=None,
-                 deserialize_format=None):
-        super(SecretsClient, self).__init__(serialize_format,
-                                            deserialize_format)
+class SecretsClient(BarbicanRestClient):
+    def __init__(self, url, api_version, tenant_id, token=None,
+                 serialize_format=None, deserialize_format=None):
+        super(SecretsClient, self).__init__(
+            token=token, serialize_format=serialize_format,
+            deserialize_format=deserialize_format)
         self.url = url
         self.api_version = api_version
         self.tenant_id = tenant_id
