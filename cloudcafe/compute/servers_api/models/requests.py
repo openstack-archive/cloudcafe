@@ -27,7 +27,8 @@ class CreateServer(AutoMarshallingModel):
     def __init__(self, name, image_ref, flavor_ref, admin_pass=None,
                  disk_config=None, metadata=None, personality=None,
                  user_data=None, accessIPv4=None, accessIPv6=None,
-                 networks=None, key_name=None, config_drive=None):
+                 networks=None, key_name=None, config_drive=None,
+                 scheduler_hints=None):
 
         super(CreateServer, self).__init__()
         self.name = name
@@ -43,6 +44,7 @@ class CreateServer(AutoMarshallingModel):
         self.networks = networks
         self.key_name = key_name
         self.config_drive = config_drive
+        self.scheduler_hints = scheduler_hints
 
     def _obj_to_json(self):
         body = {
@@ -62,7 +64,12 @@ class CreateServer(AutoMarshallingModel):
         }
 
         body = self._remove_empty_values(body)
-        return json.dumps({'server': body})
+        main_body = {'server': body}
+
+        if self.scheduler_hints:
+            main_body['os:scheduler_hints'] = self.scheduler_hints
+
+        return json.dumps(main_body)
 
     def _obj_to_xml(self):
         element = ET.Element('server')
@@ -103,6 +110,12 @@ class CreateServer(AutoMarshallingModel):
             element.set('key_name', self.key_name)
         if self.config_drive is not None:
             element.set('config_drive', self.config_drive)
+        if self.scheduler_hints is not None:
+            hints_ele = ET.Element('OS-SCH-HNT:scheduler_hints')
+            for key, value in self.metadata.iteritems():
+                meta_element = ET.Element(key)
+                meta_element.text = value
+                hints_ele.append(meta_element)
         xml += ET.tostring(element)
         return xml
 

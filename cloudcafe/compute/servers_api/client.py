@@ -163,7 +163,7 @@ class ServersClient(AutoMarshallingRestClient):
                       user_data=None, metadata=None, accessIPv4=None,
                       accessIPv6=None, disk_config=None, networks=None,
                       admin_pass=None, key_name=None, config_drive=None,
-                      requestslib_kwargs=None):
+                      scheduler_hints=None, requestslib_kwargs=None):
         """
         @summary: Creates an instance of a server given the
          provided parameters
@@ -199,7 +199,7 @@ class ServersClient(AutoMarshallingRestClient):
             metadata=metadata, accessIPv4=accessIPv4,
             accessIPv6=accessIPv6, disk_config=disk_config, networks=networks,
             admin_pass=admin_pass, key_name=key_name,
-            config_drive=config_drive)
+            config_drive=config_drive, scheduler_hints=scheduler_hints)
 
         url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('POST', url,
