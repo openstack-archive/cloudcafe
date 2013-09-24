@@ -17,6 +17,8 @@ limitations under the License.
 import json
 
 from cafe.engine.models.base import AutoMarshallingModel
+from cloudcafe.compute.extensions.config_drive.models.\
+    config_drive_openstack_meta import Keys
 
 
 class EcMetadata(AutoMarshallingModel):
@@ -55,7 +57,7 @@ class EcMetadata(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        ec_meta = EcMeta(
+        ec_meta = EcMetadata(
             ami_id=json_dict.get('ami-id'),
             ami_launch_index=json_dict.get('ami-launch-index'),
             ami_manifest_path=json_dict.get('ami-manifest-path'),
@@ -69,14 +71,15 @@ class EcMetadata(AutoMarshallingModel):
             placement=json_dict.get('placement'),
             public_hostname=json_dict.get('public-hostname'),
             public_ipv4=json_dict.get('public-ipv4'),
-            public_keys=json_dict.get('public-keys'),
             ramdisk_id=json_dict.get('ramdisk-id'),
             reservation_id=json_dict.get('reservation-id'),
             security_groups=json_dict.get('security-groups'))
         if 'block-device-mapping' in json_dict:
             ec_meta.block_device_mapping = \
-            BlockDeviceMapping._dict_to_obj(
-                json_dict.get('block-device-mapping'))
+                BlockDeviceMapping._dict_to_obj(
+                    json_dict.get('block-device-mapping'))
+        if 'public-keys' in json_dict:
+            ec_meta.public_keys = Keys._dict_to_obj(json_dict)
         return ec_meta
 
 

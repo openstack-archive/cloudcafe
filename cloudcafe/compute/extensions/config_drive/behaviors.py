@@ -18,7 +18,7 @@ from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.extensions.config_drive.models.\
     config_drive_openstack_meta import OpenStackMeta
 from cloudcafe.compute.extensions.config_drive.models.\
-    config_drive_ec_meta import EcMeta
+    config_drive_ec_metadata import EcMetadata
 
 
 class ConfigDriveBehaviors(BaseBehavior):
@@ -56,7 +56,7 @@ class ConfigDriveBehaviors(BaseBehavior):
             server, servers_config, key=key)
         ec_meta_str = remote_client.get_file_details(
             filepath=filepath)
-        return EcMeta.deserialize(ec_meta_str.content, 'json')
+        return EcMetadata.deserialize(ec_meta_str.content, 'json')
 
     def mount_config_drive(self, server, servers_config, key,
                            source_path, destination_path):
