@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: John Vrbanac <john.vrbanac@rackspace.com>
+Code-Review+2: John Vrbanac <john.vrbanac@rackspace.com>
+Code-Review+1: Franklin Naval <franklin.naval@gmail.com>
+Code-Review+1: Ivo Vasev <ivo.vasev@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 24 Sep 2013 05:59:22 +0000
+Reviewed-on: https://review.openstack.org/46943
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
