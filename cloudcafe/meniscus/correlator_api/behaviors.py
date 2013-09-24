@@ -17,10 +17,11 @@ limitations under the License.
 
 class PublishingBehaviors(object):
 
-    def __init__(self, publish_client, correlation_config, tenant_id=None,
-                 tenant_token=None):
+    def __init__(self, publish_client, correlation_config,
+                 storage_client, tenant_id=None, tenant_token=None):
         self.publish_client = publish_client
         self.correlation_config = correlation_config
+        self.storage_client = storage_client
         self.tenant_id = tenant_id
         self.tenant_token = tenant_token
 
@@ -50,3 +51,19 @@ class PublishingBehaviors(object):
             time=time or self.correlation_config.time,
             native=native)
         return resp
+
+    def _create_term_name(self, tenant_id, object_path):
+        return 'tenant/{tenant_id}.{obj_path}'.format(tenant_id=tenant_id,
+                                                      obj_path=object_path)
+
+    def get_messages_by_timestamp(self, timestamp, num_messages=10,
+                                  tenant_id=None):
+        if tenant_id is None:
+            tenant_id = self.tenant_id
+
+        name = self._create_term_name(tenant_id=tenant_id, object_path='time')
+        resp = self.storage_client.find_term(name=name, value=timestamp,
+                                             size=num_messages)
+
+        # Copying all of the models into a fresh list
+        return [model for model in resp]
