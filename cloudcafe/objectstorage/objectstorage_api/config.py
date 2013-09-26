@@ -21,6 +21,22 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'objectstorage_api'
 
+    PROXY_PIPELINE_ASK = '__ASK__'
+    PROXY_PIPELINE_ALL = '__ALL__'
+
+    @property
+    def proxy_pipeline(self):
+        value = self.get('proxy_pipeline', None)
+
+        if not value:
+            value = self.PROXY_PIPELINE_ALL
+
+        if value == self.PROXY_PIPELINE_ASK or \
+                value == self.PROXY_PIPELINE_ALL:
+            return value
+
+        return value.split(' ')
+
     @property
     def default_content_length(self):
         return self.get('default_content_length')
