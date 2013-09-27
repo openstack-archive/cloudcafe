@@ -15,12 +15,20 @@ limitations under the License.
 """
 import hmac
 import json
+import urllib
+import tarfile
 
-from time import time
+from cStringIO import StringIO
+from time import time, mktime
 from hashlib import sha1
+from datetime import datetime
+from cloudcafe.common.tools.md5hash import get_md5_hash
 from cafe.engine.clients.rest import RestClient
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
     import AccountContainersList, ContainerObjectsList
+
+# TODO(hurricanerix): this should be pulled from the engine config
+CLOUDCAFE_TEMP_DIRECTORY = '/tmp'
 
 
 def _deserialize(response_entity_type):
@@ -65,62 +73,6 @@ class ObjectStorageAPIClient(RestClient):
         self.base_object_name = base_object_name or ''
         self.default_headers['X-Auth-Token'] = self.auth_token
 
-    def __add_object_metadata_to_headers(self, metadata=None, headers=None):
-        """
-        Call to __build_metadata specifically for object headers
-        """
-        return self.__build_metadata('X-Object-Meta-', metadata, headers)
-
-    def __add_container_metadata_to_headers(self, metadata=None, headers=None):
-        """
-        Call to __build_metadata specifically for container headers
-        """
-        return self.__build_metadata('X-Container-Meta-', metadata, headers)
-
-    def __add_account_metadata_to_headers(self, metadata=None, headers=None):
-        """
-        Call to __build_metadata specifically for account headers
-        """
-        return self.__build_metadata('X-Account-Meta-', metadata, headers)
-
-    def __build_metadata(self, prefix, metadata, headers):
-        """
-        Prepends the prefix to all keys in metadata dict, and then joins
-        the metadata and header dictionaries together. When a conflict
-        arises between two header keys, the key in headers wins over the
-        key in metadata.
-
-        Returns a dict composed of the provided headers and the new
-        prefixed-metadata headers.
-
-        @param prefix: Appended to all keys in metadata dict
-        @type prefix: String
-        @param metadata: Expects a dict with strings as keys and values
-        @type metadata: Dict
-        @rtype: Dict
-        """
-        if metadata is None:
-            return headers
-
-        headers = headers if headers is not None else {}
-        metadata = metadata if metadata is not None else {}
-        metadata_headers = {}
-
-        for key in metadata:
-            try:
-                meta_key = '{0}{1}'.format(prefix, key)
-            except TypeError as e:
-                self.client_log.error(
-                    'Non-string prefix OR metadata dict value was passed '
-                    'to __build_metadata() in object_client.py')
-                self.client_log.exception(e)
-                raise
-            except:
-                raise
-            metadata_headers[meta_key] = metadata[key]
-
-        return dict(metadata_headers, **headers)
-
     #Account-------------------------------------------------------------------
 
     def retrieve_account_metadata(self, requestslib_kwargs=None):
@@ -164,19 +116,7 @@ class ObjectStorageAPIClient(RestClient):
 
         return response
 
-    def create_container(self, container_name, metadata=None, headers=None,
-                         requestslib_kwargs=None):
-        url = '{0}/{1}'.format(self.storage_url, container_name)
-        headers = self.__add_container_metadata_to_headers(metadata, headers)
-
-        response = self.put(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
-
-        return response
-
-    def update_container(self, container_name, headers=None,
+    def create_container(self, container_name, headers=None,
                          requestslib_kwargs=None):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
@@ -198,10 +138,36 @@ class ObjectStorageAPIClient(RestClient):
 
         return response
 
-    def set_container_metadata(self, container_name, metadata, headers=None,
+    def bulk_delete(self, targets, headers={}, requestslib_kwargs=None):
+        """
+        Deletes container/objetcs from an account.
+
+        @type  targets: list of strings
+        @param targets: A list of the '/container/object' or '/container' to be
+            bulk deleted.  Note, bulk delete will not remove containers that
+            have objects in them, and there is limit of 1000 containers/objects
+            per delete.
+
+        @rtype:  object
+        @return: The requests response object returned from the call.
+        """
+        url = '{0}{1}'.format(self.storage_url, '?bulk-delete')
+        data = '\n'.join([urllib.quote(x) for x in targets])
+        headers['content-type'] = 'text/plain'
+        headers['content-length'] = str(len(data))
+
+        response = self.request(
+            'DELETE',
+            url,
+            data=data,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
+    def set_container_metadata(self, container_name, headers=None,
                                requestslib_kwargs=None):
         url = '{0}/{1}'.format(self.storage_url, container_name)
-        headers = self.__add_container_metadata_to_headers(metadata, headers)
 
         response = self.post(
             url,
@@ -212,7 +178,9 @@ class ObjectStorageAPIClient(RestClient):
 
     def get_container_options(self, container_name, headers=None,
                               requestslib_kwargs=None):
-        """4.2.5 CORS Container Headers"""
+        """
+        returns response from CORS option call
+        """
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
         response = self.options(
@@ -249,7 +217,7 @@ class ObjectStorageAPIClient(RestClient):
         """
         response = self.get_container_metadata(container_name)
 
-        obj_count = int(response.headers['x-container-object-count'])
+        obj_count = int(response.headers.get('x-container-object-count'))
 
         return obj_count
 
@@ -272,7 +240,7 @@ class ObjectStorageAPIClient(RestClient):
     #Storage Object------------------------------------------------------------
 
     def get_object(self, container_name, object_name, headers=None,
-                   stream=False, requestslib_kwargs=None):
+                   params=None, stream=False, requestslib_kwargs={}):
         """
         optional headers
 
@@ -301,21 +269,19 @@ class ObjectStorageAPIClient(RestClient):
             container_name,
             object_name)
 
-        if requestslib_kwargs is None:
-            requestslib_kwargs = {}
-
-        if requestslib_kwargs.get('stream') is None:
+        if 'stream' not in requestslib_kwargs:
             requestslib_kwargs['stream'] = stream
 
         response = self.get(
             url,
             headers=headers,
+            params=params,
             requestslib_kwargs=requestslib_kwargs)
 
         return response
 
     def create_object(self, container_name, object_name, data=None,
-                      metadata=None, headers=None, requestslib_kwargs=None):
+                      params=None, headers=None, requestslib_kwargs=None):
         """
         Creates a storage object in a container via PUT
         Optionally adds 'X-Object-Metadata-' prefix to any key in the
@@ -326,36 +292,34 @@ class ObjectStorageAPIClient(RestClient):
             self.storage_url,
             container_name,
             object_name)
-        hdrs = self.__add_object_metadata_to_headers(metadata, headers)
 
         response = self.put(
             url,
-            headers=hdrs,
+            headers=headers,
+            params=params,
             data=data,
             requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def copy_object(self, container_name, object_name, headers=None):
+    def copy_object(self, container_name, object_name, headers={}):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
-        hdrs = {}
-        hdrs['X-Auth-Token'] = self.auth_token
 
-        if headers is not None:
-            if 'X-Copy-From' in headers and 'Content-Length' in headers:
-                method = 'PUT'
-                hdrs['X-Copy-From'] = headers['X-Copy-From']
-                hdrs['Content-Length'] = headers['Content-Length']
-            elif 'Destination' in headers:
-                method = 'COPY'
-                hdrs['Destination'] = headers['Destination']
-            else:
-                return None
+        headers['X-Auth-Token'] = self.auth_token
 
-        response = self.request(method=method, url=url, headers=hdrs)
+        if 'X-Copy-From' in headers:
+            method = 'PUT'
+            if 'Content-Length' not in headers:
+                headers['Content-Length'] = '0'
+        elif 'Destination' in headers:
+            method = 'COPY'
+        else:
+            return None
+
+        response = self.request(method=method, url=url, headers=headers)
 
         return response
 
@@ -387,13 +351,12 @@ class ObjectStorageAPIClient(RestClient):
 
         return response
 
-    def set_object_metadata(self, container_name, object_name, metadata,
-                            headers=None, requestslib_kwargs=None):
+    def set_object_metadata(self, container_name, object_name, headers=None,
+                            requestslib_kwargs=None):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
-        headers = self.__add_object_metadata_to_headers(metadata, headers)
 
         response = self.post(
             url,
@@ -430,3 +393,80 @@ class ObjectStorageAPIClient(RestClient):
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
 
         return {'target_url': base_url, 'signature': sig, 'expires': expires}
+
+    def extract_archive(self, data, data_format='tar', container_name=None,
+                        headers=None, requestslib_kwargs=None):
+        """
+        Uploads a archive file to Swift for the files to be extracted as
+        objects.
+
+        @type  data: string
+        @param data: The data read in from a archive file.
+        @type  data_format: string
+        @param data_format: The format of the archive (tar|tar.gz|tar.bz2)
+        @type  data_format: string
+        @param data_format: The container to extract the archive to.
+            If None, containers will be created based on the first directory
+            of the file listing.
+
+        @rtype:  object
+        @return: The requests response object returned from the call.
+        """
+        url = self.storage_url
+        if container_name:
+            url = '{0}/{1}'.format(url, container_name)
+        params = {'extract-archive': data_format}
+
+        response = self.request(
+            'PUT', url, data=data, params=params, headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
+    # TODO(hurricanerix): read CLOUDCAFE_TEMP_DIRECTORY from engine config
+    def create_bulk_objects(self, container_name, objects, headers=None,
+                            requestslib_kwargs=None):
+        """
+        Bulk creates objects in a container.  Each object's data will be the
+        md5sum of the object's name.
+
+        @type  container_name: strings
+        @param container_name: The name of the container to create the objects
+            in.
+
+        @rtype:  boolean
+        @return: Returns true if the opperation was successful, and False
+            otherwise.
+        """
+        if container_name is None or container_name is '':
+            raise TypeError("container_name is required.")
+
+        archive_name = 'bulk_objects.tar.gz'
+        archive_dir = CLOUDCAFE_TEMP_DIRECTORY
+        archive_filename = '{0}/{1}'.format(archive_dir, archive_name)
+        archive = tarfile.open(archive_filename, 'w:gz')
+
+        for object_name in objects:
+            object_data = get_md5_hash(object_name)
+            object_size = len(object_data)
+            object_time = int(mktime(datetime.now().timetuple()))
+
+            object_buffer = StringIO(object_data)
+            object_buffer.seek(0)
+
+            object_info = tarfile.TarInfo(name=object_name)
+            object_info.size = object_size
+            object_info.mtime = object_time
+
+            archive.addfile(tarinfo=object_info, fileobj=object_buffer)
+
+        archive.close()
+        archive_file = open(archive_filename, 'r')
+        archive_data = archive_file.read()
+        archive_file.close()
+
+        response = self.extract_archive(
+            archive_data, data_format='tar.gz', container_name=container_name,
+            headers=headers, requestslib_kwargs=requestslib_kwargs)
+
+        return response.ok
