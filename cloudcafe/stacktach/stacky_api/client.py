@@ -201,12 +201,12 @@ class StackTachClient(AutoMarshallingRestClient):
             GET
             stacky/watch/{deployment_id}/{service}/
         """
-        url = '{0}{1}{2}{3}/'.format(self.url, '/stacky/watch/',
-                                     deployment_id, service)
+        url = '{0}{1}{2}/{3}/'.format(self.url, '/stacky/watch/',
+                                      deployment_id, service)
         return self.request('GET', url, response_entity_type=WatchEvents,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def get_event_id_details(self, event_id, requestslib_kwargs=None):
+    def get_event_id_details(self, event_id, service, requestslib_kwargs=None):
         """
         @summary: Retrieves details of a given event
         @param event_id:  An identifier of an event within the StackTach DB
@@ -216,10 +216,11 @@ class StackTachClient(AutoMarshallingRestClient):
         @note: response formatted for command line
 
             GET
-            stacky/show/{event_id}/
+            stacky/show/{event_id}/?service={service}
         """
+        params = {'service': service}
         url = '{0}{1}{2}'.format(self.url, '/stacky/show/', event_id)
-        return self.request('GET', url,
+        return self.request('GET', url, params=params,
                             response_entity_type=EventIdDetails,
                             requestslib_kwargs=requestslib_kwargs)
 
