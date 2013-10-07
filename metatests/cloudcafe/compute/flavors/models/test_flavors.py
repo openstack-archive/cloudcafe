@@ -16,10 +16,11 @@ limitations under the License.
 
 import unittest2 as unittest
 
+from cloudcafe.compute.common.constants import Constants
 from cloudcafe.compute.flavors_api.models.flavor import Flavor
 
 
-class FlavorDomainTest(object):
+class FlavorModelTest(object):
 
     def test_flavor_id(self):
         self.assertEqual(self.flavor.id, "2")
@@ -36,6 +37,15 @@ class FlavorDomainTest(object):
     def test_flavor_disk(self):
         self.assertEqual(self.flavor.disk, 20)
 
+    def test_flavor_swap(self):
+        self.assertEqual(self.flavor.swap, 512)
+
+    def test_flavor_rxtx_factor(self):
+        self.assertEqual(self.flavor.rxtx_factor, 2.0)
+
+    def test_flavor_ephemeral_disk(self):
+        self.assertEqual(self.flavor.ephemeral_disk, 250)
+
     def test_flavor_links_self(self):
         self.assertEqual(
             self.flavor.links.self,
@@ -47,24 +57,26 @@ class FlavorDomainTest(object):
             "https://127.0.0.1/660/flavors/2")
 
 
-class FlavorXMLDomainTest(unittest.TestCase, FlavorDomainTest):
+class FlavorXMLModelTest(unittest.TestCase, FlavorModelTest):
 
     @classmethod
     def setUpClass(cls):
         cls.flavor_xml = \
             """
             <flavor xmlns:atom="http://www.w3.org/2005/Atom"
+            xmlns:OS-FLV-EXT-DATA="{extra_specs}"
             xmlns="http://docs.openstack.org/compute/api/v1.1"
             disk="20" vcpus="1" ram="512" name="512MB Standard Instance"
-            id="2" swap="512" rxtx_factor="2.0">
+            id="2" swap="512" rxtx_factor="2.0"
+            OS-FLV-EXT-DATA:ephemeral="250">
             <atom:link href="https://127.0.0.1/v2/660/flavors/2" rel="self"/>
             <atom:link href="https://127.0.0.1/660/flavors/2" rel="bookmark"/>
             </flavor>
-            """
+            """.format(extra_specs=Constants.XML_FLAVOR_EXTRA_SPECS)
         cls.flavor = Flavor.deserialize(cls.flavor_xml, 'xml')
 
 
-class FlavorJSONDomainTest(unittest.TestCase, FlavorDomainTest):
+class FlavorJSONModelTest(unittest.TestCase, FlavorModelTest):
 
     @classmethod
     def setUpClass(cls):
@@ -88,7 +100,8 @@ class FlavorJSONDomainTest(unittest.TestCase, FlavorDomainTest):
                 "swap" : 512,
                 "rxtx_factor" : 2.0,
                 "disk" : 20,
-                "id" : "2"
+                "id" : "2",
+                "OS-FLV-EXT-DATA:ephemeral" : 250
               }
             }
             """

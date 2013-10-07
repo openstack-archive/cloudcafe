@@ -34,6 +34,8 @@ class Constants:
     XML_API_ATOM_NAMESPACE = 'http://www.w3.org/2005/Atom'
     XML_API_RESCUE = 'http://docs.openstack.org/compute/ext/rescue/api/v1.1'
     XML_API_UNRESCUE = 'http://docs.rackspacecloud.com/servers/api/v1.1'
+    XML_FLAVOR_EXTRA_SPECS = ('http://docs.openstack.org/compute/ext/'
+                              'flavor_extra_data/api/v1.1')
     DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     DATETIME_6AM_FORMAT = "%Y-%m-%d 06:00:00"
     DATETIME_0AM_FORMAT = "%Y-%m-%d 00:00:00"
