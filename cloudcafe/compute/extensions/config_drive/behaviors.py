@@ -69,6 +69,6 @@ class ConfigDriveBehaviors(BaseBehavior):
             server, servers_config, key=key)
         remote_client.create_directory(
             path=destination_path)
-        remote_client.mount_file_to_destination_directory(
+        remote_client.mount_disk(
             source_path=source_path,
             destination_path=destination_path)
