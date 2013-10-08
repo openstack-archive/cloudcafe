@@ -21,16 +21,16 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'objectstorage_api'
 
-    PROXY_PIPELINE_ALL = '__ALL__'
+    ALL_FEATURES = '__ALL__'
+    NO_FEATURES = '__NONE__'
+
+    @property
+    def enabled_features(self):
+        return self.get('enabled_features', self.ALL_FEATURES)
 
     @property
     def proxy_pipeline(self):
-        value = self.get('proxy_pipeline', None)
-
-        if not value:
-            value = self.PROXY_PIPELINE_ALL
-
-        return value
+        return self.get('proxy_pipeline', self.ALL_FEATURES)
 
     @property
     def default_content_length(self):
