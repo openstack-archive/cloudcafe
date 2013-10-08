@@ -17,8 +17,11 @@ limitations under the License.
 import time
 
 from cafe.engine.behaviors import BaseBehavior
-from cafe.engine.clients.remote_instance.instance_client import \
-    InstanceClientFactory
+#from cafe.engine.clients.remote_instance.instance_client import \
+#    InstanceClientFactory
+
+from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
+    import LinuxClient
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
@@ -206,7 +209,7 @@ class ServerBehaviors(BaseBehavior):
             return server.addresses.public.ipv6
 
     def get_remote_instance_client(self, server, config=None, ip_address=None,
-                                   username=None, password=None, key=None,
+                                   username='root', password=None, key=None,
                                    auth_strategy=None):
         """
         @summary: Gets an client of the server
@@ -233,13 +236,11 @@ class ServerBehaviors(BaseBehavior):
                 password = server.admin_pass
 
             # (TODO) dwalleck: Remove hard coding of distro
-            return InstanceClientFactory.get_instance_client(
-                ip_address=ip_address, username=username, password=password,
-                os_distro='linux', config=config)
+            return LinuxClient(ip_address=ip_address, username=username,
+                               password=password)
         else:
-            return InstanceClientFactory.get_instance_client(
-                ip_address=ip_address, username=username, os_distro='linux',
-                config=config, key=key)
+            return LinuxClient(ip_address=ip_address,
+                               username=username, key=key)
 
     def resize_and_await(self, server_id, new_flavor):
         """
