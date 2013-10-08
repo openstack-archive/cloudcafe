@@ -41,7 +41,7 @@ class ConfigDriveBehaviors(BaseBehavior):
         remote_client = self.server_behaviors.get_remote_instance_client(
             server, servers_config, key=key)
         openstack_meta_str = remote_client.get_file_details(
-            filepath=filepath)
+            file_path=filepath)
         return OpenStackMeta.deserialize(openstack_meta_str.content, 'json')
 
     def get_ec_metadata(self, server, servers_config, key,
@@ -55,7 +55,7 @@ class ConfigDriveBehaviors(BaseBehavior):
         remote_client = self.server_behaviors.get_remote_instance_client(
             server, servers_config, key=key)
         ec_meta_str = remote_client.get_file_details(
-            filepath=filepath)
+            file_path=filepath)
         return EcMetadata.deserialize(ec_meta_str.content, 'json')
 
     def mount_config_drive(self, server, servers_config, key,
