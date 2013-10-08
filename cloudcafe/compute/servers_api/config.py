@@ -27,6 +27,23 @@ class ServersConfig(ConfigSectionInterface):
         return self.get("instance_auth_strategy")
 
     @property
+    def split_ephemeral_disk_enabled(self):
+        """
+        Enable if splitting of ephemeral disks (limiting of the disk
+        size and splitting into multiple disks if necessary) is enabled.
+        """
+        return self.get_boolean("split_ephemeral_disk_enabled", False)
+
+    @property
+    def ephemeral_disk_max_size(self):
+        """
+        If ephemeral disk splitting is enabled, this is the maximum
+        size of an ephemeral disk. If this value is less than the
+        requested ephemeral disk, multiple disks will be created.
+        """
+        return int(self.get("ephemeral_disk_max_size", 0))
+
+    @property
     def disk_config_override(self):
         """Optional override for the disk_config parameter (all actions)"""
         return self.get("disk_config_override")

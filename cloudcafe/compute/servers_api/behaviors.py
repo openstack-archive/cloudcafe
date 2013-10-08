@@ -17,6 +17,7 @@ limitations under the License.
 import time
 
 from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.compute.common.clients.remote_instance.linux.linux_client import LinuxClient
 from cafe.engine.clients.remote_instance.instance_client import \
     InstanceClientFactory
 from cloudcafe.compute.common.types import InstanceAuthStrategies
@@ -233,13 +234,15 @@ class ServerBehaviors(BaseBehavior):
                 password = server.admin_pass
 
             # (TODO) dwalleck: Remove hard coding of distro
-            return InstanceClientFactory.get_instance_client(
-                ip_address=ip_address, username=username, password=password,
-                os_distro='linux', config=config)
+            return LinuxClient(ip_address=ip_address, username='root', password=password)
+            #return InstanceClientFactory.get_instance_client(
+            #    ip_address=ip_address, username=username, password=password,
+            #    os_distro='linux', config=config)
         else:
-            return InstanceClientFactory.get_instance_client(
-                ip_address=ip_address, username=username, os_distro='linux',
-                config=config, key=key)
+            return LinuxClient(ip_address=ip_address, username='root', key=key)
+            #return InstanceClientFactory.get_instance_client(
+            #    ip_address=ip_address, username=username, os_distro='linux',
+            #    config=config, key=key)
 
     def resize_and_await(self, server_id, new_flavor):
         """
