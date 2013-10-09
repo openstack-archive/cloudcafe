@@ -15,6 +15,12 @@ limitations under the License.
 """
 
 from cloudcafe.common.models.configuration import ConfigSectionInterface
+from cloudcafe.auth.config import UserConfig as BaseUserConfig
+
+
+class UserConfig(BaseUserConfig):
+    """User that's an admin"""
+    SECTION_NAME = 'images_admin_user'
 
 
 class ImagesConfig(ConfigSectionInterface):
@@ -25,16 +31,6 @@ class ImagesConfig(ConfigSectionInterface):
     def base_url(self):
         """Base URL where Images API is reached"""
         return self.get('base_url')
-
-    @property
-    def primary_image(self):
-        """Primary image ID"""
-        return self.get('primary_image')
-
-    @property
-    def secondary_image(self):
-        """Secondary image ID"""
-        return self.get('secondary_image')
 
     @property
     def image_status_interval(self):
