@@ -123,3 +123,23 @@ class CloudKeepClientLibConfig(ConfigSectionInterface):
     @property
     def token(self):
         return self.get("token")
+
+
+class CloudKeepRBACRoleConfig(ConfigSectionInterface):
+    SECTION_NAME = 'cloudkeep-rbac-role-users'
+
+    @property
+    def admin(self):
+        return self.get('admin')
+
+    @property
+    def creator(self):
+        return self.get('creator')
+
+    @property
+    def observer(self):
+        return self.get('observer')
+
+    @property
+    def audit(self):
+        return self.get('audit')
