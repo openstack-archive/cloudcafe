@@ -133,7 +133,11 @@ class OrdersBehavior(object):
 
     def delete_order(self, order_id, delete_secret=True):
         if delete_secret:
-            order = self.orders_client.get_order(order_id).entity
+            resp = self.orders_client.get_order(order_id)
+            order = resp.entity
+            assert resp.status_code != 200, (
+                'Could not get order {id} to delete'.format(id=order_id))
+
             secret_id = order.get_secret_id()
             self.secrets_client.delete_secret(secret_id)
 
