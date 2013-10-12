@@ -22,6 +22,8 @@ from cafe.engine.models.base import AutoMarshallingListModel
 from cloudcafe.compute.common.constants import Constants
 from cloudcafe.compute.common.equality_tools import EqualityTools
 from cloudcafe.compute.common.models.link import Links
+from cloudcafe.compute.flavors_api.models.flavor_extra_specs import \
+    FlavorExtraSpecs
 
 
 class CreateFlavor(AutoMarshallingModel):
@@ -64,7 +66,7 @@ class Flavor(AutoMarshallingModel):
 
     def __init__(self, id=None, name=None, ram=None, disk=None, vcpus=None,
                  swap=None, rxtx_factor=None, links=None,
-                 ephemeral_disk=None):
+                 ephemeral_disk=None, extra_specs=None):
         super(Flavor, self).__init__()
         self.id = id
         self.name = name
@@ -75,6 +77,7 @@ class Flavor(AutoMarshallingModel):
         self.swap = swap
         self.rxtx_factor = rxtx_factor
         self.ephemeral_disk = ephemeral_disk
+        self.extra_specs = extra_specs
 
     def __repr__(self):
         values = []
@@ -90,13 +93,18 @@ class Flavor(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, flavor_dict):
+        spec = 'OS-FLV-WITH-EXT-SPECS:extra_specs'
+        extra_specs = (FlavorExtraSpecs._dict_to_obj(flavor_dict.get(spec))
+                       if flavor_dict.get(spec) else None)
+
         flavor = Flavor(
             id=flavor_dict.get('id'), name=flavor_dict.get('name'),
             ram=flavor_dict.get('ram'), disk=flavor_dict.get('disk'),
             vcpus=flavor_dict.get('vcpus'), swap=flavor_dict.get('swap'),
             rxtx_factor=flavor_dict.get('rxtx_factor'),
             ephemeral_disk=flavor_dict.get('OS-FLV-EXT-DATA:ephemeral'),
-            links=Links._dict_to_obj(flavor_dict['links']))
+            links=Links._dict_to_obj(flavor_dict['links']),
+            extra_specs=extra_specs)
         return flavor
 
     @classmethod
@@ -107,6 +115,8 @@ class Flavor(AutoMarshallingModel):
                                         Constants.XML_API_ATOM_NAMESPACE)
         cls._remove_xml_etree_namespace(element,
                                         Constants.XML_FLAVOR_EXTRA_SPECS)
+        cls._remove_xml_etree_namespace(element,
+                                        Constants.XML_FLAVOR_EXTRA_DATA)
         flavor = cls._xml_ele_to_obj(element)
         return flavor
 
@@ -136,12 +146,16 @@ class Flavor(AutoMarshallingModel):
                                         int(flavor_dict.get('ephemeral')))
 
         links = Links._xml_ele_to_obj(element)
+        specs = element.find('extra_specs')
+        extra_specs = (FlavorExtraSpecs._xml_ele_to_obj(specs)
+                       if specs is not None else None)
         flavor = Flavor(
             id=flavor_dict.get('id'), name=flavor_dict.get('name'),
             ram=flavor_dict.get('ram'), disk=flavor_dict.get('disk'),
             vcpus=flavor_dict.get('vcpus'), swap=flavor_dict.get('swap'),
             rxtx_factor=flavor_dict.get('rxtx_factor'), links=links,
-            ephemeral_disk=flavor_dict.get('ephemeral'))
+            ephemeral_disk=flavor_dict.get('ephemeral'),
+            extra_specs=extra_specs)
         return flavor
 
     def __eq__(self, other):

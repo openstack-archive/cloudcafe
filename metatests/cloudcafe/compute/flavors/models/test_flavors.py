@@ -56,6 +56,9 @@ class FlavorModelTest(object):
             self.flavor.links.bookmark,
             "https://127.0.0.1/660/flavors/2")
 
+    def test_flavor_extra_specs(self):
+        self.assertEqual(self.flavor.extra_specs.get('field1'), '1')
+
 
 class FlavorXMLModelTest(unittest.TestCase, FlavorModelTest):
 
@@ -64,15 +67,20 @@ class FlavorXMLModelTest(unittest.TestCase, FlavorModelTest):
         cls.flavor_xml = \
             """
             <flavor xmlns:atom="http://www.w3.org/2005/Atom"
-            xmlns:OS-FLV-EXT-DATA="{extra_specs}"
+            xmlns:OS-FLV-EXT-DATA="{extra_data}"
+            xmlns:OS-FLV-WITH-EXT-SPECS="{extra_specs}"
             xmlns="http://docs.openstack.org/compute/api/v1.1"
             disk="20" vcpus="1" ram="512" name="512MB Standard Instance"
             id="2" swap="512" rxtx_factor="2.0"
             OS-FLV-EXT-DATA:ephemeral="250">
+            <OS-FLV-WITH-EXT-SPECS:extra_specs>
+            <field1>1</field1>
+            </OS-FLV-WITH-EXT-SPECS:extra_specs>
             <atom:link href="https://127.0.0.1/v2/660/flavors/2" rel="self"/>
             <atom:link href="https://127.0.0.1/660/flavors/2" rel="bookmark"/>
             </flavor>
-            """.format(extra_specs=Constants.XML_FLAVOR_EXTRA_SPECS)
+            """.format(extra_specs=Constants.XML_FLAVOR_EXTRA_SPECS,
+                       extra_data=Constants.XML_FLAVOR_EXTRA_DATA)
         cls.flavor = Flavor.deserialize(cls.flavor_xml, 'xml')
 
 
@@ -101,7 +109,8 @@ class FlavorJSONModelTest(unittest.TestCase, FlavorModelTest):
                 "rxtx_factor" : 2.0,
                 "disk" : 20,
                 "id" : "2",
-                "OS-FLV-EXT-DATA:ephemeral" : 250
+                "OS-FLV-EXT-DATA:ephemeral" : 250,
+                "OS-FLV-WITH-EXT-SPECS:extra_specs": {"field1": "1"}
               }
             }
             """
