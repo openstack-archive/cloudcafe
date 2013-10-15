@@ -20,19 +20,21 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 
 class VolumeAttachmentRequest(AutoMarshallingModel):
+
     def __init__(self, volume_id=None, device=None):
+        super(VolumeAttachmentRequest, self).__init__()
         self.id = None
         self.server_id = None
         self.volume_id = volume_id
         self.device = device
 
     def _obj_to_json(self):
-        return json.dumps(self._obj_to_json_ele())
+        return self._obj_to_json_ele()
 
     def _obj_to_json_ele(self):
         sub_body = {"volumeId": self.volume_id}
         sub_body["device"] = self.device
-        sub_body = self._set_clean_json_dict_attrs(sub_body)
+        sub_body = self._remove_empty_values(sub_body)
         body = {"volumeAttachment": sub_body}
-        body = self._set_clean_json_dict_attrs(body)
+        body = self._remove_empty_values(body)
         return json.dumps(body)
