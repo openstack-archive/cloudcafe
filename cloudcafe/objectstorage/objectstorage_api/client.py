@@ -16,42 +16,10 @@ limitations under the License.
 import hmac
 import json
 
+from cafe.engine.config import EngineConfig
 from time import time
 from hashlib import sha1
 from cafe.engine.clients.rest import RestClient
-from cloudcafe.objectstorage.objectstorage_api.models.responses \
-    import AccountContainersList, ContainerObjectsList
-
-
-def _deserialize(response_entity_type):
-    """
-    Auto-deserializes the response from any decorated client method call
-    that has a 'format' key in it's 'params' dictionary argument, where
-    'format' value is either 'json' or 'xml'.
-
-    Deserializes the response into response_entity_type domain object
-
-    response_entity_type must be a Domain Object with a <format>_to_obj()
-    classmethod defined for every supported format or this won't work.
-    """
-
-    def decorator(f):
-        def wrapper(*args, **kwargs):
-            response = f(*args, **kwargs)
-            response.request.__dict__['entity'] = None
-            response.__dict__['entity'] = None
-            deserialize_format = None
-            if isinstance(kwargs, dict):
-                if isinstance(kwargs.get('params'), dict):
-                    deserialize_format = kwargs['params'].get('format')
-
-            if deserialize_format is not None:
-                response.__dict__['entity'] = \
-                    response_entity_type.deserialize(
-                        response.content, deserialize_format)
-            return response
-        return wrapper
-    return decorator
 
 
 class ObjectStorageAPIClient(RestClient):
@@ -59,81 +27,21 @@ class ObjectStorageAPIClient(RestClient):
     def __init__(self, storage_url, auth_token, base_container_name=None,
                  base_object_name=None):
         super(ObjectStorageAPIClient, self).__init__()
+        self.engine_config = EngineConfig()
         self.storage_url = storage_url
         self.auth_token = auth_token
         self.base_container_name = base_container_name or ''
         self.base_object_name = base_object_name or ''
         self.default_headers['X-Auth-Token'] = self.auth_token
 
-    def __add_object_metadata_to_headers(self, metadata=None, headers=None):
-        """
-        Call to __build_metadata specifically for object headers
-        """
-        return self.__build_metadata('X-Object-Meta-', metadata, headers)
-
-    def __add_container_metadata_to_headers(self, metadata=None, headers=None):
-        """
-        Call to __build_metadata specifically for container headers
-        """
-        return self.__build_metadata('X-Container-Meta-', metadata, headers)
-
-    def __add_account_metadata_to_headers(self, metadata=None, headers=None):
-        """
-        Call to __build_metadata specifically for account headers
-        """
-        return self.__build_metadata('X-Account-Meta-', metadata, headers)
-
-    def __build_metadata(self, prefix, metadata, headers):
-        """
-        Prepends the prefix to all keys in metadata dict, and then joins
-        the metadata and header dictionaries together. When a conflict
-        arises between two header keys, the key in headers wins over the
-        key in metadata.
-
-        Returns a dict composed of the provided headers and the new
-        prefixed-metadata headers.
-
-        @param prefix: Appended to all keys in metadata dict
-        @type prefix: String
-        @param metadata: Expects a dict with strings as keys and values
-        @type metadata: Dict
-        @rtype: Dict
-        """
-        if metadata is None:
-            return headers
-
-        headers = headers if headers is not None else {}
-        metadata = metadata if metadata is not None else {}
-        metadata_headers = {}
-
-        for key in metadata:
-            try:
-                meta_key = '{0}{1}'.format(prefix, key)
-            except TypeError as e:
-                self.client_log.error(
-                    'Non-string prefix OR metadata dict value was passed '
-                    'to __build_metadata() in object_client.py')
-                self.client_log.exception(e)
-                raise
-            except:
-                raise
-            metadata_headers[meta_key] = metadata[key]
-
-        return dict(metadata_headers, **headers)
-
     #Account-------------------------------------------------------------------
 
-    def retrieve_account_metadata(self, requestslib_kwargs=None):
-        """4.1.1 View Account Details"""
-        response = self.head(
-            self.storage_url,
-            requestslib_kwargs=requestslib_kwargs)
+    def retrieve_account_metadata(self):
+        response = self.head(self.storage_url)
 
         return response
 
-    @_deserialize(AccountContainersList)
-    def list_containers(self, headers=None, params=None,
-                        requestslib_kwargs=None):
+    def list_containers(self, headers={}, params={}):
         """
         Lists all containers for the account.
 
@@ -142,89 +50,51 @@ class ObjectStorageAPIClient(RestClient):
         that format (either xml or json) will be appended to the response
         as the 'entity' attribute. (ie, response.entity)
         """
-        response = self.get(
-            self.storage_url,
-            headers=headers,
-            params=params,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.get(self.storage_url, headers=headers, params=params)
 
         return response
 
     #Container-----------------------------------------------------------------
 
-    def get_container_metadata(self, container_name, headers=None,
-                               requestslib_kwargs=None):
-        """4.2.1 View Container Details"""
+    def get_container_metadata(self, container_name, headers={}):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.head(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.head(url, headers=headers)
 
         return response
 
-    def create_container(self, container_name, metadata=None, headers=None,
-                         requestslib_kwargs=None):
+    def create_container(self, container_name, headers={}):
         url = '{0}/{1}'.format(self.storage_url, container_name)
-        headers = self.__add_container_metadata_to_headers(metadata, headers)
 
-        response = self.put(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.put(url, headers=headers)
 
         return response
 
-    def update_container(self, container_name, headers=None,
-                         requestslib_kwargs=None):
+    def delete_container(self, container_name, headers={}):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.put(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.delete(url, headers=headers)
 
         return response
 
-    def delete_container(self, container_name, headers=None,
-                         requestslib_kwargs=None):
+    def set_container_metadata(self, container_name, headers={}):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.delete(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.post(url, headers=headers)
 
         return response
 
-    def set_container_metadata(self, container_name, metadata, headers=None,
-                               requestslib_kwargs=None):
+    def get_container_options(self, container_name, headers={}):
+        """
+        returns response from CORS option call
+        """
         url = '{0}/{1}'.format(self.storage_url, container_name)
-        headers = self.__add_container_metadata_to_headers(metadata, headers)
 
-        response = self.post(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.options(url, headers=headers)
 
         return response
 
-    def get_container_options(self, container_name, headers=None,
-                              requestslib_kwargs=None):
-        """4.2.5 CORS Container Headers"""
-        url = '{0}/{1}'.format(self.storage_url, container_name)
-
-        response = self.options(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
-
-        return response
-
-    @_deserialize(ContainerObjectsList)
-    def list_objects(self, container_name, headers=None, params=None,
-                     requestslib_kwargs=None):
+    def list_objects(self, container_name, headers={}, params={}):
         """
         Lists all objects in the specified container.
 
@@ -235,11 +105,7 @@ class ObjectStorageAPIClient(RestClient):
         """
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.get(
-            url,
-            headers=headers,
-            params=params,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.get(url, headers=headers, params=params)
 
         return response
 
@@ -249,7 +115,7 @@ class ObjectStorageAPIClient(RestClient):
         """
         response = self.get_container_metadata(container_name)
 
-        obj_count = int(response.headers['x-container-object-count'])
+        obj_count = int(response.headers.get('x-container-object-count'))
 
         return obj_count
 
@@ -260,7 +126,7 @@ class ObjectStorageAPIClient(RestClient):
             json_data = json.loads(response.content)
             for entry in json_data:
                 self.delete_object(container_name, entry['name'])
-        except Exception:
+        except ValueError:
             pass
 
         return self.delete_container(container_name)
@@ -271,8 +137,8 @@ class ObjectStorageAPIClient(RestClient):
 
     #Storage Object------------------------------------------------------------
 
-    def get_object(self, container_name, object_name, headers=None,
-                   stream=False, requestslib_kwargs=None):
+    def get_object(self, container_name, object_name, headers={}, params={},
+                   stream=False):
         """
         optional headers
 
@@ -301,21 +167,16 @@ class ObjectStorageAPIClient(RestClient):
             container_name,
             object_name)
 
-        if requestslib_kwargs is None:
-            requestslib_kwargs = {}
-
-        if requestslib_kwargs.get('stream') is None:
-            requestslib_kwargs['stream'] = stream
-
         response = self.get(
             url,
             headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+            params=params,
+            requestslib_kwargs={'stream': stream})
 
         return response
 
-    def create_object(self, container_name, object_name, data=None,
-                      metadata=None, headers=None, requestslib_kwargs=None):
+    def create_object(self, container_name, object_name, data=None, headers={},
+                      params={}):
         """
         Creates a storage object in a container via PUT
         Optionally adds 'X-Object-Metadata-' prefix to any key in the
@@ -326,98 +187,64 @@ class ObjectStorageAPIClient(RestClient):
             self.storage_url,
             container_name,
             object_name)
-        hdrs = self.__add_object_metadata_to_headers(metadata, headers)
 
-        response = self.put(
-            url,
-            headers=hdrs,
-            data=data,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.put(url, data=data, headers=headers, params=params)
 
         return response
 
-    def copy_object(self, container_name, object_name, headers=None):
-        url = '{0}/{1}/{2}'.format(
-            self.storage_url,
-            container_name,
-            object_name)
-        hdrs = {}
-        hdrs['X-Auth-Token'] = self.auth_token
-
-        if headers is not None:
-            if 'X-Copy-From' in headers and 'Content-Length' in headers:
-                method = 'PUT'
-                hdrs['X-Copy-From'] = headers['X-Copy-From']
-                hdrs['Content-Length'] = headers['Content-Length']
-            elif 'Destination' in headers:
-                method = 'COPY'
-                hdrs['Destination'] = headers['Destination']
-            else:
-                return None
-
-        response = self.request(method=method, url=url, headers=hdrs)
-
-        return response
-
-    def delete_object(self, container_name, object_name, headers=None,
-                      requestslib_kwargs=None):
+    def copy_object(self, container_name, object_name, headers={}):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
 
-        response = self.delete(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        if 'X-Copy-From' in headers:
+            method = 'PUT'
+            if 'Content-Length' not in headers:
+                headers['Content-Length'] = '0'
+        elif 'Destination' in headers:
+            method = 'COPY'
+        else:
+            return None
+
+        response = self.request(method=method, url=url, headers=headers)
 
         return response
 
-    def get_object_metadata(self, container_name, object_name,
-                            headers=None, requestslib_kwargs=None):
+    def delete_object(self, container_name, object_name, headers={}):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
 
-        response = self.head(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.delete(url, headers=headers)
 
         return response
 
-    def set_object_metadata(self, container_name, object_name, metadata,
-                            headers=None, requestslib_kwargs=None):
+    def get_object_metadata(self, container_name, object_name, headers={}):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
-        headers = self.__add_object_metadata_to_headers(metadata, headers)
 
-        response = self.post(
-            url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+        response = self.head(url, headers=headers)
 
         return response
 
-    def set_temp_url_key(self, headers=None, requestslib_kwargs=None):
-        response = self.post(
+    def set_object_metadata(self, container_name, object_name, headers={}):
+        url = '{0}/{1}/{2}'.format(
             self.storage_url,
-            headers=headers,
-            requestslib_kwargs=requestslib_kwargs)
+            container_name,
+            object_name)
+
+        response = self.post(url, headers=headers)
 
         return response
 
-    def auth_off(self):
-        try:
-            self.default_headers.pop('X-Auth-Token')
-        except KeyError:
-            pass
+    def set_temp_url_key(self, headers={}):
+        response = self.post(self.storage_url, headers=headers)
 
-    def auth_on(self):
-        self.default_headers['X-Auth-Token'] = self.auth_token
+        return response
 
     def create_temp_url(self, method, container, obj, seconds, key):
         method = method.upper()
