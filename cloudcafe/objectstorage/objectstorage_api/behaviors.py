@@ -59,10 +59,53 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         return container_name
 
     @behavior(ObjectStorageAPIClient)
-    def create_container(self, name=None):
-        response = self.client.create_container(name)
+    def container_exists(self, name=None):
+        path = '/{0}'.format(name)
+        response = self.request('HEAD', path)
+
+        if response.status_code == 404:
+            return False
+
         if not response.ok:
-            raise Exception('could not create container')
+            raise Exception(
+                'Error checking the existance of container  "{0}"'.format(
+                    str(name)))
+
+        return True
+
+    @behavior(ObjectStorageAPIClient)
+    def create_container(self, container_name, log_delivery=False, headers={}):
+
+        if log_delivery:
+            headers['X-Container-Meta-Access-Log-Delivery'] = str(True)
+
+        response = self.client.create_container(
+            container_name,
+            headers=headers)
+
+        if not response.ok:
+            raise Exception(
+                'could not create container "{0}"'.format(str(container_name)))
+
+    @behavior(ObjectStorageAPIClient)
+    def create_object(self, container_name, object_name, data=None,
+                      headers={}, params={}):
+        if not self.container_exists(container_name):
+            self.create_container(container_name)
+
+        if data and 'content-length' not in headers:
+            headers['content-length'] = str(len(data))
+
+        response = self.client.create_object(
+            container_name,
+            object_name,
+            data=data,
+            headers=headers,
+            params=params)
+
+        if not response.ok:
+            raise Exception('could not create object "{0}/{1}"'.format(
+                container_name, object_name))
 
     @behavior(ObjectStorageAPIClient)
     def request(self, method=None, path='', **kwargs):
