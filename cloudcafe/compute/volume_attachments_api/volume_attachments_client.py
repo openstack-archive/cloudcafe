@@ -15,10 +15,10 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.compute.volume_attachments_api.models. \
-    requests.volume_attachments import VolumeAttachmentRequest
-from cloudcafe.compute.volume_attachments_api.models. \
-    responses.volume_attachments import VolumeAttachmentListResponse
+from cloudcafe.compute.volume_attachments_api.models.requests. \
+    volume_attachments import VolumeAttachmentRequest
+from cloudcafe.compute.volume_attachments_api.models.responses. \
+    volume_attachments import VolumeAttachmentListResponse
 
 
 class VolumeAttachmentsAPIClient(AutoMarshallingRestClient):
@@ -40,9 +40,10 @@ class VolumeAttachmentsAPIClient(AutoMarshallingRestClient):
 
     def attach_volume(self, server_id, volume_id, device=None,
                       requestslib_kwargs=None):
-        '''POST
+        """
+        POST
         v2/{tenant_id}/servers/{server_id}/os-volume_attachments
-        '''
+        """
 
         url = '{0}/servers/{1}/os-volume_attachments'.format(
             self.url, server_id)
@@ -53,9 +54,10 @@ class VolumeAttachmentsAPIClient(AutoMarshallingRestClient):
 
     def delete_volume_attachment(self, attachment_id, server_id,
                                  requestslib_kwargs=None):
-        '''DELETE
+        """
+        DELETE
         v2/servers/{server_id}/os-volume_attachments/{attachment_id}
-        '''
+        """
 
         url = '{0}/servers/{1}/os-volume_attachments/{2}'.format(
             self.url, server_id, attachment_id)
@@ -70,9 +72,10 @@ class VolumeAttachmentsAPIClient(AutoMarshallingRestClient):
 
     def get_server_volume_attachments(self, server_id,
                                       requestslib_kwargs=None):
-        '''GET
+        """
+        GET
         v2/servers/{server_id}/os-volume_attachments/
-        '''
+        """
 
         url = '{0}/servers/{1}/os-volume_attachments'.format(
             self.url, server_id)

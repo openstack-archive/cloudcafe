@@ -21,7 +21,9 @@ from cafe.engine.models.base import \
 
 
 class VolumeAttachment(AutoMarshallingModel):
+
     def __init__(self, id_=None, volume_id=None, server_id=None, device=None):
+        super(VolumeAttachment, self).__init__()
         self.id_ = None
         self.server_id = None
         self.volume_id = volume_id
