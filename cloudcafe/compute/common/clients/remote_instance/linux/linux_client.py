@@ -221,6 +221,17 @@ class LinuxClient(RemoteInstanceClient):
             'mount {source_path} {destination_path}'.format(
                 source_path=source_path, destination_path=destination_path))
 
+    def unmount_disk(self, disk_path):
+        """
+        Unmounts the disk at the specified location.
+
+        @param disk_path: Path to file source
+        @type disk_path: string
+        """
+
+        self.ssh_client.execute_command(
+            'umount {disk_path}'.format(disk_path=disk_path))
+
     def get_xen_user_metadata(self):
         """
         Retrieves the user-metadata section from the XenStore.
