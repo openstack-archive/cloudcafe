@@ -15,6 +15,10 @@ limitations under the License.
 """
 
 from cafe.engine.behaviors import BaseBehavior
+from common.tools.datagen import rand_name
+from images.common.types import ImageContainerFormat, ImageDiskFormat, \
+    ImageVisibility
+from cloudcafe.common.resources import ResourcePool
 
 
 class ImagesV2Behaviors(BaseBehavior):
@@ -26,3 +30,37 @@ class ImagesV2Behaviors(BaseBehavior):
         super(ImagesV2Behaviors, self).__init__()
         self.config = images_config
         self.client = images_client
+        self.resources = ResourcePool()
+
+    def register_basic_image(self):
+        """Register a basic image and return its id."""
+        response = self.client.create_image(
+            name=rand_name('basic_image_'),
+            container_format=ImageContainerFormat.BARE,
+            disk_format=ImageDiskFormat.RAW)
+
+        image = response.entity
+
+        self.resources.add(self.client.delete_image, image.id_)
+
+        return image.id_
+
+    def register_private_image(self):
+        """Register a private image and return its id."""
+        response = self.client.create_image(
+            name=rand_name('private_image_'),
+            visibility=ImageVisibility.PRIVATE,
+            container_format=ImageContainerFormat.BARE,
+            disk_format=ImageDiskFormat.RAW)
+
+        image = response.entity
+
+        self.resources.add(self.client.delete_image, image.id_)
+
+        return image.id_
+
+    def get_member_ids(self, image_id):
+        """Return the list of ids for all available members for an image."""
+        response = self.client.list_members(image_id)
+
+        return [member.member_id for member in response.entity]
