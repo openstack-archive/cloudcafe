@@ -30,7 +30,7 @@ from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
     Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
-    Rebuild, ResetState, CreateBackup
+    Rebuild, ResetState, CreateBackup, LiveMigrateServer
 
 
 class ServersClient(AutoMarshallingRestClient):
@@ -434,9 +434,11 @@ class ServersClient(AutoMarshallingRestClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-    def live_migrate_server(self, server_id, requestslib_kwargs=None):
+    def live_migrate_server(self, server_id, disk_over_commit=None,
+                            block_migration=None, host=None,
+                            requestslib_kwargs=None):
         """
-        @summary: Migrates a server live to a new host
+        @summary: Migrates a server to a new host without rebooting
         @param server_id: The id of the server to migrate
         @type server_id: String
         @return: An object that represents the response to the request
@@ -445,8 +447,11 @@ class ServersClient(AutoMarshallingRestClient):
 
         url = '{base_url}/servers/{server_id}/action'.format(
             base_url=self.url, server_id=server_id)
+        request = LiveMigrateServer(
+            host=host, disk_over_commit=disk_over_commit,
+            block_migration=block_migration)
         resp = self.request('POST', url,
-                            request_entity=MigrateServer(),
+                            request_entity=request,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 

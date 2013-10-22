@@ -387,6 +387,37 @@ class MigrateServer(AutoMarshallingModel):
         return xml
 
 
+class LiveMigrateServer(AutoMarshallingModel):
+    """
+    @summary: Live Migration Request Object
+    """
+
+    def __init__(self, disk_over_commit=None,
+                 block_migration=None, host=None):
+        super(LiveMigrateServer, self).__init__()
+        self.disk_over_commit = disk_over_commit
+        self.block_migration = block_migration
+        self.host = host
+
+    def _obj_to_json(self):
+        body = {
+            'disk_over_commit': self.disk_over_commit,
+            'block_migration': self.block_migration,
+            'host': self.host
+        }
+        return json.dumps({'os-migrateLive': body})
+
+    def _obj_to_xml(self):
+        xml = Constants.XML_HEADER
+        element = ET.Element('os-migrateLive')
+        element.set('xmlns', Constants.XML_API_NAMESPACE)
+        element.set('disk_over_commit', self.disk_over_commit)
+        element.set('block_migration', self.block_migration)
+        element.set('host', self.host)
+        xml += ET.tostring(element)
+        return xml
+
+
 class ConfirmServerMigration(AutoMarshallingModel):
     """
     @summary: Confirm Server Migration Request Object
