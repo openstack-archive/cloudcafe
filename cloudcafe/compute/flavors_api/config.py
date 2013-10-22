@@ -30,3 +30,8 @@ class FlavorsConfig(ConfigSectionInterface):
     def secondary_flavor(self):
         """Alternate flavor to be used in compute test"""
         return self.get("secondary_flavor")
+
+    @property
+    def resize_enabled(self):
+        """Determines if resize is enabled for this flavor class"""
+        return self.get_boolean("resize_enabled")
