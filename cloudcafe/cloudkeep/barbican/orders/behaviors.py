@@ -135,7 +135,7 @@ class OrdersBehavior(object):
         if delete_secret:
             resp = self.orders_client.get_order(order_id)
             order = resp.entity
-            assert resp.status_code != 200, (
+            assert resp.status_code == 200, (
                 'Could not get order {id} to delete'.format(id=order_id))
 
             secret_id = order.get_secret_id()
