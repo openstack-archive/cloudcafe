@@ -51,3 +51,52 @@ class ConfigDriveConfig(ConfigSectionInterface):
         """Projected maximum size of config drive"""
         return int(self.get("max_size"))
 
+
+class CloudInitConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'cloud_init'
+
+    @property
+    def user_data_script(self):
+        """Path to the user data script"""
+        return self.get("user_data_script")
+    
+    @property
+    def include_script(self):
+        """Path to the include format data script"""
+        return self.get("include_script")
+    
+    @property
+    def boothook_script(self):
+        """Path to the boothook format data script"""
+        return self.get("boothook_script")
+    
+    @property
+    def part_handler_script(self):
+        """Path to the part handler format data script"""
+        return self.get("part_handler_script")
+    
+    @property
+    def mime_gzip_script(self):
+        """Path to the mime gzip format data script"""
+        return self.get("mime_gzip_script")
+    
+    @property
+    def upstart_script(self):
+        """Path to the upstart format data script"""
+        return self.get("upstart_script")
+    
+    @property
+    def cloud_init_directory(self):
+        """Main Cloud Init Dorectory"""
+        return self.get("cloud_init_directory")
+    
+    @property
+    def cloud_config_format_script(self):
+        """Path to the cloud config script"""
+        return self.get("cloud_config_format_script")
+    
+    @property
+    def user_data_created_directory(self):
+        """Directory that is created by the script"""
+        return self.get("user_data_created_directory")

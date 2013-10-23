@@ -72,3 +72,28 @@ class ConfigDriveBehaviors(BaseBehavior):
         remote_client.mount_disk(
             source_path=source_path,
             destination_path=destination_path)
+
+    def read_cloud_init_from_config_drive(self, file_path):
+        """
+        @summary:Returns the Cloud Init script as string
+        @return: string for user data processing
+        @rtype: String
+        """
+        with open(file_path, "r") as myfile:
+            data = myfile.read()
+        return data
+
+    def status_of_manage_etc_hosts(self, server, servers_config, key):
+        """
+        @summary:Returns the status of managed etc hosts
+        @return: Boolean status of managed etc hosts
+        @rtype: Boolean
+        """
+        remote_client = self.server_behaviors.get_remote_instance_client(
+            server, servers_config, key=key)
+        str = remote_client.get_file_details('/etc/hosts').content
+        if "'manage_etc_hosts' as True" in str:
+            dir_cloud_config_present = True
+        else:
+            dir_cloud_config_present = False
+        return dir_cloud_config_present
