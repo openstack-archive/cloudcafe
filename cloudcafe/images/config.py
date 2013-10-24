@@ -64,3 +64,11 @@ class ImagesConfig(ConfigSectionInterface):
     @property
     def test_container_format(self):
         return self.get('test_container_format')
+
+    @property
+    def image_schema_json(self):
+        return self.get('image_schema_json')
+
+    @property
+    def images_schema_json(self):
+        return self.get('images_schema_json')
