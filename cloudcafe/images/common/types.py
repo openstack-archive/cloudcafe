@@ -73,3 +73,9 @@ class ImageContainerFormat(object):
 class ImageVisibility(object):
     PUBLIC = 'public'
     PRIVATE = 'private'
+
+
+class ImageMemberStatus(object):
+    ACCEPTED = 'accepted'
+    PENDING = 'pending'
+    REJECTED = 'rejected'
