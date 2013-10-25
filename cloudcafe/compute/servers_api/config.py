@@ -49,6 +49,11 @@ class ServersConfig(ConfigSectionInterface):
         return self.get("disk_config_override")
 
     @property
+    def disk_format_type(self):
+        """Format type to be used when formatting an instance's disk"""
+        return self.get("disk_format_type")
+
+    @property
     def server_status_interval(self):
         """Amount of time to wait between polling the status of a server"""
         return int(self.get("server_status_interval"))
