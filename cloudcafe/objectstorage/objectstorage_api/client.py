@@ -15,11 +15,18 @@ limitations under the License.
 """
 import hmac
 import json
+import tarfile
 
+from cloudcafe.common.tools import randomstring as randstring
 from cafe.engine.config import EngineConfig
-from time import time
+from cStringIO import StringIO
+from time import time, mktime
 from hashlib import sha1
+from datetime import datetime
+from cloudcafe.common.tools.md5hash import get_md5_hash
 from cafe.engine.clients.rest import RestClient
+
+BULK_ARCHIVE_NAME = 'bulk_objects'
 
 
 class ObjectStorageAPIClient(RestClient):
@@ -257,3 +264,64 @@ class ObjectStorageAPIClient(RestClient):
         sig = hmac.new(key, hmac_body, sha1).hexdigest()
 
         return {'target_url': base_url, 'signature': sig, 'expires': expires}
+
+    def create_archive(self, object_names, compression_type,
+                       archive_name=BULK_ARCHIVE_NAME):
+        """
+        Bulk creates objects in the opencafe's temp directory specified in the
+        engine config. Each object's data will be the md5sum of the object's
+        name.
+
+        @type  object_names: strings
+        @param object_names: a list of object names
+
+        @type  object_names: string
+        @param object_names: file compression to apply to the archive
+
+        @rtype:  string
+        @return: Returns full path of the archive that was created in
+        opencafe's temp directory specified in the engine config
+        """
+        supported = [None, "gz", "bz2"]
+        if compression_type not in supported:
+            raise NameError("supported compression: {0}".format(supported))
+
+        ext = ''
+
+        if not compression_type:
+            ext = 'tar'
+            compression_type = ''
+        else:
+            ext = 'tar.{0}'.format(compression_type)
+
+        archive_name = '{0}.{1}.{2}'.format(
+            archive_name,
+            randstring.get_random_string(),
+            ext)
+
+        archive_dir = self.engine_config.temp_directory
+        archive_filename = '{0}/{1}'.format(archive_dir, archive_name)
+        archive = tarfile.open(
+            archive_filename,
+            'w:{0}'.format(compression_type))
+
+        for object_name in object_names:
+            object_data = get_md5_hash(object_name)
+            object_size = len(object_data)
+            object_time = int(mktime(datetime.now().timetuple()))
+
+            object_buffer = StringIO(object_data)
+            object_buffer.seek(0)
+
+            object_info = tarfile.TarInfo(name=object_name)
+            object_info.size = object_size
+            object_info.mtime = object_time
+
+            archive.addfile(tarinfo=object_info, fileobj=object_buffer)
+        archive.close()
+
+        archive_path = "{0}/{1}".format(
+            self.engine_config.temp_directory,
+            archive_name)
+
+        return archive_path
