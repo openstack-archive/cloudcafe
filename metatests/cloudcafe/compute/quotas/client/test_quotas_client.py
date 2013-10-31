@@ -30,14 +30,14 @@ class QuotasClientTest(ClientTestFixture):
         cls.quotas_client = QuotasClient(
             url=cls.COMPUTE_API_ENDPOINT,
             auth_token=cls.AUTH_TOKEN,
-            serialize_format=cls.FORMAT,
-            deserialize_format=cls.FORMAT)
+            serialize_format=cls.DESERIALIZER_FORMAT,
+            deserialize_format=cls.DESERIALIZER_FORMAT)
         cls.quotas_uri = ("{0}/os-quota-sets/{1}".
                           format(cls.COMPUTE_API_ENDPOINT, cls.TENANT_ID))
         cls.default_quotas_uri = ("{0}/os-quota-sets/{1}/defaults".
                                   format(cls.COMPUTE_API_ENDPOINT,
                                          cls.TENANT_ID))
-        cls.mock_response = QuotasMockResponse(cls.FORMAT)
+        cls.mock_response = QuotasMockResponse(cls.DESERIALIZER_FORMAT)
 
     def test_get_quota(self):
         HTTPretty.register_uri(HTTPretty.GET, self.quotas_uri,

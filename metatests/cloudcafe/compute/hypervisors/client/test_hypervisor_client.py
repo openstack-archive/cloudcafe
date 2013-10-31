@@ -32,8 +32,8 @@ class HypervisorsClientTest(ClientTestFixture):
         cls.hypervisor_client = HypervisorsClient(
             url=cls.COMPUTE_API_ENDPOINT,
             auth_token=cls.AUTH_TOKEN,
-            serialize_format=cls.FORMAT,
-            deserialize_format=cls.FORMAT)
+            serialize_format=cls.DESERIALIZER_FORMAT,
+            deserialize_format=cls.DESERIALIZER_FORMAT)
         cls.hypervisors_uri = "{0}/os-hypervisors".\
                               format(cls.COMPUTE_API_ENDPOINT)
         cls.hypervisor_servers_uri = "{0}/{1}/servers".\

@@ -32,11 +32,11 @@ class SecurityGroupRulesClientTest(ClientTestFixture):
         cls.security_groups_client = SecurityGroupRulesClient(
             url=cls.COMPUTE_API_ENDPOINT,
             auth_token=cls.AUTH_TOKEN,
-            serialize_format=cls.FORMAT,
-            deserialize_format=cls.FORMAT)
+            serialize_format=cls.DESERIALIZER_FORMAT,
+            deserialize_format=cls.DESERIALIZER_FORMAT)
         cls.security_group_rules_uri = "{0}/os-security-group-rules".\
             format(cls.COMPUTE_API_ENDPOINT)
-        cls.mock_response = SecurityGroupRulesMockResponse(cls.FORMAT)
+        cls.mock_response = SecurityGroupRulesMockResponse(cls.DESERIALIZER_FORMAT)
 
     def test_create_security_group_rule(self):
         HTTPretty.register_uri(HTTPretty.POST, self.security_group_rules_uri,

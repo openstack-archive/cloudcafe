@@ -33,12 +33,12 @@ class HostsClientTest(ClientTestFixture):
         cls.hosts_client = HostsClient(
             url=cls.COMPUTE_API_ENDPOINT,
             auth_token=cls.AUTH_TOKEN,
-            serialize_format=cls.FORMAT,
-            deserialize_format=cls.FORMAT
+            serialize_format=cls.DESERIALIZER_FORMAT,
+            deserialize_format=cls.DESERIALIZER_FORMAT
         )
         cls.hosts_uri = "{0}/os-hosts".format(cls.COMPUTE_API_ENDPOINT)
         cls.host_uri = "{0}/{1}".format(cls.hosts_uri, HOST_NAME)
-        cls.mock_response = HostsMockResponse(cls.FORMAT)
+        cls.mock_response = HostsMockResponse(cls.DESERIALIZER_FORMAT)
 
     def test_list_hosts(self):
         HTTPretty.register_uri(HTTPretty.GET, self.hosts_uri,

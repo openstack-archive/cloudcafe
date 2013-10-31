@@ -32,11 +32,11 @@ class VncConsoleClientTest(ClientTestFixture):
         cls.vnc_console_client = VncConsoleClient(
             url=cls.COMPUTE_API_ENDPOINT,
             auth_token=cls.AUTH_TOKEN,
-            serialize_format=cls.FORMAT,
-            deserialize_format=cls.FORMAT)
+            serialize_format=cls.DESERIALIZER_FORMAT,
+            deserialize_format=cls.DESERIALIZER_FORMAT)
         cls.console_uri = "{0}/servers/{1}/action".format(
             cls.COMPUTE_API_ENDPOINT, cls.SERVER_ID)
-        cls.mock_response = VncConsoleMockResponse(cls.FORMAT)
+        cls.mock_response = VncConsoleMockResponse(cls.DESERIALIZER_FORMAT)
 
     def test_get_console(self):
         HTTPretty.register_uri(HTTPretty.POST, self.console_uri,
