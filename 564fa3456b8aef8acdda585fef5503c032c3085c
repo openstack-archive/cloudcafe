@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: John Vrbanac <john.vrbanac@rackspace.com>
+Code-Review+2: John Vrbanac <john.vrbanac@rackspace.com>
+Code-Review+1: Nandhini Devi Kaliaperumal <nandhini.kaliaperumal@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 01 Nov 2013 21:29:27 +0000
+Reviewed-on: https://review.openstack.org/54968
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
