@@ -46,6 +46,18 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get('snapshot_timeout'))
 
     @property
+    def get_schema_count(self):
+        return int(self.get('get_schema_count'))
+
+    @property
+    def post_members_count(self):
+        return int(self.get('post_members_count'))
+
+    @property
+    def post_tasks_count(self):
+        return int(self.get('post_tasks_count'))
+
+    @property
     def remote_image(self):
         return self.get('remote_image')
 
