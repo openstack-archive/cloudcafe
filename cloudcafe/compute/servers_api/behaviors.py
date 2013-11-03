@@ -17,9 +17,8 @@ limitations under the License.
 import time
 
 from cafe.engine.behaviors import BaseBehavior
-from cloudcafe.compute.common.clients.remote_instance.linux.linux_client import LinuxClient
-from cafe.engine.clients.remote_instance.instance_client import \
-    InstanceClientFactory
+from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
+    import LinuxClient
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
