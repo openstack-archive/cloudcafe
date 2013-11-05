@@ -211,7 +211,7 @@ class Rebuild(AutoMarshallingModel):
     def __init__(self, name, image_ref, admin_pass=None,
                  disk_config=None, metadata=None, personality=None,
                  user_data=None, accessIPv4=None, accessIPv6=None,
-                 networks=None, key_name=None):
+                 networks=None, key_name=None, config_drive=None):
         super(Rebuild, self).__init__()
         self.name = name
         self.image_ref = image_ref
@@ -224,6 +224,7 @@ class Rebuild(AutoMarshallingModel):
         self.accessIPv6 = accessIPv6
         self.networks = networks
         self.key_name = key_name
+        self.config_drive = config_drive
 
     def _obj_to_json(self):
         body = {
@@ -237,7 +238,8 @@ class Rebuild(AutoMarshallingModel):
             'personality': self.personality,
             'user_data': self.user_data,
             'networks': self.networks,
-            'key_name': self.key_name
+            'key_name': self.key_name,
+            'config_drive': self.config_drive
         }
 
         body = self._remove_empty_values(body)
@@ -279,6 +281,8 @@ class Rebuild(AutoMarshallingModel):
             element.set('accessIPv6', self.accessIPv6)
         if self.key_name is not None:
             element.set('key_name', self.key_name)
+        if self.config_drive is not None:
+            element.set('config_drive', self.config_drive)
         xml += ET.tostring(element)
         return xml
 

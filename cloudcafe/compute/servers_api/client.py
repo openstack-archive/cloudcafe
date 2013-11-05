@@ -315,7 +315,7 @@ class ServersClient(AutoMarshallingRestClient):
                 admin_pass=None, disk_config=None, metadata=None,
                 personality=None, user_data=None,
                 accessIPv4=None, accessIPv6=None,
-                key_name=None, requestslib_kwargs=None):
+                key_name=None, config_drive=None, requestslib_kwargs=None):
         """
         @summary: Rebuilds the server
         @param server_id: The id of an existing server.
@@ -353,7 +353,8 @@ class ServersClient(AutoMarshallingRestClient):
                                          user_data=user_data,
                                          accessIPv4=accessIPv4,
                                          accessIPv6=accessIPv6,
-                                         key_name=key_name)
+                                         key_name=key_name,
+                                         config_drive=config_drive)
 
         resp = self.request('POST', url,
                             response_entity_type=Server,
