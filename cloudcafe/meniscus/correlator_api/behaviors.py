@@ -52,17 +52,12 @@ class PublishingBehaviors(object):
             native=native)
         return resp
 
-    def _create_term_name(self, tenant_id, object_path):
-        return 'tenant/{tenant_id}.{obj_path}'.format(tenant_id=tenant_id,
-                                                      obj_path=object_path)
-
     def get_messages_by_timestamp(self, timestamp, num_messages=10,
                                   tenant_id=None):
         if tenant_id is None:
             tenant_id = self.tenant_id
 
-        name = self._create_term_name(tenant_id=tenant_id, object_path='time')
-        resp = self.storage_client.find_term(name=name, value=timestamp,
+        resp = self.storage_client.find_term(name='time', value=timestamp,
                                              size=num_messages)
 
         # Copying all of the models into a fresh list

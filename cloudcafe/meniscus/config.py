@@ -42,7 +42,7 @@ class MeniscusConfig(ConfigSectionInterface):
 
     @property
     def db_host(self):
-        return self.get("db_host")
+        return json_to_dict(self.get("db_hosts"))
 
     @property
     def db_name(self):
@@ -63,10 +63,6 @@ class StorageConfig(ConfigSectionInterface):
     @property
     def address(self):
         return self.get('address')
-
-    @property
-    def index(self):
-        return self.get('index')
 
 
 class TenantConfig(ConfigSectionInterface):
@@ -171,6 +167,10 @@ class CorrelationConfig(ConfigSectionInterface):
     @property
     def correlator_base_url(self):
         return self.get('correlator_base_url')
+
+    @property
+    def syslog_endpoint(self):
+        return self.get('syslog_endpoint')
 
     @property
     def host(self):
