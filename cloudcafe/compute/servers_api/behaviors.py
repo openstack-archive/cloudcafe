@@ -25,7 +25,7 @@ from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
-    TimeoutException, BuildErrorException
+    TimeoutException, BuildErrorException, RequiredResourceException
 
 
 class ServerBehaviors(BaseBehavior):
@@ -33,16 +33,18 @@ class ServerBehaviors(BaseBehavior):
     def __init__(self, servers_client, servers_config,
                  images_config, flavors_config):
 
+        super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_config = images_config
         self.flavors_config = flavors_config
 
-    def create_active_server(self, name=None, image_ref=None, flavor_ref=None,
-                             personality=None, user_data=None,
-                             metadata=None, accessIPv4=None, accessIPv6=None,
-                             disk_config=None, networks=None, key_name=None,
-                             config_drive=None, scheduler_hints=None):
+    def create_active_server(
+            self, name=None, image_ref=None, flavor_ref=None,
+            personality=None, user_data=None, metadata=None,
+            accessIPv4=None, accessIPv6=None, disk_config=None,
+            networks=None, key_name=None, config_drive=None,
+            scheduler_hints=None, admin_pass=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -78,18 +80,38 @@ class ServerBehaviors(BaseBehavior):
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
 
-        resp = self.servers_client.create_server(
-            name, image_ref, flavor_ref, personality=personality,
-            config_drive=config_drive, metadata=metadata,
-            accessIPv4=accessIPv4, accessIPv6=accessIPv6,
-            disk_config=disk_config, networks=networks, key_name=key_name,
-            scheduler_hints=scheduler_hints, user_data=user_data)
-        server_obj = resp.entity
-        resp = self.wait_for_server_status(server_obj.id,
-                                           ServerStates.ACTIVE)
-        # Add the password from the create request into the final response
-        resp.entity.admin_pass = server_obj.admin_pass
-        return resp
+        failures = []
+        attempts = self.config.resource_build_attempts
+        for attempt in range(attempts):
+
+            self._log.debug('Attempt {attempt} of {attempts} '
+                            'to create server.'.format(attempt=attempt + 1,
+                                                       attempts=attempts))
+            resp = self.servers_client.create_server(
+                name, image_ref, flavor_ref, personality=personality,
+                config_drive=config_drive, metadata=metadata,
+                accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+                disk_config=disk_config, networks=networks, key_name=key_name,
+                scheduler_hints=scheduler_hints, user_data=user_data,
+                admin_pass=admin_pass)
+            server_obj = resp.entity
+
+            try:
+                resp = self.wait_for_server_status(
+                    server_obj.id, ServerStates.ACTIVE)
+                # Add the password from the create request
+                # into the final response
+                resp.entity.admin_pass = server_obj.admin_pass
+                return resp
+            except (TimeoutException, BuildErrorException) as ex:
+                self._log.error('Failed to build server {server_id}: '
+                                '{message}'.format(server_id=server_obj.id,
+                                                   message=ex.message))
+                failures.append(ex.message)
+        raise RequiredResourceException(
+            'Failed to successfully build a server after '
+            '{attempts} attempts: {failures}'.format(
+                attempts=attempts, failures=failures))
 
     def wait_for_server_status(self, server_id, desired_status,
                                interval_time=None, timeout=None):
@@ -114,6 +136,7 @@ class ServerBehaviors(BaseBehavior):
         timeout = timeout or self.config.server_build_timeout
         end_time = time.time() + timeout
 
+        time.sleep(interval_time)
         while time.time() < end_time:
             resp = self.servers_client.get_server(server_id)
             server = resp.entity
