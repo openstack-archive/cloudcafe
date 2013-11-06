@@ -19,6 +19,7 @@ from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.images.common.types import ImageContainerFormat, \
     ImageDiskFormat, ImageVisibility
+from cloudcafe.images.v2.client import ImageClient as ImagesV2Client
 
 
 class ImagesV2Behaviors(BaseBehavior):
@@ -64,3 +65,10 @@ class ImagesV2Behaviors(BaseBehavior):
         response = self.client.list_members(image_id)
 
         return [member.member_id for member in response.entity]
+
+    def get_new_images_v2_client(self, auth_data):
+        """Return new images v2 client for requested auth data """
+
+        return ImagesV2Client(self.client.base_url, auth_data.token.id_,
+                              self.client.serialize_format,
+                              self.client.deserialize_format)
