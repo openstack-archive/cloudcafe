@@ -24,7 +24,7 @@ from cafe.engine.clients.remote_instance.exceptions \
     import DirectoryNotFoundException
 from cafe.engine.clients.remote_instance.models.file_details \
     import FileDetails
-from cafe.engine.clients.ssh import SSHAuthStrategy, SSHBehaviors
+from cafe.engine.clients.ssh import SSHAuthStrategy, SSHClient
 from cloudcafe.compute.common.clients.ping import PingClient
 from cloudcafe.compute.common.clients.remote_instance.base_client import \
     RemoteInstanceClient
@@ -61,7 +61,7 @@ class LinuxClient(RemoteInstanceClient):
         else:
             auth_strategy = SSHAuthStrategy.PASSWORD
 
-        self.ssh_client = SSHBehaviors(
+        self.ssh_client = SSHClient(
             username=self.username, password=self.password,
             host=self.ip_address, tcp_timeout=20, auth_strategy=auth_strategy,
             look_for_keys=False, key=key)
