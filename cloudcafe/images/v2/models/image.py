@@ -164,6 +164,27 @@ class Image(AutoMarshallingModel):
                                   resources.")
 
 
+class Images(AutoMarshallingListModel):
+    """ An object that represents an images response object."""
+
+    def __init__(self, images=None):
+        super(Images, self).__init__()
+        self.extend(images or [])
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._list_to_obj(json_dict.get('images'))
+
+    @classmethod
+    def _list_to_obj(cls, dict_list):
+        images = Images()
+        for image_dict in dict_list:
+            images.append(Image._dict_to_obj(image_dict))
+
+        return images
+
+
 class ImagePatch(AutoMarshallingModel):
     """
         JSON model for updating an image.
@@ -212,10 +233,11 @@ class Member(AutoMarshallingModel):
         self.image_id = image_id
 
     def _obj_to_json(self):
-        json_dict = {"member": {"status": self.status,
-                                "created_at": self.created_at,
-                                "updated_at": self.updated_at,
-                                "image_id": self.image_id}}
+        json_dict = {"member": self.member_id,
+                     "status": self.status,
+                     "created_at": self.created_at,
+                     "updated_at": self.updated_at,
+                     "image_id": self.image_id}
 
         return json.dumps(json_dict)
 

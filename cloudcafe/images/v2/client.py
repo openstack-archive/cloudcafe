@@ -15,7 +15,8 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v2.models.image import Image, ImagePatch, Member, Members
+from cloudcafe.images.v2.models.image import Image, ImagePatch, Member, \
+    Members, Images
 
 
 class ImageClient(AutoMarshallingRestClient):
@@ -112,7 +113,7 @@ class ImageClient(AutoMarshallingRestClient):
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def add_member(self, image_id, member_id):
+    def add_member(self, image_id, member_id, requestslib_kwargs=None):
         url = '{base_url}/images/{image_id}/members'.format(
             base_url=self.base_url, image_id=image_id)
 
@@ -120,9 +121,11 @@ class ImageClient(AutoMarshallingRestClient):
 
         return self.request('POST', url,
                             request_entity=member,
-                            response_entity_type=Member)
+                            response_entity_type=Member,
+                            requestslib_kwargs=requestslib_kwargs)
 
-    def update_member(self, image_id, member_id, status):
+    def update_member(self, image_id, member_id, status,
+                      requestslib_kwargs=None):
         url = '{base_url}/images/{image_id}/members/{member_id}'.format(
             base_url=self.base_url, image_id=image_id, member_id=member_id)
 
@@ -130,7 +133,8 @@ class ImageClient(AutoMarshallingRestClient):
 
         return self.request('PUT', url,
                             request_entity=member,
-                            response_entity_type=Member)
+                            response_entity_type=Member,
+                            requestslib_kwargs=requestslib_kwargs)
 
     def delete_member(self, image_id, member_id):
         url = '{base_url}/images/{image_id}/members/{member_id}'.format(
@@ -197,7 +201,7 @@ class ImageClient(AutoMarshallingRestClient):
 
         params.update(param_kwargs)
         return self.request('GET', url, params=params,
-                            response_entity_type=Image,
+                            response_entity_type=Images,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_image(self, image_id, requestslib_kwargs=None):
