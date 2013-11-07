@@ -19,10 +19,11 @@ from cloudcafe.meniscus.common.tools import RequestUtilities
 
 class TenantBehaviors(object):
 
-    def __init__(self, tenant_client, db_client, tenant_config):
+    def __init__(self, tenant_client, db_client, tenant_config, es_client):
         self.tenant_client = tenant_client
         self.db_client = db_client
         self.tenant_config = tenant_config
+        self.es_client = es_client
         self.tenant_ids = []
 
     def remove_created_tenants(self):
@@ -30,6 +31,8 @@ class TenantBehaviors(object):
         self.db_client.auth()
         for tenant_id in self.tenant_ids:
             self.db_client.remove_tenant(tenant_id)
+            self.es_client.wait_for_index(tenant_id)
+            self.es_client.delete_index(tenant_id)
         self.db_client.disconnect()
         self.tenant_ids = []
 
@@ -56,10 +59,11 @@ class TenantBehaviors(object):
 class ProducerBehaviors(TenantBehaviors):
 
     def __init__(self, tenant_client, producer_client, db_client,
-                 tenant_config):
+                 tenant_config, es_client):
         super(ProducerBehaviors, self).__init__(tenant_client=tenant_client,
                                                 db_client=db_client,
-                                                tenant_config=tenant_config)
+                                                tenant_config=tenant_config,
+                                                es_client=es_client)
         self.producer_client = producer_client
         self.producers_created = []
 
