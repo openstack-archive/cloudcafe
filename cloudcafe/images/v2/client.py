@@ -15,25 +15,29 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v2.models.image import Image, ImagePatch, Member, \
-    Members, Images
+from cloudcafe.images.v2.models.image import \
+    Image, Images, ImagePatch, Member, Members
 
 
-class ImageClient(AutoMarshallingRestClient):
-    """
-        Client for Openstack Image API V2.0
-    """
+class ImagesClient(AutoMarshallingRestClient):
+    """@summary: Client for Images v2"""
 
-    def __init__(self, base_url, auth_token, serialize_format='json',
-                 deserialize_format='json'):
-        """@Summary construct an Image API client
-        """
-        super(ImageClient, self).__init__(serialize_format,
-                                          deserialize_format)
-        self.base_url = base_url
+    def __init__(self, base_url, auth_token, serialize_format,
+                 deserialize_format):
+        """@summary: Constructs the images api client"""
+
+        super(ImagesClient, self).__init__(serialize_format,
+                                           deserialize_format)
+
+        self.auth_token = auth_token
         self.serialize_format = serialize_format
         self.deserialize_format = deserialize_format
         self.default_headers['X-Auth-Token'] = auth_token
+        ct = ''.join(['application/', self.serialize_format])
+        accept = ''.join(['application/', self.deserialize_format])
+        self.default_headers['Content-Type'] = ct
+        self.default_headers['Accept'] = accept
+        self.base_url = base_url
 
     def get_images_schema(self, requestslib_kwargs=None):
         """
