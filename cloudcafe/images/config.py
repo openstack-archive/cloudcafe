@@ -14,17 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.common.models.configuration import ConfigSectionInterface
 from cloudcafe.auth.config import UserConfig as BaseUserConfig
+from cloudcafe.common.models.configuration import ConfigSectionInterface
+
+
+class MarshallingConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'marshalling'
+
+    @property
+    def serializer(self):
+        return self.get("serialize_format")
+
+    @property
+    def deserializer(self):
+        return self.get("deserialize_format")
 
 
 class AdminUserConfig(BaseUserConfig):
-    """User that's an admin"""
+
     SECTION_NAME = 'images_admin_user'
 
 
 class SecondaryUserConfig(BaseUserConfig):
-    """User that's an admin"""
+
     SECTION_NAME = 'images_secondary_user'
 
 
@@ -33,9 +46,16 @@ class ImagesConfig(ConfigSectionInterface):
     SECTION_NAME = 'images'
 
     @property
-    def base_url(self):
-        """Base URL where Images API is reached"""
-        return self.get('base_url')
+    def override_url(self):
+        return self.get('override_url')
+
+    @property
+    def endpoint_name(self):
+        return self.get('endpoint_name')
+
+    @property
+    def region(self):
+        return self.get('region')
 
     @property
     def image_status_interval(self):
