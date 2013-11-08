@@ -14,17 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.common.models.configuration import ConfigSectionInterface
 from cloudcafe.auth.config import UserConfig as BaseUserConfig
+from cloudcafe.common.models.configuration import ConfigSectionInterface
+
+
+class MarshallingConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'marshalling'
+
+    @property
+    def serializer(self):
+        return self.get("serialize_format")
+
+    @property
+    def deserializer(self):
+        return self.get("deserialize_format")
 
 
 class AdminUserConfig(BaseUserConfig):
-    """User that's an admin"""
+
     SECTION_NAME = 'images_admin_user'
 
 
 class SecondaryUserConfig(BaseUserConfig):
-    """User that's an admin"""
+
     SECTION_NAME = 'images_secondary_user'
 
 
@@ -34,8 +47,16 @@ class ImagesConfig(ConfigSectionInterface):
 
     @property
     def base_url(self):
-        """Base URL where Images API is reached"""
+        """@summary: Used to bypass Repose or for a devstack environment"""
         return self.get('base_url')
+
+    @property
+    def endpoint_name(self):
+        return self.get('endpoint_name')
+
+    @property
+    def region(self):
+        return self.get('region')
 
     @property
     def image_status_interval(self):
@@ -44,6 +65,18 @@ class ImagesConfig(ConfigSectionInterface):
     @property
     def snapshot_timeout(self):
         return int(self.get('snapshot_timeout'))
+
+    @property
+    def get_schema_count(self):
+        return int(self.get('get_schema_count'))
+
+    @property
+    def post_members_count(self):
+        return int(self.get('post_members_count'))
+
+    @property
+    def post_tasks_count(self):
+        return int(self.get('post_tasks_count'))
 
     @property
     def remote_image(self):
