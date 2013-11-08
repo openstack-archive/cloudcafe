@@ -25,6 +25,49 @@ from hashlib import sha1
 from datetime import datetime
 from cloudcafe.common.tools.md5hash import get_md5_hash
 from cafe.engine.clients.rest import RestClient
+from cloudcafe.objectstorage.objectstorage_api.models.responses \
+    import AccountContainersList, ContainerObjectsList
+
+
+def _deserialize(response_entity_type):
+    """
+    Auto-deserializes the response from any decorated client method call
+    that has either a 'format' key in it's 'params' dictionary argument or an
+    'accept' in it's 'headers' dictionary argument, where
+    'format' value is either 'json' or 'xml'.
+
+    Deserializes the response into response_entity_type domain object
+
+    response_entity_type must be a Domain Object with a <format>_to_obj()
+    classmethod defined for every supported format or this won't work.
+    """
+
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            response = f(*args, **kwargs)
+            response.request.__dict__['entity'] = None
+            response.__dict__['entity'] = None
+            deserialize_format = None
+            if isinstance(kwargs, dict):
+                if isinstance(kwargs.get('params'), dict):
+                    lower_params = \
+                        dict((key.lower(), value.lower()) for key, value in
+                             kwargs['params'].iteritems())
+                    deserialize_format = lower_params.get('format')
+                elif isinstance(kwargs.get('headers'), dict):
+                    lower_headers = \
+                        dict((key.lower(), value.lower()) for key, value in
+                             kwargs['headers'].iteritems())
+                    deserialize_format = \
+                        lower_headers.get('accept').split('/')[1]
+
+            if deserialize_format:
+                response.__dict__['entity'] = \
+                    response_entity_type.deserialize(
+                        response.content, deserialize_format)
+            return response
+        return wrapper
+    return decorator
 
 BULK_ARCHIVE_NAME = 'bulk_objects'
 
@@ -48,7 +91,9 @@ class ObjectStorageAPIClient(RestClient):
 
         return response
 
-    def list_containers(self, headers={}, params={}):
+    @_deserialize(AccountContainersList)
+    def list_containers(self, headers=None, params=None,
+                        requestslib_kwargs=None):
         """
         Lists all containers for the account.
 
@@ -57,51 +102,77 @@ class ObjectStorageAPIClient(RestClient):
         that format (either xml or json) will be appended to the response
         as the 'entity' attribute. (ie, response.entity)
         """
-        response = self.get(self.storage_url, headers=headers, params=params)
+        response = self.get(
+            self.storage_url,
+            headers=headers,
+            params=params,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
     #Container-----------------------------------------------------------------
 
-    def get_container_metadata(self, container_name, headers={}):
+    def get_container_metadata(self, container_name, headers=None,
+                               requestslib_kwargs=None):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.head(url, headers=headers)
+        response = self.head(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def create_container(self, container_name, headers={}):
+    def create_container(self, container_name, headers=None,
+                         requestslib_kwargs=None):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.put(url, headers=headers)
+        response = self.put(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def delete_container(self, container_name, headers={}):
+    def delete_container(self, container_name, headers=None,
+                         requestslib_kwargs=None):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.delete(url, headers=headers)
+        response = self.delete(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def set_container_metadata(self, container_name, headers={}):
+    def set_container_metadata(self, container_name, headers=None,
+                               requestslib_kwargs=None):
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.post(url, headers=headers)
+        response = self.post(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def get_container_options(self, container_name, headers={}):
+    def get_container_options(self, container_name, headers=None,
+                              requestslib_kwargs=None):
         """
         returns response from CORS option call
         """
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.options(url, headers=headers)
+        response = self.options(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def list_objects(self, container_name, headers={}, params={}):
+    @_deserialize(ContainerObjectsList)
+    def list_objects(self, container_name, headers=None, params=None,
+                     requestslib_kwargs=None):
         """
         Lists all objects in the specified container.
 
@@ -112,23 +183,35 @@ class ObjectStorageAPIClient(RestClient):
         """
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
-        response = self.get(url, headers=headers, params=params)
+        response = self.get(
+            url,
+            headers=headers,
+            params=params,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def get_object_count(self, container_name):
+    def get_object_count(self, container_name,
+                         requestslib_kwargs=None):
         """
         Returns the number of objects in a container.
         """
-        response = self.get_container_metadata(container_name)
+        response = self.get_container_metadata(
+            container_name,
+            requestslib_kwargs=requestslib_kwargs)
 
         obj_count = int(response.headers.get('x-container-object-count'))
 
         return obj_count
 
-    def _purge_container(self, container_name):
+    def _purge_container(self, container_name,
+                         requestslib_kwargs=None):
         params = {'format': 'json'}
-        response = self.list_objects(container_name, params=params)
+        response = self.list_objects(
+            container_name,
+            params=params,
+            requestslib_kwargs=requestslib_kwargs)
+
         try:
             json_data = json.loads(response.content)
             for entry in json_data:
@@ -138,14 +221,18 @@ class ObjectStorageAPIClient(RestClient):
 
         return self.delete_container(container_name)
 
-    def force_delete_containers(self, container_list):
+    def force_delete_containers(self, container_list,
+                                requestslib_kwargs=None):
         for container_name in container_list:
-            return self._purge_container(container_name)
+            return self._purge_container(
+                container_name,
+                requestslib_kwargs=requestslib_kwargs)
 
     #Storage Object------------------------------------------------------------
 
-    def get_object(self, container_name, object_name, headers={}, params={},
-                   stream=False):
+    def get_object(self, container_name, object_name, headers=None,
+                   params=None, stream=False,
+                   requestslib_kwargs=None):
         """
         optional headers
 
@@ -182,8 +269,9 @@ class ObjectStorageAPIClient(RestClient):
 
         return response
 
-    def create_object(self, container_name, object_name, data=None, headers={},
-                      params={}):
+    def create_object(self, container_name, object_name, data=None,
+                      headers=None, params=None,
+                      requestslib_kwargs=None):
         """
         Creates a storage object in a container via PUT
         Optionally adds 'X-Object-Metadata-' prefix to any key in the
@@ -195,11 +283,17 @@ class ObjectStorageAPIClient(RestClient):
             container_name,
             object_name)
 
-        response = self.put(url, data=data, headers=headers, params=params)
+        response = self.put(
+            url,
+            data=data,
+            headers=headers,
+            params=params,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def copy_object(self, container_name, object_name, headers={}):
+    def copy_object(self, container_name, object_name, headers=None,
+                    requestslib_kwargs=None):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
@@ -214,42 +308,62 @@ class ObjectStorageAPIClient(RestClient):
         else:
             return None
 
-        response = self.request(method=method, url=url, headers=headers)
+        response = self.request(
+            method=method,
+            url=url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def delete_object(self, container_name, object_name, headers={}):
+    def delete_object(self, container_name, object_name, headers=None,
+                      requestslib_kwargs=None):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
 
-        response = self.delete(url, headers=headers)
+        response = self.delete(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def get_object_metadata(self, container_name, object_name, headers={}):
+    def get_object_metadata(self, container_name, object_name, headers=None,
+                            requestslib_kwargs=None):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
 
-        response = self.head(url, headers=headers)
+        response = self.head(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def set_object_metadata(self, container_name, object_name, headers={}):
+    def set_object_metadata(self, container_name, object_name, headers=None,
+                            requestslib_kwargs=None):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
 
-        response = self.post(url, headers=headers)
+        response = self.post(
+            url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
-    def set_temp_url_key(self, headers={}):
-        response = self.post(self.storage_url, headers=headers)
+    def set_temp_url_key(self, headers=None,
+                         requestslib_kwargs=None):
+        response = self.post(
+            self.storage_url,
+            headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
 
         return response
 
