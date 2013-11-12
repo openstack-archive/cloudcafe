@@ -36,6 +36,8 @@ class ExceptionHandler:
         resp_body_dict = None
         if resp.text != "":
             resp_body_dict, type = self._parse_resp_body(resp.text)
+        else:
+            type = None
 
         if resp.status_code == 400 and type == 'html':
             raise exceptions.BadRequest(
