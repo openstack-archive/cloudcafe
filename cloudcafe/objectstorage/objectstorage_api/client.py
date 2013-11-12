@@ -17,6 +17,7 @@ import hmac
 import json
 import tarfile
 
+from os.path import expanduser
 from cloudcafe.common.tools import randomstring as randstring
 from cafe.engine.config import EngineConfig
 from cStringIO import StringIO
@@ -78,6 +79,7 @@ class ObjectStorageAPIClient(RestClient):
                  base_object_name=None):
         super(ObjectStorageAPIClient, self).__init__()
         self.engine_config = EngineConfig()
+        self.temp_dir = expanduser(self.engine_config.temp_directory)
         self.storage_url = storage_url
         self.auth_token = auth_token
         self.base_container_name = base_container_name or ''
@@ -413,8 +415,7 @@ class ObjectStorageAPIClient(RestClient):
             randstring.get_random_string(),
             ext)
 
-        archive_dir = self.engine_config.temp_directory
-        archive_filename = '{0}/{1}'.format(archive_dir, archive_name)
+        archive_filename = '{0}/{1}'.format(self.temp_dir, archive_name)
         archive = tarfile.open(
             archive_filename,
             'w:{0}'.format(compression_type))
@@ -435,7 +436,7 @@ class ObjectStorageAPIClient(RestClient):
         archive.close()
 
         archive_path = "{0}/{1}".format(
-            self.engine_config.temp_directory,
+            self.temp_dir,
             archive_name)
 
         return archive_path
