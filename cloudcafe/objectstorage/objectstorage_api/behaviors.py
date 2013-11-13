@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from copy import deepcopy
+import uuid
 
 from cafe.engine.behaviors import BaseBehavior, behavior
-from cloudcafe.common.tools import randomstring
 from cloudcafe.objectstorage.objectstorage_api.config \
     import ObjectStorageAPIConfig
 from cloudcafe.objectstorage.objectstorage_api.client \
@@ -52,9 +52,11 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         if identifier:
             identifier = '{0}_'.format(identifier)
 
+        randomstring = str(uuid.uuid4()).replace('-', '')
+
         container_name = '{0}({1}{2})'.format(
             self.config.base_container_name, identifier,
-            randomstring.get_random_string())
+            randomstring)
 
         return container_name
 
