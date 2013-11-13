@@ -17,14 +17,12 @@ limitations under the License.
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
-from cloudcafe.images.common.types import ImageContainerFormat, \
-    ImageDiskFormat, ImageVisibility
+from cloudcafe.images.common.types import \
+    ImageContainerFormat, ImageDiskFormat, ImageVisibility
 
 
 class ImagesV2Behaviors(BaseBehavior):
-    """
-    @summary: Base Behaviors class for Images V2 API tests
-    """
+    """@summary: Behaviors class for images v2"""
 
     def __init__(self, images_client, images_config):
         super(ImagesV2Behaviors, self).__init__()
@@ -33,34 +31,38 @@ class ImagesV2Behaviors(BaseBehavior):
         self.resources = ResourcePool()
 
     def register_basic_image(self):
-        """Register a basic image and return its id."""
+        """
+        @summary: Register a basic image, add it for deletion and return the
+        image id
+        """
+
         response = self.client.create_image(
-            name=rand_name('basic_image_'),
             container_format=ImageContainerFormat.BARE,
-            disk_format=ImageDiskFormat.RAW)
-
+            disk_format=ImageDiskFormat.RAW, name=rand_name('image'),
+            visibility=ImageVisibility.PUBLIC)
         image = response.entity
-
-        self.resources.add(self.client.delete_image, image.id_)
-
-        return image.id_
+        self.resources.add(self.client.delete_image, image.id)
+        return image.id
 
     def register_private_image(self):
-        """Register a private image and return its id."""
+        """
+        @summary: Register a private image, add it for deletion and return the
+        image id
+        """
+
         response = self.client.create_image(
-            name=rand_name('private_image_'),
-            visibility=ImageVisibility.PRIVATE,
             container_format=ImageContainerFormat.BARE,
-            disk_format=ImageDiskFormat.RAW)
-
+            disk_format=ImageDiskFormat.RAW, name=rand_name('image'),
+            visibility=ImageVisibility.PRIVATE)
         image = response.entity
-
-        self.resources.add(self.client.delete_image, image.id_)
-
-        return image.id_
+        self.resources.add(self.client.delete_image, image.id)
+        return image.id
 
     def get_member_ids(self, image_id):
-        """Return the list of ids for all available members for an image."""
-        response = self.client.list_members(image_id)
+        """
+        @summary: Return a complete list of ids for all members for a given
+        image id
+        """
 
+        response = self.client.list_members(image_id)
         return [member.member_id for member in response.entity]
