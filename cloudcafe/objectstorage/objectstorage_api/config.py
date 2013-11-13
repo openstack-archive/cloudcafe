@@ -23,14 +23,11 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
 
     ALL_FEATURES = '__ALL__'
     NO_FEATURES = '__NONE__'
+    ASK_SWIFT_FOR_FEATURES = '__ASK__'
 
     @property
     def enabled_features(self):
         return self.get('enabled_features', self.ALL_FEATURES)
-
-    @property
-    def proxy_pipeline(self):
-        return self.get('proxy_pipeline', self.ALL_FEATURES)
 
     @property
     def default_content_length(self):
