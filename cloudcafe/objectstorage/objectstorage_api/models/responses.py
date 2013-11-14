@@ -34,6 +34,15 @@ class Container(object):
         self.bytes_ = bytes_
 
 
+class ArchiveObject(object):
+    def __init__(self, num_files_created=None, errors=None, body=None,
+                 status=None):
+        self.num_files_created = num_files_created
+        self.errors = errors
+        self.body = body
+        self.status = status
+
+
 class AccountContainersList(AutoMarshallingListModel):
 
     @classmethod
@@ -52,6 +61,7 @@ class AccountContainersList(AutoMarshallingListModel):
         data = json.loads(serialized_str)
         return cls._list_to_obj(data)
 
+    @classmethod
     def _list_to_obj(cls, data):
         account_containers_list = AccountContainersList()
         for obj in data:
@@ -81,6 +91,7 @@ class ContainerObjectsList(AutoMarshallingListModel):
         data = json.loads(serialized_str)
         return cls._list_to_obj(data)
 
+    @classmethod
     def _list_to_obj(cls, data):
         container_objects_list = ContainerObjectsList()
         for obj in data:
@@ -92,3 +103,31 @@ class ContainerObjectsList(AutoMarshallingListModel):
                 content_type=obj.get('content_type'))
             container_objects_list.append(storage_object)
         return container_objects_list
+
+
+class CreateArchiveObject(AutoMarshallingListModel):
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        root = ElementTree.fromstring(serialized_str)
+        data = []
+        for child in root:
+            archive_object_dict = {}
+            for sub_child in child:
+                archive_object_dict[sub_child.tag] = sub_child.text
+            data.append(archive_object_dict)
+        return cls._list_to_obj(data)
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        data = json.loads(serialized_str)
+        return cls._list_to_obj(data)
+
+    @classmethod
+    def _list_to_obj(cls, data):
+        archive_obj = ArchiveObject(
+            num_files_created=data.get("Number Files Created"),
+            errors=data.get("Errors"),
+            body=data.get("Response Body"),
+            status=data.get("Response Status"))
+        return archive_obj

@@ -27,7 +27,7 @@ from datetime import datetime
 from cloudcafe.common.tools.md5hash import get_md5_hash
 from cafe.engine.clients.rest import RestClient
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
-    import AccountContainersList, ContainerObjectsList
+    import AccountContainersList, ContainerObjectsList, CreateArchiveObject
 
 
 def _deserialize(response_entity_type):
@@ -49,23 +49,29 @@ def _deserialize(response_entity_type):
             response.request.__dict__['entity'] = None
             response.__dict__['entity'] = None
             deserialize_format = None
-            if isinstance(kwargs, dict):
-                if isinstance(kwargs.get('params'), dict):
-                    lower_params = \
-                        dict((key.lower(), value.lower()) for key, value in
-                             kwargs['params'].iteritems())
-                    deserialize_format = lower_params.get('format')
-                elif isinstance(kwargs.get('headers'), dict):
-                    lower_headers = \
-                        dict((key.lower(), value.lower()) for key, value in
-                             kwargs['headers'].iteritems())
-                    deserialize_format = \
-                        lower_headers.get('accept').split('/')[1]
+
+            params = kwargs.get('params')
+            headers = kwargs.get('headers')
+
+            if (params and headers) or headers:
+                lower_headers = \
+                    dict((key.lower(), value.lower()) for key, value in
+                         headers.iteritems())
+                deserialize_format = \
+                    lower_headers.get('accept').split('/')[1]
+            elif params:
+                lower_params = \
+                    dict((key.lower(), value.lower()) for key, value in
+                         params.iteritems())
+                deserialize_format = lower_params.get('format')
+            else:
+                pass
 
             if deserialize_format:
                 response.__dict__['entity'] = \
                     response_entity_type.deserialize(
-                        response.content, deserialize_format)
+                        response.content,
+                        deserialize_format)
             return response
         return wrapper
     return decorator
@@ -276,14 +282,55 @@ class ObjectStorageAPIClient(RestClient):
                       requestslib_kwargs=None):
         """
         Creates a storage object in a container via PUT
-        Optionally adds 'X-Object-Metadata-' prefix to any key in the
-        metadata dictionary, and then adds that metadata to the headers
-        dictionary.
         """
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
             container_name,
             object_name)
+
+        response = self.put(
+            url,
+            data=data,
+            headers=headers,
+            params=params,
+            requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
+    @_deserialize(CreateArchiveObject)
+    def create_archive_object(self, data, extract_archive_param,
+                              upload_path='', headers=None,
+                              requestslib_kwargs=None):
+        """
+        Extracts an archive to object(s) via PUT to the storage url
+        extract-archive param formats: tar, tar.gz, tar.bz2
+        upload_path notes:
+        given an archive:
+
+        archive
+          file1/name1
+          file2/name2
+          file3
+          file4
+
+        if no upload path is given then the filenames in the archive
+        will be extracted to container file1 with obj name1,
+        container file2 with obj name2, etc. and obj names without
+        slashes will be ignored.
+
+        if the upload path is 'container_foo' all the objects will be
+        extracted to 'container_foo' with obj names file1/name1,
+        file2/name2, file3...
+
+        if the upload path is container_foo/bar then the objects will
+        be extracted to container_foo with the obj name prefix of 'bar'
+        ie bar/file1/name1, bar/file2/name2, bar/file3...
+        """
+        url = '{0}/{1}'.format(
+            self.storage_url,
+            upload_path)
+
+        params = {"extract-archive": extract_archive_param}
 
         response = self.put(
             url,
@@ -410,7 +457,7 @@ class ObjectStorageAPIClient(RestClient):
         else:
             ext = 'tar.{0}'.format(compression_type)
 
-        archive_name = '{0}.{1}.{2}'.format(
+        archive_name = '{0}_{1}.{2}'.format(
             archive_name,
             randstring.get_random_string(),
             ext)
