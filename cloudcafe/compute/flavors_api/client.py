@@ -21,6 +21,8 @@ from cloudcafe.compute.flavors_api.models.flavor import \
     Flavor, CreateFlavor, Flavors, FlavorMins
 from cloudcafe.compute.flavors_api.models.flavor_extra_specs import \
     FlavorExtraSpecs
+from cloudcafe.compute.flavors_api.models.flavor_access import (
+    AddTenantFlavorAccess, FlavorAccessList, RemoveTenantFlavorAccess)
 
 
 class FlavorsClient(AutoMarshallingRestClient):
@@ -151,3 +153,30 @@ class FlavorsClient(AutoMarshallingRestClient):
                                     response_entity_type=FlavorExtraSpecs,
                                     requestslib_kwargs=requestslib_kwargs)
             return response
+
+    def list_flavor_access(self, flavor_id, requestslib_kwargs=None):
+        url = '{base_url}/flavors/{flavor_id}/os-flavor-access'.format(
+            base_url=self.url, flavor_id=flavor_id)
+        response = self.request(
+            'GET', url, response_entity_type=FlavorAccessList,
+            requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def add_tenant_access(self, tenant, flavor_id, requestslib_kwargs=None):
+        request = AddTenantFlavorAccess(tenant=tenant)
+        url = '{base_url}/flavors/{flavor_id}/action'.format(
+            base_url=self.url, flavor_id=flavor_id)
+        response = self.request(
+            'POST', url, response_entity_type=FlavorAccessList,
+            request_entity=request, requestslib_kwargs=requestslib_kwargs)
+        return response
+
+    def remove_tenant_access(self, tenant, flavor_id,
+                             requestslib_kwargs=None):
+        request = RemoveTenantFlavorAccess(tenant=tenant)
+        url = '{base_url}/flavors/{flavor_id}/action'.format(
+            base_url=self.url, flavor_id=flavor_id)
+        response = self.request(
+            'DELETE', url, response_entity_type=FlavorAccessList,
+            request_entity=request, requestslib_kwargs=requestslib_kwargs)
+        return response
