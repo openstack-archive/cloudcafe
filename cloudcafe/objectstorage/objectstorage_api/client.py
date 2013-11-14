@@ -27,7 +27,7 @@ from datetime import datetime
 from cloudcafe.common.tools.md5hash import get_md5_hash
 from cafe.engine.clients.rest import RestClient
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
-    import AccountContainersList, ContainerObjectsList
+    import AccountContainersList, ContainerObjectsList, CreateArchiveObject
 
 
 def _deserialize(response_entity_type):
@@ -49,23 +49,29 @@ def _deserialize(response_entity_type):
             response.request.__dict__['entity'] = None
             response.__dict__['entity'] = None
             deserialize_format = None
-            if isinstance(kwargs, dict):
-                if isinstance(kwargs.get('params'), dict):
-                    lower_params = \
-                        dict((key.lower(), value.lower()) for key, value in
-                             kwargs['params'].iteritems())
-                    deserialize_format = lower_params.get('format')
-                elif isinstance(kwargs.get('headers'), dict):
-                    lower_headers = \
-                        dict((key.lower(), value.lower()) for key, value in
-                             kwargs['headers'].iteritems())
-                    deserialize_format = \
-                        lower_headers.get('accept').split('/')[1]
+
+            params = kwargs.get('params')
+            headers = kwargs.get('headers')
+
+            if (params and headers) or headers:
+                lower_headers = \
+                    dict((key.lower(), value.lower()) for key, value in
+                         headers.iteritems())
+                deserialize_format = \
+                    lower_headers.get('accept').split('/')[1]
+            elif params:
+                lower_params = \
+                    dict((key.lower(), value.lower()) for key, value in
+                         params.iteritems())
+                deserialize_format = lower_params.get('format')
+            else:
+                pass
 
             if deserialize_format:
                 response.__dict__['entity'] = \
                     response_entity_type.deserialize(
-                        response.content, deserialize_format)
+                        response.content,
+                        deserialize_format)
             return response
         return wrapper
     return decorator
@@ -294,6 +300,30 @@ class ObjectStorageAPIClient(RestClient):
 
         return response
 
+    @_deserialize(CreateArchiveObject)
+    def create_archive_object(self, data, container_name='',
+                              object_name='', headers=None, params=None,
+                              requestslib_kwargs=None):
+        """
+        Creates a storage object in a container via PUT
+        Optionally adds 'X-Object-Metadata-' prefix to any key in the
+        metadata dictionary, and then adds that metadata to the headers
+        dictionary.
+        """
+        url = '{0}/{1}/{2}'.format(
+            self.storage_url,
+            container_name,
+            object_name)
+
+        response = self.put(
+            url,
+            data=data,
+            headers=headers,
+            params=params,
+            requestslib_kwargs=requestslib_kwargs)
+
+        return response
+
     def copy_object(self, container_name, object_name, headers=None,
                     requestslib_kwargs=None):
         url = '{0}/{1}/{2}'.format(
@@ -410,7 +440,7 @@ class ObjectStorageAPIClient(RestClient):
         else:
             ext = 'tar.{0}'.format(compression_type)
 
-        archive_name = '{0}.{1}.{2}'.format(
+        archive_name = '{0}_{1}.{2}'.format(
             archive_name,
             randstring.get_random_string(),
             ext)
