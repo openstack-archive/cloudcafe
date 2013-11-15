@@ -15,6 +15,7 @@ limitations under the License.
 """
 from copy import deepcopy
 import uuid
+import json
 
 from cafe.engine.behaviors import BaseBehavior, behavior
 from cloudcafe.objectstorage.objectstorage_api.config \
@@ -59,6 +60,25 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             randomstring)
 
         return container_name
+
+    @behavior(ObjectStorageAPIClient)
+    def get_swift_info(self):
+        """
+        Returns a dictionary of info requested from swift.
+        """
+        response = self.client.get_swift_info()
+        if not response.ok:
+            raise Exception('Could not load info from swift.')
+
+        return json.loads(response.content)
+
+    def get_swift_features(self):
+        """
+        Returns a string represnting the enabled features seperated by commas.
+        """
+        info = self.get_swift_info()
+        features = ' '.join([k for k in info.viewkeys()])
+        return features
 
     @behavior(ObjectStorageAPIClient)
     def container_exists(self, name=None):
