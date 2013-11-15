@@ -68,7 +68,7 @@ class AccountContainersList(AutoMarshallingListModel):
             container = Container(
                 name=obj.get('name'),
                 bytes_=obj.get('bytes'),
-                content_type=obj.get('count'))
+                count=obj.get('count'))
             account_containers_list.append(container)
         return account_containers_list
 
