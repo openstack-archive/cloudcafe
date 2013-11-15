@@ -82,11 +82,20 @@ class ObjectStorageAPIClient(RestClient):
         super(ObjectStorageAPIClient, self).__init__()
         self.engine_config = EngineConfig()
         self.temp_dir = expanduser(self.engine_config.temp_directory)
+        self.swift_endpoint = storage_url.split('/v1/')[0]
         self.storage_url = storage_url
         self.auth_token = auth_token
         self.base_container_name = base_container_name or ''
         self.base_object_name = base_object_name or ''
         self.default_headers['X-Auth-Token'] = self.auth_token
+        self._swift_features = None
+
+    def get_swift_info(self):
+        """
+        Returns a dictionary of info requested from swift.
+        """
+        info_url = '{0}/info'.format(self.swift_endpoint)
+        return self.get(info_url)
 
     #Account-------------------------------------------------------------------
 
