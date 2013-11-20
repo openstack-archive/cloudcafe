@@ -18,3 +18,8 @@ limitations under the License.
 class HTTPResponseCodes(object):
     OK = 200
     FORBIDDEN = 403
+
+
+class ImageProperties(object):
+    ID_RE = ('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
+             '[0-9a-fA-F]{12}$')
