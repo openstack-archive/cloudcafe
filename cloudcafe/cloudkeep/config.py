@@ -105,26 +105,6 @@ class CloudKeepOrdersConfig(ConfigSectionInterface):
         return self.get("payload_content_encoding")
 
 
-class CloudKeepClientLibConfig(ConfigSectionInterface):
-    SECTION_NAME = 'cloudkeep-client-lib'
-
-    @property
-    def authentication_endpoint(self):
-        return self.get("authentication_endpoint")
-
-    @property
-    def username(self):
-        return self.get("username")
-
-    @property
-    def key(self):
-        return self.get("key")
-
-    @property
-    def token(self):
-        return self.get("token")
-
-
 class CloudKeepRBACRoleConfig(ConfigSectionInterface):
     SECTION_NAME = 'cloudkeep-rbac-role-users'
 

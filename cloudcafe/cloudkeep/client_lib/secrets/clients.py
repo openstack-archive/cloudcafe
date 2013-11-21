@@ -13,62 +13,53 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from barbicanclient.client import Connection
+from barbicanclient.common.auth import KeystoneAuthV2
+from barbicanclient.client import Client
 
 
 class ClientLibSecretsClient():
-    def __init__(self, url, api_version, tenant_id, auth_endpoint=None,
-                 user=None, key=None, token=None, authenticate=None,
+    def __init__(self, url, api_version, auth_endpoint=None,
+                 user=None, password=None, tenant_name=None, authenticate=None,
                  request=None, **kwargs):
         self.url = url
         self.api_version = api_version
-        self.tenant_id = tenant_id
         self.endpoint = '{base}/{api_version}'.format(
             base=self.url, api_version=self.api_version)
-        self.conn = Connection(
-            endpoint=self.endpoint, auth_endpoint=auth_endpoint,
-            user=user, key=key, tenant=tenant_id, token=token,
-            authenticate=authenticate, request=request, **kwargs)
+        self.keystone = KeystoneAuthV2(auth_url=auth_endpoint,
+                                       username=user,
+                                       password=password,
+                                       tenant_name=tenant_name)
+        # Fix: We need to create an auth plugin for Keystone and CloudCAFE
+        self.keystone._barbican_url = self.endpoint
+        self.conn = Client(auth_plugin=self.keystone)
+
+        self.tenant_id = self.keystone.tenant_id
+        self.tenant_token = self.keystone.auth_token
 
     def create_secret(self, name=None, expiration=None, algorithm=None,
-                      bit_length=None, mode=None, plain_text=None,
-                      mime_type=None):
-        secret = self.conn.create_secret(
+                      bit_length=None, mode=None, payload=None,
+                      payload_content_type=None,
+                      payload_content_encoding=None):
+        secret = self.conn.secrets.store(
             name=name, expiration=expiration, algorithm=algorithm,
-            bit_length=bit_length, mode=mode,
-            plain_text=plain_text, mime_type=mime_type)
+            bit_length=bit_length, mode=mode, payload=payload,
+            payload_content_encoding=payload_content_encoding,
+            payload_content_type=payload_content_type)
 
         return secret
 
     def list_secrets(self, limit=None, offset=None):
         if limit is not None and offset is not None:
-            return self.conn.list_secrets(limit=limit, offset=offset)
+            return self.conn.secrets.list(limit=limit, offset=offset)
         else:
-            return self.conn.list_secrets()
-
-    def list_secrets_by_href(self, href=None):
-        if href is None:
-            href = '{endpoint}/{tenant_id}/secrets'.format(
-                endpoint=self.endpoint,
-                tenant_id=self.tenant_id)
-
-        return self.conn.list_secrets_by_href(href=href)
-
-    def delete_secret_by_id(self, secret_id):
-        return self.conn.delete_secret_by_id(secret_id=secret_id)
+            return self.conn.secrets.list()
 
     def delete_secret(self, href):
-        return self.conn.delete_secret(href=href)
-
-    def get_secret_by_id(self, secret_id):
-        return self.conn.get_secret_by_id(secret_id=secret_id)
+        return self.conn.secrets.delete(secret_ref=href)
 
     def get_secret(self, href):
-        return self.conn.get_secret(href=href)
+        return self.conn.secrets.get(secret_ref=href)
 
-    def get_raw_secret_by_id(self, secret_id, mime_type):
-        return self.conn.get_raw_secret_by_id(
-            secret_id=secret_id, mime_type=mime_type)
-
-    def get_raw_secret(self, href, mime_type):
-        return self.conn.get_raw_secret(href=href, mime_type=mime_type)
+    def get_raw_secret(self, href, content_type):
+        return self.conn.secrets.decrypt(secret_ref=href,
+                                         content_type=content_type)

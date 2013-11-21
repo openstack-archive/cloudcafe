@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from os import path
+
 from cloudcafe.cloudkeep.barbican.secrets.behaviors import SecretsBehaviors
 from cloudcafe.cloudkeep.common.responses import CloudkeepResponse
 
@@ -28,45 +30,42 @@ class ClientLibSecretsBehaviors(SecretsBehaviors):
 
     def create_and_check_secret(self, name=None, expiration=None,
                                 algorithm=None, bit_length=None,
-                                mode=None, plain_text=None,
-                                mime_type=None):
+                                mode=None, payload=None,
+                                payload_content_type=None):
         secret = self.create_secret_overriding_cfg(
             name=name, expiration=expiration, algorithm=algorithm,
             bit_length=bit_length, mode=mode,
-            plain_text=plain_text, mime_type=mime_type)
-        resp = self.barb_client.get_secret(secret.id)
+            payload=payload, payload_content_type=payload_content_type)
+        secret_id = path.split(secret)[-1]
+        resp = self.barb_client.get_secret(secret_id)
 
         behavior_response = CloudkeepResponse(entity=secret,
                                               get_resp=resp)
         return behavior_response
 
     def create_secret(self, name=None, expiration=None, algorithm=None,
-                      bit_length=None, mode=None, plain_text=None,
-                      mime_type=None):
+                      bit_length=None, mode=None, payload=None,
+                      payload_content_type=None,
+                      payload_content_encoding=None):
         secret = self.cl_client.create_secret(
             name=name,
             expiration=expiration,
             algorithm=algorithm,
             bit_length=bit_length,
             mode=mode,
-            plain_text=plain_text,
-            mime_type=mime_type)
+            payload=payload,
+            payload_content_type=payload_content_type,
+            payload_content_encoding=payload_content_encoding)
 
-        self.created_secrets.append(secret.id)
+        self.created_secrets.append(secret)
         return secret
 
     def delete_secret(self, secret_ref):
-        secret_id = CloudkeepResponse.get_id_from_ref(secret_ref)
-        self.remove_from_created_secrets(secret_id=secret_id)
+        self.remove_from_created_secrets(secret_id=secret_ref)
         resp = self.cl_client.delete_secret(href=secret_ref)
-        return resp
-
-    def delete_secret_by_id(self, secret_id):
-        self.remove_from_created_secrets(secret_id=secret_id)
-        resp = self.cl_client.delete_secret_by_id(secret_id=secret_id)
         return resp
 
     def delete_all_created_secrets(self):
         for secret_id in self.created_secrets:
-            self.delete_secret_by_id(secret_id=secret_id)
+            self.delete_secret(secret_ref=secret_id)
         self.created_secrets = []
