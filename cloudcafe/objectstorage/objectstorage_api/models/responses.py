@@ -104,6 +104,21 @@ class ContainerObjectsList(AutoMarshallingListModel):
             container_objects_list.append(storage_object)
         return container_objects_list
 
+    @classmethod
+    def _text_to_obj(cls, data):
+        split_data = data.split('\n')
+        data_list = [obj_name for obj_name in split_data if obj_name]
+
+        container_objects_list = ContainerObjectsList()
+        for obj_name in data_list:
+            storage_object = StorageObject(
+                name=obj_name,
+                bytes_=None,
+                hash_=None,
+                last_modified=None,
+                content_type=None)
+            container_objects_list.append(storage_object)
+        return container_objects_list
 
 class CreateArchiveObject(AutoMarshallingListModel):
 
