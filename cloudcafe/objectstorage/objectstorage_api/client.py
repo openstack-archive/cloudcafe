@@ -29,6 +29,8 @@ from cafe.engine.clients.rest import RestClient
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
     import AccountContainersList, ContainerObjectsList, CreateArchiveObject
 
+DEFAULT_FORMAT = 'text'
+
 
 def _deserialize(response_entity_type):
     """
@@ -48,7 +50,7 @@ def _deserialize(response_entity_type):
             response = f(*args, **kwargs)
             response.request.__dict__['entity'] = None
             response.__dict__['entity'] = None
-            deserialize_format = None
+            deserialize_format = DEFAULT_FORMAT
 
             params = kwargs.get('params')
             headers = kwargs.get('headers')
