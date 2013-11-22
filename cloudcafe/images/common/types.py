@@ -15,37 +15,18 @@ limitations under the License.
 """
 
 
-class ImageStatus(object):
-    """
-    @summary: Types denoting an Image's status
-    @cvar QUEUED: Image identifier has been reserved
-    @type QUEUED: C{str}
-    @cvar SAVING: Image's raw data is currently being uploaded
-    @type SAVING: C{str}
-    @cvar ACTIVE: Image is active and available
-    @type ACTIVE: C{str}
-    @cvar KILLED: An error occured during upload of image data
-    @type KILLED: C{str}
-    @cvar PENDING_DELETE: Image data is not yet removed
-    @type PENDING_DELETE: C{str}
-    @cvar DELETED: Image information has been retained but image is no longer \
-            available
-    @type DELETED: C{str}
-    """
+class ImageContainerFormat(object):
+    """@summary: Types denoting an Image's container format"""
 
-    QUEUED = "queued"
-    SAVING = "saving"
-    ACTIVE = "active"
-    KILLED = "killed"
-    PENDING_DELETE = "pending_delete"
-    DELETED = "deleted"
-    ERROR = "error"
+    BARE = "bare"
+    OVF = "ovf"
+    AKI = "aki"
+    ARI = "ari"
+    AMI = "ami"
 
 
 class ImageDiskFormat(object):
-    """
-    @summary: Types denoting an Image's disk format.
-    """
+    """@summary: Types denoting an Image's disk format"""
 
     RAW = "raw"
     VHD = "vhd"
@@ -58,24 +39,39 @@ class ImageDiskFormat(object):
     ARI = "ari"
 
 
-class ImageContainerFormat(object):
-    """
-    @summary: Types denoting an Image's container format.
-    """
+class ImageMemberStatus(object):
+    """@summary: Types denoting an Image member's status"""
 
-    BARE = "bare"
-    OVF = "ovf"
-    AKI = "aki"
-    ARI = "ari"
-    AMI = "ami"
+    ACCEPTED = 'accepted'
+    PENDING = 'pending'
+    REJECTED = 'rejected'
+
+
+class ImageStatus(object):
+    """@summary: Types denoting an Image's status"""
+
+    QUEUED = "queued"
+    SAVING = "saving"
+    ACTIVE = "active"
+    KILLED = "killed"
+    PENDING_DELETE = "pending_delete"
+    DELETED = "deleted"
+    ERROR = "error"
 
 
 class ImageVisibility(object):
+    """@summary: Types denoting an Image's visibility"""
+
     PUBLIC = 'public'
     PRIVATE = 'private'
 
 
-class ImageMemberStatus(object):
-    ACCEPTED = 'accepted'
-    PENDING = 'pending'
-    REJECTED = 'rejected'
+class Schemas(object):
+    """@summary: Types denoting a schema"""
+
+    IMAGE_SCHEMA = '/v2/schemas/image'
+    IMAGES_SCHEMA = '/v2/schemas/images'
+    IMAGE_MEMBER_SCHEMA = '/v2/schemas/member'
+    IMAGE_MEMBERS_SCHEMA = '/v2/schemas/members'
+    TASK_SCHEMA = '/v2/schemas/task'
+    TASKS_SCHEMA = '/v2/schemas/tasks'

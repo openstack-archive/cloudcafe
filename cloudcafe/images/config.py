@@ -33,17 +33,21 @@ class MarshallingConfig(ConfigSectionInterface):
 
 class AdminUserConfig(BaseUserConfig):
 
-    SECTION_NAME = 'images_admin_user'
+    SECTION_NAME = 'admin_user'
 
 
-class SecondaryUserConfig(BaseUserConfig):
+class AltUserConfig(BaseUserConfig):
 
-    SECTION_NAME = 'images_secondary_user'
+    SECTION_NAME = 'alt_user'
 
 
 class ImagesConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'images'
+
+    @property
+    def internal_url(self):
+        return self.get('internal_url')
 
     @property
     def override_url(self):
@@ -58,32 +62,24 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('region')
 
     @property
-    def image_status_interval(self):
-        return int(self.get('image_status_interval'))
+    def min_disk(self):
+        return int(self.get('min_disk'))
 
     @property
-    def snapshot_timeout(self):
-        return int(self.get('snapshot_timeout'))
+    def min_ram(self):
+        return int(self.get('min_ram'))
 
     @property
-    def remote_image(self):
-        return self.get('remote_image')
+    def size_min(self):
+        return int(self.get('size_min'))
 
     @property
-    def http_image(self):
-        return self.get('http_image')
+    def size_max(self):
+        return int(self.get('size_max'))
 
     @property
-    def test_image(self):
-        return self.get('test_image')
-
-    @property
-    def test_disk_format(self):
-        return self.get('test_disk_format')
-
-    @property
-    def test_container_format(self):
-        return self.get('test_container_format')
+    def results_limit(self):
+        return int(self.get('results_limit'))
 
     @property
     def image_schema_json(self):
