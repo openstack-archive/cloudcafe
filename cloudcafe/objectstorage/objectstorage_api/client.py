@@ -29,8 +29,6 @@ from cafe.engine.clients.rest import RestClient
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
     import AccountContainersList, ContainerObjectsList, CreateArchiveObject
 
-DEFAULT_FORMAT = 'text'
-
 
 def _deserialize(response_entity_type):
     """
@@ -48,28 +46,24 @@ def _deserialize(response_entity_type):
     def decorator(f):
         def wrapper(*args, **kwargs):
             response = f(*args, **kwargs)
-            response.request.__dict__['entity'] = None
-            response.__dict__['entity'] = None
-            deserialize_format = DEFAULT_FORMAT
+            setattr(response.request, 'entity', None)
+            setattr(response, 'entity', None)
+            deserialize_format = None
 
-            params = kwargs.get('params')
-            headers = kwargs.get('headers')
+            content_type = response.headers.get('content-type', '')
 
-            if (params and headers) or headers:
-                lower_headers = {key.lower(): val.lower() for
-                                 key, val in headers.iteritems()}
-                deserialize_format = \
-                    lower_headers.get('accept').split('/')[1]
-            elif params:
-                lower_params = {key.lower(): val.lower() for
-                                key, val in params.iteritems()}
-                deserialize_format = lower_params.get('format')
+            formats = ['text', 'json', 'xml']
+            for format_ in formats:
+                if format_ in content_type:
+                    deserialize_format = format_
+                    break
 
-            if deserialize_format:
-                response.__dict__['entity'] = \
-                    response_entity_type.deserialize(
-                        response.content,
-                        deserialize_format)
+            setattr(
+                response,
+                'entity',
+                response_entity_type.deserialize(
+                    response.content,
+                    deserialize_format))
             return response
         return wrapper
     return decorator
