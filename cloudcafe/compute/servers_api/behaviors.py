@@ -38,6 +38,57 @@ class ServerBehaviors(BaseBehavior):
         self.images_config = images_config
         self.flavors_config = flavors_config
 
+    def create_server(
+            self, name=None, image_ref=None, flavor_ref=None,
+            personality=None, user_data=None, metadata=None,
+            accessIPv4=None, accessIPv6=None, disk_config=None,
+            networks=None, key_name=None, config_drive=None,
+            scheduler_hints=None, admin_pass=None):
+        """
+        @summary:Creates a server
+        @param name: The name of the server.
+        @type name: String
+        @param image_ref: The reference to the image used to build the server.
+        @type image_ref: String
+        @param flavor_ref: The flavor used to build the server.
+        @type flavor_ref: String
+        @param metadata: A dictionary of values to be used as metadata.
+        @type metadata: Dictionary. The limit is 5 key/values.
+        @param personality: A list of dictionaries for files to be
+         injected into the server.
+        @type personality: List
+        @param user_data: Config Init User data
+        @type user_data: String
+        @param config_drive: Config Drive flag
+        @type config_drive: String
+        @param accessIPv4: IPv4 address for the server.
+        @type accessIPv4: String
+        @param accessIPv6: IPv6 address for the server.
+        @type accessIPv6: String
+        @param disk_config: MANUAL/AUTO/None
+        @type disk_config: String
+        @return: Response Object containing response code and
+         the server domain object
+        @rtype: Request Response Object
+        """
+
+        if name is None:
+            name = rand_name('testserver')
+        if image_ref is None:
+            image_ref = self.images_config.primary_image
+        if flavor_ref is None:
+            flavor_ref = self.flavors_config.primary_flavor
+
+        resp = self.servers_client.create_server(
+            name, image_ref, flavor_ref, personality=personality,
+            config_drive=config_drive, metadata=metadata,
+            accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+            disk_config=disk_config, networks=networks, key_name=key_name,
+            scheduler_hints=scheduler_hints, user_data=user_data,
+            admin_pass=admin_pass)
+        server_obj = resp.entity
+        return server_obj
+
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
@@ -72,13 +123,6 @@ class ServerBehaviors(BaseBehavior):
         @rtype: Request Response Object
         """
 
-        if name is None:
-            name = rand_name('testserver')
-        if image_ref is None:
-            image_ref = self.images_config.primary_image
-        if flavor_ref is None:
-            flavor_ref = self.flavors_config.primary_flavor
-
         failures = []
         attempts = self.config.resource_build_attempts
         for attempt in range(attempts):
@@ -86,14 +130,14 @@ class ServerBehaviors(BaseBehavior):
             self._log.debug('Attempt {attempt} of {attempts} '
                             'to create server.'.format(attempt=attempt + 1,
                                                        attempts=attempts))
-            resp = self.servers_client.create_server(
+
+            server_obj = self.create_server(
                 name, image_ref, flavor_ref, personality=personality,
                 config_drive=config_drive, metadata=metadata,
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
                 admin_pass=admin_pass)
-            server_obj = resp.entity
 
             try:
                 resp = self.wait_for_server_status(
