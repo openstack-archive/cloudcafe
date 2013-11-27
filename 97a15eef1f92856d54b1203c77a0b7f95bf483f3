@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+1: Nandhini Devi Kaliaperumal <nandhini.kaliaperumal@rackspace.com>
+Approved+1: Christopher Hunt <chris.hunt@rackspace.com>
+Code-Review+2: Christopher Hunt <chris.hunt@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 27 Nov 2013 15:53:53 +0000
+Reviewed-on: https://review.openstack.org/57486
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
