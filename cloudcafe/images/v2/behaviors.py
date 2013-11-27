@@ -21,42 +21,87 @@ from cloudcafe.images.common.types import \
     ImageContainerFormat, ImageDiskFormat, ImageVisibility
 
 
-class ImagesV2Behaviors(BaseBehavior):
+class ImagesBehaviors(BaseBehavior):
     """@summary: Behaviors class for images v2"""
 
     def __init__(self, images_client, images_config):
-        super(ImagesV2Behaviors, self).__init__()
+        super(ImagesBehaviors, self).__init__()
         self.config = images_config
         self.client = images_client
         self.resources = ResourcePool()
 
-    def register_basic_image(self):
-        """
-        @summary: Register a basic image, add it for deletion and return the
-        image id
-        """
+    def create_new_image(self, container_format=None, disk_format=None,
+                         name=None, protected=None, tags=None,
+                         visibility=None):
+        """@summary: Create new image and add it for deletion"""
 
+        if container_format is None:
+            container_format = ImageContainerFormat.BARE
+        if disk_format is None:
+            disk_format = ImageDiskFormat.RAW
+        if name is None:
+            name = rand_name('image')
+        if protected is None:
+            protected = False
+        if tags is None:
+            tags = []
+        if visibility is None:
+            visibility = ImageVisibility.PRIVATE
         response = self.client.create_image(
-            container_format=ImageContainerFormat.BARE,
-            disk_format=ImageDiskFormat.RAW, name=rand_name('image'),
-            visibility=ImageVisibility.PUBLIC)
+            container_format=container_format, disk_format=disk_format,
+            name=name, protected=protected, tags=tags, visibility=visibility)
         image = response.entity
-        self.resources.add(self.client.delete_image, image.id)
-        return image.id
+        if image is not None:
+            self.resources.add(image.id_, self.client.delete_image)
+        return image
 
-    def register_private_image(self):
-        """
-        @summary: Register a private image, add it for deletion and return the
-        image id
-        """
+    def create_new_images(self, container_format=None, disk_format=None,
+                          name=None, protected=None, tags=None,
+                          visibility=None, count=1):
+        """@summary: Create new images and add them for deletion"""
 
-        response = self.client.create_image(
-            container_format=ImageContainerFormat.BARE,
-            disk_format=ImageDiskFormat.RAW, name=rand_name('image'),
-            visibility=ImageVisibility.PRIVATE)
-        image = response.entity
-        self.resources.add(self.client.delete_image, image.id)
-        return image.id
+        image_list = []
+        for i in range(count):
+            image = self.create_new_image(
+                container_format=container_format, disk_format=disk_format,
+                name=name, protected=protected, tags=tags,
+                visibility=visibility)
+            image_list.append(image)
+        return image_list
+
+    def list_images_pagination(self, name=None, disk_format=None,
+                               container_format=None, visibility=None,
+                               status=None, checksum=None, owner=None,
+                               min_ram=None, min_disk=None, changes_since=None,
+                               protected=None, size_min=None, size_max=None,
+                               sort_key=None, sort_dir=None, marker=None,
+                               limit=None):
+        """@summary: Get images accounting for pagination as needed"""
+
+        image_list = []
+        results_limit = self.config.results_limit
+        response = self.client.list_images(
+            name=name, disk_format=disk_format,
+            container_format=container_format, visibility=visibility,
+            status=status, checksum=checksum, owner=owner, min_ram=min_ram,
+            min_disk=min_disk, changes_since=changes_since,
+            protected=protected, size_min=size_min, size_max=size_max,
+            sort_key=sort_key, sort_dir=sort_dir, marker=marker, limit=limit)
+        images = response.entity
+        while len(images) == results_limit:
+            image_list += images
+            marker = images[results_limit - 1].id_
+            response = self.client.list_images(
+                name=name, disk_format=disk_format,
+                container_format=container_format, visibility=visibility,
+                status=status, checksum=checksum, owner=owner, min_ram=min_ram,
+                min_disk=min_disk, changes_since=changes_since,
+                protected=protected, size_min=size_min, size_max=size_max,
+                sort_key=sort_key, sort_dir=sort_dir, marker=marker,
+                limit=limit)
+            images = response.entity
+        image_list += images
+        return image_list
 
     def get_member_ids(self, image_id):
         """
@@ -65,4 +110,5 @@ class ImagesV2Behaviors(BaseBehavior):
         """
 
         response = self.client.list_members(image_id)
-        return [member.member_id for member in response.entity]
+        members = response.entity
+        return [member.member_id for member in members]
