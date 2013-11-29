@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import dateutil
-
 from cloudcafe.images.v2.models.image import Members, Member
 
 
 class TestMembers(object):
+
     @classmethod
     def setup_class(cls):
         cls.raw_members_str = ('''{
@@ -37,11 +36,11 @@ class TestMembers(object):
 
         cls.members_obj = [(
             Member(member_id='someguy', status='accepted',
-                   created_at=dateutil.parser.parse('2013-09-17T12:51:03Z'),
-                   updated_at=dateutil.parser.parse('2013-09-17T13:14:28Z'),
-                   image_id='af61731b-7181-4831-821f-b868df122f5a'))]
+                   created_at='2013-09-17T12:51:03Z',
+                   updated_at='2013-09-17T13:14:28Z',
+                   image_id='af61731b-7181-4831-821f-b868df122f5a',
+                   schema="/v2/schemas/member"))]
 
     def test_json_to_obj(self):
         deserialized_obj = Members._json_to_obj(self.raw_members_str)
-
         assert self.members_obj == deserialized_obj
