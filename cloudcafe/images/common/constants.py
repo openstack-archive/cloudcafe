@@ -23,3 +23,8 @@ class HTTPResponseCodes(object):
 class ImageProperties(object):
     ID_REGEX = ('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
                 '[0-9a-fA-F]{12}$')
+
+
+class Messages(object):
+    error_message = ('Unexpected {0} value received. Expected: {1}, Received: '
+                    '{2}')

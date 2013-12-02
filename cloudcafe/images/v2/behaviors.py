@@ -17,8 +17,9 @@ limitations under the License.
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
-from cloudcafe.images.common.types import \
-    ImageContainerFormat, ImageDiskFormat, ImageVisibility
+from cloudcafe.images.common.constants import Messages
+from cloudcafe.images.common.types import ImageContainerFormat, \
+    ImageDiskFormat, ImageVisibility, Schemas
 
 
 class ImagesBehaviors(BaseBehavior):
@@ -112,3 +113,25 @@ class ImagesBehaviors(BaseBehavior):
         response = self.client.list_members(image_id)
         members = response.entity
         return [member.member_id for member in members]
+
+    def validate_image_member(self, image_id, image_member, member_id):
+        """@summary: Validate an image member contains expected data"""
+
+        errors = []
+        msg = Messages.error_message
+        if image_member.created_at is None:
+            errors.append(msg.format('created_at', not None, None))
+        if image_member.image_id != image_id:
+            errors.append(msg.format(
+                'image_id', image_id, image_member.image_id))
+        if image_member.member_id != member_id:
+            errors.append(msg.format(
+                'member_id', member_id, image_member.member_id))
+        if image_member.schema != Schemas.IMAGE_MEMBER_SCHEMA:
+            errors.append(msg.format(
+                'schema', Schemas.IMAGE_MEMBER_SCHEMA, image_member.schema))
+        if image_member.status is None:
+            errors.append(msg.format('status', not None, None))
+        if image_member.updated_at is None:
+            errors.append(msg.format('updated_at', not None, None))
+        return errors
