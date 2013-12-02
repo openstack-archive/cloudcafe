@@ -8,13 +8,13 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
     _KWMAP = {
         'volume_service_name': 'volume-service-name',
         'os_volume_api_version': 'os-volume-api-version'}
+
+    # Make sure to include all openstack common cli paramaters in addition to
+    # the cinder specific ones
     _KWMAP.update(BaseOpenstackPythonCLI_Client._KWMAP)
 
+    #The client command the must precede any call to the cli
     _CMD = 'cinder'
-
-    def _generate_cmd(self, flag, *values):
-        return " --{0}{1}".format(
-            flag, "".join([" {0}".format(v) for v in values]))
 
     def __init__(
             self, volume_service_name=None, os_volume_api_version=None,
@@ -23,6 +23,7 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
         self.volume_service_name = volume_service_name
         self.os_volume_api_version = os_volume_api_version
 
+# Volumes
     def create_volume(
             self, size, snapshot_id=None, source_volid=None, image_id=None,
             display_name=None, display_description=None, volume_type=None,
@@ -43,6 +44,11 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
             'metadata': 'metadata'}
         return self._process_command()
 
+    def show_volume(self, volume_id):
+        _cmd = 'show'
+        _response_type = CinderResponses.VolumeResponse
+        return self._process_command()
+
     def delete_volume(self, volume_name_or_id):
         _cmd = 'delete'
         return self._process_command()
@@ -50,7 +56,6 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
     def list_volumes(self, display_name=None, status=None, all_tenants=False):
 
         all_tenants = 1 if all_tenants is True else 0
-
         _response_type=CinderResponses.VolumeListResponse
         _cmd = 'list'
         _kwmap = {
@@ -59,6 +64,31 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
             'all_tenants': 'all-tenants'}
         return self._process_command()
 
+# Snapshots
+    def create_snapshot(
+            self, volume_id, force=True, display_name=None,
+            display_description=None):
+
+        force = 'True' if force else 'False'
+        _kwmap = {
+            'force': 'force',
+            'display_name': 'display-name',
+            'display_description': 'display-description'}
+        _cmd = 'snapshot-create'
+        _response_type=CinderResponses.SnapshotResponse
+        return self._process_command()
+
+    def list_snapshots(self):
+        _cmd = 'snapshot-list'
+        _response_type=CinderResponses.SnapshotListResponse
+        return self._process_command()
+
+    def show_snapshot(self, snapshot_id):
+        _cmd = 'snapshot-show'
+        _response_type=CinderResponses.SnapshotResponse
+        return self._process_command()
+
+# Volume Types
     def list_volume_types(self):
         _cmd = 'type-list'
         _response_type=CinderResponses.VolumeTypeListResponse
