@@ -124,6 +124,19 @@ class StackTachDBBehavior(BaseBehavior):
                                              requestslib_kwargs=None)
         return response
 
+    def list_deletes_for_uuid(self, instance, requestslib_kwargs=None):
+        """
+        @summary: Retrieves server delete for a given uuid
+        @param instance: The uuid of the server
+        @type instance: String
+        @return: Dictionary key:'deletes' with value as a list of deletes
+                 for a given instance
+        @rtype: ResponseDelete Object
+        """
+        response = self.client.list_deletes(instance=instance,
+                                            requestslib_kwargs=None)
+        return response
+
     def list_deletes_by_date_min(self, deleted_at_min,
                                  requestslib_kwargs=None):
         """
@@ -138,6 +151,7 @@ class StackTachDBBehavior(BaseBehavior):
         """
         response = self.client.list_deletes(deleted_at_min=deleted_at_min,
                                             requestslib_kwargs=None)
+        return response
 
     def list_deletes_by_date_max(self, deleted_at_max,
                                  requestslib_kwargs=None):
@@ -153,6 +167,7 @@ class StackTachDBBehavior(BaseBehavior):
         """
         response = self.client.list_deletes(deleted_at_max=deleted_at_max,
                                             requestslib_kwargs=None)
+        return response
 
     def list_deletes_by_date_min_and_date_max(self, deleted_at_min,
                                               deleted_at_max,
@@ -174,6 +189,7 @@ class StackTachDBBehavior(BaseBehavior):
         response = self.client.list_deletes(deleted_at_min=deleted_at_min,
                                             deleted_at_max=deleted_at_max,
                                             requestslib_kwargs=None)
+        return response
 
     def list_exists_for_uuid(self, instance, requestslib_kwargs=None):
         """
@@ -189,6 +205,7 @@ class StackTachDBBehavior(BaseBehavior):
         """
         response = self.client.list_exists(instance=instance,
                                            requestslib_kwargs=None)
+        return response
 
     def wait_for_launched_at(self, server_id, interval_time=10, timeout=200):
         '''
