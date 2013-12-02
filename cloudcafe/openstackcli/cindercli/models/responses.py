@@ -94,3 +94,73 @@ class VolumeTypeListResponse(BasePrettyTableResponseListModel):
                 'name': datadict.get('Name')}
             volume_type_list.append(_VolumeTypeListItem(**kwargs))
         return volume_type_list
+
+#Snapshots
+
+
+class SnapshotResponse(BasePrettyTableResponseModel):
+    def __init__(
+            self, id_=None, created_at=None, display_description=None,
+            display_name=None, metadata=None, progress=None, project_id=None,
+            size=None, status=None, volume_id=None):
+
+            self.id_ = id_
+            self.created_at = created_at
+            self.display_description = display_description
+            self.display_name = display_name
+            self.metadata = metadata
+            self.progress = progress
+            self.project_id = project_id
+            self.size = size
+            self.status = status
+            self.volume_id = volume_id
+
+    @classmethod
+    def _prettytable_str_to_obj(cls, prettytable_string):
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        snapshot_dict = {}
+        for datadict in datatuple:
+            snapshot_dict[datadict['Property']] = datadict['Value']
+        kwargs = {
+            'id_': snapshot_dict.get('id'),
+            'created_at': snapshot_dict.get('created_at'),
+            'display_description': snapshot_dict.get('display_description'),
+            'display_name': snapshot_dict.get('display_name'),
+            'metadata': snapshot_dict.get('metadata'),
+            'progress': snapshot_dict.get(
+                'os-extended-snapshot-attributes:progress'),
+            'project_id': snapshot_dict.get(
+                'os-extended-snapshot-attributes:project_id'),
+            'size': snapshot_dict.get('size'),
+            'status': snapshot_dict.get('status'),
+            'volume_id': snapshot_dict.get('volume_id')}
+        return SnapshotResponse(**kwargs)
+
+
+class _SnapshotListItem(BaseModel):
+    def __init__(
+            self, id_=None,  volume_id=None, status=None, display_name=None,
+            size=None):
+
+        self.id_ = id_
+        self.volume_id = volume_id
+        self.status = status
+        self.display_name = display_name
+        self.size = size
+
+
+class SnapshotListResponse(BasePrettyTableResponseListModel):
+
+    @classmethod
+    def _prettytable_str_to_obj(cls, prettytable_string):
+        snapshot_list = SnapshotListResponse()
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        for datadict in datatuple:
+            kwargs = {
+                'id_': datadict.get('ID'),
+                'volume_id': datadict.get('Volume ID'),
+                'status': datadict.get('Status'),
+                'display_name': datadict.get('Display Name'),
+                'size': datadict.get('Size')}
+            snapshot_list.append(_SnapshotListItem(**kwargs))
+        return snapshot_list

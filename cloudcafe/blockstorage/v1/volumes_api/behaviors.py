@@ -49,6 +49,16 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
         return timeout
 
+    @behavior(VolumesAPIConfig)
+    def calculate_snapshot_create_timeout(self, volume_size):
+        timeout = self._calculate_timeout(
+            size=int(volume_size),
+            max_timeout=int(self.config.snapshot_create_max_timeout),
+            min_timeout=int(self.config.snapshot_create_min_timeout),
+            wait_per_gb=int(self.config.snapshot_create_wait_per_gigabyte))
+        timeout += int(self.config.snapshot_create_base_timeout)
+        return timeout
+
     @behavior(VolumesClient)
     def get_volume_status(self, volume_id):
         resp = self.client.get_volume_info(volume_id=volume_id)
@@ -120,7 +130,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def wait_for_volume_status(
-            self, volume_id, expected_status, timeout, poll_rate=5):
+            self, volume_id, expected_status, timeout=None, poll_rate=None):
         """ Waits for a specific status and returns None when that status is
         observed.
         Note:  Unreliable for transient statuses like 'deleting'.
@@ -128,6 +138,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
         poll_rate = int(
             poll_rate or self.config.volume_status_poll_frequency)
+        timeout = int(timeout or self.config.volume_create_timeout)
         end_time = time() + int(timeout)
 
         while time() < end_time:
@@ -149,13 +160,14 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def wait_for_snapshot_status(
-            self, snapshot_id, expected_status, timeout, wait_period=None):
+            self, snapshot_id, expected_status, timeout=None,
+            wait_period=None):
         """ Waits for a specific status and returns None when that status is
         observed.
         Note:  Unreliable for transient statuses like 'deleting'.
         """
 
-        wait_period = float(
+        wait_period = int(
             wait_period or self.config.snapshot_status_poll_frequency)
         end_time = time() + int(timeout)
 
@@ -246,12 +258,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
         except:
             pass
 
-        timeout = self._calculate_timeout(
-            size=vol_size, timeout=timeout,
-            max_timeout=self.config.snapshot_create_max_timeout,
-            min_timeout=self.config.snapshot_create_min_timeout,
-            wait_per_gb=self.config.snapshot_create_wait_per_gigabyte)
-        timeout += self.config.snapshot_create_base_timeout
+        timeout = self.calculate_snapshot_create_timeout(vol_size)
         self._log.debug(
             "create_available_snapshot() timeout set to {0}".format(timeout))
 
