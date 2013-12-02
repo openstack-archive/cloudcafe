@@ -17,8 +17,9 @@ limitations under the License.
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
-from cloudcafe.images.common.types import \
-    ImageContainerFormat, ImageDiskFormat, ImageVisibility
+from cloudcafe.images.common.constants import Messages
+from cloudcafe.images.common.types import ImageContainerFormat, \
+    ImageDiskFormat, ImageVisibility, Schemas
 
 
 class ImagesBehaviors(BaseBehavior):
@@ -112,3 +113,57 @@ class ImagesBehaviors(BaseBehavior):
         response = self.client.list_members(image_id)
         members = response.entity
         return [member.member_id for member in members]
+
+    def validate_image(self, image):
+        """@summary: Generically validate an image contains crucial expected
+        data
+        """
+
+        errors = []
+        if image.created_at is None:
+            errors.append(self.error_msg.format('created_at', not None, None))
+        if image.file_ != '/v2/images/{0}/file'.format(image.id_):
+            errors.append(self.error_msg.format(
+                'file_', '/v2/images/{0}/file'.format(image.id_), image.file_))
+        if self.id_regex.match(image.id_) is None:
+            errors.append(self.error_msg.format('id_', not None, None))
+        if image.min_disk is None:
+            errors.append(self.error_msg.format('min_disk', not None, None))
+        if image.min_ram is None:
+            errors.append(self.error_msg.format('min_ram', not None, None))
+        if image.protected is None:
+            errors.append(self.error_msg.format('protected', not None, None))
+        if image.schema != Schemas.IMAGE_SCHEMA:
+            errors.append(self.error_msg.format(
+                'schema', Schemas.IMAGE_SCHEMA, image.schema))
+        if image.self_ != '/v2/images/{0}'.format(image.id_):
+            errors.append(self.error_msg.format(
+                'schema', '/v2/images/{0}'.format(image.id_), image.self_))
+        if image.status is None:
+            errors.append(self.error_msg.format('status', not None, None))
+        if image.updated_at is None:
+            errors.append(self.error_msg.format('updated_at', not None, None))
+        return errors
+
+    def validate_image_member(self, image_id, image_member, member_id):
+        """@summary: Generically validate an image member contains crucial
+        expected data
+        """
+
+        errors = []
+        if image_member.created_at is None:
+            errors.append(self.error_msg.format('created_at', not None, None))
+        if image_member.image_id != image_id:
+            errors.append(self.error_msg.format(
+                'image_id', image_id, image_member.image_id))
+        if image_member.member_id != member_id:
+            errors.append(self.error_msg.format(
+                'member_id', member_id, image_member.member_id))
+        if image_member.schema != Schemas.IMAGE_MEMBER_SCHEMA:
+            errors.append(self.error_msg.format(
+                'schema', Schemas.IMAGE_MEMBER_SCHEMA, image_member.schema))
+        if image_member.status is None:
+            errors.append(self.error_msg.format('status', not None, None))
+        if image_member.updated_at is None:
+            errors.append(self.error_msg.format('updated_at', not None, None))
+        return errors
