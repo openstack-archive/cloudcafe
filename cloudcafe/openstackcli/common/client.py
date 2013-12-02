@@ -96,7 +96,7 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
             (kwmap[name], func_locals[name])
             for name in pythonified_flag_names if name not in req_arg_names)
 
-        #Build a string of all the optional flags and their values
+        # Build a string of all the optional flags and their values
         optional_flags_string = ""
         for flag, value in optional_flags_dict.iteritems():
             value = self._process_boolean_flag_value(value)
@@ -112,10 +112,14 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
             req_arg_values=' '.join([str(value) for value in req_arg_values]),
             optional_flags=optional_flags_string)
 
+        # Execute the command and attach an entity object to the response, if
+        # applicable.
         response = self.run_command(cmd)
         response_body_string = '\n'.join(response.standard_out)
-
         setattr(response, 'entity', None)
+        if response_type is None:
+            return response
+
         try:
             response.entity = response_type.deserialize(response_body_string)
         except Exception as exception:
