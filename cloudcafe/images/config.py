@@ -88,3 +88,11 @@ class ImagesConfig(ConfigSectionInterface):
     @property
     def images_schema_json(self):
         return self.get('images_schema_json')
+
+    @property
+    def created_at_offset(self):
+        return self.get('created_at_offset')
+
+    @property
+    def updated_at_offset(self):
+        return self.get('updated_at_offset')
