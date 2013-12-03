@@ -134,10 +134,10 @@ class StackTachClient(AutoMarshallingRestClient):
         @rtype:  Response Object
 
             GET
-            stacky/uuid/{service}/?uuid={uuid}
+            stacky/uuid/?uuid={uuid}&service={service}
         """
-        params = {'uuid': uuid}
-        url = '{0}{1}{2}/'.format(self.url, '/stacky/uuid/', service)
+        params = {'uuid': uuid, 'service': service}
+        url = '{0}{1}'.format(self.url, '/stacky/uuid/')
         return self.request('GET', url, params=params,
                             response_entity_type=EventDetails,
                             requestslib_kwargs=requestslib_kwargs)
