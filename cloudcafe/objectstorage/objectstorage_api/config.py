@@ -30,6 +30,10 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         return self.get('enabled_features', self.ALL_FEATURES)
 
     @property
+    def object_expirer_run_interval(self):
+        return int(self.get('object_expirer_run_interval', '60'))
+
+    @property
     def default_content_length(self):
         return self.get('default_content_length')
 
