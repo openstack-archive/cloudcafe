@@ -41,8 +41,7 @@ class OrdersClient(BarbicanRestClient):
                                           order_id=order_id)
 
     def create_order(self, name, payload_content_type, algorithm,
-                     bit_length, mode, expiration,
-                     payload_content_encoding):
+                     bit_length, mode, expiration):
         """
         POST http://.../v1/{tenant_id}/orders/{order_uuid}
         Creates an order to generate a secret
@@ -50,7 +49,6 @@ class OrdersClient(BarbicanRestClient):
         remote_url = self._get_base_url()
         secret = Secret(name=name,
                         payload_content_type=payload_content_type,
-                        payload_content_encoding=payload_content_encoding,
                         expiration=expiration,
                         algorithm=algorithm,
                         bit_length=bit_length,
@@ -62,8 +60,7 @@ class OrdersClient(BarbicanRestClient):
         return resp
 
     def create_order_w_payload(self, name, payload_content_type, algorithm,
-                               bit_length, mode, expiration,
-                               payload_content_encoding, payload):
+                               bit_length, mode, expiration, payload):
         """
         POST http://.../v1/{tenant_id}/orders/{order_uuid}
         Creates an order to generate a secret with plain text. This is
@@ -73,7 +70,6 @@ class OrdersClient(BarbicanRestClient):
         remote_url = self._get_base_url()
         secret = Secret(name=name,
                         payload_content_type=payload_content_type,
-                        payload_content_encoding=payload_content_encoding,
                         expiration=expiration,
                         algorithm=algorithm,
                         bit_length=bit_length,
@@ -111,15 +107,13 @@ class OrdersClient(BarbicanRestClient):
                             response_entity_type=OrderGroup)
         return resp
 
-    def update_order(self, order_id, payload_content_type=None,
-                     payload_content_encoding=None, data=None):
+    def update_order(self, order_id, payload_content_type=None, data=None):
         """
         PUT http://.../v1/{tenant_id}/orders/{order_uuid}
         Attempts to update order similar to how secrets are updated.
         """
         remote_url = self._get_order_url(order_id)
-        headers = {'Content-Type': payload_content_type,
-                   'Content-Encoding': payload_content_encoding}
+        headers = {'Content-Type': payload_content_type}
         resp = self.request('PUT', remote_url, headers=headers,
                             data=data)
         return resp

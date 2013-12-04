@@ -13,50 +13,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from barbicanclient.client import Connection
+from barbicanclient.common.auth import KeystoneAuthV2
+from barbicanclient.client import Client
 
 
 class ClientLibOrdersClient():
-    def __init__(self, url, api_version, tenant_id, auth_endpoint=None,
-                 user=None, key=None, token=None, authenticate=None,
+    def __init__(self, url, api_version, auth_endpoint=None,
+                 user=None, password=None, tenant_name=None, authenticate=None,
                  request=None, **kwargs):
         self.url = url
         self.api_version = api_version
-        self.tenant_id = tenant_id
         self.endpoint = '{base}/{api_version}'.format(
             base=self.url, api_version=self.api_version)
-        self.conn = Connection(
-            endpoint=self.endpoint, auth_endpoint=auth_endpoint,
-            user=user, key=key, tenant=tenant_id, token=token,
-            authenticate=authenticate, request=request, **kwargs)
+        self.keystone = KeystoneAuthV2(auth_url=auth_endpoint,
+                                       username=user,
+                                       password=password,
+                                       tenant_name=tenant_name)
+        # Fix: We need to create an auth plugin for Keystone and CloudCAFE
+        self.keystone._barbican_url = self.endpoint
+        self.conn = Client(auth_plugin=self.keystone)
+
+        self.tenant_id = self.keystone.tenant_id
+        self.tenant_token = self.keystone.auth_token
 
     def create_order(self, name=None, expiration=None, algorithm=None,
-                     bit_length=None, mode=None, mime_type=None):
-        order = self.conn.create_order(
+                     bit_length=None, mode=None, payload_content_type=None):
+        order = self.conn.orders.create(
             name=name, algorithm=algorithm, bit_length=bit_length,
-            mode=mode, mime_type=mime_type)
+            mode=mode, payload_content_type=payload_content_type,
+            expiration=expiration)
 
         return order
 
     def list_orders(self, limit=None, offset=None):
-        return self.conn.list_orders(limit=limit, offset=offset)
-
-    def list_orders_by_href(self, href=None):
-        if href is None:
-            href = '{endpoint}/{tenant_id}/orders'.format(
-                endpoint=self.endpoint,
-                tenant_id=self.tenant_id)
-
-        return self.conn.list_orders_by_href(href=href)
-
-    def delete_order_by_id(self, order_id):
-        return self.conn.delete_order_by_id(order_id=order_id)
+        return self.conn.orders.list(limit=limit, offset=offset)
 
     def delete_order(self, href):
-        return self.conn.delete_order(href=href)
-
-    def get_order_by_id(self, order_id):
-        return self.conn.get_order_by_id(order_id=order_id)
+        return self.conn.orders.delete(order_ref=href)
 
     def get_order(self, href):
-        return self.conn.get_order(href=href)
+        return self.conn.orders.get(order_ref=href)

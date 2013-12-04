@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from os import path
+
 from cloudcafe.cloudkeep.barbican.orders.behaviors import OrdersBehavior
 from cloudcafe.cloudkeep.common.responses import CloudkeepResponse
 
@@ -28,28 +30,27 @@ class ClientLibOrdersBehaviors(OrdersBehavior):
 
     def create_and_check_order(self, name=None, expiration=None,
                                algorithm=None, bit_length=None,
-                               mode=None, mime_type=None):
+                               mode=None, payload_content_type=None):
         order = self.create_order_overriding_cfg(
             name=name, expiration=expiration,
             algorithm=algorithm, bit_length=bit_length,
-            mode=mode, mime_type=mime_type)
-        resp = self.barb_client.get_order(order.id)
+            mode=mode, payload_content_type=payload_content_type)
+        order_id = path.split(order)[-1]
+        resp = self.barb_client.get_order(order_id)
 
         behavior_response = CloudkeepResponse(entity=order,
                                               get_resp=resp)
         return behavior_response
 
-    def create_order(self, name=None, expiration=None, algorithm=None,
-                     bit_length=None, mode=None, mime_type=None):
+    def create_order(self, name=None, payload_content_type=None,
+                     algorithm=None, bit_length=None, mode=None,
+                     expiration=None):
         order = self.cl_client.create_order(
-            name=name,
-            expiration=expiration,
-            algorithm=algorithm,
-            bit_length=bit_length,
-            mode=mode,
-            mime_type=mime_type)
+            name=name, expiration=expiration, algorithm=algorithm,
+            bit_length=bit_length, mode=mode,
+            payload_content_type=payload_content_type)
 
-        self.created_orders.append(order.id)
+        self.created_orders.append(order)
         return order
 
     def delete_order(self, order_ref, delete_secret=True):
@@ -60,25 +61,12 @@ class ClientLibOrdersBehaviors(OrdersBehavior):
             self.secrets_client.delete_secret(secret_id)
 
         resp = self.cl_client.delete_order(order_ref)
-        order_id = CloudkeepResponse.get_id_from_ref(order_ref)
-        if order_id in self.created_orders:
-            self.created_orders.remove(order_id)
-        return resp
-
-    def delete_order_by_id(self, order_id, delete_secret=True):
-        if delete_secret:
-            order = self.cl_client.get_order_by_id(order_id)
-            secret_href = order.secret_ref
-            secret_id = CloudkeepResponse.get_id_from_ref(secret_href)
-            self.secrets_client.delete_secret(secret_id)
-
-        resp = self.cl_client.delete_order_by_id(order_id)
-        if order_id in self.created_orders:
-            self.created_orders.remove(order_id)
+        if order_ref in self.created_orders:
+            self.created_orders.remove(order_ref)
         return resp
 
     def delete_all_created_orders_and_secrets(self):
-        for order_id in self.created_orders:
-            self.delete_order_by_id(order_id, delete_secret=True)
+        for order_ref in self.created_orders:
+            self.delete_order(order_ref, delete_secret=True)
 
         self.created_orders = []

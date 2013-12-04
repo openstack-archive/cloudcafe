@@ -30,12 +30,11 @@ class OrdersBehavior(object):
         self.created_orders = []
 
     def create_and_check_order(self, name=None, payload_content_type=None,
-                               payload_content_encoding=None, algorithm=None,
-                               bit_length=None, mode=None):
+                               algorithm=None, bit_length=None, mode=None):
         """Creates order, gets order, and gets secret made by order."""
         resp = self.create_order_overriding_cfg(
             name=name, algorithm=algorithm, bit_length=bit_length,
-            mode=mode)
+            mode=mode, payload_content_type=payload_content_type)
         get_order_resp = self.orders_client.get_order(order_id=resp.id)
         behavior_response = CloudkeepResponse(resp=resp.create_resp,
                                               get_resp=get_order_resp)
@@ -50,7 +49,6 @@ class OrdersBehavior(object):
         resp = self.create_order(
             name=self.config.name,
             payload_content_type=self.config.payload_content_type,
-            payload_content_encoding=self.config.payload_content_encoding,
             algorithm=self.config.algorithm,
             bit_length=self.config.bit_length,
             mode=self.config.mode,
@@ -59,8 +57,7 @@ class OrdersBehavior(object):
 
     def create_order_overriding_cfg(self, name=None, payload_content_type=None,
                                     expiration=None, algorithm=None,
-                                    bit_length=None, mode=None,
-                                    payload_content_encoding=None):
+                                    bit_length=None, mode=None):
         """Creates order using provided parameters or default configurations.
         Allows for testing individual parameters on creation.
         """
@@ -68,8 +65,6 @@ class OrdersBehavior(object):
             name=name or self.config.name,
             payload_content_type=
             payload_content_type or self.config.payload_content_type,
-            payload_content_encoding=
-            payload_content_encoding or self.config.payload_content_encoding,
             algorithm=algorithm or self.config.algorithm,
             bit_length=bit_length or self.config.bit_length,
             mode=mode or self.config.mode,
@@ -79,12 +74,11 @@ class OrdersBehavior(object):
 
     def create_order(self, name=None, payload_content_type=None,
                      algorithm=None, bit_length=None, mode=None,
-                     expiration=None, payload_content_encoding=None):
+                     expiration=None):
         try:
             resp = self.orders_client.create_order(
                 name=name,
                 payload_content_type=payload_content_type,
-                payload_content_encoding=payload_content_encoding,
                 algorithm=algorithm,
                 bit_length=bit_length,
                 mode=mode,
@@ -104,7 +98,7 @@ class OrdersBehavior(object):
     def create_order_w_payload(self, name=None, algorithm=None,
                                bit_length=None, mode=None,
                                payload_content_type=None, expiration=None,
-                               payload_content_encoding=None, payload=None):
+                               payload=None):
         """Creates an order with a plain_text value. Separate from
         standard create order method because it is used for negative
         testing only and is expected to fail.
@@ -117,7 +111,6 @@ class OrdersBehavior(object):
                 mode=mode or self.config.mode,
                 expiration=expiration,
                 payload_content_type=payload_content_type,
-                payload_content_encoding=payload_content_encoding,
                 payload=payload)
         except ConnectionError as e:
             # Gracefully handling when Falcon doesn't properly handle our req
