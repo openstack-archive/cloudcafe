@@ -15,15 +15,16 @@ limitations under the License.
 """
 
 
-class _CommonStatuses(object):
+class _CommonStatus(object):
     AVAILABLE = "available"
     DELETING = "deleting"
+    CREATING = "creating"
 
 
-class VolumeStatuses(_CommonStatuses):
+class Volume(_CommonStatus):
     ATTACHING = "attaching"
     IN_USE = "in-use"
 
 
-class SnapshotStatuses(_CommonStatuses):
+class Snapshot(_CommonStatus):
     pass
