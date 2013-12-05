@@ -107,6 +107,8 @@ class ServerBehaviors(BaseBehavior):
                                 '{message}'.format(server_id=server_obj.id,
                                                    message=ex.message))
                 failures.append(ex.message)
+                self.servers_client.delete_server(server_obj.id)
+
         raise RequiredResourceException(
             'Failed to successfully build a server after '
             '{attempts} attempts: {failures}'.format(
