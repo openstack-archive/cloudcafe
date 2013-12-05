@@ -62,6 +62,26 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('region')
 
     @property
+    def primary_image(self):
+        """Default image to be used when building servers in glance test"""
+        return self.get("primary_image")
+
+    @property
+    def secondary_image(self):
+        """Alternate image to be used in glance test"""
+        return self.get("secondary_image")
+
+    @property
+    def image_status_interval(self):
+        """Amount of time to wait between polling the status of an image"""
+        return int(self.get("image_status_interval"))
+
+    @property
+    def snapshot_timeout(self):
+        """Length of time to wait before giving up on reaching a status"""
+        return int(self.get("snapshot_timeout"))
+
+    @property
     def min_disk(self):
         return int(self.get('min_disk'))
 

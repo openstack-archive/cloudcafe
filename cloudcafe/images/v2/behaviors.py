@@ -14,11 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import time
+
 from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.common.exceptions import BuildErrorException, TimeoutException
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.images.common.types import \
-    ImageContainerFormat, ImageDiskFormat, ImageVisibility
+    ImageContainerFormat, ImageDiskFormat, ImageStatus, ImageVisibility
 
 
 class ImagesBehaviors(BaseBehavior):
@@ -112,3 +115,46 @@ class ImagesBehaviors(BaseBehavior):
         response = self.client.list_members(image_id)
         members = response.entity
         return [member.member_id for member in members]
+
+    def wait_for_image_status(self, image_id, desired_status,
+                              interval_time=None, timeout=None):
+        """
+        @summary: Waits for a image to reach a desired status
+        @param image_id: The uuid of the image
+        @type image_id: String
+        @param desired_status: The desired final status of the image
+        @type desired_status: String
+        @param interval_time: The amount of time in seconds to wait
+                              between polling
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait
+                              before aborting
+        @type timeout: Integer
+        @return: Response object containing response and the image
+                 domain object
+        @rtype: requests.Response
+        """
+
+        interval_time = interval_time or self.config.image_status_interval
+        timeout = timeout or self.config.snapshot_timeout
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            resp = self.client.get_image(image_id)
+            image = resp.entity
+
+            if image.status.lower() == ImageStatus.ERROR.lower():
+                raise BuildErrorException(
+                    "Build failed. Image with uuid {0} "
+                    "entered ERROR status.".format(image.id))
+
+            if image.status == desired_status:
+                break
+            time.sleep(interval_time)
+        else:
+            raise TimeoutException(
+                "wait_for_image_status ran for {0} seconds and did not "
+                "observe image {1} reach the {2} status.".format(
+                    timeout, image_id, desired_status))
+
+        return resp
