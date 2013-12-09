@@ -33,6 +33,7 @@ class ExceptionHandler:
         if resp.status_code not in self.error_codes_list:
             return
 
+        type = None
         resp_body_dict = None
         if resp.text != "":
             resp_body_dict, type = self._parse_resp_body(resp.text)
