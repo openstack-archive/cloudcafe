@@ -218,7 +218,7 @@ class StackTachDBBehavior(BaseBehavior):
         @type timepout: Int
         '''
 
-        launch_resp = self.client.list_launches_for_uuid(instance=server_id)
+        launch_resp = self.list_launches_for_uuid(instance=server_id)
         launches = launch_resp.entity
 
         # Go through each of the launches and check that
@@ -229,10 +229,10 @@ class StackTachDBBehavior(BaseBehavior):
             while ((not found_launched_at or
                     not hasattr(launch_obj, 'launched_at')) and
                     (time_waited <= timeout)):
-                resp = self.client.list_launches_for_uuid(instance=server_id)
+                resp = self.list_launches_for_uuid(instance=server_id)
                 items = resp.entity
                 # Iterate over response and match on launch id
-                items = [item for item in items if item.id == launch_obj.id]
+                items = [item for item in items if item.id_ == launch_obj.id_]
                 try:
                     found_launched_at = items[0].launched_at
                 except AttributeError:
