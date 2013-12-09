@@ -120,11 +120,15 @@ class ImagesClient(AutoMarshallingRestClient):
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def store_image_file(self, image_id, file_data, requestslib_kwargs=None):
+    def store_image_file(self, image_id, file_data, content_type=None,
+                         requestslib_kwargs=None):
         """@summary: Store image file data on given image id"""
 
         url = '{0}/images/{1}/file'.format(self.base_url, image_id)
-        headers = {'Content-Type': 'application/octet-stream'}
+
+        content_type = content_type or 'application/octet-stream'
+        headers = {'Content-Type': content_type}
+
         return self.request('PUT', url, headers=headers, data=file_data)
 
     def get_image_file(self, image_id, requestslib_kwargs=None):
