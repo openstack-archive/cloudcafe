@@ -17,9 +17,9 @@ limitations under the License.
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 
 from cloudcafe.stacktach.stacktach_db_api.models.stacktach_db_api import \
-    (Launches as ResponseLaunch,
-     Deletes as ResponseDelete,
-     Exists as ResponseExist)
+    (ServerLaunches as ResponseLaunch,
+     ServerDeletes as ResponseDelete,
+     ServerExists as ResponseExist)
 
 
 class StackTachDBClient(AutoMarshallingRestClient):
