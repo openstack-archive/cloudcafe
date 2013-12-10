@@ -59,10 +59,9 @@ class VerificationsBehavior(object):
         """Creates verification using provided parameters or default
         configurations. Allows for testing individual parameters on creation.
         """
+        imp_allowed = impersonation_allowed
         if impersonation_allowed is None:
             imp_allowed = False
-        else:
-            imp_allowed = impersonation_allowed
 
         resp = self.create_verification(
             resource_type=resource_type or self.config.resource_type,
@@ -142,5 +141,3 @@ class VerificationsBehavior(object):
         for verification in verification_group.verifications:
             if verification.get_id() == verification_id:
                 return verification
-        else:
-            return None
