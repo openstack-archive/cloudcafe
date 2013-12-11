@@ -13,11 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import json
 
 import os
 from copy import deepcopy
-from datetime import datetime
 
 from cloudcafe.images.common.types import ImageVisibility, \
     ImageStatus, ImageContainerFormat, ImageDiskFormat
@@ -41,18 +40,18 @@ class TestImage(object):
             tags=[],
             checksum='69c33642f44ca552ba4bb8b66ad97e85',
             size=3714968,
-            created_at=datetime.strptime('2013-05-22T14:24:36Z',
-                                         '%Y-%m-%dT%H:%M:%SZ'),
-            updated_at=datetime.strptime('2013-05-22T14:24:36Z',
-                                         '%Y-%m-%dT%H:%M:%SZ'),
+            created_at='2013-05-22T14:24:36Z',
+            updated_at='2013-05-22T14:24:36Z',
             file_='/v2/images/21c697d1-2cc5-4a45-ba50-61fab15ab9b7/file',
             self_='/v2/images/21c697d1-2cc5-4a45-ba50-61fab15ab9b7',
             schema='/v2/schemas/image',
             container_format=ImageContainerFormat.ARI,
             disk_format=ImageDiskFormat.ARI,
             min_disk=0,
-            min_ram=0
-        )
+            min_ram=0,
+            additional_properties={})
+
+        cls.obj_dict = json.loads(cls.raw_image_str)
 
     def test_positive_equality(self):
         assert self.image_obj == deepcopy(self.image_obj)
@@ -60,24 +59,14 @@ class TestImage(object):
     def test_negative_equality(self):
         different_obj = deepcopy(self.image_obj)
         different_obj.name = 'cirros-fake'
-
         assert self.image_obj != different_obj
 
     def test_deserialization_from_json(self):
         deserialized_obj = Image._json_to_obj(self.raw_image_str)
-
         assert self.image_obj == deserialized_obj
 
     def test_dict_to_obj(self):
-        obj_dict = deepcopy(self.image_obj.__dict__)
-        obj_dict['created_at'] = '2013-05-22T14:24:36Z'
-        obj_dict['updated_at'] = '2013-05-22T14:24:36Z'
-        obj_dict['id'] = obj_dict.pop('id_')
-        obj_dict['self'] = obj_dict.pop('self_')
-        obj_dict['file'] = obj_dict.pop('file_')
-        image_obj = Image._dict_to_obj(obj_dict)
-
-        assert self.image_obj == image_obj
+        assert self.image_obj == Image._dict_to_obj(self.obj_dict)
 
     def test_serialization_to_json(self):
         serialized_obj = self.image_obj._obj_to_json()
