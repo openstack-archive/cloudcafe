@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import dateutil
-
 from cloudcafe.images.v2.models.image import Member
 
 
@@ -31,13 +29,13 @@ class TestMember(object):
             "schema": "/v2/schemas/member"
         }''')
 
-        cls.member_obj = \
+        cls.member_obj = (
             Member(member_id='someguy', status='accepted',
-                   created_at=dateutil.parser.parse('2013-09-17T12:51:03Z'),
-                   updated_at=dateutil.parser.parse('2013-09-17T13:14:28Z'),
-                   image_id='af61731b-7181-4831-821f-b868df122f5a')
+                   created_at='2013-09-17T12:51:03Z',
+                   updated_at='2013-09-17T13:14:28Z',
+                   image_id='af61731b-7181-4831-821f-b868df122f5a',
+                   schema="/v2/schemas/member"))
 
     def test_json_to_obj(self):
         deserialized_obj = Member._json_to_obj(self.raw_member_str)
-
         assert self.member_obj == deserialized_obj

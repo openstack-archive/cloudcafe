@@ -171,14 +171,14 @@ class ImageUpdate(AutoMarshallingModel):
             for key, val in self.add_dict.items():
                 replace_list.append(
                     {'add': '/{0}'.format(key),
-                     'value': val}
-                )
+                     'value': val})
+
         if self.replace_dict:
             for key, val in self.replace_dict.items():
                 replace_list.append(
                     {'replace': '/{0}'.format(key),
-                     'value': val}
-                )
+                     'value': val})
+
         if self.remove_list:
             for prop in self.remove_list:
                 replace_list.append(
@@ -228,11 +228,20 @@ class Member(AutoMarshallingModel):
 class Members(AutoMarshallingListModel):
     """@summary: Members v2 model"""
 
+    def __init__(self, members=None):
+        super(Members, self).__init__()
+        self.extend(members or [])
+
     @classmethod
     def _json_to_obj(cls, serialized_str):
         json_dict = json.loads(serialized_str)
-        return cls._list_to_obj(json_dict.get('members'))
+        dict_list = json_dict.get('members')
+        return cls._list_to_obj(dict_list)
 
     @classmethod
     def _list_to_obj(cls, dict_list):
-        return [Member._dict_to_obj(member_dict) for member_dict in dict_list]
+        members = Members()
+        for member_dict in dict_list:
+            member = Member._dict_to_obj(member_dict)
+            members.append(member)
+        return members
