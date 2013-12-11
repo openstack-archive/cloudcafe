@@ -18,7 +18,7 @@ from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.images.common.types import \
-    ImageContainerFormat, ImageDiskFormat, ImageVisibility
+    ImageContainerFormat, ImageDiskFormat
 
 
 class ImagesBehaviors(BaseBehavior):
@@ -41,12 +41,7 @@ class ImagesBehaviors(BaseBehavior):
             disk_format = ImageDiskFormat.RAW
         if name is None:
             name = rand_name('image')
-        if protected is None:
-            protected = False
-        if tags is None:
-            tags = []
-        if visibility is None:
-            visibility = ImageVisibility.PRIVATE
+
         response = self.client.create_image(
             container_format=container_format, disk_format=disk_format,
             name=name, protected=protected, tags=tags, visibility=visibility)
