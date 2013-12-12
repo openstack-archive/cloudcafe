@@ -16,8 +16,6 @@ limitations under the License.
 
 import os
 import sys
-import shutil
-import textwrap
 
 
 try:
@@ -52,51 +50,10 @@ def print_cafe_mug():
     print("========================================================")
 
 
-def install_default_configs():
-    from cafe.configurator.managers import (
-        EngineDirectoryManager, PlatformManager)
-
-    opencafe_root_dir = EngineDirectoryManager.OPENCAFE_ROOT_DIR
-
-    twrap = textwrap.TextWrapper(
-        initial_indent='* ', subsequent_indent='  ', break_long_words=False)
-    print twrap.fill(
-        'Installing reference configuration files in ...'.format(
-            opencafe_root_dir))
-
-    twrap = textwrap.TextWrapper(
-        initial_indent='  ', subsequent_indent='  ', break_long_words=False)
-
-    _printed = []
-    for root, subFolders, files in os.walk('configs'):
-        for file_ in files:
-            source = os.path.join(root, file_)
-            destination_dir = os.path.join(opencafe_root_dir, root)
-            destination_file = os.path.join(destination_dir, file_)
-
-            try:
-                #Create the expected directory structure if it doesn't already
-                #exist.
-                os.makedirs(destination_dir)
-                print twrap.fill('Creating path: {0}'.format(destination_dir))
-            except OSError:
-                #File exsits.  This is ok and expected.
-                pass
-
-            shutil.copyfile(source, destination_file)
-            if destination_dir not in _printed:
-                print twrap.fill('{0}'.format(destination_dir))
-                _printed.append(destination_dir)
-
-            if not PlatformManager.USING_WINDOWS:
-                uid = PlatformManager.get_user_uid()
-                gid = PlatformManager.get_user_gid()
-                os.chown(destination_file, uid, gid)
-
-
 #Post-install engine configuration
 def _post_install(dir):
-    install_default_configs()
+    from cafe.configurator.managers import EngineConfigManager
+    EngineConfigManager.install_optional_configs('configs')
     print_cafe_mug()
 
 
