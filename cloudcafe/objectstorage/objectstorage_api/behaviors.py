@@ -55,7 +55,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         randomstring = str(uuid.uuid4()).replace('-', '')
 
-        container_name = '{0}({1}{2})'.format(
+        container_name = '{0}_{1}{2}'.format(
             self.config.base_container_name, identifier,
             randomstring)
 
