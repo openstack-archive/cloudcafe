@@ -127,6 +127,7 @@ class ServerXMLDomainTest(unittest.TestCase, ServerDomainTest):
             xmlns="{docs_url}/compute/api/v1.1"
             status="ACTIVE" updated="2012-12-03T19:04:06Z"
             hostId="123"
+            tenant_id="660"
             name="testserver47476" created="2012-12-03T18:59:16Z"
             userId="199835" tenantId="660" accessIPv4="192.168.1.10"
             accessIPv6="2001:11:7811:69:cf10:c02d:ff10:fa"
