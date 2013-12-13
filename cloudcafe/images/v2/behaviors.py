@@ -14,12 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import re
+import calendar
 import time
 
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.exceptions import BuildErrorException, TimeoutException
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
+from cloudcafe.images.common.constants import ImageProperties, Messages
 from cloudcafe.images.common.types import ImageContainerFormat, \
     ImageDiskFormat, ImageStatus, Schemas
 
@@ -32,6 +35,8 @@ class ImagesBehaviors(BaseBehavior):
         self.config = images_config
         self.client = images_client
         self.resources = ResourcePool()
+        self.error_msg = Messages.ERROR_MSG
+        self.id_regex = re.compile(ImageProperties.ID_REGEX)
 
     def create_new_image(self, container_format=None, disk_format=None,
                          name=None, protected=None, tags=None,
@@ -110,6 +115,16 @@ class ImagesBehaviors(BaseBehavior):
         response = self.client.list_members(image_id)
         members = response.entity
         return [member.member_id for member in members]
+
+    def get_image_creation_offset(self, image_creation_time_in_sec,
+                                  time_property):
+        """
+        @summary: Calculate and return the difference between the image
+        creation time and a given image time_property
+        """
+
+        time_property_in_sec = calendar.timegm(time_property.timetuple())
+        return abs(time_property_in_sec - image_creation_time_in_sec)
 
     def validate_image(self, image):
         """@summary: Generically validate an image contains crucial expected
