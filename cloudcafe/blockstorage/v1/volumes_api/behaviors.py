@@ -51,14 +51,14 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def wait_for_volume_status(
-            self, volume_id, expected_status, timeout, wait_period=None):
+            self, volume_id, expected_status, timeout, poll_rate=5):
         """ Waits for a specific status and returns None when that status is
         observed.
         Note:  Unreliable for transient statuses like 'deleting'.
         """
 
-        wait_period = float(
-            wait_period or self.config.volume_status_poll_frequency)
+        poll_rate = int(
+            poll_rate or self.config.volume_status_poll_frequency)
         end_time = time() + int(timeout)
 
         while time() < end_time:
@@ -68,7 +68,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                 msg = (
                     "wait_for_volume_status() failure: "
                     "get_volume_info() call failed with status_code {0} while "
-                    "waiting for volume to reach the {1} status".format(
+                    "waiting for volume to reach the '{1}' status".format(
                         resp.status_code, expected_status))
                 self._log.error(msg)
                 raise VolumesAPIBehaviorException(msg)
@@ -86,8 +86,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                     'Expected Volume status "{0}" observed as expected'.format(
                         expected_status))
                 break
-
-            sleep(wait_period)
+            sleep(poll_rate)
 
         else:
             msg = (
