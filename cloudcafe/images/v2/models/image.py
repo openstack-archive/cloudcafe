@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import dateutil.parser
 import json
 
 from cafe.engine.models.base import \
@@ -87,9 +88,11 @@ class Image(AutoMarshallingModel):
                            'name', 'protected', 'schema', 'self', 'size',
                            'status', 'tags', 'updated_at', 'visibility']:
                 additional_properties.update({key: value})
+        created_at = dateutil.parser.parse(json_dict.get('created_at'))
+        updated_at = dateutil.parser.parse(json_dict.get('updated_at'))
         image = Image(checksum=json_dict.get('checksum'),
                       container_format=json_dict.get('container_format'),
-                      created_at=json_dict.get('created_at'),
+                      created_at=created_at,
                       disk_format=json_dict.get('disk_format'),
                       file_=json_dict.get('file'), id_=json_dict.get('id'),
                       min_disk=json_dict.get('min_disk'),
@@ -99,8 +102,7 @@ class Image(AutoMarshallingModel):
                       schema=json_dict.get('schema'),
                       self_=json_dict.get('self'), size=json_dict.get('size'),
                       status=json_dict.get('status'),
-                      tags=json_dict.get('tags'),
-                      updated_at=json_dict.get('updated_at'),
+                      tags=json_dict.get('tags'), updated_at=updated_at,
                       visibility=json_dict.get('visibility'),
                       additional_properties=additional_properties)
         return image
