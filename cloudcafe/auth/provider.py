@@ -31,31 +31,37 @@ from cloudcafe.identity.v2_0.tokens_api.behaviors import \
 class AuthProvider(object):
 
     @staticmethod
-    def get_access_data(endpoint_config=None, user_config=None):
+    def get_access_data_with_rax_strategy(
+            username, password, tenant_name, auth_endpoint):
+        token_client = OSTokenAPI_Client(auth_endpoint, 'json', 'json')
+        token_behaviors = OSTokenAPI_Behaviors(token_client)
+        return token_behaviors.get_access_data(
+            username, password, tenant_name)
+
+    @staticmethod
+    def get_access_data_with_keystone_strategy(
+            username, api_key, tenant_id, auth_endpoint):
+        token_client = RaxTokenAPI_Client(auth_endpoint, 'json', 'json')
+        token_behaviors = RaxTokenAPI_Behaviors(token_client)
+        return token_behaviors.get_access_data(username, api_key, tenant_id)
+
+    @classmethod
+    def get_access_data(cls, endpoint_config=None, user_config=None):
         endpoint_config = endpoint_config or UserAuthConfig()
         user_config = user_config or UserConfig()
 
         if endpoint_config.strategy.lower() == 'keystone':
-            token_client = OSTokenAPI_Client(
-                endpoint_config.auth_endpoint, 'json', 'json')
-            token_behaviors = OSTokenAPI_Behaviors(token_client)
-            return token_behaviors.get_access_data(user_config.username,
-                                                   user_config.password,
-                                                   user_config.tenant_name)
-
+            return cls.get_access_data_with_rax_strategy(
+                user_config.username, user_config.password,
+                user_config.tenant_name, endpoint_config.auth_endpoint)
         elif endpoint_config.strategy.lower() == 'rax_auth':
-            token_client = RaxTokenAPI_Client(
-                endpoint_config.auth_endpoint, 'json', 'json')
-            token_behaviors = RaxTokenAPI_Behaviors(token_client)
-            return token_behaviors.get_access_data(user_config.username,
-                                                   user_config.api_key,
-                                                   user_config.tenant_id)
-
+            return cls.get_access_data_with_keystone_strategy(
+                user_config.username, user_config.password,
+                user_config.tenant_name, endpoint_config.auth_endpoint)
         elif endpoint_config.strategy.lower() == 'saio_tempauth':
             auth_client = SaioAuthAPI_Client(endpoint_config.auth_endpoint)
             auth_behaviors = SaioAuthAPI_Behaviors(auth_client)
             return auth_behaviors.get_access_data(
                 user_config.username, user_config.password)
-
         else:
             raise NotImplementedError
