@@ -13,13 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.tools.datagen import random_int
 from cloudcafe.meniscus.common.tools import RequestUtilities
 
 
-class TenantBehaviors(object):
+class TenantBehaviors(BaseBehavior):
 
     def __init__(self, tenant_client, db_client, tenant_config, es_client):
+        super(TenantBehaviors, self).__init__()
         self.tenant_client = tenant_client
         self.db_client = db_client
         self.tenant_config = tenant_config
@@ -31,8 +33,12 @@ class TenantBehaviors(object):
         self.db_client.auth()
         for tenant_id in self.tenant_ids:
             self.db_client.remove_tenant(tenant_id)
-            self.es_client.wait_for_index(tenant_id)
-            self.es_client.delete_index(tenant_id)
+            self.es_client.wait_for_index(tenant_id, wait=1)
+            if self.es_client.has_index(tenant_id):
+                self.es_client.delete_index(tenant_id)
+            else:
+                self._log.info('Couldn\'t find ES index to delete.')
+
         self.db_client.disconnect()
         self.tenant_ids = []
 
