@@ -35,19 +35,30 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
         poll_rate = poll_rate or self.config.api_poll_rate
         endtime = time() + int(timeout)
         while time() < endtime:
-            resp = \
-                self.client.get_volume_attachment_details(
-                    attachment_id, server_id)
+            resp = self.client.get_volume_attachment_details(
+                attachment_id, server_id)
             if resp.ok:
                 return True
             sleep(poll_rate)
         else:
             return False
 
+    @behavior(VolumesClient)
+    def verify_volume_status_progression_during_attachment(
+            self, volume_id, state_list=None):
+
+        # (status, transient, timeout, poll_rate)
+        state_list = [
+            ('available', True, 5, 0),
+            ('attaching', False, 30, 1),
+            ('in-use', False, 60, 5)]
+
+        self.volumes_behaviors.verify_volume_status_progression(
+            volume_id, state_list)
+
     @behavior(VolumeAttachmentsAPIClient, VolumesClient)
     def attach_volume_to_server(
             self, server_id, volume_id, device=None,
-            expected_volume_status='in-use', volume_status_timeout=120,
             attachment_propagation_timeout=60):
         """Returns a VolumeAttachment object"""
 
@@ -82,15 +93,7 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
                 "propagate to the relevant cell within {2} seconds".format(
                     attachment.id_, server_id, attachment_propagation_timeout))
 
-        # Confirm volume status
-        try:
-            self.volumes_behaviors.wait_for_volume_status(
-                volume_id, expected_volume_status, volume_status_timeout)
-
-        except:
-            raise VolumeAttachmentBehaviorError(
-                "Volume did not attain the '{0}' status within {1}"
-                "seconds after being attached to a server".format(
-                    expected_volume_status, volume_status_timeout))
+        # Confirm volume status progression
+        self.verify_volume_status_progression_during_attachment(volume_id)
 
         return attachment

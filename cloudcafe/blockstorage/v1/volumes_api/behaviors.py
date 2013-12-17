@@ -50,6 +50,75 @@ class VolumesAPI_Behaviors(BaseBehavior):
         return timeout
 
     @behavior(VolumesClient)
+    def get_volume_status(self, volume_id):
+        resp = self.client.get_volume_info(volume_id=volume_id)
+
+        if not resp.ok:
+            msg = (
+                "get_volume_status() behavior failure:  get_volume_info() call"
+                "failed with a {0} status code".format(resp.status_code))
+            self._log.error(msg)
+            raise VolumesAPIBehaviorException(msg)
+
+        if resp.entity is None:
+            msg = (
+                "get_volume_status() behavior failure:  unable to deserialize"
+                "response from get_volume_info() call")
+            self._log.error(msg)
+            raise VolumesAPIBehaviorException(msg)
+
+        return resp.entity.status
+
+    @behavior(VolumesClient)
+    def verify_volume_status_progression(self, volume_id, state_list=None):
+
+        # (status, transient, timeout, poll_rate)
+        state_list = state_list or [
+            ('creating', True, 10, 0),
+            ('available', False, 30, 5)]
+
+        current_state = 0
+        for expected_status, transient, timeout, poll_rate in state_list:
+            self._log.debug(
+                "Current volume status progression state: expected_status: "
+                "{0}, transient: {1}, timeout: (2), poll_rate: (3)".format(
+                    expected_status, transient, timeout, poll_rate))
+
+            next_status, _, _, _ = state_list[current_state+1]
+            endtime = time() + int(timeout)
+            while time() < endtime:
+                current_status = self.get_volume_status(
+                    volume_id)
+                self._log.debug("Current status of volume {0}: {1}".format(
+                    volume_id, current_status))
+                if expected_status == current_status:
+                    current_state += 1
+                    self._log.debug(
+                        "Current status of volume {0} matches expected status"
+                        " {1}".format(volume_id, expected_status))
+                    break
+                elif transient and current_status == next_status:
+                    self._log.debug(
+                        "Next status '{0}' found while searching for transient"
+                        " status {1}".format(next_status, expected_status))
+                    break
+                sleep(poll_rate)
+            else:
+                if transient:
+                    self._log.debug(
+                        "Netiher the transient status {0} nor the next status "
+                        "{0} where found, continuing to next status "
+                        "search".format(expected_status, next_status))
+                    continue
+                else:
+                    msg = (
+                        "Volume did not progress to the {0} status in the "
+                        "alloted time of {1} seconds".format(
+                            expected_status, timeout))
+                    self._log.error(msg)
+                    raise VolumesAPIBehaviorException(msg)
+
+    @behavior(VolumesClient)
     def wait_for_volume_status(
             self, volume_id, expected_status, timeout, poll_rate=5):
         """ Waits for a specific status and returns None when that status is
@@ -62,32 +131,14 @@ class VolumesAPI_Behaviors(BaseBehavior):
         end_time = time() + int(timeout)
 
         while time() < end_time:
-            resp = self.client.get_volume_info(volume_id=volume_id)
-
-            if not resp.ok:
-                msg = (
-                    "wait_for_volume_status() failure: "
-                    "get_volume_info() call failed with status_code {0} while "
-                    "waiting for volume to reach the '{1}' status".format(
-                        resp.status_code, expected_status))
-                self._log.error(msg)
-                raise VolumesAPIBehaviorException(msg)
-
-            if resp.entity is None:
-                msg = (
-                    "wait_for_volume_status() failure: "
-                    "get_volume_info() response body did not deserialize.")
-                self._log.error(msg)
-                raise VolumesAPIBehaviorException(msg)
-
-            if resp.entity.status == expected_status:
+            status = self.get_volume_status(volume_id)
+            if status == expected_status:
                 self._log.info(
-                    "wait_for_volume_status() failure: "
-                    'Expected Volume status "{0}" observed as expected'.format(
+                    "Expected Volume status '{0}' observed as expected".format(
                         expected_status))
                 break
-            sleep(poll_rate)
 
+            sleep(poll_rate)
         else:
             msg = (
                 "wait_for_volume_status() ran for {0} seconds and did not "
@@ -272,9 +323,8 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
         end = time() + int(timeout)
         while time() < end:
-            #issue DELETE request on volume
             resp = self.client.delete_volume(volume_id)
-            if not resp.ok and resp.status_code != 404:
+            if not resp.ok and resp.status_code not in [404, 400]:
                 msg = (
                     "delete_volume_confirmed() call to delete_volume() failed "
                     "with a '{0}'".format(resp.status_code))
