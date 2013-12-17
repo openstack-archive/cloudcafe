@@ -1,0 +1,9 @@
+Change-Id: I44a08a7c9c4ed9d26ae7fe20bb6e91341d0686ba
+Verified+2: Jenkins
+Approved+1: jose-idar <jose.idar@rackspace.com>
+Code-Review+2: jose-idar <jose.idar@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 17 Dec 2013 21:04:09 +0000
+Reviewed-on: https://review.openstack.org/62758
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
