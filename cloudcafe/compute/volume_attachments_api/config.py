@@ -22,16 +22,23 @@ class VolumeAttachmentsAPIConfig(ConfigSectionInterface):
     SECTION_NAME = 'volume_attachments'
 
     @property
+    def attachment_timeout(self):
+        """
+        Maximum time to wait before assuming the attachment will not succeede
+        """
+        return int(self.get("attachment_timeout", 120))
+
+    @property
     def attachment_propagation_timeout(self):
         """
         Seconds it should take for a new volume attachment instance to
-        propagate.
+        propagate through cells.
         """
-        return self.get("attachment_propagation_timeout", 60)
+        return int(self.get("attachment_propagation_timeout", 60))
 
     @property
     def api_poll_rate(self):
         """
         Seconds to wait between polling the os-volume_attachments API in loops.
         """
-        return self.get("api_poll_rate", 5)
+        return int(self.get("api_poll_rate", 5))
