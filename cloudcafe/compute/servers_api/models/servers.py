@@ -285,7 +285,7 @@ class ServerMins(AutoMarshallingListModel):
 
     @classmethod
     def _list_to_obj(cls, server_dict_list):
-        servers = ServerMin()
+        servers = ServerMins()
         for server_dict in server_dict_list:
             server = cls.server_type._dict_to_obj(server_dict)
             servers.append(server)
@@ -300,7 +300,7 @@ class ServerMins(AutoMarshallingListModel):
 
     @classmethod
     def _xml_list_to_obj(cls, xml_list):
-        servers = ServerMin()
+        servers = ServerMins()
         for ele in xml_list:
             servers.append(cls.server_type._xml_ele_to_obj(ele))
         return servers
