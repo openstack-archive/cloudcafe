@@ -516,4 +516,5 @@ class EventIdDetails(StacktachBaseListModel):
             entity_dict[result[0]] = result[1]
         entity_dict['actual_event'] = results_list[1]
         entity = domain_model_type._dict_to_obj(entity_dict)
-        return entity
+        list_domain_model.append(entity)
+        return list_domain_model
