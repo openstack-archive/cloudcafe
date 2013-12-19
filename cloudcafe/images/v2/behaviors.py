@@ -72,36 +72,37 @@ class ImagesBehaviors(BaseBehavior):
             image_list.append(image)
         return image_list
 
-    def list_images_pagination(self, name=None, disk_format=None,
-                               container_format=None, visibility=None,
-                               status=None, checksum=None, owner=None,
-                               min_ram=None, min_disk=None, changes_since=None,
-                               protected=None, size_min=None, size_max=None,
-                               sort_key=None, sort_dir=None, marker=None,
-                               limit=None):
+    def list_images_pagination(self, changes_since=None, checksum=None,
+                               container_format=None, disk_format=None,
+                               limit=None, marker=None, member_status=None,
+                               min_disk=None, min_ram=None, name=None,
+                               owner=None, protected=None, size_max=None,
+                               size_min=None, sort_dir=None, sort_key=None,
+                               status=None, visibility=None):
         """@summary: Get images accounting for pagination as needed"""
 
         image_list = []
         results_limit = self.config.results_limit
         response = self.client.list_images(
-            name=name, disk_format=disk_format,
-            container_format=container_format, visibility=visibility,
-            status=status, checksum=checksum, owner=owner, min_ram=min_ram,
-            min_disk=min_disk, changes_since=changes_since,
-            protected=protected, size_min=size_min, size_max=size_max,
-            sort_key=sort_key, sort_dir=sort_dir, marker=marker, limit=limit)
+            changes_since=changes_since, checksum=checksum,
+            container_format=container_format, disk_format=disk_format,
+            limit=limit, marker=marker, member_status=member_status,
+            min_disk=min_disk, min_ram=min_ram, name=name, owner=owner,
+            protected=protected, size_max=size_max, size_min=size_min,
+            sort_dir=sort_dir, sort_key=sort_key, status=status,
+            visibility=visibility)
         images = response.entity
         while len(images) == results_limit:
             image_list += images
             marker = images[results_limit - 1].id_
             response = self.client.list_images(
-                name=name, disk_format=disk_format,
-                container_format=container_format, visibility=visibility,
-                status=status, checksum=checksum, owner=owner, min_ram=min_ram,
-                min_disk=min_disk, changes_since=changes_since,
-                protected=protected, size_min=size_min, size_max=size_max,
-                sort_key=sort_key, sort_dir=sort_dir, marker=marker,
-                limit=limit)
+                changes_since=changes_since, checksum=checksum,
+                container_format=container_format, disk_format=disk_format,
+                limit=limit, marker=marker, member_status=member_status,
+                min_disk=min_disk, min_ram=min_ram, name=name, owner=owner,
+                protected=protected, size_max=size_max, size_min=size_min,
+                sort_dir=sort_dir, sort_key=sort_key, status=status,
+                visibility=visibility)
             images = response.entity
         image_list += images
         return image_list
