@@ -102,17 +102,29 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get('results_limit'))
 
     @property
-    def image_schema_json(self):
-        return self.get('image_schema_json')
-
-    @property
-    def images_schema_json(self):
-        return self.get('images_schema_json')
-
-    @property
     def created_at_offset(self):
         return self.get('created_at_offset')
 
     @property
     def updated_at_offset(self):
         return self.get('updated_at_offset')
+
+    @property
+    def image_schema_json(self):
+        """Path to json file which contains the image schema data"""
+        return self.get('image_schema_json')
+
+    @property
+    def images_schema_json(self):
+        """Path to json file which contains the images schema data"""
+        return self.get('images_schema_json')
+
+    @property
+    def image_member_schema_json(self):
+        """Path to json file which contains the image member schema data"""
+        return self.get('image_member_schema_json')
+
+    @property
+    def image_members_schema_json(self):
+        """Path to json file which contains the image members schema data"""
+        return self.get('image_members_schema_json')
