@@ -17,9 +17,9 @@ limitations under the License.
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 
 from cloudcafe.stacktach.stacky_api.models.stacky_api import \
-    (Deployments, EventNames, HostNames, TimingsSummary, UuidTimingsSummary,
-     EventNameTimings, EventDetails, KpiDetails, WatchEvents, Reports,
-     EventIdDetails)
+    (Deployments, EventNames, HostNames, TimingsSummaries,
+     UuidTimingsSummaries, EventNameTimings, EventDetails, KpiDetails,
+     WatchEvents, Reports, EventIdDetails)
 
 
 class StackTachClient(AutoMarshallingRestClient):
@@ -86,7 +86,7 @@ class StackTachClient(AutoMarshallingRestClient):
             stacky/summary/
         """
         url = '{0}{1}'.format(self.url, '/stacky/summary/')
-        return self.request('GET', url, response_entity_type=TimingsSummary,
+        return self.request('GET', url, response_entity_type=TimingsSummaries,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_timings_for_uuid(self, uuid, requestslib_kwargs=None):
@@ -103,7 +103,7 @@ class StackTachClient(AutoMarshallingRestClient):
         params = {'uuid': uuid}
         url = '{0}{1}'.format(self.url, '/stacky/timings/uuid/')
         return self.request('GET', url, params=params,
-                            response_entity_type=UuidTimingsSummary,
+                            response_entity_type=UuidTimingsSummaries,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_timings_for_event_name(self, event, requestslib_kwargs=None):
@@ -199,11 +199,12 @@ class StackTachClient(AutoMarshallingRestClient):
         @rtype:  Response Object
 
             GET
-            stacky/watch/{deployment_id}/{service}/
+            stacky/watch/{deployment_id}/?service={service}
         """
-        url = '{0}{1}{2}/{3}/'.format(self.url, '/stacky/watch/',
-                                      deployment_id, service)
-        return self.request('GET', url, response_entity_type=WatchEvents,
+        params = {'service': service}
+        url = '{0}{1}{2}/'.format(self.url, '/stacky/watch/', deployment_id)
+        return self.request('GET', url, params=params,
+                            response_entity_type=WatchEvents,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_event_id_details(self, event_id, service, requestslib_kwargs=None):
