@@ -79,18 +79,20 @@ class ImagesClient(AutoMarshallingRestClient):
 
     def list_images(self, changes_since=None, checksum=None,
                     container_format=None, disk_format=None, limit=None,
-                    marker=None, min_disk=None, min_ram=None, name=None,
-                    owner=None, protected=None, size_max=None, size_min=None,
-                    sort_dir=None, sort_key=None, status=None, visibility=None,
-                    requestslib_kwargs=None, **param_kwargs):
+                    marker=None, member_status=None, min_disk=None,
+                    min_ram=None, name=None, owner=None, protected=None,
+                    size_max=None, size_min=None, sort_dir=None, sort_key=None,
+                    status=None, visibility=None, requestslib_kwargs=None,
+                    **param_kwargs):
         """@summary: List all images"""
 
         url = '{0}/images'.format(self.base_url)
         params = {'changes_since': changes_since, 'checksum': checksum,
                   'container_format': container_format,
                   'disk_format': disk_format, 'limit': limit, 'marker': marker,
-                  'min_disk': min_disk, 'min_ram': min_ram, 'name': name,
-                  'owner': owner, 'protected': protected, 'size_max': size_max,
+                  'member_status': member_status, 'min_disk': min_disk,
+                  'min_ram': min_ram, 'name': name, 'owner': owner,
+                  'protected': protected, 'size_max': size_max,
                   'size_min': size_min, 'sort_dir': sort_dir,
                   'sort_key': sort_key, 'status': status,
                   'visibility': visibility}
