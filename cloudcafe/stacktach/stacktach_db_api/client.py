@@ -17,9 +17,8 @@ limitations under the License.
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 
 from cloudcafe.stacktach.stacktach_db_api.models.stacktach_db_api import \
-    (ServerLaunches as ResponseLaunch,
-     ServerDeletes as ResponseDelete,
-     ServerExists as ResponseExist)
+    (ServerLaunch, ServerLaunches, ServerDelete, ServerDeletes,
+     ServerExist, ServerExists)
 
 
 class StackTachDBClient(AutoMarshallingRestClient):
@@ -43,14 +42,14 @@ class StackTachDBClient(AutoMarshallingRestClient):
         @param event_id:  An identifier of an event within the StackTach DB
         @type event_id: String
         @return: Launch details of an event
-        @rtype:  ResponseLaunch Object
+        @rtype:  ServerLaunch Object
 
             GET
             /db/usage/launches/{event_id}/
         """
         url = "{0}{1}{2}".format(self.url, '/db/usage/launches/', event_id)
         return self.request('GET', url,
-                            response_entity_type=ResponseLaunch,
+                            response_entity_type=ServerLaunch,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_delete(self, event_id, requestslib_kwargs=None):
@@ -59,14 +58,14 @@ class StackTachDBClient(AutoMarshallingRestClient):
         @param event_id:  An identifier of an event within the StackTach DB
         @type event_id: String
         @return: Delete details of an event
-        @rtype:  ResponseDelete Object
+        @rtype:  ServerDelete Object
 
             GET
             /db/usage/deletes/{event_id}/
         """
         url = "{0}{1}{2}".format(self.url, '/db/usage/deletes/', event_id)
         return self.request('GET', url,
-                            response_entity_type=ResponseDelete,
+                            response_entity_type=ServerDelete,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_exist(self, event_id, requestslib_kwargs=None):
@@ -75,14 +74,14 @@ class StackTachDBClient(AutoMarshallingRestClient):
         @param event_id:  An identifier of an event within the StackTach DB
         @type event_id: String
         @return: Launch details of an event
-        @rtype:  ResponseExist Object
+        @rtype:  ServerExist Object
 
             GET
             /db/usage/exists/{event_id}/
         """
         url = "{0}{1}{2}".format(self.url, '/db/usage/exists/', event_id)
         return self.request('GET', url,
-                            response_entity_type=ResponseExist,
+                            response_entity_type=ServerExist,
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_exists(self, instance=None, requestslib_kwargs=None):
@@ -92,7 +91,7 @@ class StackTachDBClient(AutoMarshallingRestClient):
         @param instance: The uuid of the server
         @type instance: String
         @return: Dictionary key:'exists' with value as a list of exists events
-        @rtype:  ResponseExist Object
+        @rtype:  ServerExists Object
         @note: Date filters not supported
             GET
             /db/usage/exists/
@@ -107,7 +106,7 @@ class StackTachDBClient(AutoMarshallingRestClient):
 
         url = "{0}{1}".format(self.url, '/db/usage/exists/')
         return self.request('GET', url, params=params,
-                            response_entity_type=ResponseExist,
+                            response_entity_type=ServerExists,
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_launches(self, launched_at_min=None, launched_at_max=None,
@@ -126,7 +125,7 @@ class StackTachDBClient(AutoMarshallingRestClient):
         @return: Dictionary, key:'launches' with value: an unordered list of
             launch events starting at launched_at_min and ending at
             launched_at_max
-        @rtype:  ResponseLaunch Object
+        @rtype:  ServerLaunches Object
         @note: depending on the existence of the params, different GETs
             will be executed
 
@@ -162,7 +161,7 @@ class StackTachDBClient(AutoMarshallingRestClient):
 
         url = "{0}{1}".format(self.url, '/db/usage/launches/')
         return self.request('GET', url, params=params,
-                            response_entity_type=ResponseLaunch,
+                            response_entity_type=ServerLaunches,
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_deletes(self, deleted_at_min=None, deleted_at_max=None,
@@ -181,7 +180,7 @@ class StackTachDBClient(AutoMarshallingRestClient):
         @return: Dictionary, key:'deletes' with value: an unordered list of
             delete events starting at deleted_at_min and ending at
             deleted_at_max
-        @rtype:  ResponseDelete Object
+        @rtype:  ServerDeletes Object
         @note: depending on the existence of the param different GETs
             will be executed
 
@@ -217,5 +216,5 @@ class StackTachDBClient(AutoMarshallingRestClient):
 
         url = "{0}{1}".format(self.url, '/db/usage/deletes/')
         return self.request('GET', url, params=params,
-                            response_entity_type=ResponseDelete,
+                            response_entity_type=ServerDeletes,
                             requestslib_kwargs=requestslib_kwargs)
