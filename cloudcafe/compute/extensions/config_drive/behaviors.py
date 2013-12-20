@@ -19,6 +19,7 @@ from cloudcafe.compute.extensions.config_drive.models.\
     config_drive_openstack_meta import OpenStackMeta
 from cloudcafe.compute.extensions.config_drive.models.\
     config_drive_ec_metadata import EcMetadata
+import unittest
 
 
 class ConfigDriveBehaviors(BaseBehavior):
@@ -97,3 +98,23 @@ class ConfigDriveBehaviors(BaseBehavior):
         else:
             dir_cloud_config_present = False
         return dir_cloud_config_present
+
+    def get_test_values(self, file_path, base_path_to_mount, server,
+                        server_config, private_key, filepath):
+        """
+        @summary:Returns user data, directory size and metadata
+        @return: user data, directory details and metadata
+        @rtype: String
+        """
+
+        remote_client = self.server_behaviors.get_remote_instance_client(
+            server, server_config, key=private_key)
+        self.user_data = remote_client.get_file_details(
+            file_path=file_path).content
+        self.kb_size = remote_client.get_directory_details(base_path_to_mount)
+        self.openstack_meta = remote_client.get_file_details(
+            file_path=filepath)
+        return_values = (
+            self.user_data, self.kb_size,
+            OpenStackMeta.deserialize(self.openstack_meta.content, 'json'))
+        return return_values
