@@ -45,6 +45,7 @@ class ImageMemberStatus(object):
     ACCEPTED = 'accepted'
     PENDING = 'pending'
     REJECTED = 'rejected'
+    ALL = 'all'
 
 
 class ImageStatus(object):
@@ -64,6 +65,7 @@ class ImageVisibility(object):
 
     PUBLIC = 'public'
     PRIVATE = 'private'
+    SHARED = 'shared'
 
 
 class Schemas(object):
