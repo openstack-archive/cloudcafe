@@ -34,35 +34,6 @@ class WorkerStatusClient(AutoMarshallingRestClient):
             base=self.url, version=self.api_version, worker_id=worker_id)
         return url
 
-    def update_status(self, worker_id, worker_token, status=None,
-                      os_type=None, memory_mb=None, architecture=None,
-                      cpu_cores=None, timestamp=None, one=None,
-                      five=None, fifteen=None, disks=None):
-
-        url = self._get_remote_url(worker_id)
-        disk_usage = WorkerDiskUsage._dict_to_obj(disks)
-        load_average = WorkerLoadAverage(one, five, fifteen)
-        system_info = SystemInfo(
-            disk_usage=disk_usage,
-            os_type=os_type,
-            memory_mb=memory_mb,
-            architecture=architecture,
-            cpu_cores=cpu_cores,
-            load_average=load_average,
-            timestamp=timestamp)
-
-        req_obj = WorkerStatusUpdate(status=status, system_info=system_info)
-        headers = {'WORKER-TOKEN': worker_token}
-        resp = self.request('PUT', url, headers=headers,
-                            request_entity=req_obj)
-        return resp
-
-    def direct_update(self, worker_id, worker_token, body):
-        """Allows direct access for negative testing ONLY!"""
-        url = self._get_remote_url(worker_id)
-        headers = {'WORKER-TOKEN': worker_token}
-        return self.request('PUT', url, headers=headers)
-
     def get_worker_status(self, worker_id):
         url = '{base}/{version}/worker/{worker_id}/status'.format(
             base=self.url, version=self.api_version, worker_id=worker_id)

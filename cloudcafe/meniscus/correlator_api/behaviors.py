@@ -57,8 +57,10 @@ class PublishingBehaviors(object):
         if tenant_id is None:
             tenant_id = self.tenant_id
 
-        resp = self.storage_client.find_term(name='time', value=timestamp,
-                                             size=num_messages)
+        resp = self.storage_client.wait_for_messages(name='time',
+                                                     value=timestamp,
+                                                     num=num_messages,
+                                                     max_wait=2)
 
         # Copying all of the models into a fresh list
         return [model for model in resp]
