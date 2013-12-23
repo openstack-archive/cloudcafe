@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.identity.v2_0.tokens_api.models.requests.auth import \
     Auth as AuthRequest
 from cloudcafe.identity.v2_0.tokens_api.models.responses.access import \
@@ -26,7 +26,7 @@ _version = 'v2.0'
 _tokens = 'tokens'
 
 
-class BaseTokenAPI_Client(AutoMarshallingRestClient):
+class BaseTokenAPI_Client(AutoMarshallingHTTPClient):
     def __init__(self, serialize_format, deserialize_format=None):
         super(BaseTokenAPI_Client, self).__init__(serialize_format,
                                                   deserialize_format)
