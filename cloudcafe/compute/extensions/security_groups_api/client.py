@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.extensions.security_groups_api.models.requests \
     import CreateSecurityGroup, CreateSecurityGroupRule
 from cloudcafe.compute.extensions.security_groups_api.models.security_group \
@@ -23,7 +23,7 @@ from cloudcafe.compute.extensions.security_groups_api.models.\
     security_group_rule import SecurityGroupRule
 
 
-class SecurityGroupsClient(AutoMarshallingRestClient):
+class SecurityGroupsClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):
@@ -73,7 +73,7 @@ class SecurityGroupsClient(AutoMarshallingRestClient):
         return resp
 
 
-class SecurityGroupRulesClient(AutoMarshallingRestClient):
+class SecurityGroupRulesClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.quotas_api.models.quotas import Quota
 from cloudcafe.compute.quotas_api.models.requests import UpdateQuotaRequest
 
 
-class QuotasClient(AutoMarshallingRestClient):
+class QuotasClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

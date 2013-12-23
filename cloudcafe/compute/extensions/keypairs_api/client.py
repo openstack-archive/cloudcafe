@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.extensions.keypairs_api.models.requests \
     import CreateKeypair
 from cloudcafe.compute.extensions.keypairs_api.models.keypair \
     import Keypair, Keypairs
 
 
-class KeypairsClient(AutoMarshallingRestClient):
+class KeypairsClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

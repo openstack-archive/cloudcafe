@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.hosts_api.models.hosts import Host
 from cloudcafe.compute.hosts_api.models.requests import UpdateHostRequest
 from cloudcafe.compute.hosts_api.models.responses import HostUpdateResponse
 
 
-class HostsClient(AutoMarshallingRestClient):
+class HostsClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

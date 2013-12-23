@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
@@ -33,7 +33,7 @@ from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     Rebuild, ResetState, CreateBackup, LiveMigrateServer
 
 
-class ServersClient(AutoMarshallingRestClient):
+class ServersClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

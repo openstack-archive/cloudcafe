@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.servers_api.models.servers import Server
 from cloudcafe.compute.extensions.rescue_api.models.requests import \
     RescueMode, ExitRescueMode
@@ -23,7 +23,7 @@ from cloudcafe.compute.extensions.rescue_api.models.responses import \
     RescueResponse
 
 
-class RescueClient(AutoMarshallingRestClient):
+class RescueClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

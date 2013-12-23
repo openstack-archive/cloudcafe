@@ -14,16 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
-
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.extensions.vnc_console_api.models.requests\
     import GetVncConsole
-
 from cloudcafe.compute.extensions.vnc_console_api.models.vnc_console\
     import VncConsole
 
 
-class VncConsoleClient(AutoMarshallingRestClient):
+class VncConsoleClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

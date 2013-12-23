@@ -16,7 +16,7 @@ limitations under the License.
 
 from urlparse import urlparse
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.flavors_api.models.flavor import \
     Flavor, CreateFlavor, Flavors, FlavorMins
 from cloudcafe.compute.flavors_api.models.flavor_extra_specs import \
@@ -25,7 +25,7 @@ from cloudcafe.compute.flavors_api.models.flavor_access import (
     AddTenantFlavorAccess, FlavorAccessList, RemoveTenantFlavorAccess)
 
 
-class FlavorsClient(AutoMarshallingRestClient):
+class FlavorsClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None):

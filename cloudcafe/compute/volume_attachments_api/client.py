@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.volume_attachments_api.models.requests import \
     VolumeAttachmentRequest
 from cloudcafe.compute.volume_attachments_api.models.responses import \
     VolumeAttachmentResponse, VolumeAttachmentListResponse
 
 
-class VolumeAttachmentsAPIClient(AutoMarshallingRestClient):
+class VolumeAttachmentsAPIClient(AutoMarshallingHTTPClient):
 
     def __init__(
             self, url, auth_token, serialize_format=None,

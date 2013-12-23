@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
 from cloudcafe.compute.images_api.models.image import Image, Images, ImageMins
 
 
-class ImagesClient(AutoMarshallingRestClient):
+class ImagesClient(AutoMarshallingHTTPClient):
 
     '''
     Client for Image API
