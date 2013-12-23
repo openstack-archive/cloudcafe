@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.identity.v2_0.tenants_api.models.responses.tenant import \
     Tenants, Tenant
 from cloudcafe.identity.v2_0.tenants_api.models.responses.role import \
@@ -29,7 +29,7 @@ _version = 'v2.0'
 _admin_extensions = AdminExtensions.OS_KS_ADM
 
 
-class TenantsAPI_Client(AutoMarshallingRestClient):
+class TenantsAPI_Client(AutoMarshallingHTTPClient):
     def __init__(self, url, auth_token,
                  serialize_format=None, deserialize_format=None):
         """
