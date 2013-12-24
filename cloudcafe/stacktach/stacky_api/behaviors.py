@@ -25,21 +25,43 @@ class StackTachBehavior(BaseBehavior):
         self.config = stacktach_config
         self.client = stacktach_client
 
-    def get_uuid_from_event_id_details(self, event_id='1'):
+    def get_uuid_from_event_id_details(self, service, event_id='1'):
         """
         @summary: Gets the uuid of an instance from the event id details
         @param event_id: The event_id in Stacky
         @type event_id: String
+        @param service: Service/Product e.g. nova or glance
+        @type service: String
         @return: uuid of instance
         @rtype: String
         """
-        response = self.client.get_event_id_details(event_id)
+        response = self.client.get_event_id_details(event_id=event_id,
+                                                    service=service)
         try:
-            uuid = response.entity.uuid
+            uuid = response.entity[0].uuid
         except AttributeError as err:
             raise Exception("UUID was not found in response: {0}"
-                            "error: {1}".format(response, err))
+                            "\nError: {1}".format(vars(response), err))
         return uuid
+
+    def get_request_id_from_event_id_details(self, service, event_id='1'):
+        """
+        @summary: Gets the request_id from the event id details
+        @param event_id: The event_id in Stacky
+        @type event_id: String
+        @param service: Service/Product e.g. nova or glance
+        @type service: String
+        @return: request_id
+        @rtype: String
+        """
+        response = self.client.get_event_id_details(event_id=event_id,
+                                                    service=service)
+        try:
+            request_id = response.entity[0].request_id
+        except AttributeError as err:
+            raise Exception("Request id was not found in response: {0}"
+                            "\n Error: {1}".format(vars(response), err))
+        return request_id
 
     def get_report_id_by_report_name(self, report_name):
         """
