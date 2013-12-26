@@ -59,6 +59,17 @@ class SecretsClient(BarbicanRestClient):
 
         return resp
 
+
+    def create_secret_with_no_json(self):
+        """
+        POST http://.../v1/{tenant_id}/secrets but do not pass any POST data
+        """
+        remote_url = '{base}/secrets'.format(base=self._get_base_url())
+
+        resp = self.request('POST', remote_url, response_entity_type=SecretRef)
+
+        return resp
+
     def add_secret_payload(self, secret_id, payload_content_type, payload,
                            payload_content_encoding=None):
         """
