@@ -98,6 +98,15 @@ class SecretsBehaviors(object):
             self.created_secrets.append(secret_id)
         return behavior_response
 
+    def create_secret_with_no_json(self):
+        """Create a secret but do not pass any JSON in POST data."""
+        resp = self.client.create_secret_with_no_json()
+        behavior_response = CloudkeepResponse(resp=resp)
+        secret_id = behavior_response.id
+        if secret_id is not None:
+            self.created_secrets.append(secret_id)
+        return behavior_response
+
     def delete_secret(self, secret_id):
         self.remove_from_created_secrets(secret_id=secret_id)
         resp = self.client.delete_secret(secret_id)

@@ -59,10 +59,17 @@ class SecretsClient(BarbicanRestClient):
 
         return resp
 
+    def create_secret_with_no_json(self):
+        """Create secret but do not pass any JSON."""
+        remote_url = '{base}/secrets'.format(base=self._get_base_url())
+
+        resp = self.request('POST', remote_url, response_entity_type=SecretRef)
+
+        return resp
+
     def add_secret_payload(self, secret_id, payload_content_type, payload,
                            payload_content_encoding=None):
-        """
-        PUT http://.../v1/{tenant_id}/secrets/{secret_uuid}
+        """PUT http://.../v1/{tenant_id}/secrets/{secret_uuid}
         Allows the user to upload secret data for a specified secret if
         the secret doesn't already exist
         """
