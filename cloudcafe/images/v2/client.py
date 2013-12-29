@@ -15,8 +15,9 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.images.v2.models.image import \
-    Image, Images, ImageUpdate, Member, Members
+from cloudcafe.images.v2.models.image import (Image, Images, ImageUpdate,
+                                              Member, Members)
+from cloudcafe.images.v2.models.task import Task, Tasks
 
 
 class ImagesClient(AutoMarshallingRestClient):
@@ -202,10 +203,44 @@ class ImagesClient(AutoMarshallingRestClient):
         """@summary: Get schema of the tasks object"""
 
         url = '{0}/{1}'.format(self.base_url, 'schemas/tasks')
+
         return self.request('GET', url, requestslib_kwargs=requestslib_kwargs)
 
     def get_task_schema(self, requestslib_kwargs=None):
         """@summary: Get schema of the task object"""
 
         url = '{0}/{1}'.format(self.base_url, 'schemas/task')
+
         return self.request('GET', url, requestslib_kwargs=requestslib_kwargs)
+
+    def create_task(self, input_=None, type_=None, requestslib_kwargs=None):
+        """@summary: Create a new task"""
+
+        task = Task(input_=input_, type_=type_)
+
+        url = '{0}/tasks'.format(self.base_url)
+
+        return self.request('POST', url, request_entity=task,
+                            response_entity_type=Task,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def get_task(self, task_id, requestslib_kwargs=None):
+        """@summary: Get a single task"""
+
+        url = '{0}/tasks/{1}'.format(self.base_url, task_id)
+
+        return self.request('GET', url, response_entity_type=Task,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def list_tasks(self, limit=None, marker=None, sort_dir=None, status=None,
+                   type_=None, requestslib_kwargs=None):
+        """@summary: List all tasks"""
+
+        url = '{0}/tasks'.format(self.base_url)
+
+        params = {'limit': limit, 'marker': marker, 'sort_dir': sort_dir,
+                  'status': status, 'type_': type_}
+
+        return self.request('GET', url, params=params,
+                            response_entity_type=Tasks,
+                            requestslib_kwargs=requestslib_kwargs)
