@@ -77,3 +77,20 @@ class Schemas(object):
     IMAGE_MEMBERS_SCHEMA = '/v2/schemas/members'
     TASK_SCHEMA = '/v2/schemas/task'
     TASKS_SCHEMA = '/v2/schemas/tasks'
+
+
+class TaskStatus(object):
+    """@summary: Types denoting a Task's status"""
+
+    PENDING = 'pending'
+    PROCESSING = 'processing'
+    SUCCESS = 'success'
+    FAILURE = 'failure'
+
+
+class TaskTypes(object):
+    """@summary: Types denoting a Task's types"""
+
+    IMPORT = 'import'
+    EXPORT = 'export'
+    CLONE = 'clone'
