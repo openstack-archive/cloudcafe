@@ -103,11 +103,38 @@ class ImagesConfig(ConfigSectionInterface):
 
     @property
     def created_at_offset(self):
-        return self.get('created_at_offset')
+        """Maximum number of seconds that created_at can differ"""
+        return int(self.get('created_at_offset'))
 
     @property
     def updated_at_offset(self):
-        return self.get('updated_at_offset')
+        """Maximum number of seconds that updated_at can differ"""
+        return int(self.get('updated_at_offset'))
+
+    @property
+    def expires_at_offset(self):
+        """Maximum number of seconds that expires_at can differ"""
+        return int(self.get('expires_at_offset'))
+
+    @property
+    def import_from(self):
+        """Location from which to import a given file"""
+        return self.get('import_from')
+
+    @property
+    def import_from_format(self):
+        """Format for which to import the a given file"""
+        return self.get('import_from_format')
+
+    @property
+    def task_status_interval(self):
+        """Amount of time to wait between polling the status of a task"""
+        return int(self.get("task_status_interval"))
+
+    @property
+    def task_timeout(self):
+        """Length of time to wait before giving up on reaching a status"""
+        return int(self.get("task_timeout"))
 
     @property
     def image_schema_json(self):
@@ -128,3 +155,13 @@ class ImagesConfig(ConfigSectionInterface):
     def image_members_schema_json(self):
         """Path to json file which contains the image members schema data"""
         return self.get('image_members_schema_json')
+
+    @property
+    def task_schema_json(self):
+        """Path to json file which contains the task schema data"""
+        return self.get('task_schema_json')
+
+    @property
+    def tasks_schema_json(self):
+        """Path to json file which contains the tasks schema data"""
+        return self.get('tasks_schema_json')
