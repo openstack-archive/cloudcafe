@@ -23,8 +23,9 @@ from cloudcafe.common.exceptions import BuildErrorException, TimeoutException
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.images.common.constants import ImageProperties, Messages
-from cloudcafe.images.common.types import ImageContainerFormat, \
-    ImageDiskFormat, ImageStatus, Schemas
+from cloudcafe.images.common.types import (
+    ImageContainerFormat, ImageDiskFormat, ImageStatus, Schemas, TaskStatus,
+    TaskTypes)
 
 
 class ImagesBehaviors(BaseBehavior):
@@ -223,3 +224,140 @@ class ImagesBehaviors(BaseBehavior):
                     timeout, image_id, desired_status))
 
         return resp
+
+    def create_new_task(self, input_=None, type_=None):
+        """@summary: Create new task and wait for success status"""
+
+        if input_ is None:
+            input_ = {'image_properties': {},
+                      'import_from': self.config.import_from,
+                      'import_from_format': self.config.import_from_format}
+        if type_ is None:
+            type_ = TaskTypes.IMPORT
+
+        response = self.client.create_task(input_=input_, type_=type_)
+
+        task_id = response.entity.id_
+
+        task = self.wait_for_task_status(task_id, TaskStatus.SUCCESS)
+
+        return task
+
+    def create_new_tasks(self, input_=None, type_=None, count=1):
+        """@summary: Create new tasks and wait for success status for each"""
+
+        task_list = []
+
+        for i in range(count):
+            task = self.create_new_task(input_=input_, type_=type_)
+            task_list.append(task)
+
+        return task_list
+
+    def list_tasks_pagination(self, limit=None, marker=None, sort_dir=None,
+                              status=None, type_=None):
+        """@summary: Get tasks accounting for pagination as needed"""
+
+        task_list = []
+        results_limit = limit or self.config.results_limit
+
+        response = self.client.list_tasks(
+            limit=limit, marker=marker, sort_dir=sort_dir, status=status,
+            type_=type_)
+
+        tasks = response.entity
+
+        while len(tasks) == results_limit:
+            task_list += tasks
+            marker = tasks[results_limit - 1].id_
+            response = self.client.list_tasks(
+                limit=limit, marker=marker, sort_dir=sort_dir, status=status,
+                type_=type_)
+            tasks = response.entity
+
+        task_list += tasks
+
+        return task_list
+
+    def validate_task(self, task):
+        """@summary: Generically validate a task contains crucial expected
+        data
+        """
+
+        errors = []
+
+        if task.status is None:
+            errors.append(self.error_msg.format(
+                'status', not None, task.status))
+        if self.id_regex.match(task.id_) is None:
+            errors.append(self.error_msg.format(
+                'id_', not None, self.id_regex.match(task.id_)))
+        if task.created_at is None:
+            errors.append(self.error_msg.format(
+                'created_at', not None, task.created_at))
+        if task.input_.image_properties == {}:
+            errors.append(self.error_msg.format(
+                'image_properties', not {}, task.input_.image_properties))
+        if task.input_.import_from is None:
+            errors.append(self.error_msg.format(
+                'import_from', not None, task.input_.import_from))
+        if task.input_.import_from_format is None:
+            errors.append(self.error_msg.format(
+                'import_from_format', not None,
+                task.input_.import_from_format))
+        if task.expires_at is not None:
+            errors.append(self.error_msg.format(
+                'expires_at', None, task.expires_at))
+        if task.updated_at is None:
+            errors.append(self.error_msg.format(
+                'updated_at', not None, task.updated_at))
+        if task.self_ != '/v2/tasks/{0}'.format(task.id_):
+            errors.append(self.error_msg.format(
+                'self_', '/v2/tasks/{0}'.format(task.id_), task.self_))
+        if task.type_ is None:
+            errors.append(self.error_msg.format(
+                'type_', not None, task.type_))
+        if self.id_regex.match(task.result.image_id) is None:
+            errors.append(self.error_msg.format(
+                'image_id', not None,
+                self.id_regex.match(task.result.image_id)))
+        if task.owner is None:
+            errors.append(self.error_msg.format(
+                'owner', not None, task.owner))
+        if task.message is not None:
+            errors.append(self.error_msg.format(
+                'message', None, task.message))
+        if task.schema != '/v2/schemas/task':
+            errors.append(self.error_msg.format(
+                'schema', '/v2/schemas/task', task.schema))
+
+        return errors
+
+    def wait_for_task_status(self, task_id, desired_status,
+                             interval_time=None, timeout=None):
+        """@summary: Waits for a task to reach a desired status"""
+
+        interval_time = interval_time or self.config.task_status_interval
+        timeout = timeout or self.config.task_timeout
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            resp = self.client.get_task(task_id)
+            task = resp.entity
+
+            if task.status.lower() == TaskStatus.FAILURE.lower():
+                raise BuildErrorException(
+                    'Task with uuid {0} entered FAILURE status.'
+                    'Task responded with the message {1}'.format(task.id_,
+                                                                 task.message))
+
+            if task.status == desired_status:
+                break
+            time.sleep(interval_time)
+        else:
+            raise TimeoutException(
+                "wait_for_task_status ran for {0} seconds and did not "
+                "observe task {1} reach the {2} status.".format(
+                    timeout, task_id, desired_status))
+
+        return task
