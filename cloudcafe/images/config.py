@@ -102,12 +102,39 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get('results_limit'))
 
     @property
-    def created_at_offset(self):
-        return self.get('created_at_offset')
+    def max_created_at_delta(self):
+        """Maximum number of seconds that created_at can differ"""
+        return int(self.get('max_created_at_delta'))
 
     @property
-    def updated_at_offset(self):
-        return self.get('updated_at_offset')
+    def max_updated_at_delta(self):
+        """Maximum number of seconds that updated_at can differ"""
+        return int(self.get('max_updated_at_delta'))
+
+    @property
+    def max_expires_at_delta(self):
+        """Maximum number of seconds that expires_at can differ"""
+        return int(self.get('max_expires_at_delta'))
+
+    @property
+    def import_from(self):
+        """Location from which to import a given file"""
+        return self.get('import_from')
+
+    @property
+    def import_from_format(self):
+        """Format for which to import the a given file"""
+        return self.get('import_from_format')
+
+    @property
+    def task_status_interval(self):
+        """Amount of time to wait between polling the status of a task"""
+        return int(self.get("task_status_interval"))
+
+    @property
+    def task_timeout(self):
+        """Length of time to wait before giving up on reaching a status"""
+        return int(self.get("task_timeout"))
 
     @property
     def image_schema_json(self):
@@ -128,3 +155,13 @@ class ImagesConfig(ConfigSectionInterface):
     def image_members_schema_json(self):
         """Path to json file which contains the image members schema data"""
         return self.get('image_members_schema_json')
+
+    @property
+    def task_schema_json(self):
+        """Path to json file which contains the task schema data"""
+        return self.get('task_schema_json')
+
+    @property
+    def tasks_schema_json(self):
+        """Path to json file which contains the tasks schema data"""
+        return self.get('tasks_schema_json')
