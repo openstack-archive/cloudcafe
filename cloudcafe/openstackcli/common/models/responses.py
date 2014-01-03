@@ -103,6 +103,22 @@ class BasePrettyTableResponseModel(BaseModel):
 
         return tuple(final_list)
 
+    @staticmethod
+    def _apply_kwmap(kwmap, kwdict):
+        for local_attr, response_attr in kwmap.items():
+            kwdict[local_attr] = kwdict.pop(response_attr, None)
+        return kwdict
+
+    @classmethod
+    def _property_value_table_to_dict(cls, prettytable_string):
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        kwdict = {}
+
+        for datadict in datatuple:
+            kwdict[datadict['Property']] = datadict['Value'].strip() or None
+
+        return kwdict
+
     @classmethod
     def deserialize(cls, serialized_str):
         cls._log = cclogging.getLogger(cclogging.get_object_namespace(cls))

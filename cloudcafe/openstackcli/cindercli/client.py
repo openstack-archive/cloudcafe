@@ -29,7 +29,7 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
             display_name=None, display_description=None, volume_type=None,
             availability_zone=None, metadata=None):
 
-        metadata = self._dict_to_metadata_cmd_string(metadata)
+        metadata = self._dict_to_key_value_string(metadata)
 
         _response_type = CinderResponses.VolumeResponse
         _cmd = 'create'
