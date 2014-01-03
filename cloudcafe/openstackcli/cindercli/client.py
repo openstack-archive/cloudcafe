@@ -29,7 +29,7 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
             display_name=None, display_description=None, volume_type=None,
             availability_zone=None, metadata=None):
 
-        metadata = self._dict_to_metadata_cmd_string(metadata)
+        metadata = self._dict_to_string(metadata)
 
         _response_type = CinderResponses.VolumeResponse
         _cmd = 'create'
@@ -56,7 +56,7 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
     def list_volumes(self, display_name=None, status=None, all_tenants=False):
 
         all_tenants = 1 if all_tenants is True else 0
-        _response_type=CinderResponses.VolumeListResponse
+        _response_type = CinderResponses.VolumeListResponse
         _cmd = 'list'
         _kwmap = {
             'display_name': 'display-name',
@@ -75,21 +75,21 @@ class CinderCLI(BaseOpenstackPythonCLI_Client):
             'display_name': 'display-name',
             'display_description': 'display-description'}
         _cmd = 'snapshot-create'
-        _response_type=CinderResponses.SnapshotResponse
+        _response_type = CinderResponses.SnapshotResponse
         return self._process_command()
 
     def list_snapshots(self):
         _cmd = 'snapshot-list'
-        _response_type=CinderResponses.SnapshotListResponse
+        _response_type = CinderResponses.SnapshotListResponse
         return self._process_command()
 
     def show_snapshot(self, snapshot_id):
         _cmd = 'snapshot-show'
-        _response_type=CinderResponses.SnapshotResponse
+        _response_type = CinderResponses.SnapshotResponse
         return self._process_command()
 
 # Volume Types
     def list_volume_types(self):
         _cmd = 'type-list'
-        _response_type=CinderResponses.VolumeTypeListResponse
+        _response_type = CinderResponses.VolumeTypeListResponse
         return self._process_command()
