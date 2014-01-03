@@ -1,5 +1,6 @@
 from cafe.engine.models.base import BaseModel
 from cafe.common.reporting import cclogging
+from cloudcafe.openstackcli.common.models.extensions import extensions
 
 
 class PRETTYTABLE_FRAME:
@@ -12,7 +13,21 @@ class PrettyTableDeserializationError(Exception):
     pass
 
 
-class BasePrettyTableResponseModel(BaseModel):
+class BaseExtensibleModel(BaseModel):
+
+    def __init__(self, **kwargs):
+        super(BaseExtensibleModel, self).__init__()
+        global extensions
+        for ext in extensions:
+            if self.__class__.__name__ in ext.__extends__:
+                self = ext().extend(self, **kwargs)
+
+
+class BaseExtensibleListModel(list, BaseExtensibleModel):
+    pass
+
+
+class BasePrettyTableResponseModel(BaseExtensibleModel):
     _log = cclogging.getLogger(__name__)
 
     @classmethod
@@ -102,6 +117,22 @@ class BasePrettyTableResponseModel(BaseModel):
             final_list.append(dict(zip(headers, row)))
 
         return tuple(final_list)
+
+    @staticmethod
+    def _apply_kwmap(kwmap, kwdict):
+        for local_attr, response_attr in kwmap.items():
+            kwdict[local_attr] = kwdict.pop(response_attr, None)
+        return kwdict
+
+    @classmethod
+    def _property_value_table_to_dict(cls, prettytable_string):
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        kwdict = {}
+
+        for datadict in datatuple:
+            kwdict[datadict['Property']] = datadict['Value'].strip() or None
+
+        return kwdict
 
     @classmethod
     def deserialize(cls, serialized_str):

@@ -53,10 +53,23 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         return " --{0}{1}".format(
             flag, "".join([" {0}".format(v) for v in values]))
 
-    def _dict_to_metadata_cmd_string(self, metadata):
-        if isinstance(metadata, dict):
-            return " ".join(
-                ["{0}={1}".format(k, v) for k, v in metadata.iteritems()])
+    @staticmethod
+    def _multiplicable_flag_data_to_string(flag, data):
+        """returns a string: '--flag key1=value1 --flag key2-value2...'"""
+        if flag is None or data is None:
+            return None
+        return " --{0} ".format(flag).join(
+            ["'{0}'='{1}'".format(k, v) for k, v in data.items()])
+
+    @staticmethod
+    def _dict_to_string(data, seperator=' '):
+        """returns a string of the form "key1=value1 key2=value2 ..."
+        Seperator between key=value pairs is a single space by default
+        """
+        if data is None:
+            return None
+        return "{0}".format(seperator).join(
+            ["'{0}'='{1}'".format(k, v) for k, v in data.items()])
 
     def _process_boolean_flag_value(self, value):
         if isinstance(value, bool):
@@ -76,25 +89,32 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         func_args.remove('self')
         func_locals.pop('self', None)
         kwmap = func_locals.pop('_kwmap', dict())
+        positional_args = func_locals.pop('_positional_args', list())
         sub_command = func_locals.pop('_cmd', str())
         response_type = func_locals.pop('_response_type', None)
 
         # Assume every remaining non-private function local is a pythonified
-        # version of a command flag's name.
+        # version of a command flag's name, or a required argument
         pythonified_flag_names = [
             attr for attr in func_locals.keys() if not attr.startswith('_')]
 
         # Assume that the name of every required function arg is the
-        # name of a required (positional) command arg.
+        # name of a required positional command arg, unless positional_args
+        # is defined.
         # Extract required values (and their names) from the function locals
-        req_arg_names = [name for name in func_args if name not in kwmap]
-        req_arg_values = [func_locals[name] for name in req_arg_names]
+        positional_args = positional_args or [
+            name for name in func_args if name not in kwmap]
+        positional_arg_values = [func_locals[name] for name in positional_args]
 
         # Build a dictionary of optional flag names mapped to the values passed
         # into the function via those flag's pythonified flag names.
         optional_flags_dict = dict(
             (kwmap[name], func_locals[name])
-            for name in pythonified_flag_names if name not in req_arg_names)
+            for name in pythonified_flag_names if name not in positional_args)
+
+        #Build a string of all positional argument values
+        positional_arguments_string = ' '.join(
+            [str(value) for value in positional_arg_values])
 
         # Build a string of all the optional flags and their values
         optional_flags_string = ""
@@ -106,10 +126,10 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
                 optional_flags_string, self._generate_cmd(flag, value))
 
         # Build the final command string
-        cmd = "{base_cmd} {sub_cmd} {req_arg_values} {optional_flags}".format(
+        cmd = "{base_cmd} {sub_cmd} {pos_arg_values} {optional_flags}".format(
             base_cmd=self.base_cmd(),
             sub_cmd=sub_command,
-            req_arg_values=' '.join([str(value) for value in req_arg_values]),
+            pos_arg_values=positional_arguments_string,
             optional_flags=optional_flags_string)
 
         # Execute the command and attach an entity object to the response, if
@@ -117,6 +137,7 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         response = self.run_command(cmd)
         response_body_string = '\n'.join(response.standard_out)
         setattr(response, 'entity', None)
+
         if response_type is None:
             return response
 
