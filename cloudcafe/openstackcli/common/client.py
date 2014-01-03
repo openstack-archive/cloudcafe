@@ -53,10 +53,20 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         return " --{0}{1}".format(
             flag, "".join([" {0}".format(v) for v in values]))
 
-    def _dict_to_metadata_cmd_string(self, metadata):
-        if isinstance(metadata, dict):
-            return " ".join(
-                ["{0}={1}".format(k, v) for k, v in metadata.iteritems()])
+    @staticmethod
+    def _multiplicable_flag_data_to_string(flag, data):
+        """returns a string: '--flag key1=value1 --flag key2-value2...'"""
+        if flag is None or data is None:
+            return None
+        return " --{0} ".format(flag).join(
+            ["'{0}'='{1}'".format(k, v) for k, v in data.items()])
+
+    @staticmethod
+    def _dict_to_key_value_string(data):
+        """returns a string: 'key1=value1 key2=value2...'"""
+        if data is None:
+            return None
+        return " ".join(["'{0}'='{1}'".format(k, v) for k, v in data.items()])
 
     def _process_boolean_flag_value(self, value):
         if isinstance(value, bool):
@@ -117,12 +127,14 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         response = self.run_command(cmd)
         response_body_string = '\n'.join(response.standard_out)
         setattr(response, 'entity', None)
+
         if response_type is None:
             return response
 
         try:
             response.entity = response_type.deserialize(response_body_string)
         except Exception as exception:
+            print exception
             self._log.warning(
                 "_response_entity object defined in {0} does not implement "
                 "deserialize() classmethod".format(frame.f_code.co_name))
