@@ -141,7 +141,11 @@ class Token(BaseIdentityModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        token = Token(tenant=Tenant._dict_to_obj(json_dict.get('tenant')),
+        if "tenant" in json_dict.keys():
+            tenant = Tenant._dict_to_obj(json_dict.get('tenant'))
+        else:
+            tenant=None
+        token = Token(tenant=tenant,
                       expires=json_dict.get('expires'),
                       issued_at=json_dict.get('issued_at'),
                       id_=json_dict.get('id'))
