@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.meniscus.version_api.models.version import Version
 
 
-class VersionClient(AutoMarshallingRestClient):
+class VersionClient(AutoMarshallingHTTPClient):
     def __init__(self, url, serialize_format=None, deserialize_format=None):
         """
         @param url: Base URL of meniscus api

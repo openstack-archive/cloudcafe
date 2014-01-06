@@ -13,14 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.meniscus.common.models.system import SystemInfo
 from cloudcafe.meniscus.status_api.models.status \
     import (AllWorkersStatus, WorkerStatus, WorkerLoadAverage,
             WorkerDiskUsage, WorkerStatusUpdate)
 
 
-class WorkerStatusClient(AutoMarshallingRestClient):
+class WorkerStatusClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, api_version, serialize_format,
                  deserialize_format):
