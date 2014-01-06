@@ -15,10 +15,10 @@ limitations under the License.
 """
 from cloudcafe.meniscus.correlator_api.models.publish \
     import PublishMessage, JobInformation
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 
 
-class PublishingClient(AutoMarshallingRestClient):
+class PublishingClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, api_version, serialize_format=None,
                  deserialize_format=None):

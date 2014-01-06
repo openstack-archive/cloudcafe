@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.meniscus.common.models.system \
     import SystemInfo, DiskUsage, LoadAverage
 from cloudcafe.meniscus.coordinator_api.models.pairing \
@@ -22,7 +22,7 @@ from cloudcafe.meniscus.coordinator_api.models.routing import AllRoutes
 from cloudcafe.meniscus.coordinator_api.models.status import UpdateStatus
 
 
-class PairingClient(AutoMarshallingRestClient):
+class PairingClient(AutoMarshallingHTTPClient):
     def __init__(self, url, api_version, auth_token, serialize_format=None,
                  deserialize_format=None):
         super(PairingClient, self).__init__(serialize_format,
