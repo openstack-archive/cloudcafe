@@ -17,9 +17,9 @@ limitations under the License.
 from time import time, sleep
 
 from cafe.engine.behaviors import BaseBehavior, behavior
-from cloudcafe.blockstorage.v1.volumes_api.client import VolumesClient
-from cloudcafe.blockstorage.v1.volumes_api.config import VolumesAPIConfig
-from cloudcafe.blockstorage.v1.volumes_api.models import statuses
+from cloudcafe.blockstorage.volumes_api.v1.client import VolumesClient
+from cloudcafe.blockstorage.volumes_api.v1.config import VolumesAPIConfig
+from cloudcafe.blockstorage.volumes_api.v1.models import statuses
 
 
 class VolumesAPIBehaviorException(Exception):

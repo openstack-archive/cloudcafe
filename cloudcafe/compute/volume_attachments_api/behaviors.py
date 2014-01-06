@@ -4,9 +4,9 @@ from cloudcafe.compute.volume_attachments_api.client import \
     VolumeAttachmentsAPIClient
 from cloudcafe.compute.volume_attachments_api.config import \
     VolumeAttachmentsAPIConfig
-from cloudcafe.blockstorage.v1.volumes_api.client import VolumesClient
-from cloudcafe.blockstorage.v1.volumes_api.config import VolumesAPIConfig
-from cloudcafe.blockstorage.v1.volumes_api.behaviors import \
+from cloudcafe.blockstorage.volumes_api.v1.client import VolumesClient
+from cloudcafe.blockstorage.volumes_api.v1.config import VolumesAPIConfig
+from cloudcafe.blockstorage.volumes_api.v1.behaviors import \
     VolumesAPI_Behaviors
 
 

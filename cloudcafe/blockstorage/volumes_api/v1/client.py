@@ -15,10 +15,10 @@ limitations under the License.
 """
 
 from cafe.engine.clients.rest import AutoMarshallingRestClient
-from cloudcafe.blockstorage.v1.volumes_api.models.requests import (
+from cloudcafe.blockstorage.volumes_api.v1.models.requests import (
     VolumeRequest, VolumeSnapshotRequest)
 
-from cloudcafe.blockstorage.v1.volumes_api.models.responses import(
+from cloudcafe.blockstorage.volumes_api.v1.models.responses import(
     VolumeResponse, VolumeSnapshotResponse, VolumeTypeResponse,
     VolumeListResponse, VolumeTypeListResponse, VolumeSnapshotListResponse)
 
