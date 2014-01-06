@@ -49,6 +49,16 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
         return timeout
 
+    @behavior(VolumesAPIConfig)
+    def calculate_snapshot_create_timeout(self, volume_size):
+        timeout = self._calculate_timeout(
+            size=int(volume_size),
+            max_timeout=int(self.config.snapshot_create_max_timeout),
+            min_timeout=int(self.config.snapshot_create_min_timeout),
+            wait_per_gb=int(self.config.snapshot_create_wait_per_gigabyte))
+        timeout += int(self.config.snapshot_create_base_timeout)
+        return timeout
+
     @behavior(VolumesClient)
     def get_volume_status(self, volume_id):
         resp = self.client.get_volume_info(volume_id=volume_id)
@@ -84,7 +94,12 @@ class VolumesAPI_Behaviors(BaseBehavior):
                 "{0}, transient: {1}, timeout: (2), poll_rate: (3)".format(
                     expected_status, transient, timeout, poll_rate))
 
-            next_status, _, _, _ = state_list[current_state+1]
+            next_status = None
+            try:
+                next_status, _, _, _ = state_list[current_state+1]
+            except:
+                pass
+
             endtime = time() + int(timeout)
             while time() < endtime:
                 current_status = self.get_volume_status(
@@ -97,7 +112,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                         "Current status of volume {0} matches expected status"
                         " {1}".format(volume_id, expected_status))
                     break
-                elif transient and current_status == next_status:
+                elif transient and (current_status == next_status):
                     self._log.debug(
                         "Next status '{0}' found while searching for transient"
                         " status {1}".format(next_status, expected_status))
@@ -107,7 +122,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                 if transient:
                     self._log.debug(
                         "Netiher the transient status {0} nor the next status "
-                        "{0} where found, continuing to next status "
+                        "{1} where found, continuing to next status "
                         "search".format(expected_status, next_status))
                     continue
                 else:
@@ -120,7 +135,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def wait_for_volume_status(
-            self, volume_id, expected_status, timeout, poll_rate=5):
+            self, volume_id, expected_status, timeout=None, poll_rate=None):
         """ Waits for a specific status and returns None when that status is
         observed.
         Note:  Unreliable for transient statuses like 'deleting'.
@@ -128,6 +143,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
         poll_rate = int(
             poll_rate or self.config.volume_status_poll_frequency)
+        timeout = int(timeout or self.config.volume_create_timeout)
         end_time = time() + int(timeout)
 
         while time() < end_time:
@@ -149,13 +165,14 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def wait_for_snapshot_status(
-            self, snapshot_id, expected_status, timeout, wait_period=None):
+            self, snapshot_id, expected_status, timeout=None,
+            wait_period=None):
         """ Waits for a specific status and returns None when that status is
         observed.
         Note:  Unreliable for transient statuses like 'deleting'.
         """
 
-        wait_period = float(
+        wait_period = int(
             wait_period or self.config.snapshot_status_poll_frequency)
         end_time = time() + int(timeout)
 
@@ -246,12 +263,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
         except:
             pass
 
-        timeout = self._calculate_timeout(
-            size=vol_size, timeout=timeout,
-            max_timeout=self.config.snapshot_create_max_timeout,
-            min_timeout=self.config.snapshot_create_min_timeout,
-            wait_per_gb=self.config.snapshot_create_wait_per_gigabyte)
-        timeout += self.config.snapshot_create_base_timeout
+        timeout = self.calculate_snapshot_create_timeout(vol_size)
         self._log.debug(
             "create_available_snapshot() timeout set to {0}".format(timeout))
 
