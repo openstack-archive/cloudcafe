@@ -163,7 +163,8 @@ class ServersClient(AutoMarshallingRestClient):
                       user_data=None, metadata=None, accessIPv4=None,
                       accessIPv6=None, disk_config=None, networks=None,
                       admin_pass=None, key_name=None, config_drive=None,
-                      scheduler_hints=None, requestslib_kwargs=None):
+                      scheduler_hints=None, requestslib_kwargs=None,
+                      block_device_mapping=None):
         """
         @summary: Creates an instance of a server given the
          provided parameters
@@ -178,6 +179,9 @@ class ServersClient(AutoMarshallingRestClient):
         @param personality: A list of dictionaries for files to be
          injected into the server.
         @type personality: List
+        @param block_device_mapping: A list of dictionaries needed for boot
+         from volume feature
+        @type block_device_mapping: List
         @param user_data: Config Init User data
         @type user_data: String
         @param accessIPv4: IPv4 address for the server.
@@ -195,8 +199,8 @@ class ServersClient(AutoMarshallingRestClient):
 
         server_request_object = CreateServer(
             name=name, flavor_ref=flavor_ref, image_ref=image_ref,
-            personality=personality, user_data=user_data,
-            metadata=metadata, accessIPv4=accessIPv4,
+            personality=personality, block_device_mapping=block_device_mapping,
+            user_data=user_data, metadata=metadata, accessIPv4=accessIPv4,
             accessIPv6=accessIPv6, disk_config=disk_config, networks=networks,
             admin_pass=admin_pass, key_name=key_name,
             config_drive=config_drive, scheduler_hints=scheduler_hints)
@@ -313,8 +317,8 @@ class ServersClient(AutoMarshallingRestClient):
 
     def rebuild(self, server_id, image_ref, name=None,
                 admin_pass=None, disk_config=None, metadata=None,
-                personality=None, user_data=None,
-                accessIPv4=None, accessIPv6=None,
+                personality=None, user_data=None, accessIPv4=None,
+                accessIPv6=None, block_device_mapping=None,
                 key_name=None, config_drive=None, requestslib_kwargs=None):
         """
         @summary: Rebuilds the server
@@ -331,7 +335,9 @@ class ServersClient(AutoMarshallingRestClient):
         @param metadata:A metadata key and value pair.
         @type metadata: Dictionary
         @param personality:The file path and file contents
-        @type personality: String
+        @type personality: List
+        @param block_device_mapping: Block device mapping for boot from volume
+        @type block_device_mapping: List
         @param user_data: Config Init User data
         @type user_data: String
         @param accessIPv4:The IP version 4 address.
@@ -345,16 +351,19 @@ class ServersClient(AutoMarshallingRestClient):
 
         url = '{base_url}/servers/{server_id}/action'.format(
             base_url=self.url, server_id=server_id)
-        rebuild_request_object = Rebuild(name=name, image_ref=image_ref,
-                                         admin_pass=admin_pass,
-                                         disk_config=disk_config,
-                                         metadata=metadata,
-                                         personality=personality,
-                                         user_data=user_data,
-                                         accessIPv4=accessIPv4,
-                                         accessIPv6=accessIPv6,
-                                         key_name=key_name,
-                                         config_drive=config_drive)
+        rebuild_request_object = Rebuild(
+            name=name,
+            image_ref=image_ref,
+            admin_pass=admin_pass,
+            disk_config=disk_config,
+            metadata=metadata,
+            personality=personality,
+            block_device_mapping=block_device_mapping,
+            user_data=user_data,
+            accessIPv4=accessIPv4,
+            accessIPv6=accessIPv6,
+            key_name=key_name,
+            config_drive=config_drive)
 
         resp = self.request('POST', url,
                             response_entity_type=Server,
