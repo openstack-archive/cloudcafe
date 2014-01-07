@@ -56,8 +56,8 @@ def _deserialize(response_entity_type):
                     break
 
             resp_entity = response_entity_type.deserialize(
-                    response.content,
-                    deserialize_format)
+                response.content,
+                deserialize_format)
 
             setattr(response, 'entity', resp_entity)
 

@@ -120,6 +120,7 @@ class ContainerObjectsList(AutoMarshallingListModel):
             container_objects_list.append(storage_object)
         return container_objects_list
 
+
 class CreateArchiveObject(AutoMarshallingListModel):
 
     @classmethod
