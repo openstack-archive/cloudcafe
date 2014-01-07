@@ -18,6 +18,7 @@ limitations under the License.
 class HTTPResponseCodes(object):
     OK = 200
     FORBIDDEN = 403
+    CONFLICT = 409
 
 
 class ImageProperties(object):
