@@ -26,9 +26,9 @@ class CreateServer(AutoMarshallingModel):
 
     def __init__(self, name, image_ref, flavor_ref, admin_pass=None,
                  disk_config=None, metadata=None, personality=None,
-                 user_data=None, accessIPv4=None, accessIPv6=None,
-                 networks=None, key_name=None, config_drive=None,
-                 scheduler_hints=None):
+                 block_device_mapping=None, user_data=None, accessIPv4=None,
+                 accessIPv6=None, networks=None, key_name=None,
+                 config_drive=None, scheduler_hints=None):
 
         super(CreateServer, self).__init__()
         self.name = name
@@ -38,6 +38,7 @@ class CreateServer(AutoMarshallingModel):
         self.admin_pass = admin_pass
         self.metadata = metadata
         self.personality = personality
+        self.block_device_mapping = block_device_mapping
         self.user_data = user_data
         self.accessIPv4 = accessIPv4
         self.accessIPv6 = accessIPv6
@@ -57,6 +58,7 @@ class CreateServer(AutoMarshallingModel):
             'accessIPv4': self.accessIPv4,
             'accessIPv6': self.accessIPv6,
             'personality': self.personality,
+            'block_device_mapping': self.block_device_mapping,
             'user_data': self.user_data,
             'networks': self.networks,
             'key_name': self.key_name,
@@ -100,6 +102,11 @@ class CreateServer(AutoMarshallingModel):
             personality_ele = ET.Element('personality')
             personality_ele.append(Personality._obj_to_xml(self.personality))
             element.append(personality_ele)
+        if self.block_device_mapping is not None:
+            block_device_ele = ET.Element('block_device_mapping')
+            block_device_ele.append(BlockDeviceMapping._obj_to_xml(
+                self.block_device_mapping))
+            element.append(block_device_ele)
         if self.user_data is not None:
             element.set('user_data', self.user_data)
         if self.accessIPv4 is not None:
@@ -203,6 +210,49 @@ class Personality(AutoMarshallingModel):
         return pers_element
 
 
+class BlockDeviceMapping(AutoMarshallingModel):
+    """
+    @summary: Block Device Mapping Request Object for Server
+    """
+    ROOT_TAG = 'block_device_mapping'
+
+    def __init__(self, volume_id, delete_on_termination, device_name,
+                 size=None, type=None):
+        super(BlockDeviceMapping, self).__init__()
+        self.volume_id = volume_id
+        self.delete_on_termination = delete_on_termination
+        self.device_name = device_name
+        self.size = size
+        self.type = type
+
+    @classmethod
+    def _obj_to_json(self):
+        body = {
+            'volume_id': self.volume_id,
+            'delete_on_termination': self.delete_on_termination,
+            'device_name': self.device_name,
+            'size': self.size,
+            'type': self.type
+        }
+
+        body = self._remove_empty_values(body)
+        return json.dumps({'block_device_mapping': body})
+
+    @classmethod
+    def _obj_to_xml(self, list_dicts):
+        for pers_dict in list_dicts:
+            pers_element = ET.Element('block_device_mapping')
+            pers_element.set('volume_id', pers_dict.get('volume_id'))
+            pers_element.set('delete_on_termination',
+                             pers_dict.get('delete_on_termination'))
+            pers_element.set('device_name', pers_dict.get('device_name'))
+            if pers_dict.get('size') is not None:
+                pers_element.set('size', pers_dict.get('size'))
+            if pers_dict.get('type') is not None:
+                pers_element.set('type', pers_dict.get('type'))
+        return pers_element
+
+
 class Rebuild(AutoMarshallingModel):
     """
     @summary: Rebuild Request Object for Server
@@ -210,8 +260,9 @@ class Rebuild(AutoMarshallingModel):
 
     def __init__(self, name, image_ref, admin_pass=None,
                  disk_config=None, metadata=None, personality=None,
-                 user_data=None, accessIPv4=None, accessIPv6=None,
-                 networks=None, key_name=None, config_drive=None):
+                 block_device_mapping=None, user_data=None, accessIPv4=None,
+                 accessIPv6=None, networks=None, key_name=None,
+                 config_drive=None):
         super(Rebuild, self).__init__()
         self.name = name
         self.image_ref = image_ref
@@ -219,6 +270,7 @@ class Rebuild(AutoMarshallingModel):
         self.admin_pass = admin_pass
         self.metadata = metadata
         self.personality = personality
+        self.block_device_mapping = block_device_mapping
         self.user_data = user_data
         self.accessIPv4 = accessIPv4
         self.accessIPv6 = accessIPv6
@@ -236,6 +288,7 @@ class Rebuild(AutoMarshallingModel):
             'accessIPv4': self.accessIPv4,
             'accessIPv6': self.accessIPv6,
             'personality': self.personality,
+            'block_device_mapping': self.block_device_mapping,
             'user_data': self.user_data,
             'networks': self.networks,
             'key_name': self.key_name,
@@ -273,6 +326,11 @@ class Rebuild(AutoMarshallingModel):
             personality_ele = ET.Element('personality')
             personality_ele.append(Personality._obj_to_xml(self.personality))
             element.append(personality_ele)
+        if self.block_device_mapping is not None:
+            block_device_ele = ET.Element('block_device_mapping')
+            block_device_ele.append(BlockDeviceMapping._obj_to_xml(
+                self.block_device_mapping))
+            element.append(block_device_ele)
         if self.user_data is not None:
             element.set('user_data', self.user_data)
         if self.accessIPv4 is not None:
