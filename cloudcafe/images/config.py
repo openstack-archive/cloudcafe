@@ -19,7 +19,6 @@ from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
 class MarshallingConfig(ConfigSectionInterface):
-
     SECTION_NAME = 'marshalling'
 
     @property
@@ -32,17 +31,18 @@ class MarshallingConfig(ConfigSectionInterface):
 
 
 class AdminUserConfig(BaseUserConfig):
-
     SECTION_NAME = 'admin_user'
 
 
 class AltUserConfig(BaseUserConfig):
-
     SECTION_NAME = 'alt_user'
 
 
-class ImagesConfig(ConfigSectionInterface):
+class ThirdUserConfig(BaseUserConfig):
+    SECTION_NAME = 'third_user'
 
+
+class ImagesConfig(ConfigSectionInterface):
     SECTION_NAME = 'images'
 
     @property
