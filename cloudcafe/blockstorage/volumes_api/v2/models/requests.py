@@ -24,14 +24,21 @@ class VolumeRequest(AutoMarshallingModel):
 
     def __init__(
             self, size=None, volume_type=None, name=None,
-            description=None, metadata=None, availability_zone=None):
+            description=None, metadata=None, availability_zone=None,
+            snapshot_id=None, bootable=None, source_volid=None,
+            image_ref=None):
 
+        super(VolumeRequest, self).__init__()
         self.size = size
         self.volume_type = volume_type
         self.name = name
         self.description = description
         self.metadata = metadata or dict()
         self.availability_zone = availability_zone
+        self.snapshot_id = snapshot_id
+        self.bootable = bootable
+        self.source_volid = source_volid
+        self.image_ref = image_ref
 
     def _obj_to_json(self):
         return json.dumps(self._obj_to_json_dict())
@@ -43,7 +50,11 @@ class VolumeRequest(AutoMarshallingModel):
             "name": self.name,
             "description": self.description,
             "metadata": self.metadata,
-            "availability_zone": self.availability_zone}
+            "availability_zone": self.availability_zone,
+            "bootable": self.bootable,
+            "imageRef": self.image_ref,
+            "source_volid": self.source_volid,
+            "snapshot_id": self.snapshot_id}
 
         return {'volume': self._remove_empty_values(volume_attrs)}
 
@@ -54,7 +65,11 @@ class VolumeRequest(AutoMarshallingModel):
             "volume_type": self.volume_type,
             "name": self.name,
             "description": self.description,
-            "availability_zone": self.availability_zone}
+            "availability_zone": self.availability_zone,
+            "bootable": self.bootable,
+            "imageRef": self.image_ref,
+            "source_volid": self.source_volid,
+            "snapshot_id": self.snapshot_id}
         element = self._set_xml_etree_element(element, volume_attrs)
 
         if len(self.metadata.keys()) > 0:
@@ -75,9 +90,9 @@ class VolumeRequest(AutoMarshallingModel):
 class VolumeSnapshotRequest(AutoMarshallingModel):
 
     def __init__(
-            self, volume_id, force=True, name=None,
-            description=None):
+            self, volume_id, force=True, name=None, description=None):
 
+        super(VolumeSnapshotRequest, self).__init__()
         self.volume_id = volume_id
         self.name = name
         self.description = description
