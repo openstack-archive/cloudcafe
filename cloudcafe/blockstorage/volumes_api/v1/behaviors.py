@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 from time import time, sleep
 
 from cafe.engine.behaviors import BaseBehavior, behavior
@@ -53,10 +52,10 @@ class VolumesAPI_Behaviors(BaseBehavior):
     def calculate_snapshot_create_timeout(self, volume_size):
         timeout = self._calculate_timeout(
             size=int(volume_size),
-            max_timeout=int(self.config.snapshot_create_max_timeout),
-            min_timeout=int(self.config.snapshot_create_min_timeout),
-            wait_per_gb=int(self.config.snapshot_create_wait_per_gigabyte))
-        timeout += int(self.config.snapshot_create_base_timeout)
+            max_timeout=self.config.snapshot_create_max_timeout,
+            min_timeout=self.config.snapshot_create_min_timeout,
+            wait_per_gb=self.config.snapshot_create_wait_per_gigabyte)
+        timeout += self.config.snapshot_create_base_timeout
         return timeout
 
     @behavior(VolumesClient)
@@ -141,9 +140,8 @@ class VolumesAPI_Behaviors(BaseBehavior):
         Note:  Unreliable for transient statuses like 'deleting'.
         """
 
-        poll_rate = int(
-            poll_rate or self.config.volume_status_poll_frequency)
-        timeout = int(timeout or self.config.volume_create_timeout)
+        poll_rate = poll_rate or self.config.volume_status_poll_frequency
+        timeout = timeout or self.config.volume_create_timeout
         end_time = time() + int(timeout)
 
         while time() < end_time:
@@ -166,14 +164,13 @@ class VolumesAPI_Behaviors(BaseBehavior):
     @behavior(VolumesClient)
     def wait_for_snapshot_status(
             self, snapshot_id, expected_status, timeout=None,
-            wait_period=None):
+            poll_rate=None):
         """ Waits for a specific status and returns None when that status is
         observed.
         Note:  Unreliable for transient statuses like 'deleting'.
         """
 
-        wait_period = int(
-            wait_period or self.config.snapshot_status_poll_frequency)
+        poll_rate = poll_rate or self.config.snapshot_status_poll_frequency
         end_time = time() + int(timeout)
 
         while time() < end_time:
@@ -201,7 +198,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                     .format(expected_status))
                 break
 
-            sleep(wait_period)
+            sleep(poll_rate)
 
         else:
             msg = (
@@ -317,7 +314,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def delete_volume_confirmed(
-            self, volume_id, size=None, timeout=None, wait_period=None):
+            self, volume_id, size=None, timeout=None, poll_rate=None):
         """Returns True if volume deleted, False otherwise"""
 
         timeout = self._calculate_timeout(
@@ -326,8 +323,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
             max_timeout=self.config.volume_delete_max_timeout,
             wait_per_gb=self.config.volume_delete_wait_per_gigabyte)
 
-        wait_period = float(
-            wait_period or self.config.volume_status_poll_frequency)
+        poll_rate = poll_rate or self.config.volume_status_poll_frequency
 
         timeout_msg = (
             "delete_volume_confirmed() was unable to confirm the volume"
@@ -364,7 +360,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                         volume_id, status_resp.status_code))
                 return False
 
-            sleep(wait_period)
+            sleep(poll_rate)
 
         else:
             self._log.error(timeout_msg)
@@ -372,7 +368,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def delete_snapshot_confirmed(
-            self, snapshot_id, vol_size=None, timeout=None, wait_period=None):
+            self, snapshot_id, vol_size=None, timeout=None, poll_rate=None):
         """Returns True if snapshot deleted, False otherwise"""
 
         timeout = self._calculate_timeout(
@@ -381,8 +377,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
             max_timeout=self.config.snapshot_delete_max_timeout,
             wait_per_gb=self.config.snapshot_delete_wait_per_gigabyte)
 
-        wait_period = float(
-            wait_period or self.config.snapshot_status_poll_frequency)
+        poll_rate = poll_rate or self.config.snapshot_status_poll_frequency
 
         timeout_msg = (
             "delete_snapshot_confirmed() was unable to confirm the snapshot "
@@ -402,7 +397,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
             else:
                 break
 
-            sleep(wait_period)
+            sleep(poll_rate)
         else:
             self._log.error(timeout_msg)
             return False
@@ -422,7 +417,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                         snapshot_id, resp.status_code))
                 return False
 
-            sleep(wait_period)
+            sleep(poll_rate)
         else:
             self._log.error(timeout_msg)
             return False
