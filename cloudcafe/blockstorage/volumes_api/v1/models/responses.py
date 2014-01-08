@@ -14,73 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import json
 from xml.etree import ElementTree
-
-from cafe.engine.models.base import \
-    AutoMarshallingModel, AutoMarshallingListModel
-
-
-class _VolumesAPIBaseModel(AutoMarshallingModel):
-    obj_model_key = None
-    kwarg_map = {}
-
-    @classmethod
-    def _map_values_to_kwargs(cls, deserialized_obj):
-        kwargs = {}
-        for local_kw, deserialized_obj_kw in cls.kwarg_map.iteritems():
-            kwargs[local_kw] = deserialized_obj.get(deserialized_obj_kw)
-
-        return cls(**kwargs)
-
-    @classmethod
-    def _json_to_obj(cls, serialized_str):
-        json_dict = json.loads(serialized_str)
-        volume_dict = json_dict.get(cls.obj_model_key)
-        return cls._json_dict_to_obj(volume_dict)
-
-    @classmethod
-    def _json_dict_to_obj(cls, json_dict):
-        return cls._map_values_to_kwargs(json_dict)
-
-    @classmethod
-    def _xml_to_obj(cls, serialized_str):
-        element = ElementTree.fromstring(serialized_str)
-        return cls._xml_ele_to_obj(element)
-
-    @classmethod
-    def _xml_ele_to_obj(cls, element):
-        return cls._map_values_to_kwargs(element)
-
-
-class _VolumesAPIBaseListModel(AutoMarshallingListModel):
-    list_model_key = None
-    ObjectModel = None
-
-    @classmethod
-    def _json_to_obj(cls, serialized_str):
-        json_dict = json.loads(serialized_str)
-        dict_list = json_dict.get(cls.list_model_key)
-        return cls._json_dict_to_obj(dict_list)
-
-    @classmethod
-    def _json_dict_to_obj(cls, json_dict):
-        obj_list = cls()
-        for obj_dict in json_dict:
-            obj_list.append(cls.ObjectModel._json_dict_to_obj(obj_dict))
-        return obj_list
-
-    @classmethod
-    def _xml_to_obj(cls, serialized_str):
-        list_element = ElementTree.fromstring(serialized_str)
-        return cls._xml_ele_to_obj(list_element)
-
-    @classmethod
-    def _xml_ele_to_obj(cls, xml_etree_element):
-        obj_list = cls()
-        for obj_element in xml_etree_element:
-            obj_list.append(cls.ObjectModel._xml_ele_to_obj(obj_element))
-        return obj_list
+from cloudcafe.blockstorage.volumes_api.common.models.automarshalling import \
+    _VolumesAPIBaseListModel, _VolumesAPIBaseModel, _XMLDictionary
 
 
 class VolumeResponse(_VolumesAPIBaseModel):
@@ -96,24 +32,48 @@ class VolumeResponse(_VolumesAPIBaseModel):
         "snapshot_id": "snapshot_id",
         "attachments": "attachments",
         "created_at": "created_at",
+        "links": "links",
         "status": "status"}
 
     def __init__(
             self, id_=None, display_name=None, size=None, volume_type=None,
             display_description=None, metadata=None, availability_zone=None,
-            snapshot_id=None, attachments=None, created_at=None, status=None):
+            snapshot_id=None, attachments=None, created_at=None, status=None,
+            links=None):
 
         self.id_ = id_
         self.display_name = display_name
         self.display_description = display_description
         self.size = size
         self.volume_type = volume_type
-        self.metadata = metadata or {}
         self.availability_zone = availability_zone
         self.snapshot_id = snapshot_id
-        self.attachments = attachments
         self.created_at = created_at
         self.status = status
+        self.links = links or []
+        self.attachments = attachments or []
+        self.metadata = metadata or {}
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        volume = super(VolumeResponse, cls)._json_to_obj(serialized_str)
+        volume.attachments = _VolumeAttachmentsList._json_dict_to_obj(
+            volume.attachments)
+        volume.links = _LinksList._json_dict_to_obj(volume.links)
+        return volume
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        element = ElementTree.fromstring(serialized_str)
+        kwargs = {}
+        for local_kw, deserialized_obj_kw in cls.kwarg_map.iteritems():
+            kwargs[local_kw] = element.get(deserialized_obj_kw)
+
+        volume = cls(**kwargs)
+        volume.metadata = _XMLDictionary._xml_ele_to_obj(element)
+        volume.attachments = _VolumeAttachmentsList._xml_ele_to_obj(element)
+        volume.links = _LinksList._xml_ele_to_obj(element)
+        return volume
 
 
 class VolumeSnapshotResponse(_VolumesAPIBaseModel):
@@ -125,11 +85,13 @@ class VolumeSnapshotResponse(_VolumesAPIBaseModel):
         "display_description": "display_description",
         "status": "status",
         "size": "size",
-        "created_at": "created_at"}
+        "created_at": "created_at",
+        "metadata": "metadata"}
 
     def __init__(
             self, id_=None, volume_id=None, display_name=None,
-            display_description=None, status=None, size=None, created_at=None):
+            display_description=None, status=None, size=None, created_at=None,
+            metadata=None):
 
         self.id_ = id_
         self.volume_id = volume_id
@@ -138,6 +100,18 @@ class VolumeSnapshotResponse(_VolumesAPIBaseModel):
         self.status = status
         self.size = size
         self.created_at = created_at
+        self.metadata = metadata or {}
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        element = ElementTree.fromstring(serialized_str)
+        kwargs = {}
+        for local_kw, deserialized_obj_kw in cls.kwarg_map.iteritems():
+            kwargs[local_kw] = element.get(deserialized_obj_kw)
+
+        snapshot = cls(**kwargs)
+        snapshot.metadata = _XMLDictionary._xml_ele_to_obj(element)
+        return snapshot
 
 
 class VolumeTypeResponse(_VolumesAPIBaseModel):
@@ -151,7 +125,18 @@ class VolumeTypeResponse(_VolumesAPIBaseModel):
 
         self.id_ = id_
         self.name = name
-        self.extra_specs = extra_specs
+        self.extra_specs = extra_specs or {}
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        element = ElementTree.fromstring(serialized_str)
+        kwargs = {}
+        for local_kw, deserialized_obj_kw in cls.kwarg_map.iteritems():
+            kwargs[local_kw] = element.get(deserialized_obj_kw)
+        volume_type_obj = cls(**kwargs)
+        volume_type_obj.extra_specs = _XMLDictionary._xml_ele_to_obj(
+            element, 'extra_specs')
+        return volume_type_obj
 
 
 class VolumeListResponse(_VolumesAPIBaseListModel):
@@ -167,3 +152,45 @@ class VolumeSnapshotListResponse(_VolumesAPIBaseListModel):
 class VolumeTypeListResponse(_VolumesAPIBaseListModel):
     list_model_key = 'volume_types'
     ObjectModel = VolumeTypeResponse
+
+
+class _VolumeAttachmentItem(_VolumesAPIBaseModel):
+    kwarg_map = {
+        "id_": "id",
+        "device": "device",
+        "volume_id": "volume_id",
+        "server_id": "server_id"}
+
+    def __init__(self, id_=None, device=None, server_id=None, volume_id=None):
+        self.id_ = id_
+        self.device = device
+        self.volume_id = volume_id
+        self.server_id = server_id
+
+
+class _VolumeAttachmentsList(_VolumesAPIBaseListModel):
+    list_model_key = 'attachments'
+    ObjectModel = _VolumeAttachmentItem
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        raise NotImplementedError
+
+    @classmethod
+    def _xml_to_obj(cls, serialized_str):
+        raise NotImplementedError
+
+
+class _LinksItem(_VolumesAPIBaseModel):
+    kwarg_map = {
+        "href": "href",
+        "rel": "rel"}
+
+    def __init__(self, href=None, rel=None):
+        self.href = href
+        self.rel = rel
+
+
+class _LinksList(_VolumesAPIBaseListModel):
+    list_model_key = 'links'
+    ObjectModel = _LinksItem
