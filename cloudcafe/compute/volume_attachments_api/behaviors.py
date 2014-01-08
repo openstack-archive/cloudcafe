@@ -1,13 +1,7 @@
 from time import sleep, time
-from cafe.engine.behaviors import BaseBehavior, behavior
-from cloudcafe.compute.volume_attachments_api.client import \
-    VolumeAttachmentsAPIClient
+from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.volume_attachments_api.config import \
     VolumeAttachmentsAPIConfig
-from cloudcafe.blockstorage.volumes_api.v1.client import VolumesClient
-from cloudcafe.blockstorage.volumes_api.v1.config import VolumesAPIConfig
-from cloudcafe.blockstorage.volumes_api.v1.behaviors import \
-    VolumesAPI_Behaviors
 
 
 class VolumeAttachmentBehaviorError(Exception):
@@ -17,17 +11,13 @@ class VolumeAttachmentBehaviorError(Exception):
 class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
 
     def __init__(
-            self, volume_attachments_client=None, volumes_client=None,
-            volume_attachments_config=None, volumes_config=None):
+            self, volume_attachments_client=None,
+            volume_attachments_config=None, volumes_behaviors=None):
 
         self.client = volume_attachments_client
         self.config = volume_attachments_config or VolumeAttachmentsAPIConfig()
+        self.volumes_behaviors = volumes_behaviors
 
-        self.volumes_client = volumes_client
-        self.volumes_behaviors = VolumesAPI_Behaviors(volumes_client)
-        self.volumes_config = volumes_config or VolumesAPIConfig()
-
-    @behavior(VolumeAttachmentsAPIClient)
     def wait_for_attachment_to_propagate(
             self, attachment_id, server_id, timeout=None, poll_rate=5):
 
@@ -43,7 +33,6 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
         else:
             return False
 
-    @behavior(VolumesClient)
     def verify_volume_status_progression_during_attachment(
             self, volume_id, state_list=None):
 
@@ -56,7 +45,6 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
         self.volumes_behaviors.verify_volume_status_progression(
             volume_id, state_list)
 
-    @behavior(VolumeAttachmentsAPIClient, VolumesClient)
     def attach_volume_to_server(
             self, server_id, volume_id, device=None,
             attachment_propagation_timeout=60):
