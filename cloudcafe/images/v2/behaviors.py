@@ -119,7 +119,7 @@ class ImagesBehaviors(BaseBehavior):
         return [member.member_id for member in members]
 
     @staticmethod
-    def get_creation_offset(image_creation_time_in_sec, time_property):
+    def get_creation_delta(image_creation_time_in_sec, time_property):
         """
         @summary: Calculate and return the difference between the image
         creation time and a given image time_property
@@ -295,9 +295,16 @@ class ImagesBehaviors(BaseBehavior):
         if task.created_at is None:
             errors.append(self.error_msg.format(
                 'created_at', not None, task.created_at))
-        if task.input_.image_properties == {}:
-            errors.append(self.error_msg.format(
-                'image_properties', not {}, task.input_.image_properties))
+        if (task.status == TaskStatus.PENDING or
+                task.status == TaskStatus.PROCESSING):
+            if task.input_.image_properties != {}:
+                errors.append(self.error_msg.format(
+                    'image_properties', not {}, task.input_.image_properties))
+        elif (task.status != TaskStatus.PENDING or
+                task.status != TaskStatus.PROCESSING):
+            if task.input_.image_properties == {}:
+                errors.append(self.error_msg.format(
+                    'image_properties', not {}, task.input_.image_properties))
         if task.input_.import_from is None:
             errors.append(self.error_msg.format(
                 'import_from', not None, task.input_.import_from))
@@ -317,10 +324,11 @@ class ImagesBehaviors(BaseBehavior):
         if task.type_ is None:
             errors.append(self.error_msg.format(
                 'type_', not None, task.type_))
-        if self.id_regex.match(task.result.image_id) is None:
-            errors.append(self.error_msg.format(
-                'image_id', not None,
-                self.id_regex.match(task.result.image_id)))
+        if task.result is not None:
+            if self.id_regex.match(task.result.image_id) is None:
+                errors.append(self.error_msg.format(
+                    'image_id', not None,
+                    self.id_regex.match(task.result.image_id)))
         if task.owner is None:
             errors.append(self.error_msg.format(
                 'owner', not None, task.owner))
