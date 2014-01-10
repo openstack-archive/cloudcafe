@@ -100,3 +100,4 @@ class CloudInitConfig(ConfigSectionInterface):
     def user_data_created_directory(self):
         """Directory that is created by the script"""
         return self.get("user_data_created_directory")
+
