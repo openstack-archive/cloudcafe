@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import time
+import base64
 
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
@@ -357,3 +358,45 @@ class ServerBehaviors(BaseBehavior):
         resp = self.wait_for_server_status(server_id,
                                            ServerStates.ACTIVE)
         return resp.entity
+
+    def test_create_volume_server(self, flavor_ref, volume_size, volume_type,
+                                  volume_image, timeout=None,
+                                  bdm_delete_on_termination=None,
+                                  bdm_devname=None,
+                                  bdm_size=None, bdm_type=None):
+
+        #define static variable
+        self.volume_name = rand_name("volume")
+        self.name = rand_name("server")
+        self.image_ref = ""
+        self.metadata = {'meta_key_1': 'meta_value_1',
+                         'meta_key_2': 'meta_value_2'}
+        self.file_contents = 'This is a test file.'
+        files = [{'path': '/test.txt', 'contents': base64.b64encode(
+            self.file_contents)}]
+        self.key = self.keypairs_client.create_keypair(rand_name("key")).entity
+        self.resources.add(self.key.name,
+                           self.keypairs_client.delete_keypair)
+
+        #build bootable volume
+        self.volume = self.blockstorage_behavior.create_available_volume(
+            self.volume_name, self.volume_size, self.volume_type,
+            self.volume_image, timeout=self.volume_status_timeout)
+
+        if (self.bdm_delete_on_termination is True):
+            self.resources.add(self.volume.id_,
+                               self.blockstorage_client.delete_volume)
+
+        #call blockdevicemapping
+        self.block_device_mapping = BlockDeviceMapping(
+            self.volume_id_, self.bdm_delete_on_termination,
+            self.bdm_devname, self.bdm_size, self.bdm_type)
+
+        #build server
+        self.create_resp = self.servers_client.create_server(
+            self.name, self.image_ref, self.flavor_ref,
+            metadata=self.metadata,
+            block_device_mapping=self.block_device_mapping,
+            personality=files, key_name=self.key.name)
+
+        return self.create_resp
