@@ -100,3 +100,28 @@ class CloudInitConfig(ConfigSectionInterface):
     def user_data_created_directory(self):
         """Directory that is created by the script"""
         return self.get("user_data_created_directory")
+
+
+class BlockDeviceMapping(ConfigSectionInterface):
+
+    SECTION_NAME = 'block_device_mapping'
+
+    @property
+    def bdm_devname(self):
+        """device name"""
+        return self.get("bdm_devname")
+
+    @property
+    def bdm_type(self):
+        """server type"""
+        return self.get("bdm_type")
+
+    @property
+    def bdm_size(self):
+        """size in gb"""
+        return self.get("bdm_size")
+
+    @property
+    def bdm_delete_on_termination(self):
+        """delete volume on termination"""
+        return self.get("bdm_delete_on_termination")
