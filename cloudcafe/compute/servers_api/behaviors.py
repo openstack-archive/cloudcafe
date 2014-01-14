@@ -43,7 +43,8 @@ class ServerBehaviors(BaseBehavior):
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None,
+            block_device_mappings=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -74,7 +75,7 @@ class ServerBehaviors(BaseBehavior):
 
         if name is None:
             name = rand_name('testserver')
-        if image_ref is None:
+        if image_ref is None and block_device_mappings is None:
             image_ref = self.images_config.primary_image
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
@@ -92,7 +93,8 @@ class ServerBehaviors(BaseBehavior):
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass,
+                block_device_mappings=block_device_mappings)
             server_obj = resp.entity
 
             try:
