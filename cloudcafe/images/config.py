@@ -117,6 +117,11 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get('max_expires_at_delta'))
 
     @property
+    def test_file(self):
+        """Test file for tasks"""
+        return self.get('test_file')
+
+    @property
     def import_from(self):
         """Location from which to import a given file"""
         return self.get('import_from')
