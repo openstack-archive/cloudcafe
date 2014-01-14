@@ -147,3 +147,10 @@ class BlockDeviceMappingConfig(ConfigSectionInterface):
     def bdm_delete_on_termination(self):
         """delete volume on termination"""
         return self.get("bdm_delete_on_termination")
+
+    @property
+    def bdm_boot_type(self):
+        """server boot type
+           B - boot from block
+           S - boot from server"""
+        return self.get("bdm_boot_type")

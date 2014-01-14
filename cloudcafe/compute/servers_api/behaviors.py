@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import time
+import base64
 
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
@@ -30,20 +31,23 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, servers_config,
-                 images_config, flavors_config):
+                 images_config, flavors_config,
+                 block_device_mapping):
 
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_config = images_config
         self.flavors_config = flavors_config
+        self.block_device_mapping = block_device_mapping
 
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None,
+            block_device_mapping=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -74,7 +78,7 @@ class ServerBehaviors(BaseBehavior):
 
         if name is None:
             name = rand_name('testserver')
-        if image_ref is None:
+        if image_ref is None and block_device_mapping is None:
             image_ref = self.images_config.primary_image
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
@@ -92,7 +96,8 @@ class ServerBehaviors(BaseBehavior):
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass,
+                block_device_mapping=block_device_mapping)
             server_obj = resp.entity
 
             try:
@@ -357,3 +362,55 @@ class ServerBehaviors(BaseBehavior):
         resp = self.wait_for_server_status(server_id,
                                            ServerStates.ACTIVE)
         return resp.entity
+
+    def boot_volume(self, key=None, boot_flag=None):
+        self.boot_flag = boot_flag
+        self.name = rand_name("server")
+        self.metadata = {'meta_key_1': 'meta_value_1',
+                         'meta_key_2': 'meta_value_2'}
+        self.file_contents = 'This is a config drive test file.'
+        files = [{'path': '/test.txt', 'contents': base64.b64encode(
+            self.file_contents)}]
+        self.user_data_contents = "My user data"
+        self.user_data = base64.b64encode(self.user_data_contents)
+        self.key = key
+        self.volume_name = rand_name("volume")
+        self.volume_id = "88dd8336-d6c5-465d-a5a3-82f2f6a4b51f"
+        print "variables"
+        print self.block_device_mapping.bdm_delete_on_termination
+        print self.block_device_mapping.bdm_devname
+        print self.block_device_mapping.bdm_size
+        print self.block_device_mapping.bdm_type
+        print self.block_device_mapping.bdm_boot_type
+        print "*****"
+
+        if self.block_device_mapping.bdm_boot_type == "B":
+            """ Boot from volume variables"""
+            print "boot flag"
+            self.volume_size = None
+            self.volume_type = None
+            self.volume_image = None
+            self.timeout = None
+            """ Create Volume"""
+    #    self.volume = self.blockstorage_behavior.create_available_volume(
+    #        self.volume_name, self.volume_size, self.volume_type,
+    #        self.volume_image, timeout=self.timeout)
+            """ Build block device mapping dictonary"""
+            self.block_device_mapping = [
+                {"volume_id": self.volume_id,
+                 "delete_on_termination":
+                 self.block_device_mapping.bdm_delete_on_termination,
+                 "device_name": self.block_device_mapping.bdm_devname,
+                 "size": self.block_device_mapping.bdm_size,
+                 "type": self.block_device_mapping.bdm_type}]
+            print self.block_device_mapping
+            print "*****"
+        if self.block_device_mapping.bdm_boot_type == "S":
+            print "boot standard"
+            self.block_device_mapping = None
+        """ Create server"""
+        response = self.create_active_server(
+            key_name=self.key.name, metadata=self.metadata,
+            user_data=self.user_data, personality=files,
+            block_device_mapping=self.block_device_mapping)
+        return response
