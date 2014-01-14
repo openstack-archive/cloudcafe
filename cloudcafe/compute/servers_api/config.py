@@ -123,7 +123,8 @@ class ServersConfig(ConfigSectionInterface):
         """
         return int(self.get("connection_timeout"))
 
-class BlockDeviceMapping(ConfigSectionInterface):
+
+class BlockDeviceMappingConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'block_device_mapping'
 
