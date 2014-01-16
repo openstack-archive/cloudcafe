@@ -57,10 +57,12 @@ class ImageBehaviors(object):
             resp = self.images_client.get_image(image_id)
             image = resp.entity
 
-            if image.status.lower() == ImageStates.ERROR.lower():
+            if (image.status.lower() == ImageStates.ERROR.lower() or
+                    (image.status.lower() == ImageStates.DELETED.lower() and
+                     desired_status.lower() != ImageStates.DELETED.lower())):
                 raise BuildErrorException(
-                    'Build failed. Image with uuid %s entered ERROR status.'
-                    % image.id)
+                    'Build failed. Image with uuid {0} entered {1} '
+                    'status.'.format(image.id, image.status))
 
             if image.status == desired_status:
                 break
