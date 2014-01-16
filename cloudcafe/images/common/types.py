@@ -60,6 +60,13 @@ class ImageStatus(object):
     ERROR = "error"
 
 
+class ImageType(object):
+    """@summary: Types denoting an Image's type"""
+
+    IMPORT = 'import'
+    EXPORT = 'export'
+
+
 class ImageVisibility(object):
     """@summary: Types denoting an Image's visibility"""
 
