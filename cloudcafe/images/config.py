@@ -23,15 +23,13 @@ class MarshallingConfig(ConfigSectionInterface):
 
     @property
     def serializer(self):
+        """Default serialization format"""
         return self.get("serialize_format")
 
     @property
     def deserializer(self):
+        """Default Deserialization format"""
         return self.get("deserialize_format")
-
-
-class AdminUserConfig(BaseUserConfig):
-    SECTION_NAME = 'admin_user'
 
 
 class AltUserConfig(BaseUserConfig):
@@ -47,59 +45,78 @@ class ImagesConfig(ConfigSectionInterface):
 
     @property
     def internal_url(self):
+        """Url used for internal node testing"""
         return self.get('internal_url')
 
     @property
     def override_url(self):
+        """Url used to override service catalog endpoint"""
         return self.get('override_url')
 
     @property
     def endpoint_name(self):
+        """Name to identify endpoint in service catalog"""
         return self.get('endpoint_name')
 
     @property
     def region(self):
+        """Region to identity endpoint in service catalog"""
         return self.get('region')
 
     @property
     def primary_image(self):
-        """Default image to be used when building servers in glance test"""
+        """Primary image to be used when building servers"""
         return self.get("primary_image")
 
     @property
     def secondary_image(self):
-        """Alternate image to be used in glance test"""
+        """Secondary image to be used when building servers"""
         return self.get("secondary_image")
 
     @property
     def image_status_interval(self):
-        """Amount of time to wait between polling the status of an image"""
+        """Time to wait between polling the status of an image"""
         return int(self.get("image_status_interval"))
 
     @property
     def snapshot_timeout(self):
-        """Length of time to wait before giving up on reaching a status"""
+        """Time to wait before giving up on reaching a status"""
         return int(self.get("snapshot_timeout"))
 
     @property
     def min_disk(self):
+        """Default minimum disk space in image properties"""
         return int(self.get('min_disk'))
 
     @property
     def min_ram(self):
+        """Default minimum ram in image properties"""
         return int(self.get('min_ram'))
 
     @property
     def size_min(self):
+        """Default minimum size in image properties"""
         return int(self.get('size_min'))
 
     @property
     def size_max(self):
+        """Default maximum size in image properties"""
         return int(self.get('size_max'))
 
     @property
     def results_limit(self):
+        """Default number of results to return is list requests"""
         return int(self.get('results_limit'))
+
+    @property
+    def test_image_name(self):
+        """Name of image used for internal testing"""
+        return self.get('test_image_name')
+
+    @property
+    def resource_creation_attempts(self):
+        """Number of times to attempt to create a specified resource"""
+        return int(self.get('resource_creation_attempts'))
 
     @property
     def max_created_at_delta(self):
@@ -122,14 +139,34 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('test_file')
 
     @property
+    def object_data(self):
+        """Data to be used when creating an object"""
+        return self.get('object_data')
+
+    @property
     def import_from(self):
-        """Location from which to import a given file"""
+        """Location from which to import a minimal VHD that is not bootable"""
         return self.get('import_from')
+
+    @property
+    def import_from_bootable(self):
+        """Location from which to import a bootable VHD"""
+        return self.get('import_from_bootable')
 
     @property
     def import_from_format(self):
         """Format for which to import the a given file"""
         return self.get('import_from_format')
+
+    @property
+    def export_to(self):
+        """Location to export a given file"""
+        return self.get('export_to')
+
+    @property
+    def alt_export_to(self):
+        """Location to export a given file"""
+        return self.get('alt_export_to')
 
     @property
     def task_status_interval(self):
