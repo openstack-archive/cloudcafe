@@ -27,3 +27,9 @@ class ImageProperties(object):
 
 class Messages(object):
     ERROR_MSG = 'Unexpected {0} value received. Expected: {1}, Received: {2}'
+    DUPLICATE_FILE_MSG = ('Swift already has an object with id \'{0}.vhd\' in '
+                          'container \'{1}\'')
+    NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
+    EXPORT_WINDOWS_MSG = ('The export of Windows based images is not allowed. '
+                          'Distribution of Windows code is not allowed in the '
+                          'Service Provider License Agreement.')
