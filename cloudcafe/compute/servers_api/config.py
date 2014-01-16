@@ -122,3 +122,28 @@ class ServersConfig(ConfigSectionInterface):
         Amount of time to wait before giving up on connecting to an instance
         """
         return int(self.get("connection_timeout"))
+
+
+class BlockDeviceMappingConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'block_device_mapping'
+
+    @property
+    def bdm_devname(self):
+        """device name"""
+        return self.get("bdm_devname")
+
+    @property
+    def bdm_type(self):
+        """server type"""
+        return self.get("bdm_type")
+
+    @property
+    def bdm_size(self):
+        """size in gb"""
+        return self.get("bdm_size")
+
+    @property
+    def bdm_delete_on_termination(self):
+        """delete volume on termination"""
+        return self.get("bdm_delete_on_termination")
