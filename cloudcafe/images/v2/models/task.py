@@ -17,18 +17,17 @@ limitations under the License.
 import dateutil.parser
 import json
 
-from cafe.engine.models.base import \
-    AutoMarshallingListModel, AutoMarshallingModel
+from cafe.engine.models.base import (
+    AutoMarshallingListModel, AutoMarshallingModel)
 from cloudcafe.compute.common.equality_tools import EqualityTools
 
 
 class Task(AutoMarshallingModel):
     """@summary: Task v2 model"""
 
-    def __init__(self, expires_at=None, created_at=None, id_=None,
-                 input_=None, message=None, owner=None, result=None,
-                 schema=None, self_=None, status=None, type_=None,
-                 updated_at=None):
+    def __init__(self, expires_at=None, created_at=None, id_=None, input_=None,
+                 message=None, owner=None, result=None, schema=None,
+                 self_=None, status=None, type_=None, updated_at=None):
         super(Task, self).__init__()
         self.expires_at = expires_at
         self.created_at = created_at
@@ -62,11 +61,13 @@ class Task(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
+        expires_at = None
         input_ = None
         result = None
 
         created_at = dateutil.parser.parse(json_dict.get('created_at'))
-        expires_at = dateutil.parser.parse(json_dict.get('expires_at'))
+        if 'expires_at' in json_dict:
+            expires_at = dateutil.parser.parse(json_dict.get('expires_at'))
         if 'input' in json_dict:
             input_ = Input._dict_to_obj(json_dict)
         if 'result' in json_dict:
@@ -123,12 +124,15 @@ class Tasks(AutoMarshallingListModel):
 class Input(AutoMarshallingModel):
     """@summary: Input for Task v2 model"""
 
-    def __init__(self, image_properties=None, import_from=None,
-                 import_from_format=None):
+    def __init__(self, image_properties=None, image_uuid=None,
+                 import_from=None, import_from_format=None,
+                 receiving_swift_container=None):
         super(Input, self).__init__()
         self.image_properties = image_properties
+        self.image_uuid = image_uuid
         self.import_from = import_from
         self.import_from_format = import_from_format
+        self.receiving_swift_container = receiving_swift_container
 
     def __eq__(self, other):
         return EqualityTools.are_objects_equal(self, other)
@@ -161,8 +165,11 @@ class Input(AutoMarshallingModel):
                 image_properties.update(properties)
             _input = Input(
                 image_properties=image_properties,
+                image_uuid=input_dict.get('image_uuid'),
                 import_from=input_dict.get('import_from'),
-                import_from_format=input_dict.get('import_from_format'))
+                import_from_format=input_dict.get('import_from_format'),
+                receiving_swift_container=input_dict.get(
+                    'receiving_swift_container'))
 
         return _input
 
@@ -180,8 +187,9 @@ class Input(AutoMarshallingModel):
 class Result(AutoMarshallingModel):
     """@summary: Result for Task v2 model"""
 
-    def __init__(self, image_id=None):
+    def __init__(self, export_location=None, image_id=None):
         super(Result, self).__init__()
+        self.export_location = export_location
         self.image_id = image_id
 
     def __eq__(self, other):
@@ -200,7 +208,8 @@ class Result(AutoMarshallingModel):
         result = None
         result_dict = json_dict.get('result')
         if result_dict:
-            result = Result(image_id=result_dict.get('image_id'))
+            result = Result(image_id=result_dict.get('image_id'),
+                            export_location=result_dict.get('export_location'))
         return result
 
     @classmethod
