@@ -102,6 +102,11 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get('results_limit'))
 
     @property
+    def test_image_name(self):
+        """Name of image used for internal testing"""
+        return self.get('test_image_name')
+
+    @property
     def max_created_at_delta(self):
         """Maximum number of seconds that created_at can differ"""
         return int(self.get('max_created_at_delta'))

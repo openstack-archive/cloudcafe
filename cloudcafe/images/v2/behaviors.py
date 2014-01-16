@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import re
 import calendar
+import re
 import time
 
 from cafe.engine.behaviors import BaseBehavior
@@ -39,10 +39,58 @@ class ImagesBehaviors(BaseBehavior):
         self.error_msg = Messages.ERROR_MSG
         self.id_regex = re.compile(ImageProperties.ID_REGEX)
 
-    def create_new_image(self, container_format=None, disk_format=None,
-                         name=None, protected=None, tags=None,
-                         visibility=None):
-        """@summary: Create new image and add it for deletion"""
+    def create_new_image(self, image_properties=None, import_from=None,
+                         import_from_format=None):
+        """
+        @summary: Create new image using the create new task method and add it
+        for deletion
+        """
+
+        if image_properties is None:
+            image_properties = {}
+        if import_from is None:
+            import_from = self.config.import_from
+        if import_from_format is None:
+            import_from_format = self.config.import_from_format
+
+        input_ = {'image_properties': image_properties,
+                  'import_from': import_from,
+                  'import_from_format': import_from_format}
+        task = self.create_new_task(input_=input_, type_=TaskTypes.IMPORT)
+        image_id = task.result.image_id
+
+        response = self.client.get_image(image_id=image_id)
+        image = response.entity
+
+        if image is not None:
+            self.resources.add(image.id_, self.client.delete_image)
+
+        return image
+
+    def create_new_images(self, image_properties=None, import_from=None,
+                          import_from_format=None, count=1):
+        """
+        @summary: Create new images using the create new task method and add
+        them for deletion
+        """
+
+        image_list = []
+
+        for i in range(count):
+            image = self.create_new_image(
+                image_properties=image_properties, import_from=import_from,
+                import_from_format=import_from_format)
+            image_list.append(image)
+
+        return image_list
+
+    def create_new_image_internal_only(self, container_format=None,
+                                       disk_format=None, name=None,
+                                       protected=None, tags=None):
+        """
+        @summary: Create new image via an internal node and add it for
+        deletion
+        """
 
         if container_format is None:
             container_format = ImageContainerFormat.BARE
@@ -53,24 +101,30 @@ class ImagesBehaviors(BaseBehavior):
 
         response = self.client.create_image(
             container_format=container_format, disk_format=disk_format,
-            name=name, protected=protected, tags=tags, visibility=visibility)
+            name=name, protected=protected, tags=tags)
         image = response.entity
+
         if image is not None:
             self.resources.add(image.id_, self.client.delete_image)
+
         return image
 
-    def create_new_images(self, container_format=None, disk_format=None,
-                          name=None, protected=None, tags=None,
-                          visibility=None, count=1):
-        """@summary: Create new images and add them for deletion"""
+    def create_new_images_internal_only(self, container_format=None,
+                                        disk_format=None, name=None,
+                                        protected=None, tags=None, count=1):
+        """
+        @summary: Create new images via an internal node and add them for
+        deletion
+        """
 
         image_list = []
+
         for i in range(count):
-            image = self.create_new_image(
+            image = self.create_new_image_internal_only(
                 container_format=container_format, disk_format=disk_format,
-                name=name, protected=protected, tags=tags,
-                visibility=visibility)
+                name=name, protected=protected, tags=tags)
             image_list.append(image)
+
         return image_list
 
     def list_images_pagination(self, changes_since=None, checksum=None,
@@ -295,16 +349,11 @@ class ImagesBehaviors(BaseBehavior):
         if task.created_at is None:
             errors.append(self.error_msg.format(
                 'created_at', not None, task.created_at))
-        if (task.status == TaskStatus.PENDING or
-                task.status == TaskStatus.PROCESSING and
+        if ((task.status == TaskStatus.PENDING or
+                task.status == TaskStatus.PROCESSING) and
                 task.input_.image_properties != {}):
             errors.append(self.error_msg.format(
-                'image_properties', not {}, task.input_.image_properties))
-        elif (task.status != TaskStatus.PENDING or
-                task.status != TaskStatus.PROCESSING and
-                task.input_.image_properties == {}):
-            errors.append(self.error_msg.format(
-                'image_properties', not {}, task.input_.image_properties))
+                'image_properties', 'not {}', task.input_.image_properties))
         if task.input_.import_from is None:
             errors.append(self.error_msg.format(
                 'import_from', not None, task.input_.import_from))
