@@ -62,11 +62,13 @@ class Task(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
+        expires_at = None
         input_ = None
         result = None
 
         created_at = dateutil.parser.parse(json_dict.get('created_at'))
-        expires_at = dateutil.parser.parse(json_dict.get('expires_at'))
+        if 'expires_at' in json_dict:
+            expires_at = dateutil.parser.parse(json_dict.get('expires_at'))
         if 'input' in json_dict:
             input_ = Input._dict_to_obj(json_dict)
         if 'result' in json_dict:

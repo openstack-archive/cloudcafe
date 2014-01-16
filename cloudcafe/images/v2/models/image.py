@@ -26,9 +26,9 @@ class Image(AutoMarshallingModel):
     """@summary: Image v2 model"""
 
     def __init__(self, checksum=None, container_format=None, created_at=None,
-                 disk_format=None, file_=None, id_=None, min_disk=None,
-                 min_ram=None, name=None, protected=None, schema=None,
-                 self_=None, size=None, status=None, tags=None,
+                 disk_format=None, file_=None, id_=None, image_type=None,
+                 min_disk=None, min_ram=None, name=None, protected=None,
+                 schema=None, self_=None, size=None, status=None, tags=None,
                  updated_at=None, visibility=None, additional_properties=None):
         # TODO: 'direct_url' and 'locations' should be added at a later date
         self.checksum = checksum
@@ -37,6 +37,7 @@ class Image(AutoMarshallingModel):
         self.disk_format = disk_format
         self.file_ = file_
         self.id_ = id_
+        self.image_type = image_type
         self.min_disk = min_disk
         self.min_ram = min_ram
         self.name = name
@@ -84,9 +85,10 @@ class Image(AutoMarshallingModel):
         """
         for key, value in json_dict.items():
             if key not in ['checksum', 'container_format', 'created_at',
-                           'disk_format', 'file', 'id', 'min_disk', 'min_ram',
-                           'name', 'protected', 'schema', 'self', 'size',
-                           'status', 'tags', 'updated_at', 'visibility']:
+                           'disk_format', 'file', 'id', 'image_type',
+                           'min_disk', 'min_ram', 'name', 'protected',
+                           'schema', 'self', 'size', 'status', 'tags',
+                           'updated_at', 'visibility']:
                 additional_properties.update({key: value})
         created_at = dateutil.parser.parse(json_dict.get('created_at'))
         updated_at = dateutil.parser.parse(json_dict.get('updated_at'))
@@ -95,6 +97,7 @@ class Image(AutoMarshallingModel):
                       created_at=created_at,
                       disk_format=json_dict.get('disk_format'),
                       file_=json_dict.get('file'), id_=json_dict.get('id'),
+                      image_type=json_dict.get('image_type'),
                       min_disk=json_dict.get('min_disk'),
                       min_ram=json_dict.get('min_ram'),
                       name=json_dict.get('name'),
@@ -115,6 +118,7 @@ class Image(AutoMarshallingModel):
         obj_dict['disk_format'] = self.disk_format
         obj_dict['file'] = self.file_
         obj_dict['id'] = self.id_
+        obj_dict['image_type'] = self.image_type
         obj_dict['min_disk'] = self.min_disk
         obj_dict['min_ram'] = self.min_ram
         obj_dict['name'] = self.name
