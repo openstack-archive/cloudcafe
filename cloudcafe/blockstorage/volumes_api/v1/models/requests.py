@@ -25,7 +25,7 @@ class VolumeRequest(AutoMarshallingModel):
     def __init__(
             self, size=None, volume_type=None, display_name=None,
             display_description=None, metadata=None, availability_zone=None,
-            snapshot_id=None, attachments=None):
+            snapshot_id=None):
 
         self.size = size
         self.volume_type = volume_type
@@ -33,6 +33,7 @@ class VolumeRequest(AutoMarshallingModel):
         self.display_description = display_description
         self.metadata = metadata or dict()
         self.availability_zone = availability_zone
+        self.snapshot_id = snapshot_id
 
     def _obj_to_json(self):
         return json.dumps(self._obj_to_json_dict())
@@ -44,7 +45,8 @@ class VolumeRequest(AutoMarshallingModel):
             "display_name": self.display_name,
             "display_description": self.display_description,
             "metadata": self.metadata,
-            "availability_zone": self.availability_zone}
+            "availability_zone": self.availability_zone,
+            "snapshot_id": self.snapshot_id}
 
         return {'volume': self._remove_empty_values(volume_attrs)}
 
@@ -55,7 +57,8 @@ class VolumeRequest(AutoMarshallingModel):
             "volume_type": self.volume_type,
             "display_name": self.display_name,
             "display_description": self.display_description,
-            "availability_zone": self.availability_zone}
+            "availability_zone": self.availability_zone,
+            "snapshot_id": self.snapshot_id}
         element = self._set_xml_etree_element(element, volume_attrs)
 
         if len(self.metadata.keys()) > 0:
