@@ -23,11 +23,18 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
 
     ALL_FEATURES = '__ALL__'
     NO_FEATURES = '__NONE__'
-    ASK_SWIFT_FOR_FEATURES = '__ASK__'
 
     @property
-    def enabled_features(self):
-        return self.get('enabled_features', self.ALL_FEATURES)
+    def use_swift_info(self):
+        return self.get_boolean('use_swift_info', True)
+
+    @property
+    def features(self):
+        return self.get('features', '')
+
+    @property
+    def excluded_features(self):
+        return self.get('excluded_features', '')
 
     @property
     def object_expirer_run_interval(self):
