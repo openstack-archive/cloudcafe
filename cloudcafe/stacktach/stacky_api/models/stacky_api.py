@@ -456,7 +456,8 @@ class Reports(StacktachBaseListModel):
 class EventIdDetail(AutoMarshallingModel):
 
     def __init__(self, category, publisher, event_id, uuid, service, when,
-                 host_name, state, deployment, event_name, actual_event):
+                 host_name, state, deployment, event_name, request_id,
+                 actual_event):
         """
         An object that represents a StackTack EventIdDetail Response Entity.
         """
@@ -471,6 +472,7 @@ class EventIdDetail(AutoMarshallingModel):
         self.state = state
         self.deployment = deployment
         self.event_name = event_name
+        self.request_id = request_id
         self.actual_event = actual_event
 
     @classmethod
@@ -490,6 +492,7 @@ class EventIdDetail(AutoMarshallingModel):
             state=entity_dict.get('State'),
             deployment=entity_dict.get('Deployment'),
             event_name=entity_dict.get('Event'),
+            request_id=entity_dict.get('Req ID'),
             actual_event=entity_dict.get('actual_event'))
         return my_entity
 
@@ -512,7 +515,7 @@ class EventIdDetails(StacktachBaseListModel):
         """
         # data is contained after first element
         entity_dict = {}
-        for result in results_list[0][1:11]:
+        for result in results_list[0][1:12]:
             entity_dict[result[0]] = result[1]
         entity_dict['actual_event'] = results_list[1]
         entity = domain_model_type._dict_to_obj(entity_dict)
