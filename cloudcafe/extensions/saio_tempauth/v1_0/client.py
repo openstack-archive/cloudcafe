@@ -13,11 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from cafe.engine.clients.rest import BaseRestClient
+from cafe.engine.http.client import BaseHTTPClient
 from cloudcafe.extensions.saio_tempauth.v1_0.models.requests import AuthData
 
 
-class TempauthAPI_Client(BaseRestClient):
+class TempauthAPI_Client(BaseHTTPClient):
     """
     Tempauth Client for use with Swift All In One.
     """

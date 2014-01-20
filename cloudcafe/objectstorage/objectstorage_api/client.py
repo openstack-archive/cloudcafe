@@ -25,7 +25,7 @@ from time import time, mktime
 from hashlib import sha1
 from datetime import datetime
 from cloudcafe.common.tools.md5hash import get_md5_hash
-from cafe.engine.clients.rest import RestClient
+from cafe.engine.http.client import HTTPClient
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
     import AccountContainersList, ContainerObjectsList, CreateArchiveObject
 
@@ -68,7 +68,7 @@ def _deserialize(response_entity_type):
 BULK_ARCHIVE_NAME = 'bulk_objects'
 
 
-class ObjectStorageAPIClient(RestClient):
+class ObjectStorageAPIClient(HTTPClient):
 
     def __init__(self, storage_url, auth_token, base_container_name=None,
                  base_object_name=None):
