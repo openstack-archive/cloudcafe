@@ -41,7 +41,7 @@ class ApiBehaviorsTest(unittest.TestCase):
         behavior = ObjectStorageAPI_Behaviors(client, config)
         behavior.create_container(client_test.VALID_CONTAINER_NAME)
         client.create_container.assert_called_with(
-            client_test.VALID_CONTAINER_NAME)
+            client_test.VALID_CONTAINER_NAME, headers={})
 
     def test_throws_exception_if_create_container_fails(self):
         response = Mock(spec=Response)
