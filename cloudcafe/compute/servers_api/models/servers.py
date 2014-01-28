@@ -122,7 +122,7 @@ class Server(AutoMarshallingModel):
             addresses = Addresses._xml_ele_to_obj(element.find('addresses'))
         if element.find('flavor') is not None:
             flavor = Flavor._xml_ele_to_obj(element.find('flavor'))
-        if element.find('image') is not None:
+        if element.find('image'):
             image = Image._xml_ele_to_obj(element.find('image'))
         if element.find('metadata') is not None:
             metadata = Metadata._xml_ele_to_obj(element.find('metadata'))
@@ -168,7 +168,7 @@ class Server(AutoMarshallingModel):
             addresses = Addresses._dict_to_obj(server_dict['addresses'])
         if 'flavor' in server_dict:
             flavor = FlavorMin._dict_to_obj(server_dict['flavor'])
-        if 'image' in server_dict:
+        if 'image' in server_dict and server_dict.get('image'):
             image = ImageMin._dict_to_obj(server_dict['image'])
         if 'metadata' in server_dict:
             metadata = Metadata._dict_to_obj(server_dict['metadata'])
