@@ -1,47 +1,23 @@
 from time import time, sleep
 
-from cafe.engine.behaviors import BaseBehavior, behavior
+from cafe.engine.behaviors import behavior
 
 from cloudcafe.common.tools.datagen import random_string
+from cloudcafe.openstackcli.common.behaviors import (
+    OpenstackCLI_BaseBehavior, OpenstackCLI_BehaviorError)
 from cloudcafe.openstackcli.cindercli.client import CinderCLI
 from cloudcafe.openstackcli.cindercli.config import CinderCLI_Config
 from cloudcafe.blockstorage.volumes_api.v1.config import VolumesAPIConfig
 from cloudcafe.blockstorage.volumes_api.v1.models import statuses
 
 
-class CinderCLIBehaviorException(Exception):
+class CinderCLIBehaviorError(OpenstackCLI_BehaviorError):
     pass
 
 
-def raise_if(check, msg):
-    if check:
-        raise CinderCLIBehaviorException(msg)
+class CinderCLI_Behaviors(OpenstackCLI_BaseBehavior):
 
-
-def parse_error(resp):
-    if resp.entity is None:
-        return "Unable to parse CLI response"
-
-
-def cli_error(resp):
-    if resp.standard_error[-1].startswith("ERROR"):
-        return "CLI returned an error message"
-
-
-def process_error(resp):
-    if resp.return_code is not 0:
-        return "CLI process returned an error code"
-
-
-def raise_on_error(resp, msg=None):
-    errors = [process_error(resp), cli_error(resp), parse_error(resp)]
-    errors = [e for e in errors if e is not None]
-    default_message = "ERROR: {0}".format(
-        " : ".join(["{0}".format(e) for e in errors]))
-    raise_if(errors, msg or default_message)
-
-
-class CinderCLI_Behaviors(BaseBehavior):
+    _default_error = CinderCLIBehaviorError
 
     def __init__(
             self, cinder_cli_client, cinder_cli_config=None,
@@ -63,7 +39,7 @@ class CinderCLI_Behaviors(BaseBehavior):
         resp = self.client.create_volume(
             size=size, volume_type=type_, display_name=name)
 
-        raise_on_error(resp, "Cinder CLI Volume Create call failed.")
+        self.raise_on_error(resp, "Cinder CLI Volume Create call failed.")
         volume = resp.entity
         self.wait_for_volume_status(volume.id_, statuses.Volume.AVAILABLE)
         return volume
@@ -71,7 +47,7 @@ class CinderCLI_Behaviors(BaseBehavior):
     @behavior(CinderCLI)
     def get_volume_status(self, volume_id):
         resp = self.client.show_volume(volume_id=volume_id)
-        raise_on_error(resp, "Cinder CLI Show Volume call failed.")
+        self.raise_on_error(resp, "Cinder CLI Show Volume call failed.")
         return resp.entity.status
 
     @behavior(CinderCLI)
@@ -102,21 +78,21 @@ class CinderCLI_Behaviors(BaseBehavior):
                 "observe the volume attain the {1} status.".format(
                     timeout, expected_status))
             self._log.info(msg)
-            raise CinderCLIBehaviorException(msg)
+            raise self._default_error(msg)
 
     @behavior(CinderCLI)
     def list_volumes(self):
         resp = self.client.list_volumes
 
-        raise_on_error(resp, "Unable to list volumes via the cinder cli")
+        self.raise_on_error(resp, "Unable to list volumes via the cinder cli")
 
         return resp.entity
 
     @behavior(CinderCLI)
     def delete_volume(self, volume_id):
         resp = self.client.delete_volume(volume_id)
-        raise_if(
-            process_error(resp),
+        self.raise_if(
+            self.is_process_error(resp),
             "Cinder CLI Volume Delete did not execute successfully")
 
     @behavior(CinderCLI)
@@ -133,7 +109,7 @@ class CinderCLI_Behaviors(BaseBehavior):
         end = time() + timeout
         while time() <= end:
             resp = self.client.show_volume(volume_id)
-            if cli_error(resp) or process_error(resp):
+            if self.is_cli_error(resp) or self.is_process_error(resp):
                 if resp.standard_error[-1] == expected_err_msg:
                     return True
             sleep(poll_rate)
@@ -145,7 +121,7 @@ class CinderCLI_Behaviors(BaseBehavior):
     def list_snapshots(self):
         resp = self.client.list_snapshots
 
-        raise_on_error(resp, "Unable to list snapshots via the cinder cli")
+        self.raise_on_error(resp, "Unable to list snapshots via the cinder cli")
 
         return resp.entity
 
@@ -153,14 +129,14 @@ class CinderCLI_Behaviors(BaseBehavior):
     def delete_snapshot(self, snapshot_id):
         resp = self.client.delete_snapshot()
 
-        raise_if(
-            process_error(resp),
+        self.raise_if(
+            self.is_process_error(resp),
             "Cinder CLI Snapshot Delete did not execute successfully")
 
     @behavior(CinderCLI)
     def get_snapshot_status(self, snapshot_id):
         resp = self.client.show_snapshot(snapshot_id=snapshot_id)
-        raise_on_error(resp, "Cinder CLI snapshot-show call failed.")
+        self.raise_on_error(resp, "Cinder CLI snapshot-show call failed.")
         return resp.entity.status
 
     @behavior(CinderCLI)
@@ -195,7 +171,7 @@ class CinderCLI_Behaviors(BaseBehavior):
                 "observe the volume attain the {1} status.".format(
                     timeout, expected_status))
             self._log.info(msg)
-            raise CinderCLIBehaviorException(msg)
+            raise self._default_error(msg)
 
     @behavior(CinderCLI)
     def wait_for_snapshot_delete(self, snapshot_id, timeout=60, poll_rate=5):
@@ -207,7 +183,7 @@ class CinderCLI_Behaviors(BaseBehavior):
         end = time() + timeout
         while time() <= end:
             resp = self.client.show_snapshot(snapshot_id)
-            if cli_error(resp) or process_error(resp):
+            if self.is_cli_error(resp) or self.is_process_error(resp):
                 if resp.standard_error[-1] == expected_err_msg:
                     return True
             sleep(poll_rate)
@@ -218,5 +194,5 @@ class CinderCLI_Behaviors(BaseBehavior):
     @behavior(CinderCLI)
     def list_volume_types(self):
         resp = self.client.list_volume_types()
-        raise_on_error(resp, "Unable to list snapshots via the cinder cli")
+        self.raise_on_error(resp, "Unable to list snapshots via the cinder cli")
         return resp.entity
