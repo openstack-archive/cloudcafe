@@ -36,3 +36,6 @@ pip-log.txt
 #py.test logger
 cc.master.log
 metatests*.log
+
+#OSX files
+.DS_Store
