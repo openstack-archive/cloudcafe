@@ -111,6 +111,12 @@ class ServerDomainTest(object):
         self.assertEqual(self.server.host, 'host123')
 
 
+class ServerFromVolumeDomainTest(object):
+
+    def test_server_image(self):
+        self.assertIsNone(self.server.image)
+
+
 class ServerXMLDomainTest(unittest.TestCase, ServerDomainTest):
 
     @classmethod
@@ -215,6 +221,133 @@ class ServerJSONDomainTest(unittest.TestCase, ServerDomainTest):
                     }
                   ]
                 },
+                "OS-EXT-STS:task_state" : null,
+                "OS-EXT-STS:vm_state" : "active",
+                "OS-EXT-SRV-ATTR:instance_name" : "instance-test",
+                "OS-EXT-SRV-ATTR:hypervisor_hostname" : "hyper-host",
+                "flavor" : {
+                  "id" : "2",
+                  "links" : [
+                    {
+                      "href" : "https://127.0.0.1/660/flavors/2",
+                      "rel" : "bookmark"
+                    }
+                  ]
+                },
+                "id" : "5",
+                "user_id" : "199835",
+                "name" : "testserver47476",
+                "created" : "2012-12-03T18:59:16Z",
+                "tenant_id" : "660",
+                "OS-DCF:diskConfig" : "AUTO",
+                "accessIPv4" : "192.168.1.10",
+                "accessIPv6" : "2001:11:7811:69:cf10:c02d:ff10:fa",
+                "progress" : 100,
+                "OS-EXT-STS:power_state" : 1,
+                "metadata" : {
+                    "meta1": "value1"
+                }
+              }
+            }
+            """
+        cls.server = Server.deserialize(cls.server_json, 'json')
+
+
+class ServerFromVolumeXMLDomainTest(unittest.TestCase,
+                                    ServerFromVolumeDomainTest):
+
+    @classmethod
+    def setUpClass(cls):
+        docs_url = 'http://docs.openstack.org'
+        ext = 'compute/ext/extended_status'
+        cls.server_xml = \
+            """
+            <server
+            xmlns:OS-DCF="{docs_url}/compute/ext/disk_config/api/v1.1"
+            xmlns:OS-EXT-STS="{docs_url}/{ext}/api/v1.1"
+            xmlns:OS-EXT-SRV-ATTR="{docs_url}/{ext}/api/v1.1"
+            xmlns:atom="http://www.w3.org/2005/Atom"
+            xmlns="{docs_url}/compute/api/v1.1"
+            status="ACTIVE" updated="2012-12-03T19:04:06Z"
+            hostId="123"
+            tenant_id="660"
+            name="testserver47476" created="2012-12-03T18:59:16Z"
+            userId="199835" tenantId="660" accessIPv4="192.168.1.10"
+            accessIPv6="2001:11:7811:69:cf10:c02d:ff10:fa"
+            progress="100" id="5" OS-EXT-STS:vm_state="active"
+            key_name="ssh_key"
+            OS-EXT-STS:task_state="None" OS-EXT-STS:power_state="1"
+            OS-DCF:diskConfig="AUTO"
+            OS-EXT-SRV-ATTR:instance_name="instance-test"
+            OS-EXT-SRV-ATTR:host="host123"
+            OS-EXT-SRV-ATTR:hypervisor_hostname="hyper-host">
+            <image/>
+            <flavor id="2">
+                <atom:link href="https://127.0.0.1/660/flavors/2"
+                rel="bookmark"/>
+            </flavor>
+            <metadata>
+                <meta key="meta1">value1</meta>
+            </metadata>
+            <addresses>
+                <network id="public">
+                    <ip version="4" addr="198.61.236.10"/>
+                    <ip version="6" addr="2001:11:7811:69:cf10:c02d:ff10:fa"/>
+                </network>
+                <network id="private">
+                    <ip version="4" addr="10.176.99.109"/>
+                </network>
+            </addresses>
+            <atom:link href="https://127.0.0.1/v2/660/servers/5" rel="self"/>
+            <atom:link href="https://127.0.0.1/660/servers/5" rel="bookmark"/>
+            </server>
+            """.format(docs_url=docs_url, ext=ext)
+        cls.server = Server.deserialize(cls.server_xml, 'xml')
+
+
+class ServerFromVolumeJSONDomainTest(unittest.TestCase,
+                                     ServerFromVolumeDomainTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.server_json = \
+            """
+            {
+              "server" : {
+                "status" : "ACTIVE",
+                "key_name" : "ssh_key",
+                "updated" : "2012-12-03T19:04:06Z",
+                "hostId" : "123",
+                "OS-EXT-SRV-ATTR:host" : "host123",
+                "addresses" : {
+                  "public" : [
+                    {
+                      "version" : 4,
+                      "addr" : "198.61.236.10"
+                    },
+                    {
+                      "version" : 6,
+                      "addr" : "2001:11:7811:69:cf10:c02d:ff10:fa"
+                    }
+                  ],
+                  "private" : [
+                    {
+                      "version" : 4,
+                      "addr" : "10.176.99.109"
+                    }
+                  ]
+                },
+                "links" : [
+                  {
+                    "href" : "https://127.0.0.1/v2/660/servers/5",
+                    "rel" : "self"
+                  },
+                  {
+                    "href" : "https://127.0.0.1/660/servers/5",
+                    "rel" : "bookmark"
+                  }
+                ],
+                "image" : "",
                 "OS-EXT-STS:task_state" : null,
                 "OS-EXT-STS:vm_state" : "active",
                 "OS-EXT-SRV-ATTR:instance_name" : "instance-test",
