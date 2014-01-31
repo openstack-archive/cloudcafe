@@ -14,10 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import unittest2 as unittest
+
 from cloudcafe.images.v2.models.image import Member
 
 
-class TestMember(object):
+class TestMember(unittest.TestCase):
+
     @classmethod
     def setup_class(cls):
         cls.raw_member_str = ('''{
