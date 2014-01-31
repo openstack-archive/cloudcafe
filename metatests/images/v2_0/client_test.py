@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from httpretty import HTTPretty
 
-from cloudcafe.images.v2.client import ImageClient
+from cloudcafe.images.v2.client import ImagesClient
 from cloudcafe.images.v2.models.image import Image
 
 GLANCE_API_SERVER_ENDPOINT = 'localhost/v2'
@@ -35,7 +35,7 @@ class TestImageClient(object):
         cls.image_obj = Image._json_to_obj(cls.raw_image_str)
         cls.images_obj = Image._json_to_obj(cls.raw_images_str)
 
-        cls.images_client = ImageClient(
+        cls.images_client = ImagesClient(
             base_url='http://localhost/v2',
             auth_token='36a04b4e71484ab9aacb1d0ac95733fc',
             serialize_format='json',
@@ -153,8 +153,7 @@ class TestImageClient(object):
             schema=new_image.schema,
             container_format=new_image.container_format,
             disk_format=new_image.disk_format, min_disk=new_image.min_disk,
-            min_ram=new_image.min_ram, kernel_id=new_image.kernel_id,
-            ramdisk_id=new_image.ramdisk_id)
+            min_ram=new_image.min_ram)
 
         valid_uri = re.compile('/v2/images/{0}'.format(self.image_id_regex))
         assert response is not None
