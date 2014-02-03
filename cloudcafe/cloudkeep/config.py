@@ -15,6 +15,14 @@ limitations under the License.
 """
 
 from cloudcafe.common.models.configuration import ConfigSectionInterface
+from cloudcafe.identity.config import IdentityTokenConfig
+
+
+class CloudKeepAuthConfig(IdentityTokenConfig):
+    """ Temporary Hack until we can refactor identity in CloudCAFE """
+    @property
+    def auth_type(self):
+        return str(self.get("auth_type")).lower()
 
 
 class MarshallingConfig(ConfigSectionInterface):
