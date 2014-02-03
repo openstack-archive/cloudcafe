@@ -32,10 +32,10 @@ class OpenstackCLI_BaseBehavior(BaseBehavior):
     @classmethod
     def raise_on_error(cls, resp, msg=None):
         errors = [
-            cls.process_error(resp),
-            cls.cli_error(resp),
-            cls.parse_error(resp)]
+            cls.is_parse_error(resp),
+            cls.is_cli_error(resp),
+            cls.is_process_error(resp)]
         errors = [e for e in errors if e is not None]
-        default_message = "ERROR: {0}".format(
+        msg = msg or "ERROR: {0}".format(
             " : ".join(["{0}".format(e) for e in errors]))
-        cls.raise_if(errors, msg or default_message)
+        cls.raise_if(errors, msg)
