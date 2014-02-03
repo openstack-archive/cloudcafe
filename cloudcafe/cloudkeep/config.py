@@ -113,16 +113,32 @@ class CloudKeepRBACRoleConfig(ConfigSectionInterface):
         return self.get('admin')
 
     @property
+    def admin_password(self):
+        return self.get('admin_password')
+
+    @property
     def creator(self):
         return self.get('creator')
+
+    @property
+    def creator_password(self):
+        return self.get('creator_password')
 
     @property
     def observer(self):
         return self.get('observer')
 
     @property
+    def observer_password(self):
+        return self.get('observer_password')
+
+    @property
     def audit(self):
         return self.get('audit')
+
+    @property
+    def audit_password(self):
+        return self.get('audit_password')
 
 
 class CloudKeepVerificationsConfig(ConfigSectionInterface):
