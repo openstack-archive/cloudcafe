@@ -108,6 +108,7 @@ class VolumesAPI_Behaviors(BaseBehavior):
                 pass
 
             endtime = time() + timeout
+            current_status = None
             while time() < endtime:
                 current_status = self.get_volume_status(
                     volume_id)
@@ -128,23 +129,25 @@ class VolumesAPI_Behaviors(BaseBehavior):
             else:
                 if transient:
                     self._log.debug(
-                        "Netiher the transient status {0} nor the next status "
+                        "Neither the transient status {0} nor the next status "
                         "{1} where found, continuing to next status "
                         "search".format(expected_status, next_status))
                     continue
                 else:
                     msg = (
-                        "Volume did not progress to the {0} status in the "
-                        "alloted time of {1} seconds".format(
-                            expected_status, timeout))
+                        "Volume did not progress to the {expected_status} "
+                        "status in the alloted time of {timeout} seconds. Last"
+                        " observed status was {last_observed}".format(
+                            expected_status=expected_status,
+                            timeout=timeout, last_observed=current_status))
                     self._log.error(msg)
                     raise VolumesAPIBehaviorException(msg)
 
     @behavior(VolumesClient)
     def wait_for_volume_status(
             self, volume_id, expected_status, timeout, poll_rate=None):
-        """ Waits for a specific status and returns None when that status is
-        observed.
+        """ Waits for a specific status.  Raises VolumesAPIBehaviorException
+        if status is not observed within timeout seconds.
         Note:  Unreliable for transient statuses like 'deleting'.
         """
 
