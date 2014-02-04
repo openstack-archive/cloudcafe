@@ -20,3 +20,8 @@ from cloudcafe.blockstorage.volumes_api.common.config import \
 
 class VolumesAPIConfig(_VolumesAPIConfig):
     SECTION_NAME = 'volumes_api_v2'
+
+    @property
+    def min_volume_from_image_size(self):
+        """Limit the smallest size a volume can be if building from an image"""
+        return int(self.get("min_volume_from_image_size", default=1))
