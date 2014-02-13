@@ -80,6 +80,55 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         features = ' '.join([k for k in info.viewkeys()])
         return features
 
+    def get_configured_features(self):
+        """
+        Gets the available features.
+
+        Builds features in the following order:
+        1. Get features from swift.
+        2. Get features from the config.
+        3. Remove any features that are excluded in the config.
+
+        @return: white space separated feature names. or a string constant
+                 representing either all or no features are configured.
+        @rtype: string
+        """
+        api_config = ObjectStorageAPIConfig()
+
+        reported_features = []
+        if api_config.use_swift_info:
+            reported_features = self.get_swift_features()
+
+        def split_features(features):
+            if features == api_config.ALL_FEATURES:
+                return features
+            return unicode(features).split()
+
+        # Split the features if needed.
+        features = split_features(api_config.features)
+        excluded_features = split_features(
+            api_config.excluded_features)
+
+        if features == api_config.ALL_FEATURES:
+            return features
+
+        reported_features = reported_features.split()
+        features = list(set(reported_features) | set(features))
+
+        # If all features are to be ignored, skip
+        if excluded_features == api_config.ALL_FEATURES:
+            return api_config.NO_FEATURES
+
+        # Remove all features
+        for feature in excluded_features:
+            try:
+                index = features.index(feature)
+                features.pop(index)
+            except ValueError:
+                pass
+
+        return ' '.join(features)
+
     @behavior(ObjectStorageAPIClient)
     def container_exists(self, name=None):
         path = '/{0}'.format(name)
