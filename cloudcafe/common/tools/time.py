@@ -19,3 +19,17 @@ from datetime import datetime, timedelta
 def get_tomorrow_timestamp():
     tomorrow = (datetime.today() + timedelta(days=1))
     return tomorrow.isoformat()
+
+
+def string_to_datetime(datetimestring, date_formats=None):
+    date_formats = date_formats or [
+        '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S.%fZ',
+        '%Y-%m-%dT%H:%M:%S.%f', "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S"]
+
+    for dateformat in date_formats:
+        try:
+            return datetime.strptime(datetimestring, dateformat)
+        except ValueError:
+            continue
+    else:
+        raise
