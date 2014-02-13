@@ -24,7 +24,7 @@ from cloudcafe.objectstorage.objectstorage_api.client \
     import ObjectStorageAPIClient
 from cloudcafe.objectstorage.objectstorage_api.config \
     import ObjectStorageAPIConfig
-from metatests.objectstorage.objectstorage_api import client_test
+from metatests.objectstorage.objectstorage_api import test_client
 
 
 class ApiBehaviorsTest(unittest.TestCase):
@@ -39,9 +39,9 @@ class ApiBehaviorsTest(unittest.TestCase):
         config = Mock(spec=ObjectStorageAPIConfig)
 
         behavior = ObjectStorageAPI_Behaviors(client, config)
-        behavior.create_container(client_test.VALID_CONTAINER_NAME)
+        behavior.create_container(test_client.VALID_CONTAINER_NAME)
         client.create_container.assert_called_with(
-            client_test.VALID_CONTAINER_NAME, headers={})
+            test_client.VALID_CONTAINER_NAME, headers={})
 
     def test_throws_exception_if_create_container_fails(self):
         response = Mock(spec=Response)
@@ -54,4 +54,4 @@ class ApiBehaviorsTest(unittest.TestCase):
 
         behavior = ObjectStorageAPI_Behaviors(client, config)
         with self.assertRaises(Exception):
-            behavior.create_container(client_test.VALID_CONTAINER_NAME)
+            behavior.create_container(test_client.VALID_CONTAINER_NAME)
