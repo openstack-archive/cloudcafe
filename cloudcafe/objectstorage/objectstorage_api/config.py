@@ -123,3 +123,7 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
     @property
     def formpost_key_cache_time(self):
         return self.get('formpost_key_cache_time')
+
+    @property
+    def min_slo_segment_size(self):
+        return int(self.get('min_slo_segment_size', 1048576))
