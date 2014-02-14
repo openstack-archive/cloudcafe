@@ -374,12 +374,12 @@ class WatchEvent(AutoMarshallingModel):
         StackTach WatchEvent Entity instance.
         """
         my_entity = WatchEvent(
-            event_id=entity_dict.get('10'),
-            routing_key_type=entity_dict.get('1'),
-            when_date=entity_dict.get('15'),
-            when_time=entity_dict.get('20'),
-            deployment=entity_dict.get('37'),
-            event_name=entity_dict.get('36'),
+            event_id=entity_dict.get(10),
+            routing_key_type=entity_dict.get(1),
+            when_date=entity_dict.get(15),
+            when_time=entity_dict.get(20),
+            deployment=entity_dict.get(50),
+            event_name=entity_dict.get(36),
             uuid=entity_dict.get('UUID'))
         return my_entity
 
@@ -405,9 +405,9 @@ class WatchEvents(StacktachBaseListModel):
         keys = results_list[0]
         key_count = len(keys)
         # data is contained after first element
-        for result in results_list[1:]:
+        for result in results_list[1]:
             entity_dict = {keys[i]: result[i] for i in range(key_count)}
-            entity_dict['UUID'] = result[key_count + 1]
+            entity_dict['UUID'] = result[key_count]
             entity = domain_model_type._dict_to_obj(entity_dict)
             list_domain_model.append(entity)
         return list_domain_model
