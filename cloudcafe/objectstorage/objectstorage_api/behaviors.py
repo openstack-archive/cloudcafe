@@ -93,7 +93,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                  representing either all or no features are configured.
         @rtype: string
         """
-        reported_features = []
+        reported_features = ''
         if self.config.use_swift_info:
             reported_features = self.get_swift_features()
 
