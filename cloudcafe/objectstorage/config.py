@@ -18,13 +18,22 @@ from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
 class ObjectStorageConfig(ConfigSectionInterface):
+    """
+    Product config for retrieving info from the service catalog.
+    """
 
     SECTION_NAME = 'objectstorage'
 
     @property
     def identity_service_name(self):
+        """
+        Service name to use.
+        """
         return self.get('identity_service_name')
 
     @property
     def region(self):
+        """
+        Region to use.
+        """
         return self.get('region')
