@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import hmac
-import json
 import tarfile
 
 from os.path import expanduser
@@ -209,30 +208,6 @@ class ObjectStorageAPIClient(HTTPClient):
         obj_count = int(response.headers.get('x-container-object-count'))
 
         return obj_count
-
-    def _purge_container(self, container_name,
-                         requestslib_kwargs=None):
-        params = {'format': 'json'}
-        response = self.list_objects(
-            container_name,
-            params=params,
-            requestslib_kwargs=requestslib_kwargs)
-
-        try:
-            json_data = json.loads(response.content)
-            for entry in json_data:
-                self.delete_object(container_name, entry['name'])
-        except ValueError:
-            pass
-
-        return self.delete_container(container_name)
-
-    def force_delete_containers(self, container_list,
-                                requestslib_kwargs=None):
-        for container_name in container_list:
-            return self._purge_container(
-                container_name,
-                requestslib_kwargs=requestslib_kwargs)
 
     #Storage Object------------------------------------------------------------
 
