@@ -58,3 +58,11 @@ class ImagesConfig(ConfigSectionInterface):
         false: Performing a GET on a deleted image returns a 404
         """
         return self.get_boolean("can_get_deleted_image")
+
+    @property
+    def image_has_protected_properties(self):
+        """
+        True if the primary image has metadata protected properties,
+        false otherwise.
+        """
+        return self.get_boolean("image_has_protected_properties", False)
