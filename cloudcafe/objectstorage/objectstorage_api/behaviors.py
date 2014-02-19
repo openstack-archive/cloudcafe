@@ -199,3 +199,27 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             return None
 
         return response.headers['x-account-meta-temp-url-key']
+
+    @behavior(ObjectStorageAPIClient)
+    def _purge_container(self, container_name,
+                         requestslib_kwargs=None):
+
+        params = {'format': 'json'}
+        response = self.client.list_objects(
+            container_name,
+            params=params,
+            requestslib_kwargs=requestslib_kwargs)
+
+        for storage_object in response.entity:
+            self.client.delete_object(
+                container_name,
+                storage_object.name)
+
+        return self.client.delete_container(container_name)
+
+    def force_delete_containers(self, container_list,
+                                requestslib_kwargs=None):
+        for container_name in container_list:
+            return self._purge_container(
+                container_name,
+                requestslib_kwargs=requestslib_kwargs)
