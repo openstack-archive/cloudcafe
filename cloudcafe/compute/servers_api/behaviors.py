@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import base64
 import time
 
 from cafe.engine.behaviors import BaseBehavior
@@ -30,20 +31,25 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, servers_config,
-                 images_config, flavors_config):
+                 images_config, flavors_config,
+                 block_device_mapping, volumes_client=None,
+                 blockstorage_behavior=None):
 
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_config = images_config
         self.flavors_config = flavors_config
+        self.block_device_mapping = block_device_mapping
+        self.volumes_client = volumes_client
 
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None,
+            block_device_mapping=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -74,7 +80,7 @@ class ServerBehaviors(BaseBehavior):
 
         if name is None:
             name = rand_name('testserver')
-        if image_ref is None:
+        if image_ref is None and block_device_mapping is None:
             image_ref = self.images_config.primary_image
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
@@ -92,7 +98,8 @@ class ServerBehaviors(BaseBehavior):
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass,
+                block_device_mapping=block_device_mapping)
             server_obj = resp.entity
 
             try:
@@ -357,3 +364,97 @@ class ServerBehaviors(BaseBehavior):
         resp = self.wait_for_server_status(server_id,
                                            ServerStates.ACTIVE)
         return resp.entity
+
+    def boot_volume(self, key=None, trigger_value=None,
+                    standard_volume_id=None):
+        """
+        @return: The server and the volume id
+        @rtype: Server object, string
+        """
+        self.volume_id = self.block_device_mapping.bdm_volume_id
+        if standard_volume_id is not None:
+            self.volume_id = standard_volume_id
+        volume_response = ""
+        if self.block_device_mapping.bdm_boot_type == "B":
+            if self.volume_id < " ":
+                volume_response = self.create_boot_volume()
+            else:
+                volume_response = self.volume_id
+        """ Create server"""
+        self.trigger_value = trigger_value
+        response = self.create_boot_server(volume_response, key,
+                                           self.trigger_value)
+        return response, self.volume_id
+
+    def create_boot_volume(self):
+        self.volume_name = rand_name("volume")
+        self.volume_size = self.block_device_mapping.bdm_volume_size
+        self.vol_type = self.block_device_mapping.bdm_volume_type
+        self.volume_image = self.block_device_mapping.bdm_volume_image
+        volume = self.volumes_client.create_volume(
+            self.volume_size, self.vol_type, image_ref=self.volume_image,
+            name=self.volume_name)
+        volume_id = volume.entity
+        resp = self.volumes_client.get_volume_info(volume_id=volume_id.id_)
+        while resp.entity.status != "available":
+            resp = self.volumes_client.get_volume_info(volume_id=volume_id.id_)
+        return volume_id
+
+    def create_boot_server(self, volume_id, key, trigger_value=None):
+        self.trigger_value = trigger_value
+        self.volume_id = volume_id
+        self.name = rand_name("server")
+        self.metadata = {'meta_key_1': 'meta_value_1',
+                         'meta_key_2': 'meta_value_2'}
+        self.file_contents = 'This is a config drive test file.'
+        files = [{'path': '/test.txt', 'contents': base64.b64encode(
+            self.file_contents)}]
+        self.user_data_contents = "My user data"
+        self.user_data = base64.b64encode(self.user_data_contents)
+        self.key = key
+        self.del_on_term = self.block_device_mapping.bdm_delete_on_termination
+        self.devname = self.block_device_mapping.bdm_devname
+        self.size = self.block_device_mapping.bdm_size
+        self.type = self.block_device_mapping.bdm_type
+        self.flavor_ref = None
+        """
+            NDN - Negative Device Name
+            NTV - Negative Type Value
+            NDOT = Negative Delete on Termination
+            NVI - Negative Invalid Volume id
+            NDV - Negative Deleted Volume
+            NFV - Negative Flavor Value
+            PDN - Postive Do Not delete on Termination
+            PDT - Positive delete on Termination
+            """
+        if trigger_value == "PDN":
+            self.del_on_term = False
+        if trigger_value == "PDT":
+            self.del_on_term = True
+        if trigger_value == "NDN":
+            self.devname = "XXX"
+        if trigger_value == "NTV":
+            self.type = "XXX"
+        if trigger_value == "NDOT":
+            self.del_on_term = "XXX"
+        if trigger_value == "NVI":
+            self.volume_id.id_ = "XXX"
+        if trigger_value == "NFV":
+            self.flavor_ref = "XXX"
+        if trigger_value == "NDV":
+            self.volume_id.id_ = "33ac75ff-4bd8-4640-82b9-1f023d4e2cfd"
+        if self.block_device_mapping.bdm_boot_type == "S":
+            self.block_device_mapping_values = None
+        else:
+            self.block_device_mapping_values = [
+                {"volume_id": self.volume_id.id_,
+                 "delete_on_termination": self.del_on_term,
+                 "device_name": self.devname,
+                 "size": self.size,
+                 "type": self.type}]
+        response = self.create_active_server(
+            flavor_ref=self.flavor_ref,
+            key_name=self.key.name, metadata=self.metadata,
+            user_data=self.user_data, personality=files,
+            block_device_mapping=self.block_device_mapping_values)
+        return response
