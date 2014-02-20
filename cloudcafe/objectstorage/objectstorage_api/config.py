@@ -54,6 +54,16 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         return self.get_boolean('use_swift_info', True)
 
     @property
+    def version(self):
+        """
+        Specify the version of swift running allowing tests tagged with the
+        required_version decorator to skip tests based on version rules.
+        This version is to be used if provided, even if a different version
+        is returned from a /info call.
+        """
+        return self.get('version', '')
+
+    @property
     def features(self):
         """
         Tests can be tagged with a decorator as follows:
