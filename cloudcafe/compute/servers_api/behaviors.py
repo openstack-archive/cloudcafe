@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+
 import time
 
 from cafe.engine.behaviors import BaseBehavior
@@ -30,20 +31,25 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, servers_config,
-                 images_config, flavors_config):
+                 images_config, flavors_config,
+                 block_device_mapping, volumes_client=None,
+                 blockstorage_behavior=None,volumes_api_client=None, volumes_api_config=None):
 
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_config = images_config
         self.flavors_config = flavors_config
+        self.block_device_mapping = block_device_mapping
+        self.volumes_client = volumes_client
 
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None,
+            block_device_mapping=None, boot_from_block=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -80,6 +86,10 @@ class ServerBehaviors(BaseBehavior):
             flavor_ref = self.flavors_config.primary_flavor
         if self.config.default_network:
             networks = [{'uuid': self.config.default_network}]
+        if self.config.boot_from == "Block":
+            image_ref = None
+            block_device_mapping = self.boot_volume(
+                boot_from_block)
 
         failures = []
         attempts = self.config.resource_build_attempts
@@ -94,7 +104,8 @@ class ServerBehaviors(BaseBehavior):
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass,
+                block_device_mapping=block_device_mapping)
             server_obj = resp.entity
 
             try:
@@ -103,6 +114,11 @@ class ServerBehaviors(BaseBehavior):
                 # Add the password from the create request
                 # into the final response
                 resp.entity.admin_pass = server_obj.admin_pass
+                if self.config.boot_from == "Block":
+                    resp.entity.volume_id = block_device_mapping[0].get(
+                        'volume_id')
+                else:
+                    resp.entity.volume_id = None
                 return resp
             except (TimeoutException, BuildErrorException) as ex:
                 self._log.error('Failed to build server {server_id}: '
@@ -266,6 +282,9 @@ class ServerBehaviors(BaseBehavior):
             return LinuxClient(
                 ip_address=ip_address, username='root', password=password,
                 connection_timeout=self.config.connection_timeout)
+            #return InstanceClientFactory.get_instance_client(
+            #    ip_address=ip_address, username=username, password=password,
+            #    os_distro='linux', config=config)
         else:
             return LinuxClient(
                 ip_address=ip_address, username='root', key=key,
@@ -360,3 +379,103 @@ class ServerBehaviors(BaseBehavior):
         resp = self.wait_for_server_status(server_id,
                                            ServerStates.ACTIVE)
         return resp.entity
+
+    def boot_volume(self, boot_from_block=None):
+        """
+        @summary: Allow the ability to build a volume and then a server
+                  of build a server based on config file parms
+        @return: The server and the volume entity
+        @rtype: Server object, volume object
+        """
+        self.volume_id = self.block_device_mapping.bdm_volume_id
+        if boot_from_block is not None:
+            if boot_from_block.get('volume_id') is not None:
+                self.volume_id = boot_from_block.get('volume_id')
+        volume_response = ""
+        if not self.volume_id:
+            # create volume
+            volume_response = self.create_boot_volume(boot_from_block)
+            self.volume_id = volume_response
+        else:
+            volume_response = self.volume_id
+        # Block Device Map
+        response = self.create_block_device_map(volume_response,
+                                                boot_from_block)
+        return response
+
+    def create_boot_volume(self, boot_from_block):
+        """
+        @summary: create a bootable volume
+        @return: The volume entity
+        @rtype: volume object
+        """
+        self.volume_name = rand_name("bootablevolume")
+        self.volume_size = self.block_device_mapping.bdm_volume_size
+        self.vol_type = self.block_device_mapping.bdm_volume_type
+        self.volume_image = self.block_device_mapping.bdm_volume_image
+        volume = self.volumes_client.create_volume(
+            self.volume_size, self.vol_type, bootable=True,
+            name=self.volume_name, image_ref=self.volume_image)
+        volume_id = volume.entity
+        self.wait_for_volume_status(volume_id, "available")
+        return volume_id.id_
+
+    def wait_for_volume_status(self, volume_id,desired_status,
+            interval_time = None, timeout=0):
+        resp = self.volumes_client.get_volume_info(volume_id=volume_id.id_)
+        poll_rate = self.block_device_mapping.bdm_poll_rate
+        end_time = time.time() + self.block_device_mapping.bdm_timeout
+
+        while time.time() < end_time:
+            resp = self.volumes_client.get_volume_info(volume_id=volume_id.id_)
+            status = resp.entity.status
+            if status.lower() == ServerStates.ERROR.lower():
+                raise BuildErrorException(
+                    'Build failed. Volume with uuid %s entered ERROR status.'
+                    % volume_id.id_)
+            
+            if status == desired_status:
+                self._log.info(
+                    "Expected Volume status '{0}' observed as expected".format(
+                        status))
+                break
+            time.sleep(poll_rate)
+        else:
+            msg = (
+                "wait_for_volume_status() ran for {0} seconds and did not "
+                "observe the volume attain the {1} status. on volume {2}"
+                    .format(self.block_device_mapping.bdm_timeout,
+                    desired_status, volume_id.id_))
+            self._log.info(msg)
+            raise TimeoutException(msg)
+
+    def create_block_device_map(self, volume_id, boot_from_block=None):
+        """
+        @parm volume_id: volume entity
+        @type: volume object
+        @return: The block device map
+        @rtype: str
+        """
+        self.volume_id = volume_id
+        self.block_device_mapping_values = None
+        self.del_on_term = (
+            self.block_device_mapping.bdm_delete_on_termination)
+        self.devname = self.block_device_mapping.bdm_devname
+        self.type = self.block_device_mapping.bdm_type
+        self.size = self.block_device_mapping.bdm_size
+
+        if boot_from_block is not None:
+            if boot_from_block.get('del_on_termination') is not None:
+                self.del_on_term = boot_from_block.get('del_on_termination')
+            if boot_from_block.get('device_name') is not None:
+                self.devname = boot_from_block.get('device_name')
+            if boot_from_block.get('type') is not None:
+                self.type = boot_from_block.get('type')
+
+        self.block_device_mapping_values = [
+            {"volume_id": self.volume_id,
+             "delete_on_termination": self.del_on_term,
+             "device_name": self.devname,
+             "size": self.size,
+             "type": self.type}]
+        return self.block_device_mapping_values
