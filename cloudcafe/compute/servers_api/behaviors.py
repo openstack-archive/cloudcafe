@@ -19,31 +19,49 @@ import time
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
     import LinuxClient
-from cloudcafe.compute.common.types import InstanceAuthStrategies
-from cloudcafe.compute.common.types import NovaServerStatusTypes \
+from cloudcafe.compute.common.types import InstanceAuthStrategies, \
+    NovaVolumeStatusTypes, BootFromTypes, NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, RequiredResourceException
+from cloudcafe.blockstorage.volumes_api.v2.client import VolumesClient
+from cloudcafe.blockstorage.volumes_api.v2.behaviors import \
+    VolumesAPI_Behaviors
+from cloudcafe.blockstorage.config import BlockStorageConfig
+from cloudcafe.blockstorage.volumes_api.v2.config import VolumesAPIConfig
+from cloudcafe.auth.config import UserAuthConfig, UserConfig
+from cloudcafe.auth.provider import AuthProvider
+from cloudcafe.compute.config import MarshallingConfig
 
 
 class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, servers_config,
-                 images_config, flavors_config):
+                 images_config, flavors_config,
+                 block_device_mapping=None, volumes_client=None,
+                 volumes_api_client=None,
+                 blockstorage_behavior=None):
 
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_config = images_config
         self.flavors_config = flavors_config
-
+        self.block_device_mapping = block_device_mapping
+        self.volumes_client = volumes_client
+        self.endpoint_config = UserAuthConfig()
+        self.user_config = UserConfig()
+        self.block_config = BlockStorageConfig()
+        self.volumes_config = VolumesAPIConfig()
+        
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None,
+            block_device_mapping=None, boot_from_block=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -55,7 +73,7 @@ class ServerBehaviors(BaseBehavior):
         @param metadata: A dictionary of values to be used as metadata.
         @type metadata: Dictionary. The limit is 5 key/values.
         @param personality: A list of dictionaries for files to be
-         injected into the server.
+                            injected into the server.
         @type personality: List
         @param user_data: Config Init User data
         @type user_data: String
@@ -67,8 +85,12 @@ class ServerBehaviors(BaseBehavior):
         @type accessIPv6: String
         @param disk_config: MANUAL/AUTO/None
         @type disk_config: String
+        @parm block_device_mapping:fields needed to boot a server from a volume
+        @type block_device_mapping: dict
+        @parm boot_from_block: fields used for negative testing boot from block
+        @type boot_from_block: dict
         @return: Response Object containing response code and
-         the server domain object
+                 the server domain object
         @rtype: Request Response Object
         """
 
@@ -80,6 +102,10 @@ class ServerBehaviors(BaseBehavior):
             flavor_ref = self.flavors_config.primary_flavor
         if self.config.default_network:
             networks = [{'uuid': self.config.default_network}]
+        if self.config.boot_from == BootFromTypes.BLOCK:
+            image_ref = None
+            block_device_mapping = self.boot_volume(
+                boot_from_block)
 
         failures = []
         attempts = self.config.resource_build_attempts
@@ -94,7 +120,8 @@ class ServerBehaviors(BaseBehavior):
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass,
+                block_device_mapping=block_device_mapping)
             server_obj = resp.entity
 
             try:
@@ -103,6 +130,11 @@ class ServerBehaviors(BaseBehavior):
                 # Add the password from the create request
                 # into the final response
                 resp.entity.admin_pass = server_obj.admin_pass
+                if self.config.boot_from == "Block":
+                    resp.entity.volume_id = block_device_mapping[0].get(
+                        'volume_id')
+                else:
+                    resp.entity.volume_id = None
                 return resp
             except (TimeoutException, BuildErrorException) as ex:
                 self._log.error('Failed to build server {server_id}: '
@@ -360,3 +392,99 @@ class ServerBehaviors(BaseBehavior):
         resp = self.wait_for_server_status(server_id,
                                            ServerStates.ACTIVE)
         return resp.entity
+
+    def boot_volume(self, boot_from_block=None):
+        """
+        @summary: Allow the ability to build a volume and then a server
+                  of build a server based on config file parms
+        @parm boot_from_block: fields used for negative testign boot from block
+        @type boot_from_block: dict
+        @return: The server and the volume entity
+        @rtype: Server object, volume object
+        """
+        self.volume_id = self.block_device_mapping.bdm_volume_id
+        if boot_from_block is not None:
+            if boot_from_block.get('volume_id') is not None:
+                self.volume_id = boot_from_block.get('volume_id')
+        volume_response = ""
+        if not self.volume_id:
+            # create volume
+            volume_response = self.create_boot_volume(boot_from_block)
+            self.volume_id = volume_response
+        else:
+            volume_response = self.volume_id
+        # Block Device Map
+        response = self.create_block_device_map(volume_response,
+                                                boot_from_block)
+        return response
+
+    def create_boot_volume(self, boot_from_block):
+        """
+        @summary: create a bootable volume
+        @parm boot_from_block: fields used for negative testing boot from block
+        @type boot_from_block: dict
+        @return: The volume entity
+        @rtype: volume object
+        """
+        volume_name = rand_name("bootablevolume")
+        volume_size = self.block_device_mapping.bdm_volume_size
+        vol_type = self.block_device_mapping.bdm_volume_type
+        volume_image = self.block_device_mapping.bdm_volume_image
+        volume = self.volumes_client.create_volume(
+            volume_size, vol_type, bootable=True,
+            name=volume_name, image_ref=volume_image)
+        volume_id = volume.entity
+        expected_status = NovaVolumeStatusTypes.AVAILABLE
+
+        self.access_data = AuthProvider.get_access_data(self.endpoint_config,
+                                                        self.user_config)
+
+        self.marshalling = MarshallingConfig()
+        block_service = self.access_data.get_service(
+            self.block_config.identity_service_name)
+        block_url = block_service.get_endpoint(
+            self.block_config.region).public_url
+        self.blockstorage_client = VolumesClient(
+            block_url, self.access_data.token.id_,
+            self.marshalling.serializer, self.marshalling.deserializer)
+        self.blockstorage_behavior = VolumesAPI_Behaviors(
+            volumes_api_client=self.blockstorage_client,
+            volumes_api_config=self.volumes_config)
+        self.blockstorage_behavior.wait_for_volume_status(
+            volume_id.id_, expected_status,
+            self.block_device_mapping.bdm_timeout)
+        return volume_id.id_
+
+    def create_block_device_map(self, volume_id, boot_from_block=None):
+        """
+        @parm volume_id: volume entity
+        @type: volume object
+        @parm volume_id: volume entity
+        @type volume_id: str
+        @parm boot_from_block: fields used for negative testing boot from block
+        @type boot_from_block: dict
+        @return: The block device map
+        @rtype: dict
+        """
+        self.volume_id = volume_id
+        self.del_on_term = (
+            self.block_device_mapping.bdm_delete_on_termination)
+        self.devname = self.block_device_mapping.bdm_devname
+        self.type = self.block_device_mapping.bdm_type
+        self.size = self.block_device_mapping.bdm_size
+
+        if boot_from_block is not None:
+            if boot_from_block.get('del_on_termination') is not None:
+                self.del_on_term = boot_from_block.get('del_on_termination')
+            if boot_from_block.get('device_name') is not None:
+                self.devname = boot_from_block.get('device_name')
+            if boot_from_block.get('type') is not None:
+                self.type = boot_from_block.get('type')
+
+        self.block_device_mapping_values = [
+            {"volume_id": self.volume_id,
+             "delete_on_termination": self.del_on_term,
+             "device_name": self.devname,
+             "size": self.size,
+             "type": self.type}]
+        return self.block_device_mapping_values

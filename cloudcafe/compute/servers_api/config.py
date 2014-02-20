@@ -136,6 +136,13 @@ class ServersConfig(ConfigSectionInterface):
         """Id of the network to use by default for servers"""
         return self.get("default_network")
 
+    @property
+    def boot_from(self):
+        """server boot type
+           Block - boot from block
+           Image - boot from image"""
+        return self.get("boot_from")
+
 
 class BlockDeviceMappingConfig(ConfigSectionInterface):
 
@@ -160,3 +167,33 @@ class BlockDeviceMappingConfig(ConfigSectionInterface):
     def bdm_delete_on_termination(self):
         """delete volume on termination"""
         return self.get("bdm_delete_on_termination")
+
+    @property
+    def bdm_volume_id(self):
+        """passed volume id"""
+        return self.get("bdm_volume_id")
+
+    @property
+    def bdm_volume_size(self):
+        """size of boot volume"""
+        return int(self.get("bdm_volume_size"))
+
+    @property
+    def bdm_volume_type(self):
+        """type of boot volume"""
+        return self.get("bdm_volume_type")
+
+    @property
+    def bdm_volume_image(self):
+        """image ref of boot volume"""
+        return self.get("bdm_volume_image")
+
+    @property
+    def bdm_timeout(self):
+        """Build volume timeout"""
+        return int(self.get("bdm_timeout"))
+
+    @property
+    def bdm_poll_rate(self):
+        """boot drive tim interval"""
+        return int(self.get("bdm_poll_rate"))
