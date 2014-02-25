@@ -177,7 +177,7 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         """
         The amount of time that keys for tempurl are cached.
         """
-        return int(self.get('tempurl_key_cache_time'), 0)
+        return int(self.get('tempurl_key_cache_time', 0))
 
     @property
     def formpost_key_cache_time(self):
