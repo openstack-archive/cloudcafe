@@ -18,8 +18,8 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 
 from cloudcafe.stacktach.stacky_api.models.stacky_api import \
     (Deployments, EventNames, HostNames, TimingsSummaries,
-     UuidTimingsSummaries, EventNameTimings, EventDetails, KpiDetails,
-     WatchEvents, Reports, EventIdDetails)
+     UuidTimingsSummaries, EventNameTimings, EventDetails, ImageEventDetails,
+     KpiDetails, WatchEvents, Reports, EventIdDetails)
 
 
 class StackTachClient(AutoMarshallingRestClient):
@@ -37,30 +37,38 @@ class StackTachClient(AutoMarshallingRestClient):
         self.default_headers['Content-Type'] = ct
         self.default_headers['Accept'] = accept
 
-    def get_event_names(self, requestslib_kwargs=None):
+    def get_event_names(self, service, requestslib_kwargs=None):
         """
         @summary: Retrieves Event Names that are known
+        @param service: Service/Product e.g. nova or glance
+        @type service: String
         @return: List of event names
         @rtype:  Response Object
 
             GET
-            stacky/events/
+            stacky/events/?service={service}
         """
+        params = {'service': service}
         url = '{0}{1}'.format(self.url, '/stacky/events/')
-        return self.request('GET', url, response_entity_type=EventNames,
+        return self.request('GET', url, params=params,
+                            response_entity_type=EventNames,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def get_host_names(self, requestslib_kwargs=None):
+    def get_host_names(self, service, requestslib_kwargs=None):
         """
         @summary: Retrieves Host Names that are known
+        @param service: Service/Product e.g. nova or glance
+        @type service: String
         @return: List of host names
         @rtype:  Response Object
 
             GET
-            stacky/hosts/
+            stacky/hosts/?service={service}
         """
+        params = {'service': service}
         url = '{0}{1}'.format(self.url, '/stacky/hosts/')
-        return self.request('GET', url, response_entity_type=HostNames,
+        return self.request('GET', url, params=params,
+                            response_entity_type=HostNames,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_deployments(self, requestslib_kwargs=None):
@@ -136,10 +144,13 @@ class StackTachClient(AutoMarshallingRestClient):
             GET
             stacky/uuid/?uuid={uuid}&service={service}
         """
+        response_entity_type = EventDetails
+        if service == 'glance':
+            response_entity_type = ImageEventDetails
         params = {'uuid': uuid, 'service': service}
         url = '{0}{1}'.format(self.url, '/stacky/uuid/')
         return self.request('GET', url, params=params,
-                            response_entity_type=EventDetails,
+                            response_entity_type=response_entity_type,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_events_for_request_id(self, request_id, requestslib_kwargs=None):
@@ -223,6 +234,26 @@ class StackTachClient(AutoMarshallingRestClient):
         url = '{0}{1}{2}'.format(self.url, '/stacky/show/', event_id)
         return self.request('GET', url, params=params,
                             response_entity_type=EventIdDetails,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def get_event_type_details(self, event_type, service,
+                               requestslib_kwargs=None):
+        """
+        @summary: Retrieves details of a given event
+        @param event_type:  The name of an event within the StackTach DB
+        @type event_type: String
+        @return: Details of an event
+        @rtype:  Response Object
+        @note: response formatted for command line
+            GET
+            stacky/search/?field={event}&value={event_type}
+            &service={service}&limit={limit}
+        """
+        params = {'field': 'event', 'value': event_type,
+                  'service': service, 'limit': 10}
+        url = "{url}/stacky/search".format(url=self.url)
+        return self.request('GET', url, params=params,
+                            response_entity_type=ImageEventDetails,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_reports(self, requestslib_kwargs=None):

@@ -315,6 +315,49 @@ class EventDetails(StacktachBaseListModel):
             list_domain_model=EventDetails())
 
 
+class ImageEventDetail(AutoMarshallingModel):
+
+    def __init__(self, event_id, routing_key_type, when,
+                 deployment, event_name, host_name, status):
+        """
+        An object that represents a StackTack Image EventDetail Response Entity
+        """
+        super(ImageEventDetail, self).__init__()
+        self.event_id = event_id
+        self.routing_key_type = routing_key_type
+        self.when = when
+        self.deployment = deployment
+        self.event_name = event_name
+        self.host_name = host_name
+        self.state = status
+
+    @classmethod
+    def _dict_to_obj(cls, entity_dict):
+        """
+        Helper method to turn dictionary into
+        StackTach Image EventDetail Entity instance.
+        """
+        my_entity = ImageEventDetail(
+            event_id=entity_dict.get('#'),
+            routing_key_type=entity_dict.get('?'),
+            when=entity_dict.get('When'),
+            deployment=entity_dict.get('Deployment'),
+            event_name=entity_dict.get('Event'),
+            host_name=entity_dict.get('Host'),
+            status=entity_dict.get('Status'))
+        return my_entity
+
+
+class ImageEventDetails(StacktachBaseListModel):
+
+    @classmethod
+    def _list_to_obj(cls, results_list):
+        return cls._extract_data_from_list(
+            results_list=results_list,
+            domain_model_type=ImageEventDetail,
+            list_domain_model=ImageEventDetails())
+
+
 class KpiDetail(AutoMarshallingModel):
 
     def __init__(self, event_name, timing, uuid, deployment):
@@ -489,7 +532,7 @@ class EventIdDetail(AutoMarshallingModel):
             service=entity_dict.get('Service'),
             when=entity_dict.get('When'),
             host_name=entity_dict.get('Host'),
-            state=entity_dict.get('State'),
+            state=entity_dict.get('State') or entity_dict.get('Status'),
             deployment=entity_dict.get('Deployment'),
             event_name=entity_dict.get('Event'),
             request_id=entity_dict.get('Req ID'),

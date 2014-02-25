@@ -63,6 +63,23 @@ class StackTachBehavior(BaseBehavior):
                             "\n Error: {1}".format(vars(response), err))
         return request_id
 
+    def get_event_id_from_event_type_details(self, service, event_type):
+        """
+        @summary: Gets the event_id from the event type details
+        @param event_type: The event in Stacky
+        @type event_type: String
+        @return: event_id
+        @rtype: String
+        """
+        response = self.client.get_event_type_details(event_type=event_type,
+                                                      service=service)
+        try:
+            event_id = response.entity[0].event_id
+        except AttributeError as err:
+            raise Exception("Event id was not found in response: {0}"
+                            "\n Error: {1}".format(vars(response), err))
+        return event_id
+
     def get_report_id_by_report_name(self, report_name):
         """
         @summary: Gets the report id by report name from a
