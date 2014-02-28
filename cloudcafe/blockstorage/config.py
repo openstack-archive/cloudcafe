@@ -28,3 +28,7 @@ class BlockStorageConfig(ConfigSectionInterface):
     @property
     def region(self):
         return self.get('region')
+
+    @property
+    def availability_zone(self):
+        return self.get('availability_zone')
