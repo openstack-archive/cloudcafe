@@ -220,9 +220,8 @@ class VolumesAPI_Behaviors(BaseBehavior):
 
     @behavior(VolumesClient)
     def create_available_volume(
-            self, size, volume_type, name=None,
-            description=None, availability_zone=None, metadata=None,
-            timeout=None):
+            self, size, volume_type, name=None, description=None,
+            availability_zone=None, metadata=None, timeout=None):
 
         expected_status = statuses.Volume.AVAILABLE
         metadata = metadata or {}
