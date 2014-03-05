@@ -23,8 +23,8 @@ from cloudcafe.images.v2.models.task import Task, Tasks
 class ImagesClient(AutoMarshallingRestClient):
     """@summary: Client for Images v2"""
 
-    def __init__(self, base_url, auth_token, serialize_format,
-                 deserialize_format):
+    def __init__(self, alt_url, auth_token, base_url, deserialize_format,
+                 serialize_format):
         """@summary: Constructs the images api client"""
 
         super(ImagesClient, self).__init__(serialize_format,
@@ -37,6 +37,7 @@ class ImagesClient(AutoMarshallingRestClient):
         accept = ''.join(['application/', self.deserialize_format])
         self.default_headers['Content-Type'] = ct
         self.default_headers['Accept'] = accept
+        self.alt_url = alt_url
         self.base_url = base_url
 
     def get_images_schema(self, requestslib_kwargs=None):
@@ -66,7 +67,8 @@ class ImagesClient(AutoMarshallingRestClient):
                       self_=self_, size=size, status=status, tags=tags,
                       updated_at=updated_at, visibility=visibility,
                       additional_properties=additional_properties)
-        url = '{0}/images'.format(self.base_url)
+        # If an alt_url is provided, use it, otherwise use the base_url
+        url = '{0}/images'.format(self.alt_url or self.base_url)
         return self.request('POST', url, request_entity=image,
                             response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
@@ -127,7 +129,9 @@ class ImagesClient(AutoMarshallingRestClient):
                          requestslib_kwargs=None):
         """@summary: Store image file data on given image id"""
 
-        url = '{0}/images/{1}/file'.format(self.base_url, image_id)
+        # If an alt_url is provided, use it, otherwise use the base_url
+        url = '{0}/images/{1}/file'.format(
+            self.alt_url or self.base_url, image_id)
 
         content_type = content_type or 'application/octet-stream'
         headers = {'Content-Type': content_type}
@@ -137,7 +141,9 @@ class ImagesClient(AutoMarshallingRestClient):
     def get_image_file(self, image_id, requestslib_kwargs=None):
         """@summary: Get image file data for given image id"""
 
-        url = '{0}/images/{1}/file'.format(self.base_url, image_id)
+        # If an alt_url is provided, use it, otherwise use the base_url
+        url = '{0}/images/{1}/file'.format(
+            self.alt_url or self.base_url, image_id)
         return self.request('GET', url, response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
@@ -175,11 +181,20 @@ class ImagesClient(AutoMarshallingRestClient):
                             response_entity_type=Member,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def list_members(self, image_id):
+    def get_member(self, image_id, member_id, requestslib_kwargs=None):
+        """@summary: List all image members"""
+
+        url = '{0}/images/{1}/members/{2}'.format(self.base_url, image_id,
+                                                  member_id)
+        return self.request('GET', url, response_entity_type=Member,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def list_members(self, image_id, requestslib_kwargs=None):
         """@summary: List all image members"""
 
         url = '{0}/images/{1}/members'.format(self.base_url, image_id)
-        return self.request('GET', url, response_entity_type=Members)
+        return self.request('GET', url, response_entity_type=Members,
+                            requestslib_kwargs=requestslib_kwargs)
 
     def update_member(self, image_id, member_id, status,
                       requestslib_kwargs=None):
