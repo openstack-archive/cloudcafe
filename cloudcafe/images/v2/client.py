@@ -175,11 +175,20 @@ class ImagesClient(AutoMarshallingRestClient):
                             response_entity_type=Member,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def list_members(self, image_id):
+    def get_member(self, image_id, member_id, requestslib_kwargs=None):
+        """@summary: List all image members"""
+
+        url = '{0}/images/{1}/members/{2}'.format(self.base_url, image_id,
+                                                  member_id)
+        return self.request('GET', url, response_entity_type=Member,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def list_members(self, image_id, requestslib_kwargs=None):
         """@summary: List all image members"""
 
         url = '{0}/images/{1}/members'.format(self.base_url, image_id)
-        return self.request('GET', url, response_entity_type=Members)
+        return self.request('GET', url, response_entity_type=Members,
+                            requestslib_kwargs=requestslib_kwargs)
 
     def update_member(self, image_id, member_id, status,
                       requestslib_kwargs=None):
