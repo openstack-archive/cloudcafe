@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: jose-idar <jose.idar@rackspace.com>
+Code-Review+2: jose-idar <jose.idar@rackspace.com>
+Code-Review+1: Richard Hawkins <richard.hawkins@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 06 Mar 2014 18:57:41 +0000
+Reviewed-on: https://review.openstack.org/74847
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
