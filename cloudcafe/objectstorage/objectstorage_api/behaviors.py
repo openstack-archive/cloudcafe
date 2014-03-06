@@ -47,6 +47,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
     VALID_TEMPURL_KEY = 'qe-tempurl-key'
 
     def __init__(self, client=None, config=None):
+        super(ObjectStorageAPI_Behaviors, self).__init__()
         self.client = client
         if config:
             self.config = config
