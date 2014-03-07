@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: Carlos Martinez <carlos.martinez@rackspace.com>
+Code-Review+2: Carlos Martinez <carlos.martinez@rackspace.com>
+Code-Review+1: Richard Hawkins <richard.hawkins@rackspace.com>
+Code-Review+1: Stephen Lowrie <stephen.lowrie@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 07 Mar 2014 20:42:25 +0000
+Reviewed-on: https://review.openstack.org/78815
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
