@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from copy import deepcopy
+import datetime
 import uuid
 import json
+from copy import deepcopy
 
 from cafe.engine.behaviors import BaseBehavior, behavior
 from cloudcafe.objectstorage.objectstorage_api.config \
@@ -55,13 +56,46 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             self.config = ObjectStorageAPIConfig()
 
     def generate_unique_container_name(self, identifier=None):
+        """
+        Generate a unique container name.
+
+        NOTE: use of this method does not guarantee to create a container
+              which is not already in use, but due to the added <random>
+              component to the container name, the odds are favorable that
+              the container will not already exist.
+
+        @param identifier: can optionally be provided to assist in
+                           identification of the purpose of the container
+                           when viewing a listing of containers.
+        @type identifier: string
+
+        @return: A container name generated in the following format:
+                     <base>_<identifier_><date>_<random>
+                 Where:
+                     base_container_name - Can be set in the config to
+                                           differentiate instances of
+                                           CloudCafe.
+                     identifier - identifier provided, otherwise this will be
+                                  omitted from the container name.
+                     date - the date and time that the container name was
+                            generated.
+                    random - a random string to prevent collisions between
+                             test runs.
+                 Here are some example generated names:
+                    qe_cf_2014-03-08-04-16_040f6242...
+                    qe_cf_quick_test_2014-03-08-04-16_040f6242...
+        @rtype: string
+        """
         if identifier:
             identifier = '{0}_'.format(identifier)
 
+        container_date = '{0}_'.format(
+            datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))
+
         randomstring = str(uuid.uuid4()).replace('-', '')
 
-        container_name = '{0}_{1}{2}'.format(
-            self.config.base_container_name, identifier,
+        container_name = '{0}_{1}{2}{3}'.format(
+            self.config.base_container_name, identifier, container_date,
             randomstring)
 
         return container_name
