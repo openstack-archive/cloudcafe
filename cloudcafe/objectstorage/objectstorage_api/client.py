@@ -15,6 +15,7 @@ limitations under the License.
 """
 import hmac
 import tarfile
+from time import sleep
 
 from os.path import expanduser
 from cloudcafe.common.tools import randomstring as randstring
@@ -22,7 +23,7 @@ from cafe.engine.config import EngineConfig
 from cStringIO import StringIO
 from time import time, mktime
 from hashlib import sha1
-from datetime import datetime
+from datetime import datetime, timedelta
 from cloudcafe.common.tools.md5hash import get_md5_hash
 from cafe.engine.http.client import HTTPClient
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
@@ -67,10 +68,14 @@ def _deserialize(response_entity_type):
 BULK_ARCHIVE_NAME = 'bulk_objects'
 
 
+class ObjectStorageAPIClientException(Exception):
+    pass
+
+
 class ObjectStorageAPIClient(HTTPClient):
 
     def __init__(self, storage_url, auth_token, base_container_name=None,
-                 base_object_name=None):
+                 base_object_name=None, list_timeout=None):
         super(ObjectStorageAPIClient, self).__init__()
         self.engine_config = EngineConfig()
         self.temp_dir = expanduser(self.engine_config.temp_directory)
@@ -81,6 +86,7 @@ class ObjectStorageAPIClient(HTTPClient):
         self.base_object_name = base_object_name or ''
         self.default_headers['X-Auth-Token'] = self.auth_token
         self._swift_features = None
+        self.list_timeout = list_timeout
 
     def get_swift_info(self):
         """
@@ -88,6 +94,76 @@ class ObjectStorageAPIClient(HTTPClient):
         """
         info_url = '{0}/info'.format(self.swift_endpoint)
         return self.get(info_url)
+
+    def _eventually_consistent(self, func, func_args=None, func_kwargs=None,
+                               success_func=None, timeout=None):
+        """
+        Allows a function to be re-executed if a success condition is not met.
+        The function will be called repeatedly, exponentially backing off until
+        a timeout is met.  This mechanism ensures that eventual consistency
+        does not interfere with test results.
+
+        @param func: The function to be called and tested.
+        @type func: function
+        @param func_args: arguments to be passed to the function call.
+        @type func_args: list
+        @param func_kwargs: keyword arguments to be passed to the function
+                            call.
+        @type func_kwargs: dictionary
+        @param success_func: A function that can optionally be provided
+                                 for testing if the function call was
+                                 successful or not.  This function would
+                                 take the response object as an argument
+                                 and return True if it was successful or
+                                 False otherwise.  If a success function
+                                 is not provided, it will default to checking
+                                 response.ok.
+        @type success_func: function
+        @param timeout: Perform no more than one function call once the
+                        timeout in seconds has elapsed since the first call.
+                        If timeout is not provided, the function will only
+                        be called once.
+        @type timeout: int
+
+        @return: The most resent response from calling func.
+        @rtype: Response Object
+        """
+        sleep_seconds = 0
+        func_args = func_args or []
+        func_kwargs = func_kwargs or {}
+
+        if self.list_timeout:
+            stop_time = datetime.now() + timedelta(seconds=timeout)
+
+        def default_success_func(response):
+            return response.ok
+        success_func = success_func or default_success_func
+
+        response = None
+        reached_success = False
+        reached_timeout = False
+        while not reached_success and not reached_timeout:
+            response = None
+
+            if not timeout:
+                reached_timeout = True
+            else:
+                reached_timeout = datetime.now() >= stop_time
+
+            if sleep_seconds == 0:
+                sleep_seconds = 1
+            else:
+                sleep(sleep_seconds)
+                sleep_seconds = sleep_seconds * 2
+
+            response = func(*func_args, **func_kwargs)
+
+            if response:
+                reached_success = success_func(response)
+            else:
+                raise ObjectStorageAPIClientException('invalid response')
+
+        return response
 
     #Account-------------------------------------------------------------------
 
@@ -97,8 +173,8 @@ class ObjectStorageAPIClient(HTTPClient):
         return response
 
     @_deserialize(AccountContainersList)
-    def list_containers(self, headers=None, params=None,
-                        requestslib_kwargs=None):
+    def _list_containers(self, headers=None, params=None,
+                         requestslib_kwargs=None):
         """
         Lists all containers for the account.
 
@@ -106,6 +182,17 @@ class ObjectStorageAPIClient(HTTPClient):
         dictionary, an object representing the deserialized version of
         that format (either xml or json) will be appended to the response
         as the 'entity' attribute. (ie, response.entity)
+
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+
+        @return: response object
+        @rtype: object
         """
         response = self.get(
             self.storage_url,
@@ -114,6 +201,33 @@ class ObjectStorageAPIClient(HTTPClient):
             requestslib_kwargs=requestslib_kwargs)
 
         return response
+
+    def list_containers(self, headers=None, params=None,
+                        requestslib_kwargs=None, success_func=None):
+        """
+        Eventually consistent version of _list_containers method.
+
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+        @param success_func: used to test if a request was successful.
+        @type success_func: function
+
+        @return: response object
+        @rtype: object
+        """
+        return self._eventually_consistent(
+            self._list_containers,
+            func_kwargs={
+                'headers': headers,
+                'params': params,
+                'requestslib_kwargs': requestslib_kwargs},
+            success_func=success_func,
+            timeout=self.list_timeout)
 
     #Container-----------------------------------------------------------------
 
@@ -176,8 +290,8 @@ class ObjectStorageAPIClient(HTTPClient):
         return response
 
     @_deserialize(ContainerObjectsList)
-    def list_objects(self, container_name, headers=None, params=None,
-                     requestslib_kwargs=None):
+    def _list_objects(self, container_name, headers=None, params=None,
+                      requestslib_kwargs=None):
         """
         Lists all objects in the specified container.
 
@@ -185,6 +299,19 @@ class ObjectStorageAPIClient(HTTPClient):
         dictionary, an object representing the deserialized version of
         that format (either xml or json) will be appended to the response
         as the 'entity' attribute. (ie, response.entity)
+
+        @param container_name: container to list the object from.
+        @type container_name: string
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+
+        @return: response object
+        @rtype: object
         """
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
@@ -195,6 +322,36 @@ class ObjectStorageAPIClient(HTTPClient):
             requestslib_kwargs=requestslib_kwargs)
 
         return response
+
+    def list_objects(self, container_name, headers=None, params=None,
+                     requestslib_kwargs=None, success_func=None):
+        """
+        Eventually consistent version of _list_objects method.
+
+        @param container_name: container to list the object from.
+        @type container_name: string
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+        @param success_func: used to test if a request was successful.
+        @type success_func: function
+
+        @return: response object
+        @rtype: object
+        """
+        return self._eventually_consistent(
+            self._list_objects,
+            func_args=[container_name],
+            func_kwargs={
+                'headers': headers,
+                'params': params,
+                'requestslib_kwargs': requestslib_kwargs},
+            success_func=success_func,
+            timeout=self.list_timeout)
 
     def get_object_count(self, container_name,
                          requestslib_kwargs=None):
