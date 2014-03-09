@@ -15,16 +15,16 @@ limitations under the License.
 """
 import hmac
 import tarfile
-
-from os.path import expanduser
-from cloudcafe.common.tools import randomstring as randstring
-from cafe.engine.config import EngineConfig
 from cStringIO import StringIO
-from time import time, mktime
-from hashlib import sha1
 from datetime import datetime
-from cloudcafe.common.tools.md5hash import get_md5_hash
+from hashlib import sha1
+from os.path import expanduser
+from time import time, mktime
+
+from cafe.engine.config import EngineConfig
 from cafe.engine.http.client import HTTPClient
+from cloudcafe.common.tools import randomstring as randstring
+from cloudcafe.common.tools.md5hash import get_md5_hash
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
     import AccountContainersList, ContainerObjectsList, CreateArchiveObject
 
@@ -106,6 +106,17 @@ class ObjectStorageAPIClient(HTTPClient):
         dictionary, an object representing the deserialized version of
         that format (either xml or json) will be appended to the response
         as the 'entity' attribute. (ie, response.entity)
+
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+
+        @return: response object
+        @rtype: object
         """
         response = self.get(
             self.storage_url,
@@ -185,6 +196,19 @@ class ObjectStorageAPIClient(HTTPClient):
         dictionary, an object representing the deserialized version of
         that format (either xml or json) will be appended to the response
         as the 'entity' attribute. (ie, response.entity)
+
+        @param container_name: container to list the object from.
+        @type container_name: string
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+
+        @return: response object
+        @rtype: object
         """
         url = '{0}/{1}'.format(self.storage_url, container_name)
 
