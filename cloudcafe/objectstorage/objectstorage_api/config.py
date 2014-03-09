@@ -193,3 +193,11 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         segment.
         """
         return int(self.get('min_slo_segment_size', 1048576))
+
+    @property
+    def list_timeout(self):
+        """
+        The timeout in seconds to stop retrying container/object listings
+        and instead report an error.
+        """
+        return int(self.get('list_timeout', 120))

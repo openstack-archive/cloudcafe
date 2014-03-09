@@ -17,6 +17,7 @@ import datetime
 import uuid
 import json
 from copy import deepcopy
+from time import sleep
 
 from cafe.engine.behaviors import BaseBehavior, behavior
 from cloudcafe.objectstorage.objectstorage_api.config \
@@ -26,7 +27,9 @@ from cloudcafe.objectstorage.objectstorage_api.client \
 
 
 class ObjectStorageAPIBehaviorException(Exception):
-    pass
+    def __init__(self, message, response=None):
+        super(ObjectStorageAPIBehaviorException, self).__init__(message)
+        self.response = response
 
 
 class ObjectStorageAPI_Behaviors(BaseBehavior):
@@ -54,6 +57,76 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             self.config = config
         else:
             self.config = ObjectStorageAPIConfig()
+
+    def retry_until_success(self, func, func_args=None, func_kwargs=None,
+                            success_func=None, timeout=None):
+        """
+        Allows a function to be re-executed if a success condition is not met.
+        The function will be called repeatedly, exponentially backing off until
+        a timeout is met.  This mechanism ensures that eventual consistency
+        does not interfere with test results.
+
+        @param func: The function to be called and tested.
+        @type func: function
+        @param func_args: arguments to be passed to the function call.
+        @type func_args: list
+        @param func_kwargs: keyword arguments to be passed to the function
+                            call.
+        @type func_kwargs: dictionary
+        @param success_func: A function that can optionally be provided
+                             for testing if the function call was
+                             successful or not.  This function would
+                             take the response object as an argument
+                             and return True if it was successful or
+                             False otherwise.  If a success function
+                             is not provided, it will default to checking
+                             response.ok.
+        @type success_func: function
+        @param timeout: Perform no more than one function call once the
+                        timeout in seconds has elapsed since the first call.
+                        If timeout is not provided, the function will only
+                        be called once.
+        @type timeout: int
+
+        @return: The most resent response from calling func.
+        @rtype: Response Object
+        """
+        sleep_seconds = 0
+        func_args = func_args or []
+        func_kwargs = func_kwargs or {}
+
+        if self.config.list_timeout:
+            stop_time = (datetime.datetime.now() +
+                         datetime.timedelta(seconds=timeout))
+
+        def default_success_func(response):
+            return response.ok
+        success_func = success_func or default_success_func
+
+        response = None
+        reached_timeout = False
+        while not reached_timeout:
+            response = None
+
+            if not timeout:
+                reached_timeout = True
+            else:
+                reached_timeout = datetime.now() >= stop_time
+
+            if sleep_seconds == 0:
+                sleep_seconds = 1
+            else:
+                sleep(sleep_seconds)
+                sleep_seconds = sleep_seconds * 2
+
+            response = func(*func_args, **func_kwargs)
+            if response:
+                if success_func(response):
+                    return response
+            else:
+                raise ObjectStorageAPIBehaviorException('invalid response')
+        raise ObjectStorageAPIBehaviorException(
+            'Unable to satisfy success condition.', response)
 
     def generate_unique_container_name(self, identifier=None):
         """
@@ -190,6 +263,37 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                 'could not create container "{0}"'.format(str(container_name)))
 
     @behavior(ObjectStorageAPIClient)
+    def list_containers(self, headers=None, params=None,
+                        requestslib_kwargs=None, success_func=None):
+        """
+        List containers in a account.  This method allows for a success
+        function to be provided, ensuring that the system has stabilized and
+        become consistent.
+
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+        @param success_func: used to test if a request was successful.
+        @type success_func: function
+
+        @return: container listing
+        @rtype: list
+        """
+        response = self.retry_until_success(
+            self.client.list_containers,
+            func_kwargs={
+                'headers': headers,
+                'params': params,
+                'requestslib_kwargs': requestslib_kwargs},
+            success_func=success_func,
+            timeout=self.config.list_timeout)
+        return response.entity
+
+    @behavior(ObjectStorageAPIClient)
     def create_object(self, container_name, object_name, data=None,
                       headers={}, params={}):
         if not self.container_exists(container_name):
@@ -234,6 +338,40 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             method, url, requestslib_kwargs=kwargs)
 
         return response
+
+    @behavior(ObjectStorageAPIClient)
+    def list_objects(self, container_name, headers=None, params=None,
+                     requestslib_kwargs=None, success_func=None):
+        """
+        List objects in a container.  This method allows for a success
+        function to be provided, ensuring that the system has stabilized and
+        become consistent.
+
+        @param container_name: container to list the object from.
+        @type container_name: string
+        @param headers: headers to be added to the HTTP request.
+        @type headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+        @param success_func: used to test if a request was successful.
+        @type success_func: function
+
+        @return: object listing
+        @rtype: list
+        """
+        response = self.retry_until_success(
+            self.client.list_objects,
+            func_args=[container_name],
+            func_kwargs={
+                'headers': headers,
+                'params': params,
+                'requestslib_kwargs': requestslib_kwargs},
+            success_func=success_func,
+            timeout=self.config.list_timeout)
+        return response.entity
 
     @behavior(ObjectStorageAPIClient)
     def authed_request(self, method=None, path='', **kwargs):
