@@ -17,6 +17,7 @@ limitations under the License.
 from time import time, sleep
 
 from cafe.engine.behaviors import BaseBehavior, behavior
+from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.blockstorage.volumes_api.v2.client import VolumesClient
 from cloudcafe.blockstorage.volumes_api.v2.config import VolumesAPIConfig
 from cloudcafe.blockstorage.volumes_api.v2.models import statuses
@@ -87,61 +88,14 @@ class VolumesAPI_Behaviors(BaseBehavior):
         return resp.entity.status
 
     @behavior(VolumesClient)
-    def verify_volume_status_progression(self, volume_id, state_list=None):
+    def verify_volume_status_progression(
+            self, volume_id, status_progression_verifier=None):
 
-        # (status, transient, timeout, poll_rate)
-        state_list = state_list or [
-            ('creating', True, 10, 0),
-            ('available', False, 30, 5)]
-
-        current_state = 0
-        for expected_status, transient, timeout, poll_rate in state_list:
-            self._log.debug(
-                "Current volume status progression state: expected_status: "
-                "{0}, transient: {1}, timeout: (2), poll_rate: (3)".format(
-                    expected_status, transient, timeout, poll_rate))
-
-            next_status = None
-            try:
-                next_status, _, _, _ = state_list[current_state+1]
-            except:
-                pass
-
-            endtime = time() + timeout
-            current_status = None
-            while time() < endtime:
-                current_status = self.get_volume_status(
-                    volume_id)
-                self._log.debug("Current status of volume {0}: {1}".format(
-                    volume_id, current_status))
-                if expected_status == current_status:
-                    current_state += 1
-                    self._log.debug(
-                        "Current status of volume {0} matches expected status"
-                        " {1}".format(volume_id, expected_status))
-                    break
-                elif transient and (current_status == next_status):
-                    self._log.debug(
-                        "Next status '{0}' found while searching for transient"
-                        " status {1}".format(next_status, expected_status))
-                    break
-                sleep(poll_rate)
-            else:
-                if transient:
-                    self._log.debug(
-                        "Neither the transient status {0} nor the next status "
-                        "{1} where found, continuing to next status "
-                        "search".format(expected_status, next_status))
-                    continue
-                else:
-                    msg = (
-                        "Volume did not progress to the {expected_status} "
-                        "status in the alloted time of {timeout} seconds. Last"
-                        " observed status was {last_observed}".format(
-                            expected_status=expected_status,
-                            timeout=timeout, last_observed=current_status))
-                    self._log.error(msg)
-                    raise VolumesAPIBehaviorException(msg)
+        verifer = StatusProgressionVerifier(
+            'volume', volume_id, self.get_volume_status, [volume_id])
+        verifier.add_state('creating', 10, 0, 3, True)
+        verifier.add_state('available', 30, 5, 3, False)
+        verifier.start()
 
     @behavior(VolumesClient)
     def wait_for_volume_status(
