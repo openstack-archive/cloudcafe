@@ -102,7 +102,7 @@ class ServersConfig(ConfigSectionInterface):
         IP address version to be used for remote connections
         (ie. 4, 6)
         """
-        return self.get("ip_address_version_for_ssh")
+        return int(self.get("ip_address_version_for_ssh"))
 
     @property
     def instance_disk_path(self):
@@ -122,6 +122,19 @@ class ServersConfig(ConfigSectionInterface):
         Amount of time to wait before giving up on connecting to an instance
         """
         return int(self.get("connection_timeout"))
+
+    @property
+    def expected_networks(self):
+        """
+        Dictionary containing the expected networks and the IP address types
+        expected to be assigned per network.
+        """
+        return eval(self.get("expected_networks"))
+
+    @property
+    def default_network(self):
+        """Id of the network to use by default for servers"""
+        return self.get("default_network")
 
 
 class BlockDeviceMappingConfig(ConfigSectionInterface):
