@@ -78,6 +78,8 @@ class ServerBehaviors(BaseBehavior):
             image_ref = self.images_config.primary_image
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
+        if self.config.default_network:
+            networks = [{'uuid': self.config.default_network}]
 
         failures = []
         attempts = self.config.resource_build_attempts
@@ -246,9 +248,12 @@ class ServerBehaviors(BaseBehavior):
         @return: Either IPv4 or IPv6 address of instance
         @rtype: String
         """
-
         if ip_address is None:
-            ip_address = self.get_public_ip_address(server)
+            network = server.addresses.get_by_name(config.network_for_ssh)
+            if config.ip_address_version_for_ssh == 4:
+                ip_address = network.ipv4
+            elif config.ip_address_version_for_ssh == 6:
+                ip_address = network.ipv6
 
         strategy = auth_strategy or self.config.instance_auth_strategy.lower()
 
@@ -258,15 +263,13 @@ class ServerBehaviors(BaseBehavior):
                 password = server.admin_pass
 
             # (TODO) dwalleck: Remove hard coding of distro
-            return LinuxClient(ip_address=ip_address, username='root', password=password)
-            #return InstanceClientFactory.get_instance_client(
-            #    ip_address=ip_address, username=username, password=password,
-            #    os_distro='linux', config=config)
+            return LinuxClient(
+                ip_address=ip_address, username='root', password=password,
+                connection_timeout=self.config.connection_timeout)
         else:
-            return LinuxClient(ip_address=ip_address, username='root', key=key)
-            #return InstanceClientFactory.get_instance_client(
-            #    ip_address=ip_address, username=username, os_distro='linux',
-            #    config=config, key=key)
+            return LinuxClient(
+                ip_address=ip_address, username='root', key=key,
+                connection_timeout=self.config.connection_timeout)
 
     def resize_and_await(self, server_id, new_flavor):
         """
