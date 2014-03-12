@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from time import sleep
 from httplib import BadStatusLine
 from requests.exceptions import ConnectionError
 
@@ -28,6 +29,29 @@ class OrdersBehavior(object):
         self.secrets_client = secrets_client
         self.config = config
         self.created_orders = []
+
+    def _wait_for_order_to_activate(self, create_resp):
+        """ Recheck the order every second to see if it's active yet."""
+        if not create_resp.entity.reference:
+            # We only care about orders that have been created
+            return
+
+        count, total = 0, 30
+        order_ref = create_resp.entity.reference
+        order_id = CloudkeepResponse.get_id_from_ref(order_ref)
+
+        while count < total:
+            order = self.orders_client.get_order(order_id).entity
+
+            if not order:
+                raise Exception('Couldn\'t properly retrieve or parse order')
+
+            if order.status == 'ACTIVE':
+                # Early return if order has gone active
+                return
+
+            sleep(1)
+            count += 1
 
     def create_and_check_order(self, name=None, payload_content_type=None,
                                algorithm=None, bit_length=None, mode=None):
@@ -89,6 +113,9 @@ class OrdersBehavior(object):
                 return {'status_code': 0}
             raise e
 
+        # Make sure we wait for the order to activate
+        self._wait_for_order_to_activate(resp)
+
         behavior_response = CloudkeepResponse(resp=resp)
         order_id = behavior_response.id
         if order_id is not None:
@@ -117,6 +144,9 @@ class OrdersBehavior(object):
             if type(e.message.reason) is BadStatusLine:
                 return {'status_code': 0}
             raise e
+
+        # Make sure we wait for the order to activate
+        self._wait_for_order_to_activate(resp)
 
         behavior_response = CloudkeepResponse(resp=resp)
         order_id = behavior_response.id

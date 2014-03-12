@@ -66,7 +66,7 @@ class Order(AutoMarshallingModel):
 
 class OrderRef(AutoMarshallingModel):
 
-    def __init__(self, reference):
+    def __init__(self, reference=None):
         super(OrderRef, self).__init__()
         self.reference = reference
 
