@@ -25,18 +25,26 @@ class CloudkeepResponse(BehaviorResponse):
         super(CloudkeepResponse, self).__init__()
         self.create_resp = resp
         self.entity = entity
-        self.ref = None
-        self.id = None
-        self.status_code = None
-        self.get_resp = None
-        if resp:
-            self.status_code = resp.status_code
-            if resp.entity:
-                self.ref = resp.entity.reference
-                self.id = self.get_id_from_ref(ref=self.ref)
-        if get_resp:
-            self.get_resp = get_resp
-            self.get_status_code = get_resp.status_code
+        self.get_resp = get_resp
+
+    @property
+    def status_code(self):
+        if self.create_resp is not None:
+            return self.create_resp.status_code
+
+    @property
+    def ref(self):
+        if self.create_resp is not None and self.create_resp.entity:
+            return self.create_resp.entity.reference
+
+    @property
+    def id(self):
+        return self.get_id_from_ref(self.ref)
+
+    @property
+    def get_status_code(self):
+        if self.get_resp is not None:
+            return self.get_resp.status_code
 
     @classmethod
     def get_id_from_ref(cls, ref):
