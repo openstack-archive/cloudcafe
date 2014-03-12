@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Daryl Walleck <daryl.walleck@rackspace.com>
+Approved+1: jose-idar <jose.idar@rackspace.com>
+Code-Review+2: jose-idar <jose.idar@rackspace.com>
+Code-Review+1: Steve Heyman <steve.heyman@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 12 Mar 2014 18:38:52 +0000
+Reviewed-on: https://review.openstack.org/79870
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
