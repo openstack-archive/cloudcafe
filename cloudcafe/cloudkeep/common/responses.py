@@ -29,11 +29,12 @@ class CloudkeepResponse(BehaviorResponse):
         self.id = None
         self.status_code = None
         self.get_resp = None
-        if resp is not None:
-            self.ref = resp.entity.reference
+        if resp:
             self.status_code = resp.status_code
-            self.id = self.get_id_from_ref(ref=self.ref)
-        if get_resp is not None:
+            if resp.entity:
+                self.ref = resp.entity.reference
+                self.id = self.get_id_from_ref(ref=self.ref)
+        if get_resp:
             self.get_resp = get_resp
             self.get_status_code = get_resp.status_code
 
