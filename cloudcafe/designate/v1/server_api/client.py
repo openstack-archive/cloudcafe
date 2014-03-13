@@ -14,23 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cloudcafe.designate.client import DesignateClient
 from cloudcafe.designate.v1.server_api.models.requests import ServerRequest
 from cloudcafe.designate.v1.server_api.models.responses import \
     ServerResponse, ServerListResponse
 
 
-class ServerAPIClient(AutoMarshallingRestClient):
+class ServerAPIClient(DesignateClient):
 
     def __init__(self, url, serialize_format=None,
                  deserialize_format=None):
-        super(ServerAPIClient, self).__init__(serialize_format,
+        super(ServerAPIClient, self).__init__(url, serialize_format,
                                               deserialize_format)
-        self.url = url.rstrip('/')
-        self.default_headers['Content-Type'] = 'application/{0}'.format(
-            self.serialize_format)
-        self.default_headers['Accept'] = 'application/{0}'.format(
-            self.serialize_format)
 
     def _get_servers_url(self):
         return "{0}/servers".format(self.url)
