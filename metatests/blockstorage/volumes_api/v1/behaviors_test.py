@@ -13,121 +13,80 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import unittest
 from mock import MagicMock, Mock
 from requests import Response
 
+from cloudcafe.blockstorage.volumes_api.common.behaviors import \
+    VolumesAPIBehaviorException
 from cloudcafe.blockstorage.volumes_api.v1.behaviors import \
-    VolumesAPI_Behaviors, VolumesAPIBehaviorException
+    VolumesAPI_Behaviors
 from cloudcafe.blockstorage.volumes_api.v1.models.responses import\
     VolumeResponse, VolumeSnapshotResponse
 from cloudcafe.blockstorage.volumes_api.v1.client import VolumesClient
-from cloudcafe.blockstorage.volumes_api.v1.config import VolumesAPIConfig
+from cloudcafe.blockstorage.volumes_api.common.config import VolumesAPIConfig
 
 
 class wait_for_snapshot_status(unittest.TestCase):
 
     class defaults:
-        snapshot_name = 'mock_snapshot'
         snapshot_id = '111111'
+        snapshot_name = 'mock_snapshot'
         expected_status = 'available'
         timeout = 10
         poll_rate = 2
 
-    def test_wait_for_snapshot_status_good_response_code(self):
-
+    def get_mocks(self):
         client = Mock(spec=VolumesClient)
-
         config = Mock(spec=VolumesAPIConfig)
-        config.snapshot_status_poll_frequency = 1
-
         snapshot_model = Mock(spec=VolumeSnapshotResponse)
-        snapshot_model.status = self.defaults.expected_status
-
         response = Mock(spec=Response)
-        response.ok = True
-        response.entity = snapshot_model
 
-        client.get_snapshot_info = MagicMock(
-            return_value=response)
+        config.snapshot_status_poll_frequency = 1
+        response.ok = True
+        snapshot_model.status = self.defaults.expected_status
+        response.entity = snapshot_model
+        client.get_snapshot_info = MagicMock(return_value=response)
+        return (client, config, snapshot_model, response)
+
+    def test_good_response_code_manual_poll_rate(self):
+        client, config, snapshot_model, response = self.get_mocks()
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         resp = behavior.wait_for_snapshot_status(
             self.defaults.snapshot_id, self.defaults.expected_status,
             self.defaults.timeout, poll_rate=self.defaults.poll_rate)
 
         self.assertIsNone(resp)
 
-    def test_wait_for_snapshot_status_good_response_code_config_wait_period(
-            self):
-
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.snapshot_status_poll_frequency = 1
-
-        snapshot_model = Mock(spec=VolumeSnapshotResponse)
-        snapshot_model.status = self.defaults.expected_status
-
-        response = Mock(spec=Response)
-        response.ok = True
-        response.entity = snapshot_model
-
-        client.get_snapshot_info = MagicMock(
-            return_value=response)
+    def test_good_response_code_config_wait_period(self):
+        client, config, snapshot_model, response = self.get_mocks()
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         resp = behavior.wait_for_snapshot_status(
             self.defaults.snapshot_name, self.defaults.expected_status,
             self.defaults.timeout)
 
         self.assertIsNone(resp)
 
-    def test_wait_for_snapshot_status_good_response_code_bad_status(self):
-
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.snapshot_status_poll_frequency = 1
-
-        snapshot_model = Mock(spec=VolumeSnapshotResponse)
-        snapshot_model.status = self.defaults.expected_status
-
-        response = Mock(spec=Response)
-        response.ok = True
-        response.entity = snapshot_model
-
-        client.get_snapshot_info = MagicMock(
-            return_value=response)
+    def test_good_response_code_bad_status(self):
+        client, config, snapshot_model, response = self.get_mocks()
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         resp = behavior.wait_for_snapshot_status(
             self.defaults.snapshot_name, self.defaults.expected_status,
             self.defaults.timeout, poll_rate=self.defaults.poll_rate)
 
         self.assertIsNone(resp)
 
-    def test_wait_for_snapshot_status_bad_response_code(self):
+    def test_bad_response_code(self):
+        client, config, snapshot_model, response = self.get_mocks()
 
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.snapshot_status_poll_frequency = 1
-
-        snapshot_model = Mock(spec=VolumeSnapshotResponse)
-        snapshot_model.status = self.defaults.expected_status
-
-        response = Mock(spec=Response)
         response.ok = False
         response.entity = snapshot_model
         response.status_code = '401'
-
-        client.get_snapshot_info = MagicMock(
-            return_value=response)
-
+        client.get_snapshot_info = MagicMock(return_value=response)
         behavior = VolumesAPI_Behaviors(client, config)
 
         with self.assertRaises(VolumesAPIBehaviorException):
@@ -135,24 +94,12 @@ class wait_for_snapshot_status(unittest.TestCase):
                 self.defaults.snapshot_name, self.defaults.expected_status,
                 self.defaults.timeout, poll_rate=self.defaults.poll_rate)
 
-    def test_wait_for_snapshot_status_good_response_code_empty_entity(self):
+    def test_good_response_code_empty_entity(self):
+        client, config, snapshot_model, response = self.get_mocks()
 
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.snapshot_status_poll_frequency = 1
-
-        snapshot_model = Mock(spec=VolumeSnapshotResponse)
-        snapshot_model.status = self.defaults.expected_status
-
-        response = Mock(spec=Response)
-        response.ok = True
         response.entity = None
         response.status_code = '200'
-
-        client.get_snapshot_info = MagicMock(
-            return_value=response)
-
+        client.get_snapshot_info = MagicMock(return_value=response)
         behavior = VolumesAPI_Behaviors(client, config)
 
         with self.assertRaises(VolumesAPIBehaviorException):
@@ -160,31 +107,20 @@ class wait_for_snapshot_status(unittest.TestCase):
                 self.defaults.snapshot_name, self.defaults.expected_status,
                 self.defaults.timeout, poll_rate=self.defaults.poll_rate)
 
-    def test_wait_for_snapshot_status_good_response_and_entity_bad_status(
-            self):
+    def test_good_response_good_entity_bad_status(self):
+        client, config, snapshot_model, response = self.get_mocks()
+
         recieved_status = 'error'
-
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.snapshot_status_poll_frequency = 1
-
-        snapshot_model = Mock(spec=VolumeSnapshotResponse)
+        poll_rate = 1
         snapshot_model.status = recieved_status
-
-        response = Mock(spec=Response)
-        response.ok = True
         response.entity = snapshot_model
-
-        client.get_snapshot_info = MagicMock(
-            return_value=response)
-
+        client.get_snapshot_info = MagicMock(return_value=response)
         behavior = VolumesAPI_Behaviors(client, config)
 
         with self.assertRaises(VolumesAPIBehaviorException):
             behavior.wait_for_snapshot_status(
                 self.defaults.snapshot_name, self.defaults.expected_status,
-                self.defaults.timeout, poll_rate=self.defaults.poll_rate)
+                self.defaults.timeout, poll_rate=poll_rate)
 
 
 class wait_for_volume_status(unittest.TestCase):
@@ -195,24 +131,31 @@ class wait_for_volume_status(unittest.TestCase):
         expected_status = 'available'
         timeout = 10
         poll_rate = 2
-        timeout = 10
 
-    def test_wait_for_volume_status_good_response_code(self):
-
+    def get_mocks(self):
         client = Mock(spec=VolumesClient)
-
         config = Mock(spec=VolumesAPIConfig)
-        config.volume_status_poll_frequency = 1
-
         volume_model = Mock(spec=VolumeResponse)
-        volume_model.status = self.defaults.expected_status
-
         response = Mock(spec=Response)
+
+        config.volume_status_poll_frequency = 1
+        volume_model.status = self.defaults.expected_status
         response.ok = True
         response.entity = volume_model
+        client.get_volume_info = MagicMock(return_value=response)
 
-        client.get_volume_info = MagicMock(
-            return_value=response)
+        return (client, config, volume_model, response)
+
+    def test_get_volume_status(self):
+        client, config, volume_model, response = self.get_mocks()
+
+        behavior = VolumesAPI_Behaviors(client, config)
+
+        status = behavior.get_volume_status(self.defaults.volume_id)
+        self.assertEqual(status, self.defaults.expected_status)
+
+    def test_good_response_code(self):
+        client, config, volume_model, response = self.get_mocks()
 
         behavior = VolumesAPI_Behaviors(client, config)
 
@@ -222,134 +165,69 @@ class wait_for_volume_status(unittest.TestCase):
 
         self.assertIsNone(resp)
 
-    def test_wait_for_volume_status_good_response_code_configured_poll_rate(
-            self):
-
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_status_poll_frequency = 1
-
-        volume_model = Mock(spec=VolumeResponse)
-        volume_model.status = self.defaults.expected_status
-
-        response = Mock(spec=Response)
-        response.ok = True
-        response.entity = volume_model
-
-        client.get_volume_info = MagicMock(
-            return_value=response)
+    def test_good_response_code_configured_poll_period(self):
+        client, config, volume_model, response = self.get_mocks()
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         resp = behavior.wait_for_volume_status(
             self.defaults.volume_name, self.defaults.expected_status,
             self.defaults.timeout)
 
         self.assertIsNone(resp)
 
-    def test_wait_for_volume_status_good_response_code_bad_status(self):
-        volume_name = 'mock_volume'
-        expected_status = 'available'
-        timeout = 10
-        poll_rate = 2
-
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_status_poll_frequency = 1
-
-        volume_model = Mock(spec=VolumeResponse)
-        volume_model.status = expected_status
-
-        response = Mock(spec=Response)
-        response.ok = True
-        response.entity = volume_model
-
-        client.get_volume_info = MagicMock(
-            return_value=response)
+    def test_good_response_code_bad_status(self):
+        client, config, volume_model, response = self.get_mocks()
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         resp = behavior.wait_for_volume_status(
-            volume_name, expected_status, timeout, poll_rate=poll_rate)
+            self.defaults.volume_name, self.defaults.expected_status,
+            self.defaults.timeout, poll_rate=self.defaults.poll_rate)
 
         self.assertIsNone(resp)
 
-    def test_wait_for_volume_status_bad_response_code(self):
+    def test_bad_response_code(self):
+        client, config, volume_model, response = self.get_mocks()
 
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_status_poll_frequency = 1
-
-        volume_model = Mock(spec=VolumeResponse)
-        volume_model.status = self.defaults.expected_status
-
-        response = Mock(spec=Response)
         response.ok = False
         response.entity = volume_model
         response.status_code = '401'
-
-        client.get_volume_info = MagicMock(
-            return_value=response)
+        client.get_volume_info = MagicMock(return_value=response)
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         with self.assertRaises(VolumesAPIBehaviorException):
             behavior.wait_for_volume_status(
                 self.defaults.volume_name, self.defaults.expected_status,
                 self.defaults.timeout, poll_rate=self.defaults.poll_rate)
 
-    def test_wait_for_volume_status_good_response_code_empty_entity(self):
+    def test_good_response_code_empty_entity(self):
+        client, config, volume_model, response = self.get_mocks()
 
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_status_poll_frequency = 1
-
-        volume_model = Mock(spec=VolumeResponse)
-        volume_model.status = self.defaults.expected_status
-
-        response = Mock(spec=Response)
-        response.ok = True
         response.entity = None
         response.status_code = '200'
-
-        client.get_volume_info = MagicMock(
-            return_value=response)
+        client.get_volume_info = MagicMock(return_value=response)
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         with self.assertRaises(VolumesAPIBehaviorException):
             behavior.wait_for_volume_status(
                 self.defaults.volume_name, self.defaults.expected_status,
                 self.defaults.timeout, poll_rate=self.defaults.poll_rate)
 
-    def test_wait_for_volume_status_good_response_and_entity_bad_status(self):
+    def test_good_response_and_entity_bad_status(self):
+        client, config, volume_model, response = self.get_mocks()
+
         recieved_status = 'error'
+        timeout = 2
+        poll_rate = 1
 
-        client = Mock(spec=VolumesClient)
-
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_status_poll_frequency = 1
-
-        volume_model = Mock(spec=VolumeResponse)
         volume_model.status = recieved_status
-
-        response = Mock(spec=Response)
-        response.ok = True
         response.entity = volume_model
-
-        client.get_volume_info = MagicMock(
-            return_value=response)
+        client.get_volume_info = MagicMock(return_value=response)
 
         behavior = VolumesAPI_Behaviors(client, config)
-
         with self.assertRaises(VolumesAPIBehaviorException):
             behavior.wait_for_volume_status(
                 self.defaults.volume_name, self.defaults.expected_status,
-                self.defaults.timeout, poll_rate=self.defaults.poll_rate)
+                timeout, poll_rate=poll_rate)
 
 
 class create_available_volume(unittest.TestCase):
@@ -359,81 +237,48 @@ class create_available_volume(unittest.TestCase):
         volume_type = "mock_type"
         size = 1
 
-    def test_create_availabe_volume_happy_path(self):
-
+    def get_mocks(self):
+        client = Mock(spec=VolumesClient)
         volume_model = Mock(spec=VolumeResponse)
-        volume_model.id_ = "mock"
         volume_create_response = Mock(spec=Response)
+        volume_model.id_ = "mock"
         volume_create_response.entity = volume_model
         volume_create_response.ok = True
-
-        client = Mock(spec=VolumesClient)
         client.create_volume = MagicMock(return_value=volume_create_response)
+
         config = Mock(spec=VolumesAPIConfig)
-        config.volume_create_timeout = 5
+        config.serialize_format = "json"
+        config.deserialize_format = "json"
+        config.max_volume_size = 1024
+        config.min_volume_size = 1
+        config.volume_status_poll_frequency = 5
+        config.volume_create_min_timeout = 1
+        config.volume_create_max_timeout = 10
+        config.volume_create_wait_per_gigabyte = 1
+        config.volume_create_base_timeout = 0
+
+        return (client, config, volume_model, volume_create_response)
+
+    def test_happy_path(self):
+        client, config, volume_model, volume_create_response = self.get_mocks()
+
         behavior = VolumesAPI_Behaviors(client, config)
-        behavior.wait_for_volume_status = MagicMock(return_value=None)
+        behavior.get_volume_status = MagicMock(return_value='available')
 
         volume_entity = behavior.create_available_volume(
             self.defaults.display_name, self.defaults.size,
             self.defaults.volume_type)
+
         self.assertIsInstance(volume_entity, VolumeResponse)
 
-    def test_create_available_volume_failure_response_no_model(self):
+    def test_timeout_failure(self):
+        client, config, volume_model, volume_create_response = self.get_mocks()
 
-        volume_model = Mock(spec=VolumeResponse)
-        volume_model.id_ = "mock"
-        volume_create_response = Mock(spec=Response)
         volume_create_response.entity = None
-        volume_create_response.ok = False
-        volume_create_response.status_code = 500
-
-        client = Mock(spec=VolumesClient)
-        client.create_volume = MagicMock(return_value=volume_create_response)
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_create_timeout = 5
-        behavior = VolumesAPI_Behaviors(client, config)
-        behavior.wait_for_volume_status = MagicMock(return_value=None)
-
-        with self.assertRaises(VolumesAPIBehaviorException):
-            behavior.create_available_volume(
-                self.defaults.display_name, self.defaults.size,
-                self.defaults.volume_type)
-
-    def test_create_available_volume_failure_response_with_model(self):
-
-        volume_model = Mock(spec=VolumeResponse)
-        volume_model.id_ = "mock"
-        volume_create_response = Mock(spec=Response)
-        volume_create_response.entity = None
-        volume_create_response.ok = True
         volume_create_response.status_code = 200
 
-        client = Mock(spec=VolumesClient)
         client.create_volume = MagicMock(return_value=volume_create_response)
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_create_timeout = 5
-        behavior = VolumesAPI_Behaviors(client, config)
-        behavior.wait_for_volume_status = MagicMock(return_value=None)
 
-        with self.assertRaises(VolumesAPIBehaviorException):
-            behavior.create_available_volume(
-                self.defaults.display_name, self.defaults.size,
-                self.defaults.volume_type)
-
-    def test_create_available_volume_timeout_failure(self):
-
-        volume_model = Mock(spec=VolumeResponse)
-        volume_model.id_ = "mock"
-        volume_create_response = Mock(spec=Response)
-        volume_create_response.entity = None
-        volume_create_response.ok = True
-        volume_create_response.status_code = 200
-
-        client = Mock(spec=VolumesClient)
-        client.create_volume = MagicMock(return_value=volume_create_response)
-        config = Mock(spec=VolumesAPIConfig)
-        config.volume_create_timeout = 5
         behavior = VolumesAPI_Behaviors(client, config)
         behavior.wait_for_volume_status = MagicMock(
             side_effect=VolumesAPIBehaviorException)

@@ -19,14 +19,14 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.blockstorage.volumes_api.v1.models.requests import (
     VolumeRequest, VolumeSnapshotRequest)
 
-from cloudcafe.blockstorage.volumes_api.v1.models.responses import(
+from cloudcafe.blockstorage.volumes_api.v1.models.responses import (
     VolumeResponse, VolumeSnapshotResponse, VolumeTypeResponse,
     VolumeListResponse, VolumeTypeListResponse, VolumeSnapshotListResponse)
 
 
 class VolumesClient(AutoMarshallingRestClient):
     def __init__(
-            self, url, auth_token, tenant_id, serialize_format=None,
+            self, url, auth_token, serialize_format=None,
             deserialize_format=None):
 
         super(VolumesClient, self).__init__(
@@ -43,43 +43,19 @@ class VolumesClient(AutoMarshallingRestClient):
     def create_volume(
             self, size, volume_type, display_name=None,
             display_description=None, availability_zone=None, metadata=None,
+            bootable=None, image_ref=None, snapshot_id=None, source_volid=None,
             requestslib_kwargs=None):
 
-        '''POST v1/{tenant_id}/volumes'''
+        """POST /volumes"""
 
         url = '{0}/volumes'.format(self.url)
 
         volume_request_entity = VolumeRequest(
-            size=size,
-            volume_type=volume_type,
-            display_name=display_name,
-            display_description=display_description,
-            availability_zone=availability_zone,
-            metadata=metadata)
-
-        return self.request(
-            'POST', url,
-            response_entity_type=VolumeResponse,
-            request_entity=volume_request_entity,
-            requestslib_kwargs=requestslib_kwargs)
-
-    def create_volume_from_snapshot(
-            self, snapshot_id, size, volume_type, display_name=None,
-            display_description=None, availability_zone=None, metadata=None,
-            requestslib_kwargs=None):
-
-        '''POST v1/{tenant_id}/volumes'''
-
-        url = '{0}/volumes'.format(self.url)
-
-        volume_request_entity = VolumeRequest(
-            size=size,
-            volume_type=volume_type,
-            display_name=display_name,
-            display_description=display_description,
-            availability_zone=availability_zone,
-            metadata=metadata,
-            snapshot_id=snapshot_id)
+            size=size, volume_type=volume_type, display_name=display_name,
+            display_description=display_description, metadata=metadata,
+            bootable=bootable, snapshot_id=snapshot_id,
+            availability_zone=availability_zone, source_volid=source_volid,
+            image_ref=image_ref)
 
         return self.request(
             'POST', url,
@@ -89,7 +65,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def list_all_volumes(self, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/volumes'''
+        """GET /volumes"""
 
         url = '{0}/volumes'.format(self.url)
         return self.request(
@@ -98,7 +74,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def list_all_volumes_info(self, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/volumes/detail'''
+        """GET /volumes/detail"""
 
         url = '{0}/volumes/detail'.format(self.url)
         return self.request(
@@ -107,7 +83,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def get_volume_info(self, volume_id, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/volumes/{volume_id}'''
+        """GET /volumes/{volume_id}"""
 
         url = '{0}/volumes/{1}'.format(self.url, volume_id)
         return self.request(
@@ -116,17 +92,17 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def delete_volume(self, volume_id, requestslib_kwargs=None):
 
-        '''DELETE v1/{tenant_id}/volumes/{volume_id}'''
+        """DELETE /volumes/{volume_id}"""
 
         url = '{0}/volumes/{1}'.format(self.url, volume_id)
         return self.request(
             'DELETE', url, response_entity_type=VolumeResponse,
             requestslib_kwargs=requestslib_kwargs)
 
-#Volume Types API
+    # Volume Types API
     def list_all_volume_types(self, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/types '''
+        """GET /types """
 
         url = '{0}/types'.format(self.url)
         return self.request(
@@ -135,19 +111,19 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def get_volume_type_info(self, volume_type_id, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/types/{volume_type_id}'''
+        """GET /types/{volume_type_id}"""
 
         url = '{0}/types/{1}'.format(self.url, volume_type_id)
         return self.request(
             'GET', url, response_entity_type=VolumeTypeResponse,
             requestslib_kwargs=requestslib_kwargs)
 
-#Volume Snapshot API
+    # Volume Snapshot API
     def create_snapshot(
             self, volume_id, display_name=None, display_description=None,
             force_create=False, requestslib_kwargs=None):
 
-        '''POST v1/{tenant_id}/snapshots'''
+        """POST /snapshots"""
 
         url = '{0}/snapshots'.format(self.url)
 
@@ -165,7 +141,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def list_all_snapshots(self, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/snapshots'''
+        """GET /snapshots"""
 
         url = '{0}/snapshots'.format(self.url)
 
@@ -175,7 +151,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def list_all_snapshots_info(self, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/snapshots/detail'''
+        """GET /snapshots/detail"""
 
         url = '{0}/snapshots/detail'.format(self.url)
         return self.request(
@@ -184,7 +160,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def get_snapshot_info(self, snapshot_id, requestslib_kwargs=None):
 
-        '''GET v1/{tenant_id}/snapshots/{snapshot_id}'''
+        """GET /snapshots/{snapshot_id}"""
 
         url = '{0}/snapshots/{1}'.format(self.url, snapshot_id)
 
@@ -194,7 +170,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def delete_snapshot(self, snapshot_id, requestslib_kwargs=None):
 
-        '''DELETE v1/{tenant_id}/snapshots/{snapshot_id}'''
+        """Delete /snapshots/{snapshot_id} """
 
         url = '{0}/snapshots/{1}'.format(self.url, snapshot_id)
         return self.request(
