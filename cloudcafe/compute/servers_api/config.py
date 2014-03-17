@@ -136,6 +136,10 @@ class ServersConfig(ConfigSectionInterface):
         """Id of the network to use by default for servers"""
         return self.get("default_network")
 
+    @property
+    def personality_file_injection_enabled(self):
+        """If personality files can be injected for this deployment"""
+        return self.get_boolean("personality_file_injection_enabled", True)
 
 class BlockDeviceMappingConfig(ConfigSectionInterface):
 
