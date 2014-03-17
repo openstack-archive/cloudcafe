@@ -162,6 +162,8 @@ class VolumeSnapshotResponseModelBaseTest(BaseTest):
         size = 1
         id_ = "2305iu32f9j3298f4jh32498fj"
         name = "FakeSnapshotName"
+        os_extended_snapshot_attributes_project_id = '1111111'
+        os_extended_snapshot_attributes_progress = '100%'
 
     def test_id(self):
         self.assertEquals(self.model.id_, self.defaults.id_)
@@ -195,6 +197,16 @@ class VolumeSnapshotResponseModelBaseTest(BaseTest):
             self.model.metadata,
             {self.defaults.metadata_key: self.defaults.metadata_value})
 
+    def test_os_extended_snapshot_attributes_project_id(self):
+        self.assertEquals(
+            self.model.os_extended_snapshot_attributes_project_id,
+            self.defaults.os_extended_snapshot_attributes_project_id)
+
+    def test_os_extended_snapshot_attributes_progress(self):
+        self.assertEquals(
+            self.model.os_extended_snapshot_attributes_progress,
+            self.defaults.os_extended_snapshot_attributes_progress)
+
 
 class VolumeSnapshotResponseModelTests_JSON(
         VolumeSnapshotResponseModelBaseTest, unittest.TestCase):
@@ -210,7 +222,11 @@ class VolumeSnapshotResponseModelTests_JSON(
             "volume_id": defaults.volume_id,
             "size": defaults.size,
             "id": defaults.id_,
-            "name": defaults.name}}
+            "name": defaults.name,
+            "os-extended-snapshot-attributes:project_id": defaults.
+            os_extended_snapshot_attributes_project_id,
+            "os-extended-snapshot-attributes:progress": defaults.
+            os_extended_snapshot_attributes_progress}}
     serialized_input = json.dumps(data)
 
 
@@ -222,6 +238,9 @@ class VolumeSnapshotResponseModelTests_XML(
     xml_header = """<?xml version="1.0" encoding="UTF-8"?>"""
     input_template = \
         """{xml_header}<snapshot
+               xmlns:os-extended-snapshot-attributes="FAKE"
+               os-extended-snapshot-attributes:project_id="{project_id}"
+               os-extended-snapshot-attributes:progress="{progress}"
                status="{status}"
                description="{description}"
                created_at="{created_at}"
@@ -234,6 +253,8 @@ class VolumeSnapshotResponseModelTests_XML(
                </metadata>
            </snapshot>"""
     serialized_input = input_template.format(
+        project_id=defaults.os_extended_snapshot_attributes_project_id,
+        progress=defaults.os_extended_snapshot_attributes_progress,
         xml_header=xml_header,
         status=defaults.status,
         description=defaults.description,
@@ -271,6 +292,8 @@ class VolumeResponseModelBaseTests(BaseTest):
         size = 1
         metadata_key = "MetaKey"
         metadata_value = "MetaValue"
+        os_vol_mig_status_attr_migstat = '100%'
+        os_vol_mig_status_attr_name_id = '1111111'
 
     def test_id(self):
         self.assertEquals(self.model.id_, self.defaults.id_)
@@ -368,6 +391,16 @@ class VolumeResponseModelBaseTests(BaseTest):
             self.model.os_vol_tenant_attr_tenant_id,
             self.defaults.os_vol_tenant_attr_tenant_id)
 
+    def test_os_vol_mig_status_attr_migstat(self):
+        self.assertEquals(
+            self.model.os_vol_mig_status_attr_migstat,
+            self.defaults.os_vol_mig_status_attr_migstat)
+
+    def test_os_vol_mig_status_attr_name_id(self):
+        self.assertEquals(
+            self.model.os_vol_mig_status_attr_name_id,
+            self.defaults.os_vol_mig_status_attr_name_id)
+
 
 class VolumeResponseModelTests_JSON(
         VolumeResponseModelBaseTests, unittest.TestCase):
@@ -398,6 +431,10 @@ class VolumeResponseModelTests_JSON(
             "os-vol-tenant-attr:tenant_id":
             defaults.os_vol_tenant_attr_tenant_id,
             "size": defaults.size,
+            "os-vol-mig-status-attr:migstat":
+            defaults.os_vol_mig_status_attr_migstat,
+            "os-vol-mig-status-attr:name_id":
+            defaults.os_vol_mig_status_attr_name_id,
             "metadata": {defaults.metadata_key: defaults.metadata_value}}}
     serialized_input = json.dumps(data)
 
@@ -438,6 +475,7 @@ class VolumeDetailResponseModelTests_XML(
                 xmlns:os-vol-image-meta="http://fake/api/v1"
                 xmlns:os-vol-tenant-attr="FAKE"
                 xmlns:os-vol-host-attr="FAKE"
+                xmlns:os-vol-mig-status-attr="FAKE"
                 xmlns:atom="http://www.w3.org/2005/Atom"
                 xmlns="http://docs.openstack.org/volume/api/v1"
                 status="{status}"
@@ -452,6 +490,8 @@ class VolumeDetailResponseModelTests_XML(
                 id="{id_}"
                 os-vol-tenant-attr:tenant_id="{os_vol_tenant_attr_tenant_id}"
                 os-vol-host-attr:host="{os_vol_host_attr_host}"
+                os-vol-mig-status-attr:migstat="{migstat}"
+                os-vol-mig-status-attr:name_id="{name_id}"
                 size="{size}">
             <attachments>
                 <attachment device="{attachment_device}"
@@ -480,6 +520,8 @@ class VolumeDetailResponseModelTests_XML(
         size=defaults.size,
         os_vol_tenant_attr_tenant_id=defaults.os_vol_tenant_attr_tenant_id,
         os_vol_host_attr_host=defaults.os_vol_host_attr_host,
+        migstat=defaults.os_vol_mig_status_attr_migstat,
+        name_id=defaults.os_vol_mig_status_attr_name_id,
         attachment_device=defaults.attachment_device,
         attachment_server_id=defaults.attachment_server_id,
         attachment_id=defaults.attachment_id,

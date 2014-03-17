@@ -25,8 +25,10 @@ class VolumeRequest(AutoMarshallingModel):
     def __init__(
             self, size=None, volume_type=None, display_name=None,
             display_description=None, metadata=None, availability_zone=None,
-            snapshot_id=None):
+            snapshot_id=None, bootable=None, source_volid=None,
+            image_ref=None):
 
+        super(VolumeRequest, self).__init__()
         self.size = size
         self.volume_type = volume_type
         self.display_name = display_name
@@ -34,6 +36,9 @@ class VolumeRequest(AutoMarshallingModel):
         self.metadata = metadata or dict()
         self.availability_zone = availability_zone
         self.snapshot_id = snapshot_id
+        self.bootable = bootable
+        self.source_volid = source_volid
+        self.image_ref = image_ref
 
     def _obj_to_json(self):
         return json.dumps(self._obj_to_json_dict())
@@ -42,10 +47,13 @@ class VolumeRequest(AutoMarshallingModel):
         volume_attrs = {
             "size": self.size,
             "volume_type": self.volume_type,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "display_name": self.name,
+            "display_description": self.description,
             "metadata": self.metadata,
             "availability_zone": self.availability_zone,
+            "bootable": self.bootable,
+            "imageRef": self.image_ref,
+            "source_volid": self.source_volid,
             "snapshot_id": self.snapshot_id}
 
         return {'volume': self._remove_empty_values(volume_attrs)}
@@ -55,9 +63,12 @@ class VolumeRequest(AutoMarshallingModel):
         volume_attrs = {
             "size": self.size,
             "volume_type": self.volume_type,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "display_name": self.name,
+            "display_description": self.description,
             "availability_zone": self.availability_zone,
+            "bootable": self.bootable,
+            "imageRef": self.image_ref,
+            "source_volid": self.source_volid,
             "snapshot_id": self.snapshot_id}
         element = self._set_xml_etree_element(element, volume_attrs)
 
@@ -79,9 +90,10 @@ class VolumeRequest(AutoMarshallingModel):
 class VolumeSnapshotRequest(AutoMarshallingModel):
 
     def __init__(
-            self, volume_id, display_name=None,
-            display_description=None, force=True):
+            self, volume_id, force=True, display_name=None,
+            display_description=None):
 
+        super(VolumeSnapshotRequest, self).__init__()
         self.volume_id = volume_id
         self.display_name = display_name
         self.display_description = display_description
@@ -93,8 +105,8 @@ class VolumeSnapshotRequest(AutoMarshallingModel):
     def _obj_to_json_dict(self):
         snapshot_attrs = {
             "volume_id": self.volume_id,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "display_name": self.name,
+            "display_description": self.description,
             "force": self.force}
 
         return {"snapshot": self._remove_empty_values(snapshot_attrs)}
@@ -106,7 +118,7 @@ class VolumeSnapshotRequest(AutoMarshallingModel):
         element = ElementTree.Element('snapshot')
         snapshot_attrs = {
             "volume_id": self.volume_id,
-            "display_name": self.display_name,
-            "display_description": self.display_description,
+            "display_name": self.name,
+            "display_description": self.description,
             "force": str(self.force)}
         return self._set_xml_etree_element(element, snapshot_attrs)
