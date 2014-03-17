@@ -19,4 +19,4 @@ from cloudcafe.blockstorage.volumes_api.common.config import \
 
 
 class VolumesAPIConfig(_VolumesAPIConfig):
-    SECTION_NAME = 'volumes_api_v1'
+    SECTION_NAME = 'volumes_api'

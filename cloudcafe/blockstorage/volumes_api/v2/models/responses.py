@@ -38,7 +38,9 @@ class VolumeResponse(_VolumesAPIBaseModel):
         "image_ref": "imageRef",
         "volume_image_metadata": "volume_image_metadata",
         "os_vol_host_attr_host": "os-vol-host-attr:host",
-        "os_vol_tenant_attr_tenant_id": "os-vol-tenant-attr:tenant_id"}
+        "os_vol_tenant_attr_tenant_id": "os-vol-tenant-attr:tenant_id",
+        "os_vol_mig_status_attr_migstat": "os-vol-mig-status-attr:migstat",
+        "os_vol_mig_status_attr_name_id": "os-vol-mig-status-attr:name_id"}
 
     def __init__(
             self, id_=None, size=None, name=None, volume_type=None,
@@ -46,14 +48,15 @@ class VolumeResponse(_VolumesAPIBaseModel):
             snapshot_id=None, attachments=None, created_at=None, status=None,
             links=None, source_volid=None, os_vol_tenant_attr_tenant_id=None,
             os_vol_host_attr_host=None, bootable=None, image_ref=None,
-            volume_image_metadata=None):
+            volume_image_metadata=None, os_vol_mig_status_attr_migstat=None,
+            os_vol_mig_status_attr_name_id=None):
 
         super(VolumeResponse, self).__init__()
         self.id_ = id_
         self.size = size
         self.name = name
-        self.volume_type = volume_type
         self.description = description
+        self.volume_type = volume_type
         self.availability_zone = availability_zone
         self.metadata = metadata or {}
         self.snapshot_id = snapshot_id
@@ -67,6 +70,8 @@ class VolumeResponse(_VolumesAPIBaseModel):
         self.volume_image_metadata = volume_image_metadata
         self.os_vol_host_attr_host = os_vol_host_attr_host
         self.os_vol_tenant_attr_tenant_id = os_vol_tenant_attr_tenant_id
+        self.os_vol_mig_status_attr_migstat = os_vol_mig_status_attr_migstat
+        self.os_vol_mig_status_attr_name_id = os_vol_mig_status_attr_name_id
 
     @classmethod
     def _json_dict_to_obj(cls, json_dict):
@@ -85,6 +90,8 @@ class VolumeResponse(_VolumesAPIBaseModel):
         namespace_kwargs = {}
         namespace_kwargs["os_vol_host_attr_host"] = "host"
         namespace_kwargs["os_vol_tenant_attr_tenant_id"] = "tenant_id"
+        namespace_kwargs["os_vol_mig_status_attr_migstat"] = "migstat"
+        namespace_kwargs["os_vol_mig_status_attr_name_id"] = "name_id"
 
         for local_kw, expected_stripped_name in namespace_kwargs.iteritems():
             for element_name, element_value in element.items():
@@ -111,11 +118,17 @@ class VolumeSnapshotResponse(_VolumesAPIBaseModel):
         "status": "status",
         "size": "size",
         "created_at": "created_at",
-        "metadata": "metadata"}
+        "metadata": "metadata",
+        "os_extended_snapshot_attributes_project_id":
+        "os-extended-snapshot-attributes:project_id",
+        "os_extended_snapshot_attributes_progress":
+        "os-extended-snapshot-attributes:progress"}
 
     def __init__(
             self, id_=None, volume_id=None, name=None, description=None,
-            status=None, size=None, created_at=None, metadata=None):
+            status=None, size=None, created_at=None, metadata=None,
+            os_extended_snapshot_attributes_project_id=None,
+            os_extended_snapshot_attributes_progress=None):
 
         super(VolumeSnapshotResponse, self).__init__()
         self.id_ = id_
@@ -126,12 +139,28 @@ class VolumeSnapshotResponse(_VolumesAPIBaseModel):
         self.size = size
         self.created_at = created_at
         self.metadata = metadata
+        self.os_extended_snapshot_attributes_project_id = \
+            os_extended_snapshot_attributes_project_id
+        self.os_extended_snapshot_attributes_progress = \
+            os_extended_snapshot_attributes_progress
 
     @classmethod
     def _xml_ele_to_obj(cls, element):
         kwargs = {}
         for local_kw, deserialized_obj_kw in cls.kwarg_map.iteritems():
             kwargs[local_kw] = element.get(deserialized_obj_kw)
+
+        namespace_kwargs = {}
+        namespace_kwargs[
+            "os_extended_snapshot_attributes_project_id"] = "project_id"
+        namespace_kwargs[
+            "os_extended_snapshot_attributes_progress"] = "progress"
+
+        for local_kw, expected_stripped_name in namespace_kwargs.iteritems():
+            for element_name, element_value in element.items():
+                _, _, stripped_element_name = str(element_name).rpartition('}')
+                if expected_stripped_name == stripped_element_name:
+                    kwargs[local_kw] = element_value
 
         snapshot = cls(**kwargs)
         snapshot.metadata = _XMLDictionary._xml_ele_to_obj(element)
