@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import re
 import time
 
@@ -24,12 +25,13 @@ from cafe.engine.clients.remote_instance.exceptions \
     import DirectoryNotFoundException
 from cafe.engine.clients.remote_instance.models.file_details \
     import FileDetails
-from  cafe.engine.ssh.client import SSHAuthStrategy, SSHClient
+from cafe.engine.ssh.client import SSHAuthStrategy, SSHClient
 from cloudcafe.compute.common.clients.ping import PingClient
 from cloudcafe.compute.common.clients.remote_instance.base_client import \
     RemoteInstanceClient
 from cloudcafe.compute.common.exceptions import FileNotFoundException, \
     ServerUnreachable, SshConnectionException
+from cloudcafe.common.tools.md5hash import get_md5_hash
 
 
 class LinuxClient(RemoteInstanceClient):
@@ -44,6 +46,7 @@ class LinuxClient(RemoteInstanceClient):
         self.ip_address = ip_address
         self.username = username
         self.password = password
+        self.connection_timeout = connection_timeout
 
         # Verify the server can be pinged before attempting to connect
         start = int(time.time())
@@ -161,6 +164,26 @@ class LinuxClient(RemoteInstanceClient):
             'echo -n {file_content} >> {file_path}'.format(
                 file_content=file_content, file_name=file_name))
         return FileDetails("644", file_content, file_path)
+
+    def create_large_file(self, filepath='/var/tmp/file.txt',
+                          multiplier=1):
+        """
+        @summary: Creates a large file on the remote host
+            with a base size in Gigabytes
+        @param filepath: The filepath including filename
+        @type filepath: String
+        @param multiplier: A decimal number indicating the number of Gigabytes
+            for example: 0.1 multiplier will create a 1.07374e8 byte file
+        @type multiplier: Float
+        @return: Data read from standard output during execution of the command
+        @rtype: String
+        """
+        seek = int(1024 * 1024 * multiplier)
+        cmd = ('dd if=/dev/zero of={0} count=0 bs=1024 seek={1} && '
+               'echo "File created" || echo "File not created"'
+               .format(filepath, str(seek)))
+        output = self.ssh_client.execute_command(cmd).stdout
+        return output.rstrip('\n') == 'File created'
 
     def get_file_details(self, file_path):
         """
@@ -296,7 +319,7 @@ class LinuxClient(RemoteInstanceClient):
         """
         command = ("[ -d {path} ] && echo 'Directory found'"
                    "|| echo 'Directory {path} not found'".format(
-                   path=directory_path))
+                       path=directory_path))
 
         output = self.ssh_client.execute_command(command)
         if output is None:
@@ -364,3 +387,95 @@ class LinuxClient(RemoteInstanceClient):
         if out is None:
             return None
         return out.stdout
+
+    def get_md5sum_for_remote_file(self, filepath):
+        """
+        @summary: Gets the md5sum of file on the server
+        @param filepath: The path name including file name
+        @type filepath: String
+        """
+        output = self.ssh_client.execute_command('md5sum {0}'.format(
+            filepath)).stdout
+        if output:
+            return output.split()[0]
+
+    def get_network_bytes_for_interface(self, interface):
+        """
+        @summary: Retrieves the byte counters from a given network interface.
+        @param interface: The network interface of an instance.
+        @type interface: String
+        @return: The received bytes and transmitted bytes
+            from the network interface, respectively
+        @rtype: Tuple
+        """
+        cmd = "ifconfig {0}".format(interface)
+        output = self.ssh_client.execute_command(cmd).stdout
+        rx_bytes = re.findall('RX bytes:([0-9]*) ', output)[0]
+        tx_bytes = re.findall('TX bytes:([0-9]*) ', output)[0]
+        return rx_bytes, tx_bytes
+
+    def generate_bandwidth_from_server_to_client(self,
+                                                 public_ip_address,
+                                                 gb_file_size,
+                                                 server_filepath,
+                                                 client_filepath):
+        """
+        @summary: Creates and transfers a file from server to client
+        @param linux_client: A linux client for a given instance
+        @type address: Instance
+        @param public_ip_address: The eth0 address of the instance
+        @type public_ip_address: String
+        @param gb_file_size: The size of the file to be generated in Gigabytes
+        @type gb_file_size: Float
+        @param server_filepath: The path name including file name on server
+        @type server_filepath: String
+        @param client_filepath: The path name including file name on client
+        @type client_filepath: String
+        @return: On successful bandwidth generation, return tx_bytes
+        @rtype: int
+        @todo: Use json bridge to poll global db for bw_usage_cache update
+            instead of sleeping on ssh_timeout
+        """
+        time.sleep(self.connection_timeout)
+        # delete same filename locally if it existed in a prior run
+        if os.path.exists(client_filepath):
+            os.remove(client_filepath)
+
+        # get the initial values from the network interface
+        rx_bytes, tx_bytes = self.get_network_bytes_for_interface('eth0')
+
+        if not self.create_large_file(server_filepath,
+                                      gb_file_size):
+            raise Exception("File was not created on server: {0}, {1}"
+                            .format(public_ip_address, server_filepath))
+
+        md5sum_server = self.get_md5sum_for_remote_file(server_filepath)
+        if not md5sum_server:
+            raise Exception("No md5sum from file on server: {0}, {1}"
+                            .format(public_ip_address, server_filepath))
+
+        if not self.ssh_client.retrieve_file_from(client_filepath,
+                                                  server_filepath):
+            raise Exception("The file {0} was not downloaded from "
+                            "the server {1}, {2}".format(client_filepath,
+                                                         public_ip_address,
+                                                         server_filepath))
+
+        md5sum_client = get_md5_hash(data=client_filepath,
+                                     block_size_multiplier=16)
+        if md5sum_server != md5sum_client:
+            raise Exception("The md5sums did not match: {0}, {1} != {2}, {3}"
+                            .format(md5sum_server, public_ip_address,
+                                    md5sum_client, "localhost"))
+
+        # clean up and delete the local file we just downloaded
+        if os.path.exists(client_filepath):
+            os.remove(client_filepath)
+
+        # get the byte values after generating bandwidth and subtract
+        rx_bytes_after, tx_bytes_after = \
+            self.get_network_bytes_for_interface('eth0')
+        tx_bytes = int(tx_bytes_after) - int(tx_bytes)
+
+        time.sleep(self.connection_timeout)
+        return tx_bytes
