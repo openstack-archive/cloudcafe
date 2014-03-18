@@ -227,7 +227,7 @@ class ServerBehaviors(BaseBehavior):
         @return: Either IPv4 or IPv6 address of instance
         @rtype: String
         """
-        if self.config.ip_address_version_for_ssh == '4':
+        if self.config.ip_address_version_for_ssh == 4:
             return server.addresses.public.ipv4
         else:
             return server.addresses.public.ipv6
