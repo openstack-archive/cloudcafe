@@ -271,6 +271,41 @@ class ServerBehaviors(BaseBehavior):
                 ip_address=ip_address, username='root', key=key,
                 connection_timeout=self.config.connection_timeout)
 
+    def do_bandwidth_server_to_client(self, server, gb_file_size):
+        """
+        @summary: Generates bandwidth from server to client
+        @param server: Instance object of the server
+        @type server: Instance
+        @param gb_file_size: Size of file in Gigabytes
+        @type gb_file_size: Float
+        @return: True means bandwidth generation is successful,
+            Exception otherwise
+        @rtype: Boolean
+
+        """
+
+        ip_address = self.get_public_ip_address(server)
+        linux_client = \
+            LinuxClient(ip_address=ip_address,
+                        username="root",
+                        password=server.adminPass,
+                        connection_timeout=self.config.connection_timeout)
+        client_filepath = ("/var/tmp/{0}{1}"
+                           .format(rand_name('file'), rand_name('.')))
+        server_filepath = ("/root/{0}{1}"
+                           .format(rand_name('file'), rand_name('.')))
+
+        try:
+            tx_bytes = linux_client.generate_bandwidth_from_server_to_client(
+                public_ip_address=ip_address,
+                gb_file_size=gb_file_size,
+                server_filepath=server_filepath,
+                client_filepath=client_filepath)
+            return tx_bytes
+        except Exception as e:
+            raise "Couldn't generate bandwidth from server to client: " \
+                  "{0}".format(e)
+
     def resize_and_await(self, server_id, new_flavor):
         """
         @summary: Resizes a server and waits for VERIFY_RESIZE status
