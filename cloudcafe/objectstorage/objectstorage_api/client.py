@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import hmac
+import requests
 import tarfile
 from cStringIO import StringIO
 from datetime import datetime
@@ -21,6 +22,7 @@ from hashlib import sha1
 from os.path import expanduser
 from time import time, mktime
 
+from cafe.common.reporting import cclogging
 from cafe.engine.config import EngineConfig
 from cafe.engine.http.client import HTTPClient
 from cloudcafe.common.tools import randomstring as randstring
@@ -67,7 +69,101 @@ def _deserialize(response_entity_type):
 BULK_ARCHIVE_NAME = 'bulk_objects'
 
 
+def _log_transaction(log, level=cclogging.logging.DEBUG):
+    """ Paramaterized decorator
+    Takes a python Logger object and an optional logging level.
+    """
+    def _decorator(func):
+        """Accepts a function and returns wrapped version of that function."""
+        def _wrapper(*args, **kwargs):
+            """Logging wrapper for any method that returns a requests response.
+            Logs requestslib response objects, and the args and kwargs
+            sent to the request() method, to the provided log at the provided
+            log level.
+            """
+            logline = '{0} {1}'.format(args, kwargs)
+
+            try:
+                log.debug(logline.decode('utf-8', 'replace'))
+            except Exception as exception:
+                #Ignore all exceptions that happen in logging, then log them
+                log.info(
+                    'Exception occured while logging signature of calling'
+                    'method in http client')
+                log.exception(exception)
+
+            #Make the request and time it's execution
+            response = None
+            elapsed = None
+            try:
+                start = time()
+                response = func(*args, **kwargs)
+                elapsed = time() - start
+            except Exception as exception:
+                log.critical('Call to Requests failed due to exception')
+                log.exception(exception)
+                raise exception
+
+            #requests lib 1.0.0 renamed body to data in the request object
+            request_body = ''
+            if 'body' in dir(response.request):
+                request_body = response.request.body
+            elif 'data' in dir(response.request):
+                request_body = response.request.data
+            else:
+                log.info(
+                    "Unable to log request body, neither a 'data' nor a "
+                    "'body' object could be found")
+            if request_body and len(request_body) > 100:
+                request_body = '{0}...<truncated>'.format(request_body[:100])
+
+            #requests lib 1.0.4 removed params from response.request
+            request_params = ''
+            request_url = response.request.url
+            if 'params' in dir(response.request):
+                request_params = response.request.params
+            elif '?' in request_url:
+                request_url, request_params = request_url.split('?')
+
+            logline = ''.join([
+                '\n{0}\nREQUEST SENT\n{0}\n'.format('-' * 12),
+                'request method..: {0}\n'.format(response.request.method),
+                'request url.....: {0}\n'.format(request_url),
+                'request params..: {0}\n'.format(request_params),
+                'request headers.: {0}\n'.format(response.request.headers),
+                'request body....: {0}\n'.format(request_body)])
+            try:
+                log.log(level, logline.decode('utf-8', 'replace'))
+            except Exception as exception:
+                #Ignore all exceptions that happen in logging, then log them
+                log.log(level, '\n{0}\nREQUEST INFO\n{0}\n'.format('-' * 12))
+                log.exception(exception)
+
+            response_content = response.content
+            if response_content and len(response_content) > 100:
+                response_content = '{0}...<truncated>'.format(
+                    response_content[:100])
+
+            logline = ''.join([
+                '\n{0}\nRESPONSE RECEIVED\n{0}\n'.format('-' * 17),
+                'response status..: {0}\n'.format(response),
+                'response time....: {0}\n'.format(elapsed),
+                'response headers.: {0}\n'.format(response.headers),
+                'response body....: {0}\n'.format(response_content),
+                '-' * 79])
+            try:
+                log.log(level, logline.decode('utf-8', 'replace'))
+            except Exception as exception:
+                #Ignore all exceptions that happen in logging, then log them
+                log.log(level, '\n{0}\nRESPONSE INFO\n{0}\n'.format('-' * 13))
+                log.exception(exception)
+            return response
+        return _wrapper
+    return _decorator
+
+
 class ObjectStorageAPIClient(HTTPClient):
+    _log = cclogging.getLogger(__name__)
 
     def __init__(self, storage_url, auth_token, base_container_name=None,
                  base_object_name=None):
@@ -81,6 +177,67 @@ class ObjectStorageAPIClient(HTTPClient):
         self.base_object_name = base_object_name or ''
         self.default_headers['X-Auth-Token'] = self.auth_token
         self._swift_features = None
+
+    @_log_transaction(log=_log)
+    def request(
+            self, method, url, headers=None, params=None, data=None,
+            requestslib_kwargs=None):
+        """
+        Overrides the HTTPClient's 'request' method, to prevent it from calling
+        BaseHTTPClient's 'request' method, so we can provide our
+        own logging decorator.
+
+        @param method: HTTP method to use in the request.
+        @type method: string
+        @param url: URL to make the request to.
+        @type url: string
+        @param: headers: headers to use with the request.
+        @type headers: dict
+        @param: params: query string parameters to use with the request.
+        @type param: dict
+        @param data: data to send in the reqest.
+        @type data: string
+        @param requestlib_kwargs: kwargs to be passed to requests.
+        @type requestlib_kwargs: dict
+        """
+        #set requestslib_kwargs to an empty dict if None
+        requestslib_kwargs = requestslib_kwargs if (
+            requestslib_kwargs is not None) else {}
+
+        #Set defaults
+        params = params if params is not None else {}
+        verify = False
+
+        #If headers are provided by both, headers "wins" over default_headers
+        headers = dict(self.default_headers, **(headers or {}))
+
+        #Override url if present in requestslib_kwargs
+        if 'url' in requestslib_kwargs.keys():
+            url = requestslib_kwargs.get('url', None) or url
+            del requestslib_kwargs['url']
+
+        #Override method if present in requestslib_kwargs
+        if 'method' in requestslib_kwargs.keys():
+            method = requestslib_kwargs.get('method', None) or method
+            del requestslib_kwargs['method']
+
+        #The requests lib already removes None key/value pairs, but we force it
+        #here in case that behavior ever changes
+        for key in requestslib_kwargs.keys():
+            if requestslib_kwargs[key] is None:
+                del requestslib_kwargs[key]
+
+        #Create the final parameters for the call to the base request()
+        #Wherever a parameter is provided both by the calling method AND
+        #the requests_lib kwargs dictionary, requestslib_kwargs "wins"
+        requestslib_kwargs = dict({'headers': headers,
+                                   'params': params,
+                                   'verify': verify,
+                                   'data': data},
+                                  **requestslib_kwargs)
+
+        #Make the request
+        return requests.request(method, url, **requestslib_kwargs)
 
     def get_swift_info(self):
         """
