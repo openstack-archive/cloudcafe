@@ -143,7 +143,8 @@ class ServerExist(AutoMarshallingModel):
                  audit_period_beginning=None, audit_period_ending=None,
                  id_=None, tenant=None, fail_reason=None, instance=None,
                  instance_flavor_id=None, os_version=None, launched_at=None,
-                 usage=None, message_id=None, send_status=None, delete=None):
+                 usage=None, message_id=None, send_status=None, delete=None,
+                 event_id=None):
         """
         An object that represents a Server Exist in Stacktach DB.
 
@@ -170,6 +171,7 @@ class ServerExist(AutoMarshallingModel):
         self.id_ = id_
         self.tenant = tenant
         self.delete = delete
+        self.event_id = event_id
 
     def __repr__(self):
         values = []
