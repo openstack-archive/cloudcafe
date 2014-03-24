@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Sam Danes <sam.danes@rackspace.com>
+Code-Review+2: Sam Danes <sam.danes@rackspace.com>
+Code-Review+1: Cameron Lopez <cameronjlopez@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 24 Mar 2014 21:30:21 +0000
+Reviewed-on: https://review.openstack.org/82588
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
