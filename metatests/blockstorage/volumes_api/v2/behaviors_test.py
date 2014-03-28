@@ -18,8 +18,10 @@ import unittest
 from mock import MagicMock, Mock
 from requests import Response
 
+from cloudcafe.blockstorage.volumes_api.common.behaviors import \
+    VolumesAPIBehaviorException
 from cloudcafe.blockstorage.volumes_api.v2.behaviors import \
-    VolumesAPI_Behaviors, VolumesAPIBehaviorException
+    VolumesAPI_Behaviors
 from cloudcafe.blockstorage.volumes_api.v2.models.responses import\
     VolumeResponse, VolumeSnapshotResponse
 from cloudcafe.blockstorage.volumes_api.v2.client import VolumesClient
@@ -144,6 +146,14 @@ class wait_for_volume_status(unittest.TestCase):
 
         return (client, config, volume_model, response)
 
+    def test_get_volume_status(self):
+        client, config, volume_model, response = self.get_mocks()
+
+        behavior = VolumesAPI_Behaviors(client, config)
+
+        status = behavior.get_volume_status(self.defaults.volume_id)
+        self.assertEqual(status, self.defaults.expected_status)
+
     def test_good_response_code(self):
         client, config, volume_model, response = self.get_mocks()
 
@@ -229,15 +239,23 @@ class create_available_volume(unittest.TestCase):
 
     def get_mocks(self):
         client = Mock(spec=VolumesClient)
-        config = Mock(spec=VolumesAPIConfig)
         volume_model = Mock(spec=VolumeResponse)
         volume_create_response = Mock(spec=Response)
-
-        config.volume_create_timeout = 5
         volume_model.id_ = "mock"
         volume_create_response.entity = volume_model
         volume_create_response.ok = True
         client.create_volume = MagicMock(return_value=volume_create_response)
+
+        config = Mock(spec=VolumesAPIConfig)
+        config.serialize_format = "json"
+        config.deserialize_format = "json"
+        config.max_volume_size = 1024
+        config.min_volume_size = 1
+        config.volume_status_poll_frequency = 5
+        config.volume_create_min_timeout = 1
+        config.volume_create_max_timeout = 10
+        config.volume_create_wait_per_gigabyte = 1
+        config.volume_create_base_timeout = 0
 
         return (client, config, volume_model, volume_create_response)
 
@@ -245,46 +263,13 @@ class create_available_volume(unittest.TestCase):
         client, config, volume_model, volume_create_response = self.get_mocks()
 
         behavior = VolumesAPI_Behaviors(client, config)
-        behavior.wait_for_volume_status = MagicMock(return_value=None)
+        behavior.get_volume_status = MagicMock(return_value='available')
 
         volume_entity = behavior.create_available_volume(
             self.defaults.display_name, self.defaults.size,
             self.defaults.volume_type)
 
         self.assertIsInstance(volume_entity, VolumeResponse)
-
-    def test_failure_response_no_model(self):
-        client, config, volume_model, volume_create_response = self.get_mocks()
-
-        volume_create_response.entity = None
-        volume_create_response.ok = False
-        volume_create_response.status_code = 500
-
-        client.create_volume = MagicMock(return_value=volume_create_response)
-
-        behavior = VolumesAPI_Behaviors(client, config)
-        behavior.wait_for_volume_status = MagicMock(return_value=None)
-
-        with self.assertRaises(VolumesAPIBehaviorException):
-            behavior.create_available_volume(
-                self.defaults.display_name, self.defaults.size,
-                self.defaults.volume_type)
-
-    def test_failure_response_with_model(self):
-        client, config, volume_model, volume_create_response = self.get_mocks()
-
-        volume_create_response.entity = None
-        volume_create_response.status_code = 200
-
-        client.create_volume = MagicMock(return_value=volume_create_response)
-
-        behavior = VolumesAPI_Behaviors(client, config)
-        behavior.wait_for_volume_status = MagicMock(return_value=None)
-
-        with self.assertRaises(VolumesAPIBehaviorException):
-            behavior.create_available_volume(
-                self.defaults.display_name, self.defaults.size,
-                self.defaults.volume_type)
 
     def test_timeout_failure(self):
         client, config, volume_model, volume_create_response = self.get_mocks()
