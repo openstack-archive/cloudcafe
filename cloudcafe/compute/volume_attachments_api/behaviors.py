@@ -1,8 +1,8 @@
 from time import sleep, time
 from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.compute.volume_attachments_api.config import \
     VolumeAttachmentsAPIConfig
-
 
 class VolumeAttachmentBehaviorError(Exception):
     pass
@@ -12,11 +12,11 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
 
     def __init__(
             self, volume_attachments_client=None,
-            volume_attachments_config=None, volumes_behaviors=None):
+            volume_attachments_config=None, volumes_client=None):
 
         self.client = volume_attachments_client
         self.config = volume_attachments_config or VolumeAttachmentsAPIConfig()
-        self.volumes_behaviors = volumes_behaviors
+        self.volumes_client = volumes_client
 
     def wait_for_attachment_to_propagate(
             self, attachment_id, server_id, timeout=None, poll_rate=5):
@@ -36,14 +36,50 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
     def verify_volume_status_progression_during_attachment(
             self, volume_id, state_list=None):
 
-        # (status, transient, timeout, poll_rate)
-        state_list = [
-            ('available', True, 5, 0),
-            ('attaching', False, 30, 1),
-            ('in-use', False, 60, 5)]
+        def _get_volume_status(self, volume_id):
+            resp = self.volumes_client.get_volume_info(volume_id=volume_id)
+            if not resp.ok:
+                msg = (
+                    "get_volume_status() failure:  get_volume_info() call"
+                    " failed with a {0} status code".format(resp.status_code))
+                self._log.error(msg)
+                raise Exception(msg)
 
-        self.volumes_behaviors.verify_volume_status_progression(
-            volume_id, state_list)
+            if resp.entity is None:
+                msg = (
+                    "get_volume_status() failure:  unable to deserialize"
+                    " response from get_volume_info() call")
+                self._log.error(msg)
+                raise Exception(msg)
+
+            return resp.entity.status
+
+        verifier = StatusProgressionVerifier(
+            'volume', volume_id, _get_volume_status, *[self, volume_id])
+
+        #verifier.add_state(status, timeout, pollrate, retries, transient)
+        verifier.add_state(
+            expected_statuses=['available'],
+            acceptable_statuses=['attaching', 'in-use'],
+            error_statuses=['error', 'creating'],
+            timeout=10, poll_rate=1, poll_failure_retry_limit=3)
+
+        verifier.add_state(
+            expected_statuses=['attaching'],
+            acceptable_statuses=['in-use'],
+            error_statuses=['error', 'creating'],
+            timeout=self.config.attachment_timeout,
+            poll_rate=self.config.api_poll_rate,
+            poll_failure_retry_limit=3)
+
+        verifier.add_state(
+            expected_statuses=['in-use'],
+            error_statuses=['available', 'error', 'creating'],
+            timeout=self.config.attachment_timeout,
+            poll_rate=self.config.api_poll_rate,
+            poll_failure_retry_limit=3)
+
+        verifier.start()
 
     def attach_volume_to_server(
             self, server_id, volume_id, device=None,

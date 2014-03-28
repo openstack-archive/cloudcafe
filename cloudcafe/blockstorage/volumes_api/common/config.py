@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -27,6 +28,10 @@ class VolumesAPIConfig(ConfigSectionInterface):
     @property
     def deserialize_format(self):
         return self.get("deserialize_format", default="json")
+
+    @property
+    def version_under_test(self):
+        return self.get("version_under_test", default="1")
 
 # Volumes behavior config
     @property
@@ -46,12 +51,27 @@ class VolumesAPIConfig(ConfigSectionInterface):
         return int(self.get("volume_status_poll_frequency", default=5))
 
     @property
-    def volume_create_timeout(self):
-        return int(self.get("volume_create_timeout", default=600))
+    def volume_create_min_timeout(self):
+        return int(self.get("volume_create_min_timeout", default=1))
+
+    @property
+    def volume_create_max_timeout(self):
+        return int(self.get("volume_create_max_timeout", default=600))
+
+    @property
+    def volume_create_wait_per_gigabyte(self):
+        return int(self.get("volume_create_wait_per_gigabyte", default=1))
+
+    @property
+    def volume_create_base_timeout(self):
+        """Amount of time added by default to the final calculated volume
+        create timeouts.
+        """
+        return int(self.get("volume_create_base_timeout", default=0))
 
     @property
     def volume_delete_min_timeout(self):
-        return int(self.get("volume_delete_min_timeout", default=0))
+        return int(self.get("volume_delete_min_timeout", default=1))
 
     @property
     def volume_delete_max_timeout(self):
@@ -74,7 +94,7 @@ class VolumesAPIConfig(ConfigSectionInterface):
     def snapshot_create_min_timeout(self):
         """Absolute lower limit on calculated snapshot create timeouts"""
 
-        return int(self.get("snapshot_create_min_timeout", default=0))
+        return int(self.get("snapshot_create_min_timeout", default=10))
 
     @property
     def snapshot_create_base_timeout(self):
@@ -103,3 +123,25 @@ class VolumesAPIConfig(ConfigSectionInterface):
         it will take a particular volume to delete given it's size
         """
         return int(self.get("snapshot_delete_wait_per_gigabyte", default=60))
+
+# Misc
+    @property
+    def min_volume_from_image_size(self):
+        """Limit the smallest size a volume can be if building from an image"""
+        return int(self.get("min_volume_from_image_size", default=1))
+
+    @property
+    def image_filter(self):
+        """Expects Json.  Returns an empty dictionary by default.
+        Dictionary keys should be attributes of the image model, and key values
+        should be a list of values for that model attribute.
+        """
+        return json.loads(self.get('image_filter', '{}'))
+
+    @property
+    def volume_type_filter(self):
+        """Expects Json.  Returns an empty dictionary by default.
+        Dictionary keys should be attributes of the volume type model, and
+        key values should be a list of values for that model attribute.
+        """
+        return json.loads(self.get('volume_type_filter', '{}'))

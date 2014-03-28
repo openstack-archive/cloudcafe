@@ -42,6 +42,7 @@ class VolumesClient(AutoMarshallingRestClient):
 
     def create_volume(
             self, size, volume_type, name=None, description=None,
+            display_name=None, display_description=None,
             availability_zone=None, metadata=None, bootable=None,
             image_ref=None, snapshot_id=None, source_volid=None,
             requestslib_kwargs=None):
@@ -49,6 +50,9 @@ class VolumesClient(AutoMarshallingRestClient):
         """POST /volumes"""
 
         url = '{0}/volumes'.format(self.url)
+
+        name = name or display_name
+        description = description or display_description
 
         volume_request_entity = VolumeRequest(
             size=size, volume_type=volume_type, name=name, image_ref=image_ref,
@@ -120,11 +124,15 @@ class VolumesClient(AutoMarshallingRestClient):
     # Volume Snapshot API
     def create_snapshot(
             self, volume_id, name=None, description=None,
+            display_name=None, display_description=None,
             force_create=False, requestslib_kwargs=None):
 
         """POST /snapshots"""
 
         url = '{0}/snapshots'.format(self.url)
+
+        name = name or display_name
+        description = description or display_description
 
         volume_snapshot_request_entity = VolumeSnapshotRequest(
             volume_id,
