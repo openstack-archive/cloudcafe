@@ -14,17 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
-class _CommonStatus(object):
-    AVAILABLE = "available"
-    DELETING = "deleting"
-    CREATING = "creating"
-
-
-class Volume(_CommonStatus):
-    ATTACHING = "attaching"
-    IN_USE = "in-use"
-
-
-class Snapshot(_CommonStatus):
-    pass
+from cloudcafe.blockstorage.volumes_api.common.models.statuses import (
+    Volume, Snapshot)
