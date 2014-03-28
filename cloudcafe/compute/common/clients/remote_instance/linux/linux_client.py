@@ -24,7 +24,7 @@ from cafe.engine.clients.remote_instance.exceptions \
     import DirectoryNotFoundException
 from cafe.engine.clients.remote_instance.models.file_details \
     import FileDetails
-from cafe.engine.clients.ssh import SSHAuthStrategy, SSHClient
+from  cafe.engine.ssh.client import SSHAuthStrategy, SSHClient
 from cloudcafe.compute.common.clients.ping import PingClient
 from cloudcafe.compute.common.clients.remote_instance.base_client import \
     RemoteInstanceClient
