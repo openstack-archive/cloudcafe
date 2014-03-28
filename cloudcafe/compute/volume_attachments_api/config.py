@@ -42,3 +42,11 @@ class VolumeAttachmentsAPIConfig(ConfigSectionInterface):
         Seconds to wait between polling the os-volume_attachments API in loops.
         """
         return int(self.get("api_poll_rate", 5))
+
+    @property
+    def api_poll_failure_retry_limit(self):
+        """
+        Times to retry polling the attachments api when it recieves an error
+        response.
+        """
+        return int(self.get("api_poll_failure_retry_limit", 3))

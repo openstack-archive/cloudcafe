@@ -86,3 +86,38 @@ class _XMLDictionary(_VolumesAPIBaseModel):
                 for obj_element in element:
                     obj_dict[obj_element.get(key_name)] = obj_element.text
         return obj_dict
+
+
+class CommonModelProperties(object):
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def display_name(self):
+        return self._name
+
+    @property
+    def display_description(self):
+        return self._description
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @description.setter
+    def description(self, value):
+        self._description = value
+
+    @display_name.setter
+    def display_name(self, value):
+        self._name = value
+
+    @display_description.setter
+    def display_description(self, value):
+        self._description = value
