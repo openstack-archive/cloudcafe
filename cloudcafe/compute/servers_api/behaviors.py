@@ -19,31 +19,49 @@ import time
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
     import LinuxClient
-from cloudcafe.compute.common.types import InstanceAuthStrategies
-from cloudcafe.compute.common.types import NovaServerStatusTypes \
+from cloudcafe.compute.common.types import InstanceAuthStrategies, \
+    NovaVolumeStatusTypes, BootFromTypes, NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, RequiredResourceException
+from cloudcafe.blockstorage.volumes_api.v2.client import VolumesClient
+from cloudcafe.blockstorage.volumes_api.v2.behaviors import \
+    VolumesAPI_Behaviors
+from cloudcafe.blockstorage.config import BlockStorageConfig
+from cloudcafe.blockstorage.volumes_api.v2.config import VolumesAPIConfig
+from cloudcafe.auth.config import UserAuthConfig, UserConfig
+from cloudcafe.auth.provider import AuthProvider
+from cloudcafe.compute.config import MarshallingConfig
 
 
 class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, servers_config,
-                 images_config, flavors_config):
+                 images_config, flavors_config,
+                 block_device_mapping=None, volumes_client=None,
+                 volumes_api_client=None,
+                 blockstorage_behavior=None):
 
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_config = images_config
         self.flavors_config = flavors_config
-
+        self.block_device_mapping = block_device_mapping
+        self.volumes_client = volumes_client
+        self.endpoint_config = UserAuthConfig()
+        self.user_config = UserConfig()
+        self.block_config = BlockStorageConfig()
+        self.volumes_config = VolumesAPIConfig()
+        
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None,
+            block_device_mapping=None, boot_from_block=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -55,7 +73,7 @@ class ServerBehaviors(BaseBehavior):
         @param metadata: A dictionary of values to be used as metadata.
         @type metadata: Dictionary. The limit is 5 key/values.
         @param personality: A list of dictionaries for files to be
-         injected into the server.
+                            injected into the server.
         @type personality: List
         @param user_data: Config Init User data
         @type user_data: String
@@ -67,8 +85,12 @@ class ServerBehaviors(BaseBehavior):
         @type accessIPv6: String
         @param disk_config: MANUAL/AUTO/None
         @type disk_config: String
+        @parm block_device_mapping:fields needed to boot a server from a volume
+        @type block_device_mapping: dict
+        @parm boot_from_block: fields used for negative testing boot from block
+        @type boot_from_block: dict
         @return: Response Object containing response code and
-         the server domain object
+                 the server domain object
         @rtype: Request Response Object
         """
 
@@ -80,6 +102,10 @@ class ServerBehaviors(BaseBehavior):
             flavor_ref = self.flavors_config.primary_flavor
         if self.config.default_network:
             networks = [{'uuid': self.config.default_network}]
+        if self.config.boot_from == BootFromTypes.BLOCK:
+            image_ref = None
+            block_device_mapping = self.boot_volume(
+                boot_from_block)
 
         failures = []
         attempts = self.config.resource_build_attempts
@@ -94,7 +120,8 @@ class ServerBehaviors(BaseBehavior):
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass,
+                block_device_mapping=block_device_mapping)
             server_obj = resp.entity
 
             try:
@@ -103,6 +130,11 @@ class ServerBehaviors(BaseBehavior):
                 # Add the password from the create request
                 # into the final response
                 resp.entity.admin_pass = server_obj.admin_pass
+                if self.config.boot_from == "Block":
+                    resp.entity.volume_id = block_device_mapping[0].get(
+                        'volume_id')
+                else:
+                    resp.entity.volume_id = None
                 return resp
             except (TimeoutException, BuildErrorException) as ex:
                 self._log.error('Failed to build server {server_id}: '
