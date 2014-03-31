@@ -141,9 +141,15 @@ class ServersConfig(ConfigSectionInterface):
         """If personality files can be injected for this deployment"""
         return self.get_boolean("personality_file_injection_enabled", True)
 
+
 class BlockDeviceMappingConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'block_device_mapping'
+
+    @property
+    def boot_from_block_version(self):
+        """Version for boot from block - v1 or v2"""
+        return self.get("boot_from_block_version")
 
     @property
     def bdm_devname(self):
