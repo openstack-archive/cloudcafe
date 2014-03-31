@@ -27,6 +27,12 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get("primary_image")
 
     @property
+    def primary_image_has_protected_properties(self):
+        """If the primary image has metadata that is protected"""
+        return self.get_boolean(
+            "primary_image_has_protected_properties", False)
+
+    @property
     def secondary_image(self):
         """Alternate image to be used in compute test"""
         return self.get("secondary_image")
