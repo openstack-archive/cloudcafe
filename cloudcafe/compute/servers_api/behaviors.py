@@ -19,9 +19,8 @@ import time
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
     import LinuxClient
-from cloudcafe.compute.common.types import InstanceAuthStrategies
-from cloudcafe.compute.common.types import NovaServerStatusTypes \
-    as ServerStates
+from cloudcafe.compute.common.types import InstanceAuthStrategies, \
+    NovaServerStatusTypes as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, RequiredResourceException
@@ -43,7 +42,8 @@ class ServerBehaviors(BaseBehavior):
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None,
+            block_device_mapping=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -55,7 +55,7 @@ class ServerBehaviors(BaseBehavior):
         @param metadata: A dictionary of values to be used as metadata.
         @type metadata: Dictionary. The limit is 5 key/values.
         @param personality: A list of dictionaries for files to be
-         injected into the server.
+                            injected into the server.
         @type personality: List
         @param user_data: Config Init User data
         @type user_data: String
@@ -67,8 +67,10 @@ class ServerBehaviors(BaseBehavior):
         @type accessIPv6: String
         @param disk_config: MANUAL/AUTO/None
         @type disk_config: String
+        @parm block_device_mapping:fields needed to boot a server from a volume
+        @type block_device_mapping: dict
         @return: Response Object containing response code and
-         the server domain object
+                 the server domain object
         @rtype: Request Response Object
         """
 
@@ -94,7 +96,8 @@ class ServerBehaviors(BaseBehavior):
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
                 disk_config=disk_config, networks=networks, key_name=key_name,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass,
+                block_device_mapping=block_device_mapping)
             server_obj = resp.entity
 
             try:
