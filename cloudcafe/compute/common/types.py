@@ -189,3 +189,16 @@ class InstanceAuthStrategies(object):
 class VncConsoleTypes(object):
     NOVNC = 'novnc'
     XVPVNC = 'xvpvnc'
+
+
+class BootFromTypes(object):
+    """
+    @summary: Types dictating boot from types
+    @cvar BLOCK: boot from block
+    @type BLOCK: C{str}
+    @cvar IMAGE: boot from image
+    @type IMAGE: C{str}
+    @note: This is essentially an Enumerated Type
+    """
+    BLOCK = 'Block'
+    IMAGE = 'Image'
