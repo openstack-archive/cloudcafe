@@ -74,3 +74,9 @@ class ImagesConfig(ConfigSectionInterface):
     def non_inherited_metadata_filepath(self):
         """The path to the non inherited metadata"""
         return self.get("non_inherited_metadata_filepath")
+
+    @property
+    def primary_image_default_device(self):
+        """A device name where the volume will be attached in the system
+        at /dev/dev_name. This value is typically vda."""
+        return self.get("primary_image_default_device")

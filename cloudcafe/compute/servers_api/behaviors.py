@@ -32,21 +32,22 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, images_client, servers_config,
-                 images_config, flavors_config):
-
+                 images_config, flavors_config, boot_from_volume_client=None):
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_client = images_client
         self.images_config = images_config
         self.flavors_config = flavors_config
+        self.boot_from_volume_client = boot_from_volume_client
 
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None, max_count=None,
+            min_count=None, block_device_mapping=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -58,7 +59,7 @@ class ServerBehaviors(BaseBehavior):
         @param metadata: A dictionary of values to be used as metadata.
         @type metadata: Dictionary. The limit is 5 key/values.
         @param personality: A list of dictionaries for files to be
-         injected into the server.
+                            injected into the server.
         @type personality: List
         @param user_data: Config Init User data
         @type user_data: String
@@ -70,15 +71,17 @@ class ServerBehaviors(BaseBehavior):
         @type accessIPv6: String
         @param disk_config: MANUAL/AUTO/None
         @type disk_config: String
+        @parm block_device_mapping:fields needed to boot a server from a volume
+        @type block_device_mapping: dict
         @return: Response Object containing response code and
-         the server domain object
+                 the server domain object
         @rtype: Request Response Object
         """
 
         if name is None:
             name = rand_name('testserver')
-        if image_ref is None:
-            image_ref = self.images_config.primary_image
+        if ((image_ref is None) and (block_device_mapping is None)):
+                    image_ref = self.images_config.primary_image
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
         if self.config.default_network:
@@ -91,13 +94,15 @@ class ServerBehaviors(BaseBehavior):
             self._log.debug('Attempt {attempt} of {attempts} '
                             'to create server.'.format(attempt=attempt + 1,
                                                        attempts=attempts))
+
             resp = self.servers_client.create_server(
                 name, image_ref, flavor_ref, personality=personality,
                 config_drive=config_drive, metadata=metadata,
                 accessIPv4=accessIPv4, accessIPv6=accessIPv6,
-                disk_config=disk_config, networks=networks, key_name=key_name,
+                disk_config=disk_config, networks=networks,
                 scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
+                admin_pass=admin_pass, key_name=key_name,
+                block_device_mapping=block_device_mapping)
             server_obj = resp.entity
 
             try:
@@ -373,3 +378,61 @@ class ServerBehaviors(BaseBehavior):
                                            ServerStates.ACTIVE)
         resp.entity.admin_pass = new_password
         return resp.entity
+
+    def create_block_device_mapping_v1(self, volume_id, delete_on_termination,
+                                       device_name, size, type):
+        """
+        @summary: Creates Block Device mapping on the fly
+        @param volume_id: The uuid of the volume
+        @type volume_id: String
+        @param delete_on_termination:  True or False also 0 or 1
+        @type delete_on_termination: Boolean
+        @param device_name: Device name
+        @type device_name: String
+        @param size: Volume Size in GB
+        @type size: Int
+        @param type: snap or blank, from where the volume was created
+        @type type: String
+        @return: The Block Device Mapping
+        @rtype: List of dicts
+        """
+
+        # Creating block device mapping
+        block_device_mapping_matrix = [{
+            "volume_id": volume_id,
+            "delete_on_termination": delete_on_termination,
+            "device_name": device_name,
+            "size": size,
+            "type": type}]
+        return block_device_mapping_matrix
+
+    def create_block_device__mapping_v2(self, boot_index, uuid, volume_size,
+                                        source_type, destination_type,
+                                        delete_on_termination):
+        """
+        @summary: Creates Block Device on the fly
+        @param uuid: The uuid of the volume
+        @type uuid: String
+        @param delete_on_termination:  True or False also 0 or 1
+        @type delete_on_termination: Boolean
+        @param boot_index: Used to order the boot disks
+        @type boot_index: String
+        @param volume_size: Volume Size in GB
+        @type volume_size: Int
+        @param source_type: snap or blank, from where the volume was created
+        @type source_type: String
+        @param destination_type: The type of the target virtual device
+        @type destination_type: String
+        @return: The Block Device Mapping
+        @rtype: List of dicts
+        """
+
+        # Creating block device
+        block_device_matrix = [{
+            "boot_index": boot_index,
+            "uuid": uuid,
+            "volume_size": volume_size,
+            "source_type": source_type,
+            "destination_type": destination_type,
+            "delete_on_termination": delete_on_termination}]
+        return block_device_matrix
