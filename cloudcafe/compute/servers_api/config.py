@@ -141,26 +141,37 @@ class ServersConfig(ConfigSectionInterface):
         """If personality files can be injected for this deployment"""
         return self.get_boolean("personality_file_injection_enabled", True)
 
+
 class BlockDeviceMappingConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'block_device_mapping'
 
     @property
-    def bdm_devname(self):
+    def devname(self):
         """device name"""
-        return self.get("bdm_devname")
+        return self.get("devname")
 
     @property
-    def bdm_type(self):
+    def type(self):
         """server type"""
-        return self.get("bdm_type")
+        return self.get("type")
 
     @property
-    def bdm_size(self):
+    def size(self):
         """size in gb"""
-        return int(self.get("bdm_size"))
+        return int(self.get("size"))
 
     @property
-    def bdm_delete_on_termination(self):
+    def delete_terminate(self):
         """delete volume on termination"""
-        return self.get("bdm_delete_on_termination")
+        return self.get("delete_on_termination")
+
+    @property
+    def boot_index(self):
+        """Used to order the boot disks"""
+        return int(self.get("boot_index"))
+
+    @property
+    def destination_type(self):
+        """server type"""
+        return self.get("destination_type")
