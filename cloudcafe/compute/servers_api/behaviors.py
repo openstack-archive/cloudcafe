@@ -19,9 +19,8 @@ import time
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
     import LinuxClient
-from cloudcafe.compute.common.types import InstanceAuthStrategies
-from cloudcafe.compute.common.types import NovaServerStatusTypes \
-    as ServerStates
+from cloudcafe.compute.common.types import InstanceAuthStrategies, \
+    NovaServerStatusTypes as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, RequiredResourceException
@@ -30,20 +29,22 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 class ServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, servers_config,
-                 images_config, flavors_config):
+                 images_config, flavors_config, boot_from_volume_client=None):
 
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_config = images_config
         self.flavors_config = flavors_config
+        self.boot_from_volume_client = boot_from_volume_client
 
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
-            scheduler_hints=None, admin_pass=None):
+            scheduler_hints=None, admin_pass=None, max_count=None,
+            min_count=None, block_device_mapping=None, block_device=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -55,7 +56,7 @@ class ServerBehaviors(BaseBehavior):
         @param metadata: A dictionary of values to be used as metadata.
         @type metadata: Dictionary. The limit is 5 key/values.
         @param personality: A list of dictionaries for files to be
-         injected into the server.
+                            injected into the server.
         @type personality: List
         @param user_data: Config Init User data
         @type user_data: String
@@ -67,15 +68,18 @@ class ServerBehaviors(BaseBehavior):
         @type accessIPv6: String
         @param disk_config: MANUAL/AUTO/None
         @type disk_config: String
+        @parm block_device_mapping:fields needed to boot a server from a volume
+        @type block_device_mapping: dict
         @return: Response Object containing response code and
-         the server domain object
+                 the server domain object
         @rtype: Request Response Object
         """
 
         if name is None:
             name = rand_name('testserver')
-        if image_ref is None:
-            image_ref = self.images_config.primary_image
+        if ((image_ref is None) and (block_device_mapping is None) and (
+                block_device is None)):
+                    image_ref = self.images_config.primary_image
         if flavor_ref is None:
             flavor_ref = self.flavors_config.primary_flavor
         if self.config.default_network:
@@ -88,14 +92,27 @@ class ServerBehaviors(BaseBehavior):
             self._log.debug('Attempt {attempt} of {attempts} '
                             'to create server.'.format(attempt=attempt + 1,
                                                        attempts=attempts))
-            resp = self.servers_client.create_server(
-                name, image_ref, flavor_ref, personality=personality,
-                config_drive=config_drive, metadata=metadata,
-                accessIPv4=accessIPv4, accessIPv6=accessIPv6,
-                disk_config=disk_config, networks=networks, key_name=key_name,
-                scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass)
-            server_obj = resp.entity
+            if block_device is None:
+                resp = self.servers_client.create_server(
+                    name, image_ref, flavor_ref, personality=personality,
+                    config_drive=config_drive, metadata=metadata,
+                    accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+                    disk_config=disk_config, networks=networks,
+                    scheduler_hints=scheduler_hints, user_data=user_data,
+                    admin_pass=admin_pass, key_name=key_name,
+                    block_device_mapping=block_device_mapping)
+                server_obj = resp.entity
+            else:
+                resp = self.boot_from_volume_client.create_server(
+                    name, flavor_ref, block_device_mapping_v2=block_device,
+                    max_count=max_count, min_count=min_count,
+                    networks=networks, image_ref=image_ref,
+                    personality=personality, user_data=user_data,
+                    metadata=metadata, accessIPv4=accessIPv4,
+                    accessIPv6=accessIPv6, disk_config=disk_config,
+                    admin_pass=admin_pass, key_name=key_name,
+                    config_drive=config_drive, scheduler_hints=scheduler_hints)
+                server_obj = resp.entity
 
             try:
                 resp = self.wait_for_server_status(
