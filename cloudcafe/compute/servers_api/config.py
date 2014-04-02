@@ -141,26 +141,37 @@ class ServersConfig(ConfigSectionInterface):
         """If personality files can be injected for this deployment"""
         return self.get_boolean("personality_file_injection_enabled", True)
 
+
 class BlockDeviceMappingConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'block_device_mapping'
 
     @property
-    def bdm_devname(self):
-        """device name"""
-        return self.get("bdm_devname")
+    def dev_name(self):
+        """A device name where the volume will be attached in the system
+        at /dev/dev_name. This value is typically vda."""
+        return self.get("dev_name")
 
     @property
-    def bdm_type(self):
-        """server type"""
-        return self.get("bdm_type")
+    def type(self):
+        """This is either snap, which means that the volume was created
+        from a snapshot, or anything other than snap (a blank string is valid).
+        In the example above, the volume was not created from a snapshot, so
+        we will leave this field blank in our example below."""
+        return self.get("type")
 
     @property
-    def bdm_size(self):
-        """size in gb"""
-        return int(self.get("bdm_size"))
-
-    @property
-    def bdm_delete_on_termination(self):
+    def delete_on_termination(self):
         """delete volume on termination"""
-        return self.get("bdm_delete_on_termination")
+        return self.get("delete_on_termination")
+
+    @property
+    def boot_index(self):
+        """Used to order the boot disks"""
+        return int(self.get("boot_index"))
+
+    @property
+    def destination_type(self):
+        """The type of the target virtual device. Valid values are volume
+        and local."""
+        return self.get("destination_type")
