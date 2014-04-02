@@ -69,3 +69,9 @@ class ImagesConfig(ConfigSectionInterface):
         false: Performing a GET on a deleted image returns a 404
         """
         return self.get_boolean("can_get_deleted_image")
+
+    @property
+    def primary_image_default_device(self):
+        """A device name where the volume will be attached in the system
+        at /dev/dev_name. This value is typically vda."""
+        return self.get("primary_image_default_device")
