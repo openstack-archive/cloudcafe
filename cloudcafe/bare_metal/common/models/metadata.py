@@ -14,16 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.common.models.configuration import ConfigSectionInterface
+import json
+
+from cafe.engine.models.base import AutoMarshallingDictModel
 
 
-class MarshallingConfig(ConfigSectionInterface):
-    SECTION_NAME = 'marshalling'
+class Metadata(AutoMarshallingDictModel):
 
-    @property
-    def serializer(self):
-        return self.get("serialize_format")
+    def _obj_to_json(self):
+        return json.dumps({'extra': self})
 
-    @property
-    def deserializer(self):
-        return self.get("deserialize_format")
+    @classmethod
+    def _json_to_obj(cls, json_body):
+        metadata = Metadata()
+        meta_contents = json.loads(json_body)
+        metadata.update(meta_contents.get('extra'))
+        return metadata
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        metadata = Metadata()
+        metadata.update(json_dict)
+        return metadata

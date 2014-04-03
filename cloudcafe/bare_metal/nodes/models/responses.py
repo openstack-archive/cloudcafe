@@ -1,0 +1,147 @@
+"""
+Copyright 2014 Rackspace
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
+import json
+
+from cafe.engine.models.base import AutoMarshallingModel, \
+    AutoMarshallingListModel
+
+from cloudcafe.bare_metal.common.models.links import Links
+from cloudcafe.bare_metal.common.models.metadata import Metadata
+
+
+class Node(AutoMarshallingModel):
+
+    def __init__(
+            self, instance_uuid=None, target_power_state=None,
+            properties=None, maintenance=None, links=None, driver_info=None,
+            extra=None, last_error=None, console_enabled=None,
+            target_provision_state=None, driver=None, updated_at=None,
+            ports=None, provision_updated_at=None, chassis_uuid=None,
+            provision_state=None, reservation=None, power_state=None,
+            created_at=None, uuid=None):
+        super(Node, self).__init__()
+
+        self.instance_uuid = instance_uuid
+        self.target_power_state = target_power_state
+        self.properties = properties
+        self.maintenance = maintenance
+        self.links = links
+        self.driver_info = driver_info
+        self.extra = extra
+        self.last_error = last_error
+        self.console_enabled = console_enabled
+        self.target_provision_state = target_provision_state
+        self.driver = driver
+        self.updated_at = updated_at
+        self.ports = ports
+        self.provision_updated_at = provision_updated_at
+        self.chassis_uuid = chassis_uuid
+        self.provision_state = provision_state
+        self.reservation = reservation
+        self.power_state = power_state
+        self.created_at = created_at
+        self.uuid = uuid
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._dict_to_obj(json_dict)
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        properties = None
+        if 'properties' in json_dict:
+            properties = Metadata._dict_to_obj(json_dict.get('properties'))
+
+        driver_info = None
+        if 'driver_info' in json_dict:
+            driver_info = Metadata._dict_to_obj(json_dict.get('driver_info'))
+
+        links = None
+        if 'links' in json_dict:
+            links = Links._list_to_obj(json_dict.get('links'))
+
+        ports = None
+        if 'ports' in json_dict:
+            ports = Ports._list_to_obj(json_dict.get('ports'))
+
+        extra = None
+        if 'extra' in json_dict:
+            extra = Metadata._dict_to_obj(json_dict.get('extra'))
+
+        node = Node(
+            instance_uuid=json_dict.get('instance_uuid'),
+            target_power_state=json_dict.get('target_power_state'),
+            properties=properties,
+            maintenance=json_dict.get('maintenance'),
+            links=links,
+            driver_info=driver_info,
+            extra=extra,
+            last_error=json_dict.get('last_error'),
+            console_enabled=json_dict.get('console_enabled'),
+            target_provision_state=json_dict.get('target_provision_state'),
+            driver=json_dict.get('driver'),
+            updated_at=json_dict.get('updated_at'),
+            ports=ports,
+            provision_updated_at=json_dict.get('provision_updated_at'),
+            chassis_uuid=json_dict.get('chassis_uuid'),
+            provision_state=json_dict.get('provision_state'),
+            reservation=json_dict.get('reservation'),
+            power_state=json_dict.get('power_state'),
+            created_at=json_dict.get('created_at'),
+            uuid=json_dict.get('uuid'))
+        return node
+
+
+class Nodes(AutoMarshallingListModel):
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        return cls._list_to_obj(json_dict.get('nodes'))
+
+    @classmethod
+    def _list_to_obj(cls, node_dict_list):
+        nodes = Nodes()
+        for node_dict in node_dict_list:
+            node = Node._dict_to_obj(node_dict)
+            nodes.append(node)
+        return nodes
+
+
+class Port(AutoMarshallingModel):
+
+    def __init__(self, href=None, rel=None):
+        super(Port, self).__init__()
+        self.href = href
+        self.rel = rel
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        port = Port(href=json_dict.get('href'), rel=json_dict.get('rel'))
+        return port
+
+
+class Ports(AutoMarshallingListModel):
+
+    @classmethod
+    def _list_to_obj(cls, port_dict_list):
+        ports = Ports()
+        for port_dict in port_dict_list:
+            port = Port._dict_to_obj(port_dict)
+            ports.append(port)
+        return ports
