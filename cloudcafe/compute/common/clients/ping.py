@@ -20,8 +20,15 @@ import subprocess
 
 from IPy import IP
 
+from cafe.common.reporting import cclogging
+
 
 class PingClient(object):
+
+    _log = cclogging.getLogger(__name__)
+
+    #def __init__(self):
+    #    super(PingClient, self).__init__()
 
     PING_IPV4_COMMAND_LINUX = 'ping -c 3'
     PING_IPV6_COMMAND_LINUX = 'ping6 -c 3'
@@ -38,6 +45,7 @@ class PingClient(object):
         @return: True if the server was reachable, False otherwise
         @rtype: bool
         """
+
         address = IP(ip)
         ip_address_version = address.version()
         os_type = platform.system().lower()
@@ -48,6 +56,7 @@ class PingClient(object):
         ping_command = ping_ipv6 if ip_address_version == 6 else ping_ipv4
         command = '{command} {address}'.format(
             command=ping_command, address=ip)
+        cls._log.debug("Executing command '{command}'".format(command=command))
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
         process.wait()
@@ -58,4 +67,6 @@ class PingClient(object):
         except Exception:
             # If there is no match, fail
             return False
+        cls._log.debug("Pinged {ip} with {packet_loss}% packet loss.".format(
+            ip=ip, packet_loss=packet_loss_percent))
         return packet_loss_percent != '100'
