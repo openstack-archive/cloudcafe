@@ -13,17 +13,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from cloudcafe.common.models.configuration import ConfigSectionInterface
-
-
-class MarshallingConfig(ConfigSectionInterface):
-    SECTION_NAME = 'marshalling'
-
-    @property
-    def serializer(self):
-        return self.get("serialize_format")
-
-    @property
-    def deserializer(self):
-        return self.get("deserialize_format")
