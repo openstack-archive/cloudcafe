@@ -1,16 +1,34 @@
-import re
-import os
+"""
+Copyright 2013 Rackspace
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 from copy import deepcopy
 from httpretty import HTTPretty
+import os
+import re
+import unittest2 as unittest
 
-from cloudcafe.images.v2.client import ImageClient
+from cloudcafe.images.v2.client import ImagesClient
 from cloudcafe.images.v2.models.image import Image
 
 GLANCE_API_SERVER_ENDPOINT = 'localhost/v2'
 IS_MOCK = bool(os.environ['MOCK']) or None
 
 
-class TestImageClient(object):
+class TestImageClient(unittest.TestCase):
+
     image_id_regex = '([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-' \
                      '([0-9a-fA-F]){4}-([0-9a-fA-F]){12}'
     member_id_regex = '[\w\d-]+'
@@ -35,7 +53,7 @@ class TestImageClient(object):
         cls.image_obj = Image._json_to_obj(cls.raw_image_str)
         cls.images_obj = Image._json_to_obj(cls.raw_images_str)
 
-        cls.images_client = ImageClient(
+        cls.images_client = ImagesClient(
             base_url='http://localhost/v2',
             auth_token='36a04b4e71484ab9aacb1d0ac95733fc',
             serialize_format='json',
@@ -153,8 +171,7 @@ class TestImageClient(object):
             schema=new_image.schema,
             container_format=new_image.container_format,
             disk_format=new_image.disk_format, min_disk=new_image.min_disk,
-            min_ram=new_image.min_ram, kernel_id=new_image.kernel_id,
-            ramdisk_id=new_image.ramdisk_id)
+            min_ram=new_image.min_ram)
 
         valid_uri = re.compile('/v2/images/{0}'.format(self.image_id_regex))
         assert response is not None
