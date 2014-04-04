@@ -14,9 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.blockstorage.volumes_api.common.config import \
-    VolumesAPIConfig as _VolumesAPIConfig
+
+class _CommonStatus(object):
+    AVAILABLE = "available"
+    DELETING = "deleting"
+    CREATING = "creating"
+    ERROR = "error"
+    ERROR_DELETING = "error_deleting"
 
 
-class VolumesAPIConfig(_VolumesAPIConfig):
-    SECTION_NAME = 'volumes_api'
+class Volume(_CommonStatus):
+    ATTACHING = "attaching"
+    IN_USE = "in-use"
+
+
+class Snapshot(_CommonStatus):
+    pass

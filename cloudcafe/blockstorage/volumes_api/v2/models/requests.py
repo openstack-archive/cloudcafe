@@ -18,9 +18,11 @@ import json
 from xml.etree import ElementTree
 
 from cafe.engine.models.base import AutoMarshallingModel
+from cloudcafe.blockstorage.volumes_api.common.models.automarshalling import \
+    CommonModelProperties
 
 
-class VolumeRequest(AutoMarshallingModel):
+class VolumeRequest(CommonModelProperties, AutoMarshallingModel):
 
     def __init__(
             self, size=None, volume_type=None, name=None,
@@ -29,6 +31,8 @@ class VolumeRequest(AutoMarshallingModel):
             image_ref=None):
 
         super(VolumeRequest, self).__init__()
+        self._name = None
+        self._description = None
         self.size = size
         self.volume_type = volume_type
         self.name = name
@@ -87,12 +91,14 @@ class VolumeRequest(AutoMarshallingModel):
         return ElementTree.tostring(self._obj_to_xml_ele())
 
 
-class VolumeSnapshotRequest(AutoMarshallingModel):
+class VolumeSnapshotRequest(CommonModelProperties, AutoMarshallingModel):
 
     def __init__(
             self, volume_id, force=True, name=None, description=None):
 
         super(VolumeSnapshotRequest, self).__init__()
+        self._name = None
+        self._description = None
         self.volume_id = volume_id
         self.name = name
         self.description = description
