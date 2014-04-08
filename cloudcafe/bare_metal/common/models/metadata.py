@@ -42,4 +42,3 @@ class MetadataBase(AutoMarshallingDictModel):
 
 class Extra(MetadataBase):
     METADATA_TYPE = 'extra'
-
