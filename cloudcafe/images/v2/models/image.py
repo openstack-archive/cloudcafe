@@ -30,7 +30,7 @@ class Image(AutoMarshallingModel):
                  file_=None, id_=None, image_type=None, min_disk=None,
                  min_ram=None, name=None, os_type=None, protected=None,
                  schema=None, self_=None, size=None, status=None, tags=None,
-                 updated_at=None, user_id=None, visibility=None,
+                 updated_at=None, user_id=None, visibility=None, owner=None,
                  additional_properties=None):
         # TODO: 'direct_url' and 'locations' should be added at a later date
         self.auto_disk_config = auto_disk_config
@@ -54,6 +54,7 @@ class Image(AutoMarshallingModel):
         self.updated_at = updated_at
         self.user_id = user_id
         self.visibility = visibility
+        self.owner = owner
         self.additional_properties = additional_properties
 
     def __eq__(self, other):
@@ -94,7 +95,7 @@ class Image(AutoMarshallingModel):
                            'image_type', 'min_disk', 'min_ram', 'name',
                            'os_type', 'protected', 'schema', 'self', 'size',
                            'status', 'tags', 'updated_at', 'user_id',
-                           'visibility']:
+                           'visibility', 'owner']:
                 additional_properties.update({key: value})
         created_at = dateutil.parser.parse(json_dict.get('created_at'))
         updated_at = dateutil.parser.parse(json_dict.get('updated_at'))
@@ -116,6 +117,7 @@ class Image(AutoMarshallingModel):
                       tags=json_dict.get('tags'), updated_at=updated_at,
                       user_id=json_dict.get('user_id'),
                       visibility=json_dict.get('visibility'),
+                      owner=json_dict.get('owner'),
                       additional_properties=additional_properties)
         return image
 
@@ -142,6 +144,7 @@ class Image(AutoMarshallingModel):
         obj_dict['updated_at'] = self.updated_at
         obj_dict['user_id'] = self.user_id
         obj_dict['visibility'] = self.visibility
+        obj_dict['owner'] = self.owner
         obj_dict = self._remove_empty_values(obj_dict)
         return json.dumps(obj_dict)
 
