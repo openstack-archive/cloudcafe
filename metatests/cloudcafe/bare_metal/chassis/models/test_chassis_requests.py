@@ -14,24 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import json
+import unittest
 
-from cafe.engine.models.base import AutoMarshallingModel
+from cloudcafe.bare_metal.chassis.models.requests import CreateChassis
 
 
-class CreateChassis(AutoMarshallingModel):
+class CreateChassisModelTest(unittest.TestCase):
 
-    def __init__(self, description=None, extra=None):
-        super(CreateChassis, self).__init__()
-        extra = extra or {}
+    @classmethod
+    def setUpClass(cls):
 
-        self.description = description
-        self.extra = extra
+        chassis_request = CreateChassis(
+            description='test_chassis', extra={'meta1': 'value1'})
+        cls.chassis_json = chassis_request.serialize('json')
 
-    def _obj_to_json(self):
-        create_request = {
-            'description': self.description,
-            'extra': self.extra
-        }
-        self._remove_empty_values(create_request)
-        return json.dumps(create_request)
+    def test_create_chassis_json(self):
+        expected_json = (
+            '{"description": "test_chassis", "extra": {"meta1": "value1"}}')
+        self.assertEqual(self.chassis_json, expected_json)
