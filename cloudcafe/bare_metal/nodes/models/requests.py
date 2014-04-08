@@ -13,3 +13,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+import json
+
+from cafe.engine.models.base import AutoMarshallingModel
+
+
+class CreateNode(AutoMarshallingModel):
+
+    def __init__(
+            self, chassis_uuid=None, driver=None, properties=None,
+            driver_info=None, extra=None):
+        super(CreateNode, self).__init__()
+
+        properties = properties or {}
+        driver_info = driver_info or {}
+        extra = extra or {}
+
+        self.chassis_uuid = chassis_uuid
+        self.driver = driver
+        self.properties = properties
+        self.driver_info = driver_info
+        self.extra = extra
+
+    def _obj_to_json(self):
+        create_request = {
+            'chassis_uuid': self.chassis_uuid,
+            'driver': self.driver,
+            'properties': self.properties,
+            'driver_info': self.driver_info,
+            'extra': self.extra
+        }
+        self._remove_empty_values(create_request)
+        return json.dumps(create_request)
