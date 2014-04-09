@@ -27,3 +27,19 @@ class MarshallingConfig(ConfigSectionInterface):
     @property
     def deserializer(self):
         return self.get("deserialize_format")
+
+
+class BareMetalEndpointConfig(ConfigSectionInterface):
+    SECTION_NAME = 'bare_metal_endpoint'
+
+    @property
+    def region(self):
+        return self.get("region")
+
+    @property
+    def bare_metal_endpoint_name(self):
+        return self.get("bare_metal_endpoint_name")
+
+    @property
+    def bare_metal_endpoint_url(self):
+        return self.get("bare_metal_endpoint_url")
