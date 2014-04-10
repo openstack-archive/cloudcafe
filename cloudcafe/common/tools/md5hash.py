@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import hashlib
+import os
 
 
 def get_md5_hash(data, block_size_multiplier=1):
@@ -26,13 +27,14 @@ def get_md5_hash(data, block_size_multiplier=1):
     block_size = block_size_multiplier * default_block_size
     md5 = hashlib.md5()
 
-    if type(data) is file:
+    if type(data) is file or os.path.isfile(data):
+        fh = open(data, 'rb')
         while True:
-            read_data = data.read(block_size)
+            read_data = fh.read(block_size)
             if not read_data:
                 break
             md5.update(read_data)
-        data.close()
+        fh.close()
     else:
         md5.update(str(data))
 
