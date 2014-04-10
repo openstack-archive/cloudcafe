@@ -359,4 +359,5 @@ class ServerBehaviors(BaseBehavior):
         assert resp.status_code is 202
         resp = self.wait_for_server_status(server_id,
                                            ServerStates.ACTIVE)
+        resp.entity.admin_pass = new_password
         return resp.entity
