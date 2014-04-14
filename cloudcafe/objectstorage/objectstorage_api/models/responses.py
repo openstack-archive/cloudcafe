@@ -72,6 +72,20 @@ class AccountContainersList(AutoMarshallingListModel):
             account_containers_list.append(container)
         return account_containers_list
 
+    @classmethod
+    def _text_to_obj(cls, data):
+        split_data = data.split('\n')
+
+        data_list = [container_name for container_name in split_data
+                     if container_name]
+
+        account_containers_list = AccountContainersList()
+
+        for container_name in data_list:
+            container = Container(name=container_name)
+            account_containers_list.append(container)
+        return account_containers_list
+
 
 class ContainerObjectsList(AutoMarshallingListModel):
 
