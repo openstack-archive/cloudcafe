@@ -19,6 +19,7 @@ import re
 import time
 
 from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.images.common.constants import ImageProperties, Messages
@@ -474,3 +475,47 @@ class ImagesBehaviors(BaseBehavior):
             self.resources.add(task.result.image_id, self.client.delete_image)
 
         return task
+
+    def get_task_status(self, task_id):
+        """@summary: Retrieve task status"""
+
+        response = self.client.get_task(task_id)
+        return response.entity.status.lower()
+
+    def create_task_with_transitions(self, input_, task_type,
+                                     final_status=None):
+        """
+        @summary: Create a task and verify that it transitions through the
+        expected statuses
+        """
+
+        response = self.client.create_task(
+            input_=input_, type_=task_type)
+        task = response.entity
+
+        # Verify task progresses as expected
+        verifier = StatusProgressionVerifier(
+            'task', task.id_, self.get_task_status, task.id_)
+
+        verifier.add_state(
+            expected_statuses=[TaskStatus.PENDING],
+            acceptable_statuses=[TaskStatus.PROCESSING, TaskStatus.SUCCESS],
+            error_statuses=[TaskStatus.FAILURE],
+            timeout=self.config.task_timeout, poll_rate=1)
+
+        verifier.add_state(
+            expected_statuses=[TaskStatus.PROCESSING],
+            acceptable_statuses=[TaskStatus.SUCCESS],
+            error_statuses=[TaskStatus.FAILURE],
+            timeout=self.config.task_timeout, poll_rate=1)
+
+        if final_status == TaskStatus.SUCCESS:
+            verifier.add_state(
+                expected_statuses=[TaskStatus.SUCCESS],
+                error_statuses=[TaskStatus.FAILURE],
+                timeout=self.config.task_timeout, poll_rate=1)
+
+        verifier.start()
+
+        response = self.client.get_task(task.id_)
+        return response.entity
