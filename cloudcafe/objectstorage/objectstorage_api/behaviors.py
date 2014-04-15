@@ -111,7 +111,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             if not timeout:
                 reached_timeout = True
             else:
-                reached_timeout = datetime.now() >= stop_time
+                reached_timeout = datetime.datetime.now() >= stop_time
 
             if sleep_seconds == 0:
                 sleep_seconds = 1
@@ -125,6 +125,11 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                     return response
             else:
                 raise ObjectStorageAPIBehaviorException('invalid response')
+        if response.ok:
+            # If the response came back successful, but the success condition
+            # did not occur, then return the response anyway so the caller
+            # can deal with how to handle the situation.
+            return response
         raise ObjectStorageAPIBehaviorException(
             'Unable to satisfy success condition.', response)
 
@@ -180,7 +185,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
     def get_swift_features(self):
         """
-        Returns a string represnting the enabled features seperated by commas.
+        Returns a string representing the enabled features separated by commas.
         """
         info = self.get_swift_info()
         features = ' '.join([k for k in info.viewkeys()])
@@ -264,25 +269,37 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
     @behavior(ObjectStorageAPIClient)
     def list_containers(self, headers=None, params=None,
-                        requestslib_kwargs=None, success_func=None):
+                        expected_containers=None, requestslib_kwargs=None):
         """
         List containers in a account.  This method allows for a success
         function to be provided, ensuring that the system has stabilized and
         become consistent.
 
         @param headers: headers to be added to the HTTP request.
-        @type headers: dictionary
+        @type  headers: dictionary
         @param params: query string parameters to be added to the HTTP request.
-        @type params: dictionary
+        @type  params: dictionary
+        @param expected_containers: container names expected to be in the
+                                    account listing.
+        @type  expected_containers: list
         @param requestslib_kwargs: keyword arguments to be passed on to
                                    python requests.
-        @type requestslib_kwargs: dictionary
-        @param success_func: used to test if a request was successful.
-        @type success_func: function
+        @type  requestslib_kwargs: dictionary
 
         @return: container listing
         @rtype: list
         """
+        if not expected_containers:
+            expected_containers = []
+
+        def success_func(response):
+            if not response.ok:
+                return False
+            for name in expected_containers:
+                if name not in response.content:
+                    return False
+            return True
+
         response = self.retry_until_success(
             self.client.list_containers,
             func_kwargs={
@@ -341,27 +358,39 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
     @behavior(ObjectStorageAPIClient)
     def list_objects(self, container_name, headers=None, params=None,
-                     requestslib_kwargs=None, success_func=None):
+                     expected_objects=None, requestslib_kwargs=None):
         """
         List objects in a container.  This method allows for a success
         function to be provided, ensuring that the system has stabilized and
         become consistent.
 
         @param container_name: container to list the object from.
-        @type container_name: string
+        @type  container_name: string
         @param headers: headers to be added to the HTTP request.
-        @type headers: dictionary
+        @type  headers: dictionary
         @param params: query string parameters to be added to the HTTP request.
-        @type params: dictionary
+        @type  params: dictionary
+        @param expected_objects: object names expected to be in the container
+                                 listing.
+        @type  expected_objects: list
         @param requestslib_kwargs: keyword arguments to be passed on to
                                    python requests.
-        @type requestslib_kwargs: dictionary
-        @param success_func: used to test if a request was successful.
-        @type success_func: function
+        @type  requestslib_kwargs: dictionary
 
         @return: object listing
         @rtype: list
         """
+        if not expected_objects:
+            expected_objects = []
+
+        def success_func(response):
+            if not response.ok:
+                return False
+            for name in expected_objects:
+                if name not in response.content:
+                    return False
+            return True
+
         response = self.retry_until_success(
             self.client.list_objects,
             func_args=[container_name],
