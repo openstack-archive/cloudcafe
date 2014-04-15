@@ -19,6 +19,7 @@ import calendar
 import time
 
 from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.common.exceptions import BuildErrorException, TimeoutException
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
@@ -341,8 +342,14 @@ class ImagesBehaviors(BaseBehavior):
 
         return errors
 
-    def wait_for_task_status(self, task_id, desired_status,
-                             interval_time=None, timeout=None):
+    def get_task_status(self, task_id):
+        """@summary: Retrieve task status"""
+
+        response = self.client.get_task(task_id)
+        return response.entity.status.lower()
+
+    def wait_for_task_status(self, task_id, desired_status, interval_time=None,
+                             timeout=None):
         """@summary: Waits for a task to reach a desired status"""
 
         interval_time = interval_time or self.config.task_status_interval
@@ -353,19 +360,63 @@ class ImagesBehaviors(BaseBehavior):
             resp = self.client.get_task(task_id)
             task = resp.entity
 
-            if task.status.lower() == TaskStatus.FAILURE.lower():
+            if ((task.status.lower() == TaskStatus.FAILURE and
+                    desired_status != TaskStatus.FAILURE) or
+                    (task.status.lower() == TaskStatus.SUCCESS and
+                     desired_status != TaskStatus.SUCCESS)):
                 raise BuildErrorException(
-                    'Task with uuid {0} entered FAILURE status.'
-                    'Task responded with the message {1}'.format(task.id_,
-                                                                 task.message))
+                    'Task with uuid {0} entered {1} status. Task responded '
+                    'with the message {2}'.format(
+                        task.id_, task.status, task.message))
 
             if task.status == desired_status:
                 break
             time.sleep(interval_time)
         else:
             raise TimeoutException(
-                "wait_for_task_status ran for {0} seconds and did not "
-                "observe task {1} reach the {2} status.".format(
-                    timeout, task_id, desired_status))
+                'Failed to reach the {0} status after {1} seconds for task '
+                'with uuid {2}'.format(desired_status, timeout, task_id))
+
+        if (task is not None and task.type_ == TaskTypes.IMPORT and
+                task.status.lower() == TaskStatus.SUCCESS):
+            self.resources.add(task.result.image_id, self.client.delete_image)
 
         return task
+
+    def create_task_with_transitions(self, input_, task_type,
+                                     final_status=None):
+        """
+        @summary: Create a task and verify that it transitions through the
+        expected statuses
+        """
+
+        response = self.client.create_task(
+            input_=input_, type_=task_type)
+        task = response.entity
+
+        # Verify task progresses as expected
+        verifier = StatusProgressionVerifier(
+            'task', task.id_, self.get_task_status, task.id_)
+
+        verifier.add_state(
+            expected_statuses=[TaskStatus.PENDING],
+            acceptable_statuses=[TaskStatus.PROCESSING, TaskStatus.SUCCESS],
+            error_statuses=[TaskStatus.FAILURE],
+            timeout=self.config.task_timeout, poll_rate=1)
+
+        verifier.add_state(
+            expected_statuses=[TaskStatus.PROCESSING],
+            acceptable_statuses=[TaskStatus.SUCCESS],
+            error_statuses=[TaskStatus.FAILURE],
+            timeout=self.config.task_timeout, poll_rate=1)
+
+        if final_status == TaskStatus.SUCCESS:
+            verifier.add_state(
+                expected_statuses=[TaskStatus.SUCCESS],
+                error_statuses=[TaskStatus.FAILURE],
+                timeout=self.config.task_timeout, poll_rate=1)
+
+        verifier.start()
+
+        response = self.client.get_task(task.id_)
+        return response.entity
