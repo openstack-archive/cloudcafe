@@ -179,6 +179,9 @@ class ComputeHypervisors(object):
     KVM = 'kvm'
     QEMU = 'qemu'
     HYPER_V = 'hyper_v'
+    DOCKER = 'docker'
+    IRONIC = 'ironic'
+    LXC_LIBVIRT = 'lxc_libvirt'
 
 
 class InstanceAuthStrategies(object):
