@@ -201,3 +201,10 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         and instead report an error.
         """
         return int(self.get('list_timeout', 120))
+
+    @property
+    def info_admin_key(self):
+        """
+        The admin key for admin /info calls.
+        """
+        return self.get('info_admin_key', '')
