@@ -215,12 +215,27 @@ class ObjectStorageAPIClient(HTTPClient):
         #Make the request
         return requests.request(method, url, **requestslib_kwargs)
 
-    def get_swift_info(self):
+    def get_swift_info(self, headers=None, params=None,
+                       requestslib_kwargs=None):
         """
-        Returns a dictionary of info requested from swift.
+        Returns Swift info.
+
+        @param headers: headers to be added to the HTTP request.
+        @type  headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type  params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+
+        @return: Swift info
+        @rtype: response object
         """
         info_url = '{0}/info'.format(self.swift_endpoint)
-        return self.get(info_url)
+        return self.get(info_url,
+                        headers=headers,
+                        params=params,
+                        requestslib_kwargs=requestslib_kwargs)
 
     #Account-------------------------------------------------------------------
 
