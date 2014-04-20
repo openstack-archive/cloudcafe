@@ -91,6 +91,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         @return: The most resent response from calling func.
         @rtype: Response Object
         """
+        request_count = 0
         sleep_seconds = 0
         func_args = func_args or []
         func_kwargs = func_kwargs or {}
@@ -120,9 +121,12 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                 sleep_seconds = sleep_seconds * 2
 
             response = func(*func_args, **func_kwargs)
+            request_count = request_count + 1
             if response:
                 if success_func(response):
                     return response
+                self._log.info('EC - HTTP request attempt {} failed '
+                               'success_func test.'.format(request_count))
             else:
                 raise ObjectStorageAPIBehaviorException('invalid response')
         if response.ok:
