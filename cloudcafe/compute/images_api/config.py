@@ -64,3 +64,8 @@ class ImagesConfig(ConfigSectionInterface):
         false: Performing a GET on a deleted image returns a 404
         """
         return self.get_boolean("can_get_deleted_image")
+
+    @property
+    def non_inherited_metadata_filepath(self):
+        """The path to the non inherited metadata"""
+        return self.get("non_inherited_metadata_filepath")
