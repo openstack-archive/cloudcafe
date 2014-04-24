@@ -190,3 +190,17 @@ class ImageBehaviors(object):
                 "and did not observe image {1} reach the "
                 "{2} status.".format(
                     timeout, image_id, ImageStates.DELETED))
+
+    def read_non_inherited_metadata(self):
+        """
+        @summary:Returns the non inherited metadata
+        @return: List for user data processing
+        @rtype: List
+        """
+        if self.config.non_inherited_metadata_filepath is None:
+            non_inherited_metadata = []
+        else:
+            with open(self.config.non_inherited_metadata_filepath, "r") as myfile:
+                data = myfile.read()
+            non_inherited_metadata = data.split(",")
+        return non_inherited_metadata
