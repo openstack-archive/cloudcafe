@@ -48,3 +48,20 @@ class Constants:
 class HTTPResponseCodes(object):
     NOT_FOUND = 404
     SERVER_ERROR = 500
+
+
+class NonInheritableProperties(object):
+    NON_INHERITED_METADATA = [
+                              'cache_in_nova',
+                              'backup_type',
+                              'min_ram',
+                              'min_disk',
+                              'org.openstack__1__created_by',
+                              'password_0',
+                              'password_1',
+                              'password_2',
+                              'password_3',
+                              'legacy_snapshot',
+                              'org.openstack__1__packages',
+                              'org.openstack_1_os_distro'
+                              ]
