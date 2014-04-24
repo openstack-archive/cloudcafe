@@ -208,3 +208,11 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         The admin key for admin /info calls.
         """
         return self.get('info_admin_key', '')
+
+    @property
+    def strict_cors_mode(self):
+        """
+        If set to False, CORS will opperate in the 'old' way, otherwise
+        CORS works more strictly according to the spec.
+        """
+        return self.get_boolean('strict_cors_mode', True)

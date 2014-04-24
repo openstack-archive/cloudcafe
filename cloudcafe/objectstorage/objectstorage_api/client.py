@@ -573,6 +573,120 @@ class ObjectStorageAPIClient(HTTPClient):
 
         return {'target_url': base_url, 'signature': sig, 'expires': expires}
 
+    def create_formpost(self, container, files, object_prefix='',
+                        redirect='http://example.com/formpost',
+                        max_file_size=104857600, max_file_count=10,
+                        expires=None, key=''):
+        """
+        Creates RFC-2388.
+
+        @param container: Name of the container to post objects to.
+        @type  container: string
+        @param files: Files to post in the form.  The dictionaries representing
+                      a file should be formatted as follows:
+                      {
+                          'name': '<form name>',
+                          'filename': '<filename>',
+                          'content_type': '<content_type>',
+                          'data': '<filedata>'
+                      }
+                      Where only name is required, defaults to other values
+                      will be as follows:
+                          filename - the value stored in name.
+                          content_type - 'text/plain'
+                          data - the md5 hash of the value stored in name.
+        @type  files: list of dictionaries
+        @param object_prefix: prefix to be used in the name of the objects
+                              created.
+        @type  object_prefix: string
+        @param redirect: URL to be returned as the 'location' header in the
+                         HTTP response.
+        @type  redirect: string
+        @param max_file_size: The maximum file size in bytes which can be
+                              uploaded with the form.
+        @type  max_file_size: int
+        @param max_file_count: The maximum number of files allowed to be
+                               uploaded with the form.
+        @type  max_file_count: int
+        @param expires: The unix time relating to when the form expires
+                        and will no longer allow uploads to the container.
+        @type  expires: int
+        @param key: The account's X-Tempurl-Key used in creating the signatre
+                    which authorizes the form to be POSTed.
+        @type  key: string
+
+        @return: Data to be POSTed in the following format:
+            {
+                'target_url': '<url to POST to>',
+                'headers': '<headers to be added to the request>,
+                'body': '<body to be posted to the target url>'
+            }
+        @rtype: dictionary
+        """
+        base_url, path = self.storage_url.split('/v1')
+        path = '/v1{0}/{1}'.format(path, container)
+        if object_prefix:
+            path = '{0}/{1}'.format(path, object_prefix)
+
+        if not expires:
+            expires = int(time() + 600)
+
+        url = ''.join([base_url, path])
+        hmac_body = '{0}\n{1}\n{2}\n{3}\n{4}'.format(
+            path, redirect, max_file_size, max_file_count, expires)
+        sig = hmac.new(key, hmac_body, sha1).hexdigest()
+
+        form = []
+        form.append({
+            'headers': {'Content-Disposition': 'form-data; name="redirect"'},
+            'data': redirect})
+        form.append({
+            'headers': {'Content-Disposition':
+                        'form-data; name="max_file_size"'},
+            'data': str(max_file_size)})
+        form.append({
+            'headers': {'Content-Disposition':
+                        'form-data; name="max_file_count"'},
+            'data': str(max_file_count)})
+        form.append({
+            'headers': {'Content-Disposition': 'form-data; name="expires"'},
+            'data': str(expires)})
+        form.append({
+            'headers': {'Content-Disposition': 'form-data; name="signature"'},
+            'data': sig})
+        for f in files:
+            form_name = f.get('name')
+            form_filename = f.get('filename', form_name)
+            form_content_type = f.get('content_type', 'text/plain')
+            form_data = f.get('data', get_md5_hash(form_name))
+            form.append({
+                'headers': {'Content-Disposition':
+                            'form-data; name="{0}"; filename="{1}"'.format(
+                                form_name, form_filename),
+                        'Content-Type': form_content_type},
+                'data': form_data})
+
+        data = []
+        boundry = '----WebKitFormBoundary40Q4WaJHO84PBBIa'
+
+        for section in form:
+            data.append('--{0}\r\n'.format(boundry))
+            for key, value in section['headers'].iteritems():
+                data.append('{0}: {1}\r\n'.format(key, value))
+            data.append('\r\n')
+            data.append(section['data'])
+            data.append('\r\n')
+        data.append('\r\n--{0}'.format(boundry))
+
+        post_headers = {
+            'Cache-Control': 'max-age=0',
+            'Accept': '*/*;q=0.8',
+            'Content-Type': 'multipart/form-data; boundary={0}'.format(
+                boundry)}
+
+        return {'target_url': url, 'headers': post_headers,
+                'body': ''.join(data)}
+
     def create_archive(self, object_names, compression_type,
                        archive_name=BULK_ARCHIVE_NAME):
         """
