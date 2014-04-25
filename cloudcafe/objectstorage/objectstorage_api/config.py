@@ -216,3 +216,10 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         CORS works more strictly according to the spec.
         """
         return self.get_boolean('strict_cors_mode', True)
+
+    @property
+    def bulk_delete_max_count(self):
+        """
+        The max number of objects bulk delete can delete.
+        """
+        return int(self.get('bulk_delete_max_count', 1000))
