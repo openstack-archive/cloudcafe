@@ -18,7 +18,7 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 
 from cloudcafe.stacktach.stacktach_db_api.models.stacktach_db_api import \
     (ServerLaunch, ServerLaunches, ServerDelete, ServerDeletes,
-     ServerExist, ServerExists)
+     ServerExist, ServerExists, ImageUsages, ImageDeletes, ImageExists)
 
 
 class StackTachDBClient(AutoMarshallingRestClient):
@@ -218,3 +218,40 @@ class StackTachDBClient(AutoMarshallingRestClient):
         return self.request('GET', url, params=params,
                             response_entity_type=ServerDeletes,
                             requestslib_kwargs=requestslib_kwargs)
+
+    def list_image_exists(self):
+        """
+        @summary: Retrieves the latest exists events for all images.
+        @return: Dictionary key:'exists' with value as a list of exists events
+        @rtype:  ImageExists Object
+            GET
+            /db/usage/glance/exists/
+        """
+        url = "{0}{1}".format(self.url, '/db/usage/glance/exists/')
+        return self.request('GET', url, response_entity_type=ImageExists)
+
+    def list_images(self):
+        """
+        @summary: Retrieves image usage events details.
+        @return: Dictionary, key:'images' with value: an unordered list of
+            image usage events.
+        @rtype:  ImageUsages Object
+
+            GET
+            /db/usage/glance/images/
+        """
+        url = "{0}{1}".format(self.url, '/db/usage/glance/images/')
+        return self.request('GET', url, response_entity_type=ImageUsages)
+
+    def list_image_deletes(self):
+        """
+        @summary: Retrieves image delete events details.
+        @return: Dictionary, key:'deletes' with value: an unordered list of
+            image delete events.
+        @rtype:  ImageDeletes Object
+
+            GET
+            /db/usage/glance/deletes/
+        """
+        url = "{0}{1}".format(self.url, '/db/usage/glance/deletes/')
+        return self.request('GET', url, response_entity_type=ImageDeletes)
