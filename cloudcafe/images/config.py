@@ -64,6 +64,11 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('region')
 
     @property
+    def superuser(self):
+        """Toggle to determine if primary user has superuser privileges"""
+        return self.get('superuser')
+
+    @property
     def primary_image(self):
         """Primary image to be used during tests"""
         return self.get("primary_image")
