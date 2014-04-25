@@ -26,10 +26,12 @@ class ImageProperties(object):
 
 
 class Messages(object):
-    ERROR_MSG = 'Unexpected {0} value received. Expected: {1}, Received: {2}'
+    CONTAINER_DNE = 'container {0} does not exist'
     DUPLICATE_FILE_MSG = ('Swift already has an object with id \'{0}.vhd\' in '
                           'container \'{1}\'')
-    NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
+    ERROR_MSG = 'Unexpected {0} value received. Expected: {1}, Received: {2}'
     EXPORT_WINDOWS_MSG = ('The export of Windows based images is not allowed. '
                           'Distribution of Windows code is not allowed in the '
                           'Service Provider License Agreement.')
+    NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
+    OBJECT_NOT_FOUND = 'Error: Swift could not find object {0}.'
