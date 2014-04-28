@@ -38,6 +38,11 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get("primary_image_default_user")
 
     @property
+    def primary_image_path_separator(self):
+        """The character used to separate directories for the image."""
+        return self.get("primary_image_path_separator")
+
+    @property
     def secondary_image(self):
         """Alternate image to be used in compute test"""
         return self.get("secondary_image")
