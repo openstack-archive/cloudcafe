@@ -19,6 +19,8 @@ import time
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
     import LinuxClient
+from cloudcafe.compute.common.clients.remote_instance.windows.windows_client \
+    import WindowsClient
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
@@ -29,12 +31,13 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 
 class ServerBehaviors(BaseBehavior):
 
-    def __init__(self, servers_client, servers_config,
+    def __init__(self, servers_client, images_client, servers_config,
                  images_config, flavors_config):
 
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
+        self.images_client = images_client
         self.images_config = images_config
         self.flavors_config = flavors_config
 
@@ -255,6 +258,16 @@ class ServerBehaviors(BaseBehavior):
             elif config.ip_address_version_for_ssh == 6:
                 ip_address = network.ipv6
 
+        # Try to determine distro
+        image = self.images_client.get_image(server.image.id).entity
+
+        if image.metadata.get('os_type', '').lower() == 'windows':
+            client = WindowsClient
+        else:
+            # Assume Linux by default
+            client = LinuxClient
+
+        user = self.images_config.primary_image_default_user
         strategy = auth_strategy or self.config.instance_auth_strategy.lower()
 
         if InstanceAuthStrategies.PASSWORD in strategy:
@@ -262,13 +275,12 @@ class ServerBehaviors(BaseBehavior):
             if password is None:
                 password = server.admin_pass
 
-            # (TODO) dwalleck: Remove hard coding of distro
-            return LinuxClient(
-                ip_address=ip_address, username='root', password=password,
+            return client(
+                ip_address=ip_address, username=user, password=password,
                 connection_timeout=self.config.connection_timeout)
         else:
-            return LinuxClient(
-                ip_address=ip_address, username='root', key=key,
+            return client(
+                ip_address=ip_address, username=user, key=key,
                 connection_timeout=self.config.connection_timeout)
 
     def resize_and_await(self, server_id, new_flavor):

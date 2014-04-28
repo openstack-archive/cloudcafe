@@ -141,6 +141,22 @@ class ServersConfig(ConfigSectionInterface):
         """If personality files can be injected for this deployment"""
         return self.get_boolean("personality_file_injection_enabled", True)
 
+    @property
+    def default_injected_files(self):
+        """
+        A list of files that should be injected by default when
+        creating servers.
+        """
+        return eval(self.get("default_injected_files", '[]'))
+
+    @property
+    def default_file_path(self):
+        """
+        The path to which files will be injected.
+        """
+        return self.get("default_file_path")
+
+
 class BlockDeviceMappingConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'block_device_mapping'

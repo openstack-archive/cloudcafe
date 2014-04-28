@@ -33,6 +33,11 @@ class ImagesConfig(ConfigSectionInterface):
             "primary_image_has_protected_properties", False)
 
     @property
+    def primary_image_default_user(self):
+        """The default user created when a server is booted."""
+        return self.get("primary_image_default_user")
+
+    @property
     def secondary_image(self):
         """Alternate image to be used in compute test"""
         return self.get("secondary_image")
