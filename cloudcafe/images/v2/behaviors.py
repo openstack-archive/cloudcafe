@@ -76,7 +76,7 @@ class ImagesBehaviors(BaseBehavior):
         image_list = []
 
         for i in range(count):
-            image = self.create_new_image(
+            image = self.create_image_via_task(
                 image_properties=image_properties, import_from=import_from,
                 import_from_format=import_from_format)
             image_list.append(image)
