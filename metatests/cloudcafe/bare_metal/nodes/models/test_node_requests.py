@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
 import unittest
 
-from cloudcafe.bare_metal.nodes.models.requests import CreateNode
+from cloudcafe.bare_metal.nodes.models.requests import (
+    CreateNode, SetNodePowerState, SetNodeConsoleMode)
 
 
 class CreateNodeModelTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-
         node_request = CreateNode(
             chassis_uuid='1', driver='fake', properties={'key1': 'val1'},
             driver_info={'key3': 'val3'}, extra={'key2': 'val2'})
@@ -35,3 +36,26 @@ class CreateNodeModelTest(unittest.TestCase):
             '"properties": {"key1": "val1"}, "chassis_uuid": "1", '
             '"extra": {"key2": "val2"}}')
         self.assertEqual(self.node_json, expected_json)
+
+
+class SetNodePowerStateModelTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        power_state_request = SetNodePowerState(power_state='off')
+        cls.request_json = power_state_request.serialize('json')
+
+    def test_set_node_power_state_json(self):
+        expected_json = json.dumps({'target': 'off'})
+        self.assertEqual(self.request_json, expected_json)
+
+
+class SetNodeConsoleModeModelTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        console_mode_request = SetNodeConsoleMode(enabled=True)
+        cls.request_json = console_mode_request.serialize('json')
+
+    def test_set_node_console_mode_json(self):
+        expected_json = json.dumps({'enabled': True})
+        self.assertEqual(self.request_json, expected_json)

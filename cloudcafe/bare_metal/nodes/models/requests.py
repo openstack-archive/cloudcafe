@@ -46,3 +46,23 @@ class CreateNode(AutoMarshallingModel):
         }
         self._remove_empty_values(create_request)
         return json.dumps(create_request)
+
+
+class SetNodePowerState(AutoMarshallingModel):
+
+    def __init__(self, power_state):
+        super(SetNodePowerState, self).__init__()
+        self.power_state = power_state
+
+    def _obj_to_json(self):
+        return json.dumps({'target': self.power_state})
+
+
+class SetNodeConsoleMode(AutoMarshallingModel):
+
+    def __init__(self, enabled):
+        super(SetNodeConsoleMode, self).__init__()
+        self.enabled = enabled
+
+    def _obj_to_json(self):
+        return json.dumps({'enabled': self.enabled})
