@@ -16,7 +16,8 @@ limitations under the License.
 
 import unittest
 
-from cloudcafe.bare_metal.nodes.models.responses import Node, Nodes
+from cloudcafe.bare_metal.nodes.models.responses import (
+    Node, Nodes, DriverInterfaces)
 
 
 class NodesModelTest(unittest.TestCase):
@@ -273,3 +274,33 @@ class NodeModelTest(unittest.TestCase):
     def test_node_uuid(self):
         self.assertEqual(
             self.node.uuid, '4353282d-7ae6-4b77-aec7-172555333bfa')
+
+
+class NodesDriverInterfacesTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.driver_interfaces_json = \
+            """
+            {
+                "console": {"reason": "not supported", "result": null},
+                "power": {"result": true},
+                "deploy": {"result": true}
+            }
+            """
+        cls.driver_interfaces = DriverInterfaces.deserialize(
+            cls.driver_interfaces_json, 'json')
+
+    def test_console_result(self):
+        self.assertIsNotNone(self.driver_interfaces.console)
+        self.assertEqual(
+            self.driver_interfaces.console.reason, 'not supported')
+        self.assertIsNone(self.driver_interfaces.console.result)
+
+    def test_power_result(self):
+        self.assertIsNotNone(self.driver_interfaces.power)
+        self.assertTrue(self.driver_interfaces.power.result)
+
+    def test_deploy_result(self):
+        self.assertIsNotNone(self.driver_interfaces.deploy)
+        self.assertTrue(self.driver_interfaces.deploy.result)
