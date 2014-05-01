@@ -16,6 +16,7 @@ limitations under the License.
 import hmac
 import requests
 import tarfile
+import urllib
 from cStringIO import StringIO
 from datetime import datetime
 from hashlib import sha1
@@ -367,19 +368,6 @@ class ObjectStorageAPIClient(HTTPClient):
             requestslib_kwargs=requestslib_kwargs)
 
         return response
-
-    def get_object_count(self, container_name,
-                         requestslib_kwargs=None):
-        """
-        Returns the number of objects in a container.
-        """
-        response = self.get_container_metadata(
-            container_name,
-            requestslib_kwargs=requestslib_kwargs)
-
-        obj_count = int(response.headers.get('x-container-object-count'))
-
-        return obj_count
 
     #Storage Object------------------------------------------------------------
 
@@ -746,3 +734,29 @@ class ObjectStorageAPIClient(HTTPClient):
             archive_name)
 
         return archive_path
+
+    def bulk_delete(self, targets, headers=None, requestslib_kwargs=None):
+        """
+        Deletes container/objects from an account.
+
+        @type  targets: list of strings
+        @param targets: A list of the '/container/object' or '/container'
+            to be bulk deleted.  Note, bulk delete will not remove
+            containers that have objects in them, and there is limit of
+            1000 containers/objects per delete.
+
+        @rtype:  object
+        @return: The requests response object returned from the call.
+        """
+        if not headers:
+            headers = {}
+        url = '{0}{1}'.format(self.storage_url, '?bulk-delete')
+        data = '\n'.join([urllib.quote(target) for target in targets])
+        headers['content-type'] = 'text/plain'
+        headers['content-length'] = str(len(data))
+
+        response = self.request(
+            'DELETE', url, data=data, headers=headers,
+            requestslib_kwargs=requestslib_kwargs)
+
+        return response

@@ -361,6 +361,48 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         return response
 
     @behavior(ObjectStorageAPIClient)
+    def get_object_count(self, container_name, headers=None, params=None,
+                         expected_object_count=None, requestslib_kwargs=None):
+        """
+        Get the number of objects in a container.  This method allows for a
+        success function to be provided, ensuring that the system has
+        stabilized and become consistent.
+
+        @param container_name: container to list the object from.
+        @type  container_name: string
+        @param headers: headers to be added to the HTTP request.
+        @type  headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type  params: dictionary
+        @param expected_object_count: object names expected to be in the
+                                      container listing.
+        @type  expected_object_count: int
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type  requestslib_kwargs: dictionary
+
+        @return: object listing
+        @rtype: int
+        """
+
+        def success_func(response):
+            object_count = response.headers.get('x-container-object-count')
+            if not response.ok or object_count is None:
+                return False
+            if expected_object_count != object_count:
+                return False
+            return True
+
+        response = self.retry_until_success(
+            self.client.get_container_metadata,
+            func_args=[container_name],
+            func_kwargs={'requestslib_kwargs': requestslib_kwargs},
+            success_func=success_func,
+            timeout=self.config.list_timeout)
+
+        return int(response.headers.get('x-container-object-count'))
+
+    @behavior(ObjectStorageAPIClient)
     def list_objects(self, container_name, headers=None, params=None,
                      expected_objects=None, requestslib_kwargs=None):
         """
