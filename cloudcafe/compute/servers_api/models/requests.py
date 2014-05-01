@@ -48,6 +48,10 @@ class CreateServer(AutoMarshallingModel):
         self.scheduler_hints = scheduler_hints
 
     def _obj_to_json(self):
+
+        if self.personality == []:
+            self.personality = None
+
         body = {
             'name': self.name,
             'imageRef': self.image_ref,
