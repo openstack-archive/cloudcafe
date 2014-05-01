@@ -253,3 +253,19 @@ class ImagesClient(AutoMarshallingRestClient):
         return self.request('GET', url, params=params,
                             response_entity_type=Tasks,
                             requestslib_kwargs=requestslib_kwargs)
+
+    def delete_task(self, task_id, requestslib_kwargs=None):
+        """
+        @summary: Deletes the specified task
+        @param task_id: The id of a task
+        @type task_id: String
+        @return: resp
+        @rtype: Requests.response
+        """
+
+        url = '{0}/tasks/{1}'.format(self.base_url, task_id)
+
+        resp = self.request('DELETE', url, response_entity_type=Task,
+                            requestslib_kwargs=requestslib_kwargs)
+
+        return resp
