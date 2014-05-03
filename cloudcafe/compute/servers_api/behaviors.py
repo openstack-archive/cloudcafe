@@ -406,9 +406,9 @@ class ServerBehaviors(BaseBehavior):
             "type": type}]
         return block_device_mapping_matrix
 
-    def create_block_device__mapping_v2(self, boot_index, uuid, volume_size,
-                                        source_type, destination_type,
-                                        delete_on_termination):
+    def create_block_device_mapping_v2(self, boot_index, uuid, volume_size,
+                                       source_type, destination_type,
+                                       delete_on_termination):
         """
         @summary: Creates Block Device on the fly
         @param uuid: The uuid of the volume
