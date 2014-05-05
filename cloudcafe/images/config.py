@@ -44,14 +44,14 @@ class ImagesConfig(ConfigSectionInterface):
     SECTION_NAME = 'images'
 
     @property
-    def alt_url(self):
-        """Url used for alternate node testing"""
-        return self.get('alt_url')
-
-    @property
     def override_url(self):
         """Url used to override service catalog endpoint"""
         return self.get('override_url')
+
+    @property
+    def restricted_endpoint(self):
+        """Toggle to determine if override_url is limited to specific calls"""
+        return self.get_boolean('restricted_endpoint')
 
     @property
     def endpoint_name(self):
