@@ -115,42 +115,23 @@ class ImagesBehaviors(BaseBehavior):
 
         return image_list
 
-    def list_images_pagination(self, changes_since=None, checksum=None,
-                               container_format=None, disk_format=None,
-                               limit=None, marker=None, member_status=None,
-                               min_disk=None, min_ram=None, name=None,
-                               owner=None, protected=None, size_max=None,
-                               size_min=None, sort_dir=None, sort_key=None,
-                               status=None, visibility=None,
-                               param_kwargs=None):
-        """@summary: Get images accounting for pagination as needed"""
+    def list_images_pagination(self, **filters):
+        """
+        @summary: Get images accounting for pagination as needed with
+        variable number of filter arguments
+        """
 
         image_list = []
         results_limit = self.config.results_limit
-        if param_kwargs is not None:
-            requestslib_kwargs = {"params": param_kwargs}
 
-        response = self.client.list_images(
-            changes_since=changes_since, checksum=checksum,
-            container_format=container_format, disk_format=disk_format,
-            limit=limit, marker=marker, member_status=member_status,
-            min_disk=min_disk, min_ram=min_ram, name=name, owner=owner,
-            protected=protected, size_max=size_max, size_min=size_min,
-            sort_dir=sort_dir, sort_key=sort_key, status=status,
-            visibility=visibility, requestslib_kwargs=requestslib_kwargs)
+        response = self.client.list_images(filters=filters)
         images = response.entity
 
         while len(images) == results_limit:
             image_list += images
             marker = images[results_limit - 1].id_
-            response = self.client.list_images(
-                changes_since=changes_since, checksum=checksum,
-                container_format=container_format, disk_format=disk_format,
-                limit=limit, marker=marker, member_status=member_status,
-                min_disk=min_disk, min_ram=min_ram, name=name, owner=owner,
-                protected=protected, size_max=size_max, size_min=size_min,
-                sort_dir=sort_dir, sort_key=sort_key, status=status,
-                visibility=visibility, requestslib_kwargs=requestslib_kwargs)
+            filters.update({"marker": marker})
+            response = self.client.list_images(filters=filters)
             images = response.entity
 
         image_list += images
