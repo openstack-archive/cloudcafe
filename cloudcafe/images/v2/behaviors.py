@@ -121,11 +121,14 @@ class ImagesBehaviors(BaseBehavior):
                                min_disk=None, min_ram=None, name=None,
                                owner=None, protected=None, size_max=None,
                                size_min=None, sort_dir=None, sort_key=None,
-                               status=None, visibility=None):
+                               status=None, visibility=None,
+                               param_kwargs=None):
         """@summary: Get images accounting for pagination as needed"""
 
         image_list = []
         results_limit = self.config.results_limit
+        if param_kwargs is not None:
+            requestslib_kwargs = {"params": param_kwargs}
 
         response = self.client.list_images(
             changes_since=changes_since, checksum=checksum,
@@ -134,7 +137,7 @@ class ImagesBehaviors(BaseBehavior):
             min_disk=min_disk, min_ram=min_ram, name=name, owner=owner,
             protected=protected, size_max=size_max, size_min=size_min,
             sort_dir=sort_dir, sort_key=sort_key, status=status,
-            visibility=visibility)
+            visibility=visibility, requestslib_kwargs=requestslib_kwargs)
         images = response.entity
 
         while len(images) == results_limit:
@@ -147,7 +150,7 @@ class ImagesBehaviors(BaseBehavior):
                 min_disk=min_disk, min_ram=min_ram, name=name, owner=owner,
                 protected=protected, size_max=size_max, size_min=size_min,
                 sort_dir=sort_dir, sort_key=sort_key, status=status,
-                visibility=visibility)
+                visibility=visibility, requestslib_kwargs=requestslib_kwargs)
             images = response.entity
 
         image_list += images
@@ -378,10 +381,6 @@ class ImagesBehaviors(BaseBehavior):
             if task.input_.import_from is None:
                 errors.append(self.error_msg.format(
                     'import_from', 'not None', task.input_.import_from))
-            if task.input_.import_from_format is None:
-                errors.append(self.error_msg.format(
-                    'import_from_format', 'not None',
-                    task.input_.import_from_format))
             if (task.result is not None and
                     self.id_regex.match(task.result.image_id) is None):
                 errors.append(self.error_msg.format(
