@@ -34,10 +34,6 @@ class StacktachConfig(ConfigSectionInterface):
     SECTION_NAME = 'stacktach'
 
     @property
-    def event_id(self):
-        return self.get('event_id')
-
-    @property
     def url(self):
         return self.get('url')
 
