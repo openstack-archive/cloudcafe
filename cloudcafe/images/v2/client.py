@@ -78,7 +78,7 @@ class ImagesClient(AutoMarshallingRestClient):
         return self.request('GET', url, response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def list_images(self, filters, requestslib_kwargs=None):
+    def list_images(self, filters=None, requestslib_kwargs=None):
         """
         @summary: List all images
         @param filters: filter params to list images call
