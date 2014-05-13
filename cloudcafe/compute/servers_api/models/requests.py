@@ -283,6 +283,10 @@ class Rebuild(AutoMarshallingModel):
         self.config_drive = config_drive
 
     def _obj_to_json(self):
+
+        if self.personality == []:
+            self.personality = None
+
         body = {
             'name': self.name,
             'imageRef': self.image_ref,
