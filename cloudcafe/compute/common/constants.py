@@ -48,3 +48,9 @@ class Constants:
 class HTTPResponseCodes(object):
     NOT_FOUND = 404
     SERVER_ERROR = 500
+
+class BlockDeviceConstants:
+    BOOT_INDEX = 0
+    SOURCE_TYPE_IMAGE = 'image'
+    SOURCE_TYPE_SNAPSHOT = 'snapshot'
+    DESTINATION_TYPE = 'volume'
