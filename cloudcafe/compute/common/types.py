@@ -192,3 +192,12 @@ class InstanceAuthStrategies(object):
 class VncConsoleTypes(object):
     NOVNC = 'novnc'
     XVPVNC = 'xvpvnc'
+
+
+class SourceTypes(object):
+    IMAGE = 'image'
+    SNAPSHOT = 'snapshot'
+
+
+class DestinationTypes(object):
+    VOLUME = 'volume'
