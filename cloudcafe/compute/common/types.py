@@ -192,3 +192,9 @@ class InstanceAuthStrategies(object):
 class VncConsoleTypes(object):
     NOVNC = 'novnc'
     XVPVNC = 'xvpvnc'
+
+
+class BlockDeviceTypes(object):
+    SOURCE_TYPE_IMAGE = 'image'
+    SOURCE_TYPE_SNAPSHOT = 'snapshot'
+    DESTINATION_TYPE = 'volume'
