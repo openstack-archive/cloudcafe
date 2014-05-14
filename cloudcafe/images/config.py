@@ -49,9 +49,33 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('override_url')
 
     @property
-    def restricted_endpoint(self):
-        """Toggle to determine if override_url is limited to specific calls"""
-        return self.get_boolean('restricted_endpoint')
+    def allow_post_images(self):
+        """Toggle to determine if override_url allows POST calls to /images"""
+        return self.get_boolean('allow_post_images')
+
+    @property
+    def allow_put_image_file(self):
+        """
+        Toggle to determine if override_url allows PUT calls to
+        /images/<image_id>/file
+        """
+        return self.get_boolean('allow_put_image_file')
+
+    @property
+    def allow_get_image_file(self):
+        """
+        Toggle to determine if override_url allows GET calls to
+        /images/<image_id>/file
+        """
+        return self.get_boolean('allow_get_image_file')
+
+    @property
+    def allow_create_update_public_images(self):
+        """
+        Toggle to determine if override_url allows creating and updating
+        public images
+        """
+        return self.get_boolean('allow_create_update_public_images')
 
     @property
     def endpoint_name(self):
