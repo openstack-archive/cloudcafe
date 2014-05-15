@@ -219,14 +219,14 @@ class ImageUsage(AutoMarshallingModel):
     ROOT_TAG = 'image'
 
     def __init__(self, id_=None, uuid=None, created_at=None, owner=None,
-                 size=None, last_raw_id=None):
+                 size=None, last_raw=None):
         """An object that represents a ImageUsage in Stacktach DB."""
         self.id_ = id_
         self.uuid = uuid
         self.created_at = created_at
         self.owner = owner
         self.size = size
-        self.last_raw_id = last_raw_id
+        self.last_raw = last_raw
 
     def __repr__(self):
         values = []
@@ -268,18 +268,19 @@ class ImageUsages(AutoMarshallingListModel):
         images = ImageUsages()
         images.extend([ImageUsage._dict_to_obj(image)
                       for image in image_dict_list])
+        return images
 
 
 class ImageDelete(AutoMarshallingModel):
     ROOT_TAG = 'delete'
 
-    def __init__(self, id_=None, uuid=None, deleted_at=None, raw_id=None):
+    def __init__(self, id_=None, uuid=None, deleted_at=None, raw=None):
         """An object that represents a ImageDelete in Stacktach DB."""
         super(ImageDelete, self).__init__()
         self.id_ = id_
         self.uuid = uuid
         self.deleted_at = deleted_at
-        self.raw_id = raw_id
+        self.raw = raw
 
     def __repr__(self):
         values = []
@@ -321,6 +322,7 @@ class ImageDeletes(AutoMarshallingListModel):
         deletes = ImageDeletes()
         deletes.extend([ImageDelete._dict_to_obj(delete)
                         for delete in delete_dict_list])
+        return deletes
 
 
 class ImageExist(AutoMarshallingModel):
@@ -329,8 +331,9 @@ class ImageExist(AutoMarshallingModel):
     def __init__(self, id_=None, uuid=None, created_at=None,
                  deleted_at=None, audit_period_beginning=None,
                  audit_period_ending=None, status=None, fail_reason=None,
-                 raw_id=None, usage_id=None, delete_id=None, send_status=None,
-                 owner=None, size=None, message_id=None, event_id=None):
+                 raw=None, usage=None, delete=None, send_status=None,
+                 owner=None, size=None, message_id=None, event_id=None,
+                 received=None):
         """
         An object that represents a ImageExist in Stacktach DB.
 
@@ -343,14 +346,15 @@ class ImageExist(AutoMarshallingModel):
         self.audit_period_ending = audit_period_ending
         self.status = status
         self.fail_reason = fail_reason
-        self.raw_id = raw_id
-        self.usage_id = usage_id
-        self.delete_id = delete_id
+        self.raw = raw
+        self.usage = usage
+        self.delete = delete
         self.send_status = send_status
         self.owner = owner
         self.size = size
         self.message_id = message_id
         self.event_id = event_id
+        self.received = received
 
     def __repr__(self):
         values = []
