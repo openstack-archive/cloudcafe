@@ -129,7 +129,8 @@ class ServersConfig(ConfigSectionInterface):
         Dictionary containing the expected networks and the IP address types
         expected to be assigned per network.
         """
-        return eval(self.get("expected_networks"))
+        expected_networks = self.get("expected_networks")
+        return eval(expected_networks)
 
     @property
     def default_network(self):
