@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
+
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -126,10 +128,15 @@ class ServersConfig(ConfigSectionInterface):
     @property
     def expected_networks(self):
         """
-        Dictionary containing the expected networks and the IP address types
-        expected to be assigned per network.
+        JSON string containing the expected networks and the IP address types
+        to be assigned per network.
+
+        For example (this is only split across two lines to meet pep8):
+        {'public': {'v4': True, 'v6': True},
+         'private': {'v4': True, 'v6': False}}
+
         """
-        return eval(self.get("expected_networks"))
+        return json.loads(self.get("expected_networks", '{}'))
 
     @property
     def default_network(self):
