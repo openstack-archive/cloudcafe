@@ -132,8 +132,8 @@ class ServersConfig(ConfigSectionInterface):
         to be assigned per network.
 
         For example (this is only split across two lines to meet pep8):
-        {'public': {'v4': True, 'v6': True},
-         'private': {'v4': True, 'v6': False}}
+        {"public": {"v4": true, "v6": true},
+         "private": {"v4": true, "v6": false}}
 
         """
         return json.loads(self.get("expected_networks", '{}'))
