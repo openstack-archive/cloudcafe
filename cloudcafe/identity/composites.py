@@ -42,10 +42,11 @@ class IdentityServiceComposite(object):
         self.user_id = self.access_data.user.id_
         self.tenant_id = self.access_data.token.tenant.id_
         service = self.access_data.get_service(self.service_name)
-        endpoint = service.get_endpoint(self.region)
-        self.public_url = endpoint.public_url
-        self.private_url = endpoint.private_url
-        self.admin_url = endpoint.admin_url
+        if service:
+            endpoint = service.get_endpoint(self.region)
+            self.public_url = endpoint.public_url
+            self.private_url = endpoint.private_url
+            self.admin_url = endpoint.admin_url
 
     def load_extensions(self):
         self.extensions = ExtensionsComposite(self.endpoint, self.client.token)
