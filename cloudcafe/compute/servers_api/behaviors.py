@@ -17,10 +17,7 @@ limitations under the License.
 import time
 
 from cafe.engine.behaviors import BaseBehavior
-from cloudcafe.compute.common.clients.remote_instance.linux.linux_client \
-    import LinuxClient
-from cloudcafe.compute.common.clients.remote_instance.windows.windows_client \
-    import WindowsClient
+
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
@@ -267,9 +264,16 @@ class ServerBehaviors(BaseBehavior):
         image = self.images_client.get_image(server.image.id).entity
 
         if image.metadata.get('os_type', '').lower() == 'windows':
+            # Importing just in time in case WinRM plugin is not installed
+            # (todo) dwalleck: Handle this more cleanly
+            from cloudcafe.compute.common.clients.remote_instance.windows.\
+                windows_client import WindowsClient
             client = WindowsClient
         else:
-            # Assume Linux by default
+            # Importing just in time in case SSH plugin is not installed
+            # (todo) dwalleck: Handle this more cleanly
+            from cloudcafe.compute.common.clients.remote_instance.linux.\
+                linux_client import LinuxClient
             client = LinuxClient
 
         user = self.images_config.primary_image_default_user
