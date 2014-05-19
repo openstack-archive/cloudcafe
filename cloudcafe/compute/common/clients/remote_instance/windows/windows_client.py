@@ -294,8 +294,9 @@ class WindowsClient(RemoteInstanceClient):
         @type path: string
         """
 
-        command = 'New-Item -ItemType directory -Path {path}'.format(
-            path=path)
+        command = (
+            'powershell New-Item -ItemType directory '
+            '-Path {path}'.format(path=path))
         output = self.client.execute_command(command)
         return output.std_out if output.std_out else None
 
@@ -363,10 +364,13 @@ class WindowsClient(RemoteInstanceClient):
         @return: Output of command execution
         @rtype: string
         """
-
         command = (
             'powershell Set-Disk -Number {disk} '
             '-IsOffline $false').format(disk=disk)
+        self.client.execute_command(command)
+        command = (
+            'powershell Set-Disk -Number {disk} '
+            '-IsReadOnly $false').format(disk=disk)
         self.client.execute_command(command)
         command = ('powershell Clear-Disk -Number {disk} '
                    '-RemoveData -Confirm:$false').format(disk=disk)
