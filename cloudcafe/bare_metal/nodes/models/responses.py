@@ -139,3 +139,32 @@ class Properties(MetadataBase):
 
 class DriverInfo(MetadataBase):
     METADATA_TYPE = 'driver_info'
+
+
+class DriverInterfaceResult(AutoMarshallingModel):
+
+    def __init__(self, result=None, reason=None):
+        self.result = result
+        self.reason = reason
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        return DriverInterfaceResult(
+            result=json_dict.get('result'),
+            reason=json_dict.get('reason'))
+
+
+class DriverInterfaces(AutoMarshallingModel):
+
+    def __init__(self, console=None, power=None, deploy=None):
+        self.console = console
+        self.power = power
+        self.deploy = deploy
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        console = DriverInterfaceResult._dict_to_obj(json_dict.get('console'))
+        power = DriverInterfaceResult._dict_to_obj(json_dict.get('power'))
+        deploy = DriverInterfaceResult._dict_to_obj(json_dict.get('deploy'))
+        return DriverInterfaces(console=console, power=power, deploy=deploy)
