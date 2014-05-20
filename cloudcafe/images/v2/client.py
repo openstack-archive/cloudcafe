@@ -237,7 +237,7 @@ class ImagesClient(AutoMarshallingRestClient):
         url = '{0}/tasks'.format(self.base_url)
 
         params = {'limit': limit, 'marker': marker, 'sort_dir': sort_dir,
-                  'status': status, 'type_': type_}
+                  'status': status, 'type': type_}
 
         return self.request('GET', url, params=params,
                             response_entity_type=Tasks,

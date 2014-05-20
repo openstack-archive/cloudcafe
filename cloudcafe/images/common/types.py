@@ -65,6 +65,7 @@ class ImageType(object):
 
     IMPORT = 'import'
     EXPORT = 'export'
+    SNAPSHOT = 'snapshot'
 
 
 class ImageVisibility(object):

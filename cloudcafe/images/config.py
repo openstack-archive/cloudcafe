@@ -118,6 +118,11 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get("snapshot_timeout"))
 
     @property
+    def primary_image_default_user(self):
+        """The default user created when a server is booted"""
+        return self.get("primary_image_default_user")
+
+    @property
     def min_disk(self):
         """Default minimum disk space in image properties"""
         return int(self.get('min_disk'))
