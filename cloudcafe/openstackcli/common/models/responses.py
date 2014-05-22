@@ -158,12 +158,92 @@ class BasePrettyTableResponseModel(BaseExtensibleModel):
                     "Unable to log information regarding the deserialization "
                     "exception")
 
+        model_object._postprocess()
         return model_object
 
     @classmethod
     def _prettytable_str_to_obj(cls, serialized_str):
         raise NotImplementedError
 
+    def _postprocess(self):
+        """Child classes can inherit this and implement it in order to
+        modify the model after deserialization, but before it is returned
+        by deserialize().
+        """
+        pass
+
 
 class BasePrettyTableResponseListModel(list, BasePrettyTableResponseModel):
     pass
+
+
+#Auto-models for common table types
+class SimplePrettyTableListItem(BaseExtensibleModel):
+    """Builds a model from a list of strings defined in _attrs, for use
+    in creating a model for the individual rows of a PretyTableList"""
+    _attrs = []
+
+    def __init__(self, **kwargs):
+        super(SimplePrettyTableListItem, self).__init__(**kwargs)
+        for attr in self._attrs:
+            setattr(self, attr, kwargs.get(attr))
+
+
+class SimplePrettyTableList(BasePrettyTableResponseListModel):
+    """Defines a _prettytable_str_to_obj method for converting tables
+    that look like this:
+    +----------+----------+-----+
+    | Heading1 | Heading2 | ... |
+    +----------+----------+-----+
+    | DataR1H1 | DataR1H2 | ... |
+    | DataR2H1 | DataR2H2 | ... |
+    |    ...   |    ...   | ... |
+    +----------+----------+-----+
+    """
+    _list_item_class = None
+    _header_map = {}
+
+    @classmethod
+    def _prettytable_str_to_obj(cls, prettytable_string):
+        list_response = cls()
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        for datadict in datatuple:
+            kwdict = cls._apply_kwmap(cls._header_map, datadict)
+            list_response.append(cls._list_item_class(**kwdict))
+        return list_response
+
+
+class KeyValuePrettyTableWithHeaders(BasePrettyTableResponseModel):
+    """Defines a _prettytable_str_to_obj method for converting tables
+    that look like this:
+    +----------+----------+
+    | Property | Value    |
+    +----------+----------+
+    | Key1     | Value1   |
+    | Key2     | Value2   |
+    |    ...   |    ...   |
+    +----------+----------+
+    You can change the headers from "Property" and "Value" by creating a
+    new class that inherits from this one, and setting the
+    _keys_header_string and _values_header_string class attributes.
+    """
+
+    _keys_header_string = "Property"
+    _values_header_string = "Value"
+    _attr_map = {}
+
+    def __init__(self, **kwargs):
+        super(KeyValuePrettyTableWithHeaders, self).__init__(**kwargs)
+        for attr in self._attr_map.keys():
+            setattr(self, attr, kwargs.get(attr))
+
+    @classmethod
+    def _prettytable_str_to_obj(cls, prettytable_string):
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        kwdict = {}
+        for datadict in datatuple:
+            kwdict[datadict[cls._keys_header_string]] = datadict[
+                cls._values_header_string].strip() or None
+
+        kwdict = cls._apply_kwmap(cls._attr_map, kwdict)
+        return cls(**kwdict)
