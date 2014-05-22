@@ -25,11 +25,11 @@ class OpenstackCLI_CommonConfig(ConfigSectionInterface):
     def debug(self):
         """Running the openstack cli with debug on by default gives much more
            useful output in the logs"""
-        return self.get_boolean('debug', True)
+        return self.get_boolean('debug', default=True)
 
     @property
     def retries(self):
-        return self.get('retries', None)
+        return self.get('retries')
 
     @property
     def os_username(self):
