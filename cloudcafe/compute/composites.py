@@ -90,8 +90,8 @@ class ComputeIntegrationComposite(object):
         self.volume_attachments = VolumeAttachmentsComposite()
 
         self.servers.behaviors = self.servers.behavior_class(
-            self.servers.client, self.servers.config, self.images.config,
-            self.flavors.config)
+            self.servers.client, self.images.client, self.servers.config,
+            self.images.config, self.flavors.config)
 
         self.images.behaviors = self.images.behavior_class(
             self.images.client, self.servers.client, self.images.config)

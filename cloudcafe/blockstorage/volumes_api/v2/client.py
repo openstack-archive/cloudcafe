@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 
 from cloudcafe.blockstorage.volumes_api.v2.models.requests import (
     VolumeRequest, VolumeSnapshotRequest)
@@ -24,7 +24,7 @@ from cloudcafe.blockstorage.volumes_api.v2.models.responses import (
     VolumeListResponse, VolumeTypeListResponse, VolumeSnapshotListResponse)
 
 
-class VolumesClient(AutoMarshallingRestClient):
+class VolumesClient(AutoMarshallingHTTPClient):
     def __init__(
             self, url, auth_token, serialize_format=None,
             deserialize_format=None):
@@ -62,6 +62,27 @@ class VolumesClient(AutoMarshallingRestClient):
 
         return self.request(
             'POST', url,
+            response_entity_type=VolumeResponse,
+            request_entity=volume_request_entity,
+            requestslib_kwargs=requestslib_kwargs)
+
+    def update_volume(
+            self, volume_id, display_name=None, display_description=None,
+            name=None, description=None, metadata=None, params=None,
+            requestslib_kwargs=None):
+
+        """POST /volumes"""
+
+        url = '{0}/volumes/{1}'.format(self.url, volume_id)
+
+        name = name or display_name
+        description = description or display_description
+
+        volume_request_entity = VolumeRequest(
+            name=name, description=description, metadata=metadata)
+
+        return self.request(
+            'PUT', url,
             response_entity_type=VolumeResponse,
             request_entity=volume_request_entity,
             requestslib_kwargs=requestslib_kwargs)
