@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHttpClient
 from cloudcafe.images.v2.models.image import (Image, Images, ImageUpdate,
                                               Member, Members)
 from cloudcafe.images.v2.models.task import Task, Tasks
 
 
-class ImagesClient(AutoMarshallingRestClient):
+class ImagesClient(AutoMarshallingHttpClient):
     """@summary: Client for Images v2"""
 
     def __init__(self, base_url, auth_token, serialize_format,
