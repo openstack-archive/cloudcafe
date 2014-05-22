@@ -23,10 +23,18 @@ class UserAuthConfig(ConfigSectionInterface):
 
     @property
     def auth_endpoint(self):
+        """The authentication endpoint to use for the credentials in the
+        [user] config section.  This value is used by the auth provider.
+        """
+
         return self.get("endpoint")
 
     @property
     def strategy(self):
+        """The type of authentication exposed by the auth_endpoint. Currently,
+        supported values are 'keystone', 'rax_auth' or 'saio_tempauth'.
+        """
+
         return self.get("strategy")
 
 
@@ -36,30 +44,37 @@ class UserConfig(ConfigSectionInterface):
 
     @property
     def username(self):
+        """The name of the user, if applicable"""
         return self.get("username")
 
     @property
     def api_key(self):
+        """The user's api key, if applicable"""
         return self.get_raw("api_key")
 
     @property
     def password(self):
+        """The user's password, if applicable"""
         return self.get_raw("password")
 
     @property
     def tenant_id(self):
+        """The user's tenant_id, if applicable"""
         return self.get("tenant_id")
 
     @property
     def tenant_name(self):
+        """The user's tenant_name, if applicable"""
         return self.get("tenant_name")
 
     @property
     def user_id(self):
+        """The users's user_id, if applicable"""
         return self.get("user_id")
 
     @property
     def project_id(self):
+        """The users's project_id, if applicable"""
         return self.get("project_id")
 
 
