@@ -32,7 +32,26 @@ class BasePrettyTableResponseModel(BaseExtensibleModel):
 
     @classmethod
     def _listify(cls, prettytable_string):
-        return [l for l in prettytable_string.split('\n') if len(l) > 0]
+        """Extracts the first occurence of a pretty table from
+        prettytable_string returns it as a list of lines.
+        TODO: Handle strings with multiple occurences of PrettyTables in
+              them.
+        """
+
+        raw_list = [l for l in prettytable_string.split('\n') if len(l) > 0]
+        count = 0
+        for line in raw_list:
+            if line.startswith(PRETTYTABLE_FRAME.INTERSECTION_CHARACTER):
+                # Make sure the line only contains characters found in
+                # the horizontal lines of pretty tables.  If it does,
+                # it's most likely the start of a pretty table.
+                testline = line.replace(
+                    PRETTYTABLE_FRAME.HORIZONTAL_SEPERATOR, '').replace(
+                    PRETTYTABLE_FRAME.INTERSECTION_CHARACTER, '')
+                if len(testline) == 0:
+                    break
+            count += 1
+        return raw_list[count::]
 
     @classmethod
     def _get_row_list(cls, prettytable_string):
@@ -53,7 +72,7 @@ class BasePrettyTableResponseModel(BaseExtensibleModel):
 
     @classmethod
     def _get_row_count(cls, prettytable_string):
-        #Remove headers and horizontal seperators
+        # Remove headers and horizontal seperators
         lines = cls._get_row_list(prettytable_string)
         left_vertical = "".join([l[0] for l in lines])
         return left_vertical.count(PRETTYTABLE_FRAME.VERTICAL_SEPERATOR) - 1
@@ -75,14 +94,14 @@ class BasePrettyTableResponseModel(BaseExtensibleModel):
 
         final_row_list = []
         for row in rows:
-            #Split values out by column width
+            # Split values out by column width
             row_items = []
             for length in column_widths:
                 row = row.lstrip(PRETTYTABLE_FRAME.VERTICAL_SEPERATOR)
                 row_items.append(row[:length])
                 row = row[length:]
 
-            #Strip leading and trailing whitepace for all values in row
+            # Strip leading and trailing whitepace for all values in row
             row = [r.strip() for r in row_items]
             final_row_list.append(row)
 
@@ -145,6 +164,13 @@ class BasePrettyTableResponseModel(BaseExtensibleModel):
         except Exception as deserialization_exception:
             cls._log.exception(deserialization_exception)
 
+        try:
+            if hasattr(model_object, '_postprocess'):
+                model_object._postprocess()
+        except Exception as post_deserialization_exception:
+            cls._log.error("Unable to run post-deserialization process")
+            cls._log.exception(post_deserialization_exception)
+
         if deserialization_exception is not None:
             try:
                 cls._log.debug(
@@ -164,6 +190,84 @@ class BasePrettyTableResponseModel(BaseExtensibleModel):
     def _prettytable_str_to_obj(cls, serialized_str):
         raise NotImplementedError
 
+    def _postprocess(self):
+        """Child classes can inherit this and implement it in order to
+        modify the model after deserialization, but before it is returned
+        by deserialize().
+        """
+        pass
+
 
 class BasePrettyTableResponseListModel(list, BasePrettyTableResponseModel):
     pass
+
+
+class SimplePrettyTableListItem(BaseExtensibleModel):
+    """Builds a model from a list of strings defined in _attrs, for use
+    in creating a model for the individual rows of a PretyTableList"""
+    _attrs = []
+
+    def __init__(self, **kwargs):
+        super(SimplePrettyTableListItem, self).__init__(**kwargs)
+        for attr in self._attrs:
+            setattr(self, attr, kwargs.get(attr))
+
+
+class SimplePrettyTableList(BasePrettyTableResponseListModel):
+    """Defines a _prettytable_str_to_obj method for converting tables
+    that look like this:
+    +----------+----------+-----+
+    | Heading1 | Heading2 | ... |
+    +----------+----------+-----+
+    | DataR1H1 | DataR1H2 | ... |
+    | DataR2H1 | DataR2H2 | ... |
+    |    ...   |    ...   | ... |
+    +----------+----------+-----+
+    """
+    _list_item_class = None
+    _header_map = {}
+
+    @classmethod
+    def _prettytable_str_to_obj(cls, prettytable_string):
+        list_response = cls()
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        for datadict in datatuple:
+            kwdict = cls._apply_kwmap(cls._header_map, datadict)
+            list_response.append(cls._list_item_class(**kwdict))
+        return list_response
+
+
+class KeyValuePrettyTableWithHeaders(BasePrettyTableResponseModel):
+    """Defines a _prettytable_str_to_obj method for converting tables
+    that look like this:
+    +----------+----------+
+    | Property | Value    |
+    +----------+----------+
+    | Key1     | Value1   |
+    | Key2     | Value2   |
+    |    ...   |    ...   |
+    +----------+----------+
+    You can change the headers from "Property" and "Value" by creating a
+    new class that inherits from this one, and setting the
+    _keys_header_string and _values_header_string class attributes.
+    """
+
+    _keys_header_string = "Property"
+    _values_header_string = "Value"
+    _attr_map = {}
+
+    def __init__(self, **kwargs):
+        super(KeyValuePrettyTableWithHeaders, self).__init__(**kwargs)
+        for attr in self._attr_map.keys():
+            setattr(self, attr, kwargs.get(attr))
+
+    @classmethod
+    def _prettytable_str_to_obj(cls, prettytable_string):
+        datatuple = cls._load_prettytable_string(prettytable_string)
+        kwdict = {}
+        for datadict in datatuple:
+            kwdict[datadict[cls._keys_header_string]] = datadict[
+                cls._values_header_string].strip() or None
+
+        kwdict = cls._apply_kwmap(cls._attr_map, kwdict)
+        return cls(**kwdict)
