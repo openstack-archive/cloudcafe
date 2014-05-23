@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.clients.rest import AutoMarshallingRestClient
+from cafe.engine.http.client import AutoMarshallingHttpClient
+
 from reddwarfclient import *
 from reddwarfclient import xml
 
 
-class DBaaSAPIClient(AutoMarshallingRestClient):
+class DBaaSAPIClient(AutoMarshallingHttpClient):
     """
     This class can be used to call directly into the REST API and
     wraps the python-reddwarfclient (so you can use that too)!
