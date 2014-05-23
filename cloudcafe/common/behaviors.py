@@ -81,9 +81,13 @@ class StatusProgressionVerifier(BaseBehavior):
                 except Exception as exception:
                     if poll_failure_retries >= poll_failure_retry_limit:
                         msg = (
-                            "status_call() failed {retry_count} times, Unable "
-                            "to retrieve status.".format(
-                                retry_count=poll_failure_retries))
+                            "status_call() failed after {retries} retries."
+                            " Unable to retrieve status.".format(
+                                retries=poll_failure_retries))
+                        if poll_failure_retry_limit > 0:
+                            msg = (
+                                "status_call() failed and was not allowed "
+                                "any retries")
                         self._log.error(exception)
                         self._log.error(msg)
                         raise StatusPollError(msg)
