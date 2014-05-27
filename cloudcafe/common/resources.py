@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from multiprocessing import Process
 
 
-class Resource:
+class Resource(object):
     """
     @summary: Keeps details of a resource like server
               or image and how to delete it.
@@ -32,7 +33,7 @@ class Resource:
         self.delete_function(self.resource_id)
 
 
-class ResourcePool:
+class ResourcePool(object):
     """
     @summary: Pool of resources to be tracked for deletion.
     """
@@ -49,12 +50,36 @@ class ResourcePool:
         """
         self.resources.append(Resource(resource_id, delete_function))
 
-    def release(self):
+    def release(self, async=False):
         """
         @summary: Delete all the resources in the Resource Pool
         """
+        if async:
+            self.release_asynchronously()
+            return
+
+        else:
+            for resource in self.resources:
+                try:
+                    resource.delete()
+                except:
+                    pass
+
+    def release_asynchronously(self):
+        """Delete all the resources in the Resource Pool asynchronously"""
+
+        running_processes = []
         for resource in self.resources:
             try:
-                resource.delete()
+                p = Process(
+                    target=resource.delete, args=(resource.resource_id,))
+                p.start()
+                running_processes.append(p)
+            except:
+                pass
+
+        for p in running_processes:
+            try:
+                p.join()
             except:
                 pass
