@@ -13,21 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-import os
-import sys
-
-
-try:
-    from setuptools import setup, find_packages
-    from setuptools.command.install import install as _install
-except ImportError:
-    from distutils.core import setup, find_packages
-    from distutils.command.install import install as _install
-
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    sys.exit()
+from setuptools import setup, find_packages
+from setuptools.command.install import install as _install
 
 
 def print_cafe_mug():
@@ -77,7 +64,6 @@ setup(
         open('HISTORY.rst').read()),
     author='Rackspace Cloud QE',
     author_email='cloud-cafe@lists.rackspace.com',
-    url='http://rackspace.com',
     packages=find_packages(),
     include_package_data=True,
     install_requires=requires,
