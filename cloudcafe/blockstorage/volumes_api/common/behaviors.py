@@ -18,6 +18,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             self._log.error(msg)
             raise VolumesAPIBehaviorException(msg)
 
+        #Verify volume response entity deserialized correctly
         if resp.entity is None:
             msg = "Response body did not deserialize as expected"
             self._log.error(msg)
@@ -57,6 +58,19 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
         return timeout
 
+    def calculate_volume_clone_timeout(self, original_volume_size):
+        timeout = self._calculate_timeout(
+            size=original_volume_size,
+            max_timeout=self.config.volume_clone_max_timeout,
+            min_timeout=self.config.volume_clone_min_timeout,
+            wait_per_gb=self.config.volume_clone_wait_per_gigabyte)
+        if not timeout:
+            timeout = self.config.volume_clone_base_timeout
+        else:
+            timeout += self.config.volume_clone_base_timeout
+
+        return timeout
+
     def calculate_snapshot_create_timeout(self, volume_size):
         timeout = self._calculate_timeout(
             size=volume_size,
@@ -67,6 +81,19 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             timeout = self.config.snapshot_create_base_timeout
         else:
             timeout += self.config.snapshot_create_base_timeout
+
+        return timeout
+
+    def calculate_snapshot_delete_timeout(self, original_volume_size):
+        timeout = self._calculate_timeout(
+            size=original_volume_size,
+            max_timeout=self.config.snapshot_delete_max_timeout,
+            min_timeout=self.config.snapshot_delete_min_timeout,
+            wait_per_gb=self.config.snapshot_delete_wait_per_gigabyte)
+        if not timeout:
+            timeout = self.config.snapshot_delete_max_timeout
+        else:
+            timeout += self.config.snapshot_delete_base_timeout
 
         return timeout
 
@@ -89,10 +116,13 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         also call create_volume."""
         raise NotImplementedError
 
-    def get_volume_status(self, volume_id):
+    def get_volume_info(self, volume_id):
         resp = self.client.get_volume_info(volume_id=volume_id)
         self._verify_entity(resp)
-        return resp.entity.status
+        return resp.entity
+
+    def get_volume_status(self, volume_id):
+        return self.get_volume_info(volume_id).status
 
     def wait_for_volume_status(
             self, volume_id, expected_status, timeout, poll_rate=None):
@@ -106,13 +136,19 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         end_time = time() + timeout
 
         while time() < end_time:
-            status = self.get_volume_status(volume_id)
-            if status == expected_status:
+            current_status = self.get_volume_status(volume_id)
+            if current_status == expected_status:
                 self._log.info(
-                    "Expected Volume status '{0}' observed as expected".format(
-                        expected_status))
+                    "Expected Volume status '{0}' observed as expected in {1}"
+                    " seconds.".format(expected_status, int(end_time-time())))
                 break
-
+            self._log.info(
+                "Waiting {time_left} more seconds for volume '{volid}' "
+                "status to become '{expected_status}'. Current status is "
+                "'{current_status}'".format(
+                    time_left=end_time - time(), volid=volume_id,
+                    expected_status=expected_status,
+                    current_status=current_status))
             sleep(poll_rate)
         else:
             msg = (
@@ -122,10 +158,13 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             self._log.info(msg)
             raise VolumesAPIBehaviorException(msg)
 
-    def get_snapshot_status(self, snapshot_id):
+    def get_snapshot_info(self, snapshot_id):
         resp = self.client.get_snapshot_info(snapshot_id=snapshot_id)
         self._verify_entity(resp)
-        return resp.entity.status
+        return resp.entity
+
+    def get_snapshot_status(self, snapshot_id):
+        return self.get_snapshot_info(snapshot_id).status
 
     def wait_for_snapshot_status(
             self, snapshot_id, expected_status, timeout, poll_rate=None):
@@ -311,14 +350,8 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             self, snapshot_id, vol_size=None, timeout=None, poll_rate=None):
         """Returns True if snapshot deleted, False otherwise"""
 
-        timeout = self._calculate_timeout(
-            size=vol_size, timeout=timeout,
-            min_timeout=self.config.snapshot_delete_min_timeout,
-            max_timeout=self.config.snapshot_delete_max_timeout,
-            wait_per_gb=self.config.snapshot_delete_wait_per_gigabyte)
-
+        timeout = self.calculate_snapshot_delete_timeout(vol_size)
         poll_rate = poll_rate or self.config.snapshot_status_poll_frequency
-
         timeout_msg = (
             "delete_snapshot_confirmed() was unable to confirm the snapshot "
             "deleted within the alloted {0} second timeout".format(timeout))
@@ -367,7 +400,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
         #Attempt to delete all snapshots associated with provided volume_id
         snapshots = self.list_volume_snapshots(volume_id)
-        if snapshots is not None and len(snapshots) > 0:
+        if snapshots:
             for snap in snapshots:
                 if not self.delete_snapshot_confirmed(snap.id_):
                     self._log.warning(
@@ -387,3 +420,18 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         resp = self.client.list_all_volume_types()
         self._verify_entity(resp)
         return resp.entity
+
+    def get_volume_list(self):
+        resp = self.client.list_all_volumes()
+        self._verify_entity(resp)
+        return resp.entity
+
+    def find_volume_by_name(self, volume_name):
+        for v in self.get_volume_list():
+            if v.name == volume_name:
+                return v
+
+    def find_volume_by_id(self, volume_id):
+        for v in self.get_volume_list():
+            if v.id_ == volume_id:
+                return v
