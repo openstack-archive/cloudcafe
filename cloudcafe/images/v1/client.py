@@ -13,12 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from cafe.engine.http.client import AutoMarshallingHttpClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.images.v1.models.image import Image, ImageMinList
 from cloudcafe.images.v1.models.member import MemberList
 
 
-class ImagesClient(AutoMarshallingHttpClient):
+class ImagesClient(AutoMarshallingHTTPClient):
     """Client for Image API."""
 
     def __init__(self, url, auth_token, serialize_format, deserialize_format):

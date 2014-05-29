@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from cafe.engine.http.client import AutoMarshallingHttpClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 
 
-class BarbicanRestClient(AutoMarshallingHttpClient):
+class BarbicanRestClient(AutoMarshallingHTTPClient):
     def __init__(self, token=None, serialize_format=None,
                  deserialize_format=None):
         super(BarbicanRestClient, self).__init__(

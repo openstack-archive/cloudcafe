@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.http.client import AutoMarshallingHttpClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 
 from cloudcafe.stacktach.stacktach_db_api.models.stacktach_db_api import \
     (ServerLaunch, ServerLaunches, ServerDelete, ServerDeletes,
      ServerExist, ServerExists, ImageUsages, ImageDeletes, ImageExists)
 
 
-class StackTachDBClient(AutoMarshallingHttpClient):
+class StackTachDBClient(AutoMarshallingHTTPClient):
 
     def __init__(self, db_url, serialize_format, deserialize_format=None):
         super(StackTachDBClient, self).__init__(serialize_format,

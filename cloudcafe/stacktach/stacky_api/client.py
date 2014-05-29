@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.http.client import AutoMarshallingHttpClient
+from cafe.engine.http.client import AutoMarshallingHTTPClient
 
 from cloudcafe.stacktach.stacky_api.models.stacky_api import \
     (Deployments, EventNames, HostNames, TimingsSummaries,
@@ -22,7 +22,7 @@ from cloudcafe.stacktach.stacky_api.models.stacky_api import \
      KpiDetails, WatchEvents, Reports, EventIdDetails)
 
 
-class StackTachClient(AutoMarshallingHttpClient):
+class StackTachClient(AutoMarshallingHTTPClient):
 
     def __init__(self, url, serialize_format, deserialize_format=None):
         super(StackTachClient, self).__init__(serialize_format,
