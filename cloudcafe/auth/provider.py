@@ -51,7 +51,7 @@ class MemoizedAuthServiceComposite(object):
 
         self.endpoint_config = endpoint_config or UserAuthConfig()
         self.user_config = user_config or UserConfig()
-        self.access_data = self.cache_access_data()
+        self.access_data = self.cache_access_data(endpoint_config, user_config)
         self.token_id = self.access_data.token.id_
         self.tenant_id = self.access_data.token.tenant.id_
         self.service_name = service_name
