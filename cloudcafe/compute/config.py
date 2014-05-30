@@ -59,12 +59,3 @@ class ComputeEndpointConfig(ConfigSectionInterface):
 class ComputeAdminEndpointConfig(ComputeEndpointConfig):
 
     SECTION_NAME = 'compute_admin_endpoint'
-
-
-class ComputeFuzzingConfig(ConfigSectionInterface):
-
-    SECTION_NAME = 'compute_fuzzing'
-
-    @property
-    def input_fuzzing_file(self):
-        return self.get("input_fuzzing_file")
