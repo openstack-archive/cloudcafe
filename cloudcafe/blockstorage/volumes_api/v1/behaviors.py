@@ -34,6 +34,9 @@ class VolumesAPI_Behaviors(VolumesAPI_CommonBehaviors):
             self, size, volume_type, name=None, description=None,
             availability_zone=None, metadata=None, bootable=None,
             image_ref=None, snapshot_id=None, source_volid=None):
+        """Normalizes call to accept name and description so that
+        v1 and v2 behaviors are the same
+        """
 
         resp = self.client.create_volume(
             size, volume_type, display_name=name, metadata=metadata,
@@ -47,70 +50,12 @@ class VolumesAPI_Behaviors(VolumesAPI_CommonBehaviors):
     def create_snapshot(
             self, volume_id, name=None, description=None,
             force_create=False, requestslib_kwargs=None):
+        """Normalizes call to accept name and description so that
+        v1 and v2 behaviors are the same
+        """
 
         resp = self.client.create_snapshot(
             volume_id, display_name=name, display_description=description,
             force_create=force_create)
 
         return resp
-
-    @behavior(VolumesClient)
-    def get_volume_status(self, volume_id):
-        return super(VolumesAPI_Behaviors, self).get_volume_status(volume_id)
-
-    @behavior(VolumesClient)
-    def wait_for_volume_status(
-            self, volume_id, expected_status, timeout, poll_rate=None):
-        return super(VolumesAPI_Behaviors, self).wait_for_volume_status(
-            volume_id, expected_status, timeout, poll_rate)
-
-    @behavior(VolumesClient)
-    def get_snapshot_status(self, snapshot_id):
-        return super(VolumesAPI_Behaviors, self).get_snapshot_status(
-            snapshot_id)
-
-    @behavior(VolumesClient)
-    def wait_for_snapshot_status(
-            self, snapshot_id, expected_status, timeout, poll_rate=None):
-        return super(VolumesAPI_Behaviors, self).wait_for_snapshot_status(
-            snapshot_id, expected_status, timeout, poll_rate)
-
-    @behavior(VolumesClient)
-    def create_available_volume(
-            self, size, volume_type, name=None, description=None,
-            availability_zone=None, metadata=None, bootable=None,
-            image_ref=None, snapshot_id=None, source_volid=None, timeout=None):
-        return super(VolumesAPI_Behaviors, self).create_available_volume(
-            size, volume_type, name=name, description=description,
-            availability_zone=availability_zone, metadata=metadata,
-            bootable=bootable, image_ref=image_ref, snapshot_id=snapshot_id,
-            source_volid=source_volid, timeout=timeout)
-
-    @behavior(VolumesClient)
-    def create_available_snapshot(
-            self, volume_id, name=None, description=None, force_create=True,
-            timeout=None):
-        return super(VolumesAPI_Behaviors, self).create_available_snapshot(
-            volume_id, name, description, force_create, timeout)
-
-    @behavior(VolumesClient)
-    def list_volume_snapshots(self, volume_id):
-        return super(VolumesAPI_Behaviors, self).list_volume_snapshots(
-            volume_id)
-
-    @behavior(VolumesClient)
-    def delete_volume_confirmed(
-            self, volume_id, size=None, timeout=None, poll_rate=None):
-        return super(VolumesAPI_Behaviors, self).delete_volume_confirmed(
-            volume_id, size, timeout, poll_rate)
-
-    @behavior(VolumesClient)
-    def delete_snapshot_confirmed(
-            self, snapshot_id, vol_size=None, timeout=None, poll_rate=None):
-        return super(VolumesAPI_Behaviors, self).delete_snapshot_confirmed(
-            snapshot_id, vol_size, timeout, poll_rate)
-
-    @behavior(VolumesClient)
-    def delete_volume_with_snapshots_confirmed(self, volume_id):
-        return super(VolumesAPI_Behaviors, self)\
-            .delete_volume_with_snapshots_confirmed(volume_id)

@@ -435,3 +435,8 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         for v in self.get_volume_list():
             if v.id_ == volume_id:
                 return v
+
+    def get_snapshot_list(self):
+        resp = self.client.list_all_volumes()
+        self._verify_entity(resp)
+        return resp.entity
