@@ -48,12 +48,14 @@ from cloudcafe.compute.config import ComputeAdminEndpointConfig, \
 
 class _ComputeAuthComposite(MemoizedAuthServiceComposite):
     _compute_endpoint_config = ComputeEndpointConfig
-    _auth_endpoint_config = UserAuthConfig()
-    _auth_user_config = UserConfig()
+    _auth_endpoint_config = UserAuthConfig
+    _auth_user_config = UserConfig
 
     def __init__(self):
         self.compute_endpoint_config = self._compute_endpoint_config()
         self.marshalling_config = MarshallingConfig()
+        self._auth_endpoint_config = self._auth_endpoint_config()
+        self._auth_user_config = self._auth_user_config()
 
         super(_ComputeAuthComposite, self).__init__(
             service_name=self.compute_endpoint_config.compute_endpoint_name,
@@ -77,8 +79,8 @@ class _ComputeAuthComposite(MemoizedAuthServiceComposite):
 
 class _ComputeAdminAuthComposite(_ComputeAuthComposite):
     _compute_endpoint_config = ComputeAdminEndpointConfig
-    _auth_endpoint_config = ComputeAdminAuthConfig()
-    _auth_user_config = ComputeAdminUserConfig()
+    _auth_endpoint_config = ComputeAdminAuthConfig
+    _auth_user_config = ComputeAdminUserConfig
 
 
 class ComputeComposite(object):
