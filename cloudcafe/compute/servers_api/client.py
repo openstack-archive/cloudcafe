@@ -167,8 +167,8 @@ class ServersClient(AutoMarshallingHTTPClient):
                       user_data=None, metadata=None, accessIPv4=None,
                       accessIPv6=None, disk_config=None, networks=None,
                       admin_pass=None, key_name=None, config_drive=None,
-                      scheduler_hints=None, requestslib_kwargs=None,
-                      block_device_mapping=None):
+                      scheduler_hints=None, block_device_mapping=None,
+                      requestslib_kwargs=None,):
         """
         @summary: Creates an instance of a server given the
          provided parameters
