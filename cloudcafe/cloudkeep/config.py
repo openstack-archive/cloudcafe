@@ -59,6 +59,14 @@ class CloudKeepConfig(ConfigSectionInterface):
     def tenant_id(self):
         return self.get("tenant_id")
 
+    @property
+    def max_allowed_secret_in_bytes(self):
+        return int(self.get("max_allowed_secret_in_bytes"))
+
+    @property
+    def max_allowed_request_size_in_bytes(self):
+        return int(self.get("max_allowed_request_size_in_bytes"))
+
 
 class CloudKeepSecretsConfig(ConfigSectionInterface):
     SECTION_NAME = 'cloudkeep-secrets'
