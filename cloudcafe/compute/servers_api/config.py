@@ -157,6 +157,17 @@ class ServersConfig(ConfigSectionInterface):
         return eval(self.get("default_injected_files", '[]'))
 
     @property
+    def default_scheduler_hints(self):
+        """
+        A set of scheduler hints that should be used when creating
+        any server.
+        """
+        hints = self.get("default_scheduler_hints")
+        if hints:
+            return eval(hints)
+        return None
+
+    @property
     def default_file_path(self):
         """
         The path to which files will be injected.

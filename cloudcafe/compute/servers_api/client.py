@@ -201,6 +201,13 @@ class ServersClient(AutoMarshallingHTTPClient):
         @rtype: Requests.response
         """
 
+        # If default scheduler hints are set, add them to the request
+        if self.config.default_scheduler_hints:
+            if scheduler_hints:
+                scheduler_hints.update(self.config.default_scheduler_hints)
+            else:
+                scheduler_hints = self.config.default_scheduler_hints
+
         default_files = self.config.default_injected_files
         # Encode the file contents
         for personality_file in default_files:
