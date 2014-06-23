@@ -201,17 +201,6 @@ class ServersClient(AutoMarshallingHTTPClient):
         @rtype: Requests.response
         """
 
-        default_files = self.config.default_injected_files
-        # Encode the file contents
-        for personality_file in default_files:
-            personality_file['contents'] = base64.b64encode(
-                personality_file['contents'])
-
-        if personality is None:
-            personality = default_files
-        else:
-            personality += default_files
-
         server_request_object = CreateServer(
             name=name, flavor_ref=flavor_ref, image_ref=image_ref,
             personality=personality, block_device_mapping=block_device_mapping,
