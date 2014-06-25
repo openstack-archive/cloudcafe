@@ -261,7 +261,12 @@ class ServerBehaviors(BaseBehavior):
                 ip_address = network.ipv6
 
         # Try to determine distro
-        image = self.images_client.get_image(server.image.id).entity
+        if server.image:
+            image = self.images_client.get_image(server.image.id).entity
+        # This else is the boot from volume case(servers with no image id)
+        else:
+            image = self.images_client.get_image(
+                self.images_config.primary_image).entity
 
         if image.metadata.get('os_type', '').lower() == 'windows':
             # Importing just in time in case WinRM plugin is not installed
