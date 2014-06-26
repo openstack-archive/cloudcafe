@@ -32,6 +32,15 @@ class TimeoutException(Exception):
         return repr(self.message)
 
 
+class UndesiredValueException(Exception):
+    """Exception on metadata value"""
+    def __init__(self, message='Undesired Value Error'):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
+
 class BuildErrorException(Exception):
     """Exception on server build"""
     def __init__(self, message='Build Error'):

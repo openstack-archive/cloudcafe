@@ -23,7 +23,8 @@ from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
-    TimeoutException, BuildErrorException, RequiredResourceException
+    TimeoutException, BuildErrorException, RequiredResourceException, \
+    UndesiredValueException
 
 
 class ServerBehaviors(BaseBehavior):
@@ -164,6 +165,54 @@ class ServerBehaviors(BaseBehavior):
                     timeout, server_id, desired_status))
 
         return resp
+
+    def wait_for_metadata_value(self, server_id, metadata_key,
+                                desired_value, undesired_value=None,
+                                interval_time=None, timeout=None):
+        """
+        @summary: Polls a managed server's metadata for a specific key until
+                  it reaches a desired value or times out
+        @param server_id: The uuid of the managed server
+        @type server_id: String
+        @param metadata_key: Metadata key to poll for desired value
+        @type metadata_key: String
+        @param desired_value: The desired value of the metadata key
+        @type desired_value: String
+        @param undesired_value: A value that signifies an undesired behavior
+                              or state for the desired key
+        @type undesired_value: String
+        @param interval_time: The amount of time in seconds to wait
+                              between polling
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait
+                              before aborting
+        @type timeout: Integer
+        @return: The final value of the metadata_key, either desired value
+                 or the value of the key at timeout
+        @rtype: String
+        """
+
+        interval_time = interval_time or self.config.server_status_interval
+        timeout = timeout or self.config.server_build_timeout
+        end_time = time.time() + timeout
+        while (time.time() < end_time):
+            metadata_list =\
+                self.servers_client.list_server_metadata(server_id).entity
+            if metadata_key in metadata_list:
+                metadata_value = metadata_list[metadata_key]
+                if metadata_value.lower() == undesired_value.lower():
+                    message = 'Metadata polling process failed ' \
+                              'Server with uuid {0} recieved undesired {1} ' \
+                              'value for metadata key {2}.'
+                    raise UndesiredValueException(message.format(
+                        server_id, undesired_value, metadata_key))
+                if metadata_value.lower() == desired_value.lower():
+                    return metadata_value
+            time.sleep(interval_time)
+        raise TimeoutException(
+            "wait_for_metadata_value ran for {0} seconds and did not "
+            "observe server {1} reach the {2} value for metedata key "
+            "{3}.".format(timeout, server_id, desired_value, metadata_key))
 
     def wait_for_server_to_be_deleted(self, server_id, interval_time=None,
                                       timeout=None):
