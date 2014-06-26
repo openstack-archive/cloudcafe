@@ -165,6 +165,59 @@ class ServerBehaviors(BaseBehavior):
 
         return resp
 
+    def wait_for_metadata_value(self, server_id, metadata_key,
+                                potential_values, interval_time=15,
+                                timeout=1800):
+        """
+        @summary: Polls a server's metadata for a specific key until it
+                  reaches one of the specified values or times out
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param metadata_key: Metadata key to poll for desired value
+        @type metadata_key: String
+        @param potential_values: A list of potential values that are
+                                 actionable. If the metadata key reaches any
+                                 of the values in this list the method should
+                                 return that value and exit.
+        @type potential_values: List of Strings
+        @param interval_time: The amount of time in seconds to wait
+                              between polling. Default value is 15 seconds
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait before aborting.
+                        Default value is 1800 seconds
+        @type timeout: Integer
+        @return: The final value of the metadata_key, either a specified value
+                 or the value of the key at timeout
+        @rtype: String
+        """
+        end_time = time.time() + timeout
+        metadata_value = None
+
+        potential_values = [str.lower() for str in potential_values]
+        while (time.time() < end_time):
+            metadata_list =\
+                self.servers_client.list_server_metadata(server_id).entity
+            if metadata_key in metadata_list:
+                metadata_value = metadata_list[metadata_key]
+                if metadata_value.lower() in potential_values:
+                    return metadata_value
+            time.sleep(interval_time)
+
+        if metadata_value:
+            metadata_result = "Key {0} ended with value {1}".format(
+                metadata_key, metadata_value)
+        else:
+            metadata_result = "Key {0} was not found.".format(metadata_key)
+
+        raise TimeoutException(
+            "wait_for_metadata_value ran for {timeout} seconds and did not "
+            "observe server {server_id} reach any of the specified values, "
+            "{potential_values}, for metadata key {metadata_key}. {result}"
+            .format(
+                timeout=timeout, server_id=server_id,
+                potential_values=potential_values, metadata_key=metadata_key,
+                result=metadata_result))
+
     def wait_for_server_to_be_deleted(self, server_id, interval_time=None,
                                       timeout=None):
         """
