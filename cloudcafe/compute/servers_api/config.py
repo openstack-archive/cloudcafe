@@ -64,7 +64,7 @@ class ServersConfig(ConfigSectionInterface):
 
     @property
     def server_status_interval(self):
-        """Amount of time to wait between polling the status of a server"""
+        """Number of seconds to wait between polling the status of a server"""
         return int(self.get("server_status_interval"))
 
     @property
