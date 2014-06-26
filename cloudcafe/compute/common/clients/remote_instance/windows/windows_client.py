@@ -26,7 +26,8 @@ from cafe.engine.clients.remote_instance.models.file_details \
     import FileDetails
 from cloudcafe.compute.common.clients.remote_instance.base_client import \
     RemoteInstanceClient
-from cloudcafe.compute.common.exceptions import ServerUnreachable
+from cloudcafe.compute.common.exceptions import ServerUnreachable, \
+    WinRMConnectionException
 
 
 class WindowsClient(RemoteInstanceClient):
@@ -56,7 +57,9 @@ class WindowsClient(RemoteInstanceClient):
 
         self.client = WinRMClient(
             username=username, password=password, host=ip_address)
-        self.client.connect_with_retries()
+        connected = self.client.connect_with_retries()
+        if not connected:
+            raise WinRMConnectionException(ip_address=ip_address)
 
     def can_authenticate(self):
         """
