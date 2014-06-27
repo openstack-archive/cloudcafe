@@ -260,8 +260,14 @@ class ServerBehaviors(BaseBehavior):
             elif config.ip_address_version_for_ssh == 6:
                 ip_address = network.ipv6
 
-        # Try to determine distro
-        image = self.images_client.get_image(server.image.id).entity
+        # Get Server Image ID
+        if server.image:
+            image_id = server.image.id
+        else:
+            image_id = self.images_config.primary_image
+
+        # Get the Server Image
+        image = self.images_client.get_image(image_id).entity
 
         if image.metadata.get('os_type', '').lower() == 'windows':
             # Importing just in time in case WinRM plugin is not installed
