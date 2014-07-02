@@ -41,7 +41,7 @@ class OrdersClient(BarbicanRestClient):
                                           order_id=order_id)
 
     def create_order(self, name, payload_content_type, algorithm,
-                     bit_length, mode, expiration):
+                     bit_length, mode, expiration, headers=None):
         """
         POST http://.../v1/{tenant_id}/orders/{order_uuid}
         Creates an order to generate a secret
@@ -56,7 +56,7 @@ class OrdersClient(BarbicanRestClient):
         req_obj = Order(secret=secret)
 
         resp = self.request('POST', remote_url, request_entity=req_obj,
-                            response_entity_type=OrderRef)
+                            response_entity_type=OrderRef, headers=headers)
         return resp
 
     def create_order_w_payload(self, name, payload_content_type, algorithm,
