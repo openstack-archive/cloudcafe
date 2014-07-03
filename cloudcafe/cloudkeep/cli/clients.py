@@ -169,13 +169,7 @@ class OrdersCLIClient(BarbicanCLIClient):
             entity_type=BarbicanEntityType.ORDER, hateos_ref=hateos_ref)
 
 
-class VerificationCLIClient(BarbicanCLIClient):
-
-    def verify(self):
-        return self._action_command(BarbicanEntityType.VERIFICATION, 'verify')
-
-
 class BarbicanEntityType(object):
     SECRET = 'secret'
     ORDER = 'order'
-    VERIFICATION = 'verification'
+    

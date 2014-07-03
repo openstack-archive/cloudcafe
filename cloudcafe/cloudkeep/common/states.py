@@ -22,7 +22,3 @@ class SecretsStates(object):
 
 class OrdersStates(SecretsStates):
     PENDING = "PENDING"
-
-
-class VerificationsStates(SecretsStates):
-    PENDING = "PENDING"
