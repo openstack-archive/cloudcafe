@@ -162,23 +162,3 @@ class CloudKeepRBACRoleConfig(ConfigSectionInterface):
     @property
     def audit_password(self):
         return self.get('audit_password')
-
-
-class CloudKeepVerificationsConfig(ConfigSectionInterface):
-    SECTION_NAME = 'cloudkeep-verifications'
-
-    @property
-    def resource_type(self):
-        return self.get("resource_type")
-
-    @property
-    def resource_ref(self):
-        return self.get("resource_ref")
-
-    @property
-    def resource_action(self):
-        return self.get("resource_action")
-
-    @property
-    def impersonation_allowed(self):
-        return self.get("impersonation_allowed")
