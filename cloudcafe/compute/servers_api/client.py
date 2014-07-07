@@ -14,15 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import base64
-
 from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.models.metadata import Metadata
 from cloudcafe.compute.common.models.metadata import MetadataItem
 from cloudcafe.compute.extensions.security_groups_api.models.security_group \
     import SecurityGroups, SecurityGroup
-from cloudcafe.compute.servers_api.config import ServersConfig
 from cloudcafe.compute.servers_api.models.servers import Server, Servers, \
     ServerMins
 from cloudcafe.compute.servers_api.models.servers import Addresses
@@ -63,7 +60,6 @@ class ServersClient(AutoMarshallingHTTPClient):
         self.default_headers['Content-Type'] = ct
         self.default_headers['Accept'] = accept
         self.url = url
-        self.config = ServersConfig()
 
     def list_servers(self, name=None, image=None, flavor=None,
                      status=None, marker=None, limit=None, changes_since=None,
@@ -200,17 +196,6 @@ class ServersClient(AutoMarshallingHTTPClient):
          the server domain object
         @rtype: Requests.response
         """
-
-        default_files = self.config.default_injected_files
-        # Encode the file contents
-        for personality_file in default_files:
-            personality_file['contents'] = base64.b64encode(
-                personality_file['contents'])
-
-        if personality is None:
-            personality = default_files
-        else:
-            personality += default_files
 
         server_request_object = CreateServer(
             name=name, flavor_ref=flavor_ref, image_ref=image_ref,
@@ -364,17 +349,6 @@ class ServersClient(AutoMarshallingHTTPClient):
          the server domain object
         @rtype: Requests.response
         """
-
-        default_files = self.config.default_injected_files
-        # Encode the file contents
-        for personality_file in default_files:
-            personality_file['contents'] = base64.b64encode(
-                personality_file['contents'])
-
-        if personality is None:
-            personality = default_files
-        else:
-            personality += default_files
 
         url = '{base_url}/servers/{server_id}/action'.format(
             base_url=self.url, server_id=server_id)
