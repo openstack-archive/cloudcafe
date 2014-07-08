@@ -18,6 +18,8 @@ import os
 import re
 import time
 
+from cloudcafe.common.tools import datagen
+
 from cafe.common.reporting import cclogging
 from cafe.engine.clients.remote_instance.exceptions \
     import DirectoryNotFoundException
@@ -64,10 +66,14 @@ class LinuxClient(RemoteInstanceClient):
         else:
             auth_strategy = SSHAuthStrategy.PASSWORD
 
+        allow_agent = True
+        if not key:
+            allow_agent = False
+
         self.ssh_client = SSHClient(
             username=self.username, password=self.password,
             host=self.ip_address, tcp_timeout=20, auth_strategy=auth_strategy,
-            look_for_keys=False, key=key)
+            look_for_keys=False, key=key, allow_agent=allow_agent)
         self.ssh_client.connect_with_timeout(
             cooldown=20, timeout=connection_timeout)
         if not self.ssh_client.is_connected():
@@ -158,11 +164,17 @@ class LinuxClient(RemoteInstanceClient):
         @rtype: FileDetails
         """
 
-        if file_path is None:
-            file_path = "/root/{file_name}".format(file_name=file_name)
+        file_path = file_path or "/root"
+
+        if not file_path.endswith("/"):
+            file_path = "{0}/".format(file_path)
+
+        file_path = "{0}{1}".format(file_path, file_name)
+
         self.ssh_client.execute_command(
             'echo -n {file_content} >> {file_path}'.format(
-                file_content=file_content, file_name=file_name))
+                file_content=file_content, file_path=file_path))
+
         return FileDetails("644", file_content, file_path)
 
     def create_large_file(self, filepath='/var/tmp/file.txt',
@@ -369,6 +381,29 @@ class LinuxClient(RemoteInstanceClient):
             disks[disk_name] = size
         return disks
 
+    def get_all_disk_details(self):
+        """
+        Returns a list of dictionaries, each containing the name,
+        type, and size in bytes of all devices)
+
+        @return: The accessible disks
+        @rtype: list
+        """
+        disk_list = []
+        info = self.ssh_client.execute_command(
+            'lsblk -bio KNAME,TYPE,SIZE').stdout
+        if info is None:
+            return None
+        info = info.splitlines()[1::]
+        for l in info:
+            group = re.split('\s*', l)
+            if len(group) != 3:
+                return None
+            disk_list.append(
+                {'name': group[0], 'type': group[1], 'size': group[2]})
+
+        return disk_list
+
     def format_disk(self, disk, filesystem_type):
         """
         Formats a disk to the provided filesystem type.
@@ -388,14 +423,14 @@ class LinuxClient(RemoteInstanceClient):
             return None
         return out.stdout
 
-    def get_md5sum_for_remote_file(self, filepath):
+    def get_md5sum_for_remote_file(self, file_location, file_name):
         """
         @summary: Gets the md5sum of file on the server
         @param filepath: The path name including file name
         @type filepath: String
         """
-        output = self.ssh_client.execute_command('md5sum {0}'.format(
-            filepath)).stdout
+        output = self.ssh_client.execute_command('md5sum {0}/{1}'.format(
+            file_location, file_name)).stdout
         if output:
             return output.split()[0]
 
@@ -476,3 +511,7 @@ class LinuxClient(RemoteInstanceClient):
 
         time.sleep(self.connection_timeout)
         return tx_bytes
+
+    def generate_mountpoint(self, prefix=None):
+        return "/{0}".format(
+            datagen.random_string(prefix=prefix or "mountpoint_"))
