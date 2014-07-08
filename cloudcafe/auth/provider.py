@@ -26,6 +26,10 @@ from cloudcafe.extensions.saio_tempauth.v1_0.behaviors import \
 from cloudcafe.identity.v2_0.behaviors import IdentityServiceBehaviors
 
 
+class MemoizedAuthServiceCompositeException(Exception):
+    pass
+
+
 class MemoizedAuthServiceComposite(object):
 
     class _lazy_property(object):
@@ -70,11 +74,23 @@ class MemoizedAuthServiceComposite(object):
     @_lazy_property
     def public_url(self):
         endpoint = self.service.get_endpoint(self.region)
-        return endpoint.public_url
+        try:
+            return endpoint.public_url
+        except AttributeError:
+            raise MemoizedAuthServiceCompositeException(
+                "Unable to locate an endpoint with the region '{0}' in the "
+                "service '{1}' from the service service catalog for user {2}. "
+                "No public URL found.".format(
+                    self.region, self.service_name, self.tenant_id))
 
     @_lazy_property
     def service(self):
-        return self.access_data.get_service(self.service_name)
+        service = self.access_data.get_service(self.service_name)
+        if not service:
+            raise MemoizedAuthServiceCompositeException(
+                "Unable to locate a service named '{0}' in the service catalog"
+                " for the user {1}".format(self.service_name, self.tenant_id))
+        return service
 
 
 class AuthProvider(object):
