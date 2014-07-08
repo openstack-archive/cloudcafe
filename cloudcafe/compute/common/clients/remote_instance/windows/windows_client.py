@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from dateutil.parser import parse
+import re
 
 from IPy import IP
 
@@ -167,11 +168,42 @@ class WindowsClient(RemoteInstanceClient):
         @rtype: List of strings
         """
 
-        command = ('powershell "&{{ (Get-Acl {path}).Access '
-                   '| ForEach-Object {{$_.IdentityReference.ToString() }} }}"')
-        command = command.format(path=path)
+        command = (
+            'powershell "&{{ (Get-Acl {path}).Access | ForEach-Object '
+            '{{$_.IdentityReference.ToString() }} }}"'.format(path=path))
         output = self.client.execute_command(command).std_out
         return output.splitlines() if output else None
+
+    def get_md5sum_for_remote_file(self, file_location, file_name):
+        """
+        @summary: Gets the md5sum of file on the server
+        @param filepath: The path name including file name
+        @type filepath: String
+        """
+        if not file_location.endswith("\\"):
+            file_location = file_location + "\\"
+        command = (
+            'powershell "Get-Content {file_location}{file_name} | '
+            'Get-FileHash -Algorithm MD5"'.format(
+                file_location=file_location, file_name=file_name))
+
+        r = self.client.execute_command(command)
+        if not r.std_out:
+            return None
+
+        stdout = r.std_out.strip()
+        lines = stdout.splitlines()
+        data_line = lines[2]
+
+        match = re.match("^MD5\s*(\S*)", data_line)
+        if not match:
+            return None
+
+        groups = match.groups()
+        if not groups:
+            return None
+
+        return groups[0]
 
     def get_file_details(self, file_path):
         """
@@ -219,17 +251,18 @@ class WindowsClient(RemoteInstanceClient):
         """
 
         command = (
-            'powershell Set-Disk -Number {disk} '
-            '-IsOffline $false').format(disk=source_path)
-        output = self.client.execute_command(command)
-
-        command = (
             'powershell Set-Partition -DiskNumber '
             '{disk} -PartitionNumber 2 '
             '-NewDriveLetter {drive}').format(disk=source_path,
                                               drive=destination_path)
         output = self.client.execute_command(command)
         return output.std_out
+
+    def unmount_disk(self, disk_path):
+        command = (
+            'powershell Set-Disk -Number {disk_path} -IsOffline $true'.format(
+                disk_path=disk_path))
+        return self.client.execute_command(command)
 
     def get_xen_user_metadata(self, xen_client_path=DEFAULT_XEN_CLIENT_PATH):
         """
@@ -352,6 +385,27 @@ class WindowsClient(RemoteInstanceClient):
             disks[disk_info['Number']] = int(disk_info['Size'].split()[0])
         return disks
 
+    def get_all_disk_details(self):
+        """
+        Returns all details for all block devices for a server.
+
+        @return: The accessible block devices
+        @rtype: dict
+        """
+        command = 'powershell "&{ Get-Disk | Format-List }"'
+        output = self.client.execute_command(command)
+        if not output.std_out:
+            return None
+        raw_output = output.std_out.split('\r\n\r\n')
+        raw_disks = [disk for disk in raw_output if disk]
+
+        disks = []
+        for disk in raw_disks:
+            disk_info = self._convert_powershell_list_to_dict(disk)
+            disks.append(disk_info)
+
+        return disks
+
     def format_disk(self, disk, filesystem_type):
         """
         Formats a disk to the provided filesystem type.
@@ -368,15 +422,15 @@ class WindowsClient(RemoteInstanceClient):
             'powershell Set-Disk -Number {disk} '
             '-IsOffline $false').format(disk=disk)
         self.client.execute_command(command)
+
         command = (
             'powershell Set-Disk -Number {disk} '
             '-IsReadOnly $false').format(disk=disk)
         self.client.execute_command(command)
-        command = ('powershell Clear-Disk -Number {disk} '
-                   '-RemoveData -Confirm:$false').format(disk=disk)
-        self.client.execute_command(command)
+
         command = 'powershell Initialize-Disk -Number {disk}'.format(disk=disk)
         self.client.execute_command(command)
+
         command = ('powershell "&{{ New-Partition -DiskNumber {disk} '
                    '-UseMaximumSize | Format-Volume -FileSystem {disk_type} '
                    '-Confirm:$false }}').format(disk=disk,
@@ -384,12 +438,21 @@ class WindowsClient(RemoteInstanceClient):
         output = self.client.execute_command(command)
         return output.std_out
 
+    def generate_mountpoint(self):
+        """ Returns the next available drive letter """
+        command = (
+            'powershell "ls function:[c-z]: -n | ?{!(test-path $_)} '
+            '| select -First 1"')
+
+        output = self.client.execute_command(command)
+        return output.std_out[0]
+
     @staticmethod
     def _convert_powershell_list_to_dict(response):
         data = {}
         for line in response.splitlines():
             if line and ':' in line:
-                key, value = line.split(':')
+                key, value = line.split(':', 1)
                 if key is not None:
                     key = key.strip()
                     value = value.strip() if value else None
