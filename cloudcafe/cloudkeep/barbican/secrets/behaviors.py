@@ -81,7 +81,8 @@ class SecretsBehaviors(object):
     def create_secret(self, name=None, expiration=None, algorithm=None,
                       bit_length=None, mode=None, payload=None,
                       payload_content_type=None,
-                      payload_content_encoding=None):
+                      payload_content_encoding=None,
+                      headers=None):
         resp = self.client.create_secret(
             name=name,
             expiration=expiration,
@@ -90,7 +91,8 @@ class SecretsBehaviors(object):
             mode=mode,
             payload=payload,
             payload_content_type=payload_content_type,
-            payload_content_encoding=payload_content_encoding)
+            payload_content_encoding=payload_content_encoding,
+            headers=headers)
 
         behavior_response = CloudkeepResponse(resp=resp)
         secret_id = behavior_response.id

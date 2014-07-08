@@ -42,7 +42,7 @@ class SecretsClient(BarbicanRestClient):
     def create_secret(self, name=None, expiration=None, algorithm=None,
                       bit_length=None, mode=None, payload=None,
                       payload_content_type=None,
-                      payload_content_encoding=None):
+                      payload_content_encoding=None, headers=None):
         """
         POST http://.../v1/{tenant_id}/secrets
         Allows a user to create a new secret
@@ -55,7 +55,7 @@ class SecretsClient(BarbicanRestClient):
                          payload=payload)
 
         resp = self.request('POST', remote_url, request_entity=req_obj,
-                            response_entity_type=SecretRef)
+                            response_entity_type=SecretRef, headers=headers)
 
         return resp
 

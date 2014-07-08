@@ -82,7 +82,7 @@ class OrdersBehavior(object):
 
     def create_order_overriding_cfg(self, name=None, payload_content_type=None,
                                     expiration=None, algorithm=None,
-                                    bit_length=None, mode=None):
+                                    bit_length=None, mode=None, headers=None):
         """Creates order using provided parameters or default configurations.
         Allows for testing individual parameters on creation.
         """
@@ -93,13 +93,13 @@ class OrdersBehavior(object):
             algorithm=algorithm or self.config.algorithm,
             bit_length=bit_length or self.config.bit_length,
             mode=mode or self.config.mode,
-            expiration=expiration)
+            expiration=expiration, headers=headers)
 
         return resp
 
     def create_order(self, name=None, payload_content_type=None,
                      algorithm=None, bit_length=None, mode=None,
-                     expiration=None):
+                     expiration=None, headers=None):
         try:
             resp = self.orders_client.create_order(
                 name=name,
@@ -107,7 +107,8 @@ class OrdersBehavior(object):
                 algorithm=algorithm,
                 bit_length=bit_length,
                 mode=mode,
-                expiration=expiration)
+                expiration=expiration,
+                headers=headers)
         except ConnectionError as e:
             # Gracefully handling when Falcon doesn't properly handle our req
             if type(e.message.reason) is BadStatusLine:
