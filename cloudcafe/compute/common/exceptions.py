@@ -153,6 +153,16 @@ class SshConnectionException(Exception):
         return repr(self.message)
 
 
+class WinRMConnectionException(Exception):
+    def __init__(self, ip_address):
+        self.message = (
+            'Unable to connect to {ip_address} via WinRM.').format(
+            ip_address=ip_address)
+
+    def __str__(self):
+        return repr(self.message)
+
+
 class ServerUnreachable(Exception):
     def __init__(self, address):
         self.message = 'Could not reach the server at %s.' % address
