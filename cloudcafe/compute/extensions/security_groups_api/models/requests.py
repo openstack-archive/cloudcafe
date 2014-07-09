@@ -48,7 +48,7 @@ class CreateSecurityGroup(AutoMarshallingModel):
         return xml
 
     def _obj_to_xml_ele(self):
-        raise NotImplemented
+        raise NotImplementedError()
 
 
 class CreateSecurityGroupRule(AutoMarshallingModel):

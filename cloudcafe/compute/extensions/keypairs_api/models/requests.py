@@ -39,7 +39,7 @@ class CreateKeypair(AutoMarshallingModel):
         return ret
 
     def _obj_to_xml(self):
-        raise NotImplemented
+        raise NotImplementedError()
 
     def _obj_to_xml_ele(self):
-        raise NotImplemented
+        raise NotImplementedError()

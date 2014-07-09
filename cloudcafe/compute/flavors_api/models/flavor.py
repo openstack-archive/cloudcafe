@@ -55,11 +55,11 @@ class CreateFlavor(AutoMarshallingModel):
 
     @classmethod
     def _xml_to_obj(cls, serialized_str):
-        raise NotImplemented
+        raise NotImplementedError()
 
     @classmethod
     def _xml_list_to_obj(cls, xml_list):
-        raise NotImplemented
+        raise NotImplementedError()
 
 
 class Flavor(AutoMarshallingModel):
