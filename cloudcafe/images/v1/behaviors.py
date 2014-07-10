@@ -19,10 +19,10 @@ import cStringIO as StringIO
 
 from cafe.engine.behaviors import BaseBehavior
 
-from cloudcafe.auth.config import UserAuthConfig
-from cloudcafe.auth.provider import AuthProvider
-from cloudcafe.identity.v2_0.tenants_api.client import \
-    TenantsAPI_Client
+# TODO: TenantsAPI_Client has been deprecated
+# from cloudcafe.auth.config import UserAuthConfig
+# from cloudcafe.auth.provider import AuthProvider
+#from cloudcafe.identity.v2_0.tenants_api.client import TenantsAPI_Client
 
 from cloudcafe.images.common.types import ImageStatus
 from cloudcafe.common.exceptions import \
@@ -39,11 +39,12 @@ class ImagesV1Behaviors(BaseBehavior):
         self.config = images_config
         self.client = images_client
 
-        access_data = AuthProvider().get_access_data()
-        self.tenants_client = TenantsAPI_Client(
-            UserAuthConfig().auth_endpoint,
-            access_data.token.id_,
-            'json', 'json')
+        # TODO: TenantsAPI_Client has been deprecated
+#         access_data = AuthProvider().get_access_data()
+#         self.tenants_client = TenantsAPI_Client(
+#             UserAuthConfig().auth_endpoint,
+#             access_data.token.id_,
+#             'json', 'json')
 
     def wait_for_image_status(self, image_id, desired_status,
                               interval_time=None, timeout=None):
