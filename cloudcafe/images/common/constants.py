@@ -33,7 +33,9 @@ class Messages(object):
     EXPORT_WINDOWS_MSG = ('Image cannot be exported due to licensing or '
                           'billing restrictions (com.rackspace__1__options: '
                           '\'{0}\')')
-    NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
-    OBJECT_NOT_FOUND = 'Error: Swift could not find object {0}.'
     EXTRA_IMAGE_PROPERTIES_MSG = ('Unsupported element in image_properties, '
                                   'please consult the documentation.')
+    NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
+    OBJECT_NOT_FOUND = 'Error: Swift could not find object {0}.'
+    UPDATE_IMAGE_MEMBER_STATUS = ('You are not permitted to modify \'status\' '
+                                  'on this image.')
