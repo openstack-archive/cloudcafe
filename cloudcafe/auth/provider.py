@@ -26,24 +26,11 @@ from cloudcafe.extensions.saio_tempauth.v1_0.behaviors import \
 from cloudcafe.identity.v2_0.behaviors import IdentityServiceBehaviors
 
 
+class MemoizedAuthServiceCompositeException(Exception):
+    pass
+
+
 class MemoizedAuthServiceComposite(object):
-
-    class _lazy_property(object):
-        '''
-        meant to be used for lazy evaluation of an object attribute.
-        property should represent non-mutable data, as it replaces itself.
-        '''
-
-        def __init__(self, func):
-            self.func = func
-            self.func_name = func.__name__
-
-        def __get__(self, obj, cls):
-            if obj is None:
-                return None
-            value = self.func(obj)
-            setattr(obj, self.func_name, value)
-            return value
 
     def __init__(
             self, service_name, region, endpoint_config=None,
@@ -51,30 +38,84 @@ class MemoizedAuthServiceComposite(object):
 
         self.endpoint_config = endpoint_config or UserAuthConfig()
         self.user_config = user_config or UserConfig()
-        self.access_data = self.cache_access_data(endpoint_config, user_config)
-        self.token_id = self.access_data.token.id_
-        self.tenant_id = self.access_data.token.tenant.id_
         self.service_name = service_name
         self.region = region
 
     @classmethod
     @memoized
-    def cache_access_data(cls, endpoint_config=None, user_config=None):
-        access_data = AuthProvider.get_access_data(
-            endpoint_config, user_config)
-        if access_data is None:
-            raise AssertionError('Authentication failed in setup')
-        cls.access_data = access_data
-        return cls.access_data
+    def get_rackspace_access_data(
+            cls, username, api_key, tenant_id, auth_endpoint):
+        client = RaxTokenAPI_Client(auth_endpoint, 'json', 'json')
+        behaviors = RaxTokenAPI_Behaviors(client)
+        return behaviors.get_access_data(username, api_key, tenant_id)
 
-    @_lazy_property
+    @classmethod
+    @memoized
+    def get_keystone_access_data(
+            cls, username, password, tenant_name, auth_endpoint):
+        return IdentityServiceBehaviors.get_access_data(
+            username, password, tenant_name, auth_endpoint)
+
+    @classmethod
+    @memoized
+    def get_saio_tempauth_access_data(
+            cls, username, password, auth_endpoint):
+        client = SaioAuthAPI_Client(auth_endpoint)
+        behaviors = SaioAuthAPI_Behaviors(client)
+        return behaviors.get_access_data(username, password)
+
+    @property
+    def access_data(self):
+        if self.auth_strategy == 'keystone':
+            return self.get_keystone_access_data(
+                self.user_config.username, self.user_config.password,
+                self.user_config.tenant_name,
+                self.endpoint_config.auth_endpoint)
+
+        elif self.auth_strategy == 'rax_auth':
+            return self.get_rackspace_access_data(
+                self.user_config.username, self.user_config.api_key,
+                self.user_config.tenant_id, self.endpoint_config.auth_endpoint)
+
+        elif self.auth_strategy == 'saio_tempauth':
+            return self.get_saio_tempauth_access_data(
+                self.user_config.username, self.user_config.password,
+                self.endpoint_config.auth_endpoint)
+        else:
+            raise NotImplementedError
+
+    @property
+    def auth_strategy(self):
+        return self.endpoint_config.strategy.lower()
+
+    @property
+    def token_id(self):
+        return self.access_data.token.id_
+
+    @property
+    def tenant_id(self):
+        return self.access_data.token.tenant.id_
+
+    @property
     def public_url(self):
         endpoint = self.service.get_endpoint(self.region)
-        return endpoint.public_url
+        try:
+            return endpoint.public_url
+        except AttributeError:
+            raise MemoizedAuthServiceCompositeException(
+                "Unable to locate an endpoint with the region '{0}' in the "
+                "service '{1}' from the service service catalog for user {2}. "
+                "No public URL found.".format(
+                    self.region, self.service_name, self.tenant_id))
 
-    @_lazy_property
+    @property
     def service(self):
-        return self.access_data.get_service(self.service_name)
+        service = self.access_data.get_service(self.service_name)
+        if not service:
+            raise MemoizedAuthServiceCompositeException(
+                "Unable to locate a service named '{0}' in the service catalog"
+                " for the user {1}".format(self.service_name, self.tenant_id))
+        return service
 
 
 class AuthProvider(object):
