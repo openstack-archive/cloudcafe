@@ -4,6 +4,7 @@ from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.compute.volume_attachments_api.config import \
     VolumeAttachmentsAPIConfig
 
+
 class VolumeAttachmentBehaviorError(Exception):
     pass
 
@@ -57,7 +58,6 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
         verifier = StatusProgressionVerifier(
             'volume', volume_id, _get_volume_status, *[self, volume_id])
 
-        #verifier.add_state(status, timeout, pollrate, retries, transient)
         verifier.add_state(
             expected_statuses=['available'],
             acceptable_statuses=['attaching', 'in-use'],
@@ -81,6 +81,38 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
 
         verifier.start()
 
+    def delete_volume_attachment(
+            self, attachment_id, server_id, timeout=None, poll_rate=None):
+        """Waits timeout seconds for volume attachment to 404 after issuing
+        a delete to it
+        """
+
+        timeout = timeout or self.config.attachment_propagation_timeout
+        poll_rate = poll_rate or self.config.api_poll_rate
+        endtime = time() + int(timeout)
+
+        resp = self.client.delete_volume_attachment(
+            attachment_id, server_id)
+
+        if not resp.ok:
+            raise VolumeAttachmentBehaviorError(
+                "Volume attachment DELETE failed in delete_volume_attachment "
+                "with a {0}.  Could not delete attachment '{1}' on server "
+                "'{2}'".format(resp.status_code, attachment_id, server_id))
+
+        while time() < endtime:
+            resp = self.client.get_volume_attachment_details(
+                attachment_id, server_id)
+            if resp.status_code == 404:
+                return None
+            sleep(poll_rate)
+        else:
+            raise VolumeAttachmentBehaviorError(
+                "Volume Attachment {0} still exists on server '{1}', {2} "
+                "seconds after a successful DELETE. Could not verify that "
+                "attachment was deleted.".format(
+                    attachment_id, server_id, timeout))
+
     def attach_volume_to_server(
             self, server_id, volume_id, device=None,
             attachment_propagation_timeout=60):
@@ -94,26 +126,26 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
 
         if not resp.ok:
             raise VolumeAttachmentBehaviorError(
-                "Volume attachment failed in auto_attach_volume_to_server"
-                " with a {0}. Could not attach volume {1} to server {2}"
+                "Volume attachment failed in attach_volume_to_server "
+                "with a '{0}'. Could not attach volume {1} to server {2}"
                 .format(resp.status_code, volume_id, server_id))
 
         if resp.entity is None:
             raise VolumeAttachmentBehaviorError(
-                "Volume attachment failed in auto_attach_volume_to_server."
-                " Could not deserialize volume attachment response body. Could"
-                " not attach volume {1} to server {2}".format(
+                "Volume attachment failed in auto_attach_volume_to_server. "
+                "Could not deserialize volume attachment response body. "
+                "Could not attach volume '{1}' to server '{2}'".format(
                     volume_id, server_id))
 
         attachment = resp.entity
 
-        #Confirm volume attachment propagation
+        # Confirm volume attachment propagation
         propagated = self.wait_for_attachment_to_propagate(
             attachment.id_, server_id, timeout=attachment_propagation_timeout)
 
         if not propagated:
             raise VolumeAttachmentBehaviorError(
-                "Volume attachment {0} belonging to server {1} failed to"
+                "Volume attachment '{0}' belonging to server '{1}' failed to "
                 "propagate to the relevant cell within {2} seconds".format(
                     attachment.id_, server_id, attachment_propagation_timeout))
 
