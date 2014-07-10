@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import base64
 import time
 
 from cafe.engine.behaviors import BaseBehavior
@@ -83,6 +84,24 @@ class ServerBehaviors(BaseBehavior):
             flavor_ref = self.flavors_config.primary_flavor
         if self.config.default_network:
             networks = [{'uuid': self.config.default_network}]
+
+        # If default scheduler hints are set, add them to the request
+        if self.config.default_scheduler_hints:
+            if scheduler_hints:
+                scheduler_hints.update(self.config.default_scheduler_hints)
+            else:
+                scheduler_hints = self.config.default_scheduler_hints
+
+        if self.config.default_injected_files:
+            # Encode the file contents
+            default_files = self.config.default_injected_files
+            for personality_file in default_files:
+                personality_file['contents'] = base64.b64encode(
+                    personality_file['contents'])
+        if personality is None:
+            personality = default_files
+        else:
+            personality += default_files
 
         failures = []
         attempts = self.config.resource_build_attempts

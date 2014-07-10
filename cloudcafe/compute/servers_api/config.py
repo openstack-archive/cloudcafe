@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import json
+from ast import literal_eval
 
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
@@ -154,7 +155,15 @@ class ServersConfig(ConfigSectionInterface):
         A list of files that should be injected by default when
         creating servers.
         """
-        return eval(self.get("default_injected_files", '[]'))
+        return literal_eval(self.get("default_injected_files", 'None'))
+
+    @property
+    def default_scheduler_hints(self):
+        """
+        A set of scheduler hints that should be used when creating
+        any server.
+        """
+        return literal_eval(self.get("default_scheduler_hints", 'None'))
 
     @property
     def default_file_path(self):
