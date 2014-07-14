@@ -98,10 +98,10 @@ class ServerBehaviors(BaseBehavior):
             for personality_file in default_files:
                 personality_file['contents'] = base64.b64encode(
                     personality_file['contents'])
-        if personality is None:
-            personality = default_files
-        else:
-            personality += default_files
+            if personality is None:
+                personality = default_files
+            else:
+                personality += default_files
 
         failures = []
         attempts = self.config.resource_build_attempts
