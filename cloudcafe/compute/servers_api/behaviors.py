@@ -24,7 +24,8 @@ from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
-    TimeoutException, BuildErrorException, RequiredResourceException
+    TimeoutException, BuildErrorException, RequiredResourceException, \
+    ServerUnreachable, SshConnectionException
 
 
 class ServerBehaviors(BaseBehavior):
@@ -371,18 +372,31 @@ class ServerBehaviors(BaseBehavior):
         user = self.images_config.primary_image_default_user
         strategy = auth_strategy or self.config.instance_auth_strategy.lower()
 
-        if InstanceAuthStrategies.PASSWORD in strategy:
-
-            if password is None:
-                password = server.admin_pass
-
-            return client(
-                ip_address=ip_address, username=user, password=password,
-                connection_timeout=self.config.connection_timeout)
-        else:
-            return client(
-                ip_address=ip_address, username=user, key=key,
-                connection_timeout=self.config.connection_timeout)
+        try:
+            if InstanceAuthStrategies.PASSWORD in strategy:
+                if password is None:
+                    password = server.admin_pass
+                return client(
+                    ip_address=ip_address, username=user, password=password,
+                    connection_timeout=self.config.connection_timeout)
+            else:
+                return client(
+                    ip_address=ip_address, username=user, key=key,
+                    connection_timeout=self.config.connection_timeout)
+        except ServerUnreachable:
+            raise ServerUnreachable(
+                'Unable to ping server {id} at address {address} '
+                'within the allowed time of {timeout} seconds. '
+                'Test unable to proceed.'.format(
+                    id=server.id, address=ip_address,
+                    timeout=self.config.connection_timeout))
+        except SshConnectionException:
+            raise SshConnectionException(
+                'Able to ping server {id} at {address}, but unable to '
+                'connect via ssh within the allowed time of {timeout} '
+                'seconds. Test unable to proceed.'.format(
+                    id=server.id, address=ip_address,
+                    timeout=self.config.connection_timeout))
 
     def resize_and_await(self, server_id, new_flavor):
         """
