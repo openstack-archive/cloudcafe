@@ -152,9 +152,9 @@ class ServerBehaviors(BaseBehavior):
         @param interval_time: The amount of time in seconds to wait
                               between polling
         @type interval_time: Integer
-        @param interval_time: The amount of time in seconds to wait
+        @param timeout: The amount of time in seconds to wait
                               before aborting
-        @type interval_time: Integer
+        @type timeout: Integer
         @return: Response object containing response and the server
                  domain object
         @rtype: requests.Response
@@ -171,8 +171,8 @@ class ServerBehaviors(BaseBehavior):
 
             if server.status.lower() == ServerStates.ERROR.lower():
                 raise BuildErrorException(
-                    'Build failed. Server with uuid %s entered ERROR status.'
-                    % server.id)
+                    "Build failed. Server with uuid {server_id} entered "
+                    "ERROR status.".format(server.id))
 
             if server.status == desired_status:
                 break
@@ -184,6 +184,48 @@ class ServerBehaviors(BaseBehavior):
                     timeout, server_id, desired_status))
 
         return resp
+
+    def wait_for_server_task_state(self, server_id, state_to_wait_for,
+                                   timeout, interval_time=None):
+        """
+        @summary: Polls server task state until state_to_wait_for is met
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @param state_to_wait_for: The desired final status of the server
+        @type state_to_wait_for: String
+        @param timeout: The amount of time in seconds to wait
+                              before aborting
+        @type timeout: Integer
+        @param interval_time: The amount of time in seconds to wait
+                              between polling
+        @type interval_time: Integer
+        """
+
+        interval_time = interval_time or self.config.server_status_interval
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            server_response = self.servers_client.get_server(server_id)
+            task_state = server_response.entity.task_state
+
+            if task_state.lower() != ServerStates.ERROR.lower():
+                raise BuildErrorException(
+                    "Build failed. Server with uuid {server_id} entered "
+                    "ERROR task state.".format(server_id))
+
+            if task_state.lower() == state_to_wait_for.lower():
+                break
+            time.sleep(interval_time)
+
+        else:
+            raise TimeoutException(
+                "Wait for server task ran for {timeout} seconds and did not "
+                "observe server {server_id} reach desired task state of "
+                "{state_to_wait_for}."
+                .format(timeout=timeout, server_id=server_id,
+                        state_to_wait_for=state_to_wait_for))
+
+        return server_response
 
     def wait_for_metadata_value(self, server_id, metadata_key,
                                 potential_values, timeout, interval_time=None):
