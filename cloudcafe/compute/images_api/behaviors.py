@@ -16,16 +16,17 @@ limitations under the License.
 
 import time
 
+from cafe.engine.behaviors import BaseBehavior
+
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.types import NovaImageStatusTypes as ImageStates
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException
 
 
-class ImageBehaviors(object):
-
+class ImageBehaviors(BaseBehavior):
     def __init__(self, images_client, servers_client, config):
-
+        super(ImageBehaviors, self).__init__()
         self.config = config
         self.images_client = images_client
         self.servers_client = servers_client
