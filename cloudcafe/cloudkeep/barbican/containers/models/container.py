@@ -79,7 +79,7 @@ class Container(AutoMarshallingModel):
 
         args = {
             'name': json_dict.get('name'),
-            'container_type': json_dict.get('container_type'),
+            'container_type': json_dict.get('type'),
             'secret_refs': refs,
             'status': json_dict.get('status'),
             'updated': json_dict.get('updated'),
