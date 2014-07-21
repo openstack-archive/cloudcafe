@@ -212,9 +212,8 @@ class ServersClient(AutoMarshallingHTTPClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-    def update_server(self, server_id, name=None, metadata=None,
-                      accessIPv4=None, accessIPv6=None,
-                      requestslib_kwargs=None):
+    def update_server(self, server_id, name=None, accessIPv4=None,
+                      accessIPv6=None, requestslib_kwargs=None):
         """
         @summary: Updates the properties of an existing server.
         @param server_id: The id of an existing server.
@@ -233,8 +232,8 @@ class ServersClient(AutoMarshallingHTTPClient):
 
         url = '{base_url}/servers/{server_id}'.format(
             base_url=self.url, server_id=server_id)
-        request = UpdateServer(name=name, metadata=metadata,
-                               accessIPv4=accessIPv4, accessIPv6=accessIPv6)
+        request = UpdateServer(name=name, accessIPv4=accessIPv4,
+                               accessIPv6=accessIPv6)
         resp = self.request('PUT', url,
                             response_entity_type=Server,
                             request_entity=request,
