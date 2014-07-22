@@ -49,7 +49,9 @@ class WindowsClient(RemoteInstanceClient):
         if not self._is_instance_reachable(
                 ip_address=ip_address, retry_interval=retry_interval,
                 timeout=connection_timeout):
-            raise ServerUnreachable(ip_address)
+            raise ServerUnreachable(
+                'Could not reach the server at {ip_address}'.format(
+                    ip_address=ip_address))
 
         self.ip_address = ip_address
         self.username = username
