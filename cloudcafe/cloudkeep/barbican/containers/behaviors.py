@@ -35,6 +35,22 @@ class ContainerBehaviors(BaseBehavior):
 
         return resp
 
+    def create_container_with_secret(self, secret_behaviors,
+                                     name="test_container",
+                                     secret_name="test_secret"):
+        """Create a secret and a generic container with that secret inside.
+
+        :param secret_behaviors: A SecretsBehaviors instance
+        :param name: The name of the container
+        :param secret_name: The name of the secret in the container
+        :returns: A tuple containing the responses from the secret creation and
+            the container creation, in that order
+        """
+        secret_resp = secret_behaviors.create_secret_from_config()
+        secret_refs = [SecretRef(name=secret_name, ref=secret_resp.ref)]
+        container_resp = self.create_container(name, "generic", secret_refs)
+        return (secret_resp, container_resp)
+
     def remove_from_created_containers(self, container_ref):
         """ Clean-up helper method """
         if container_ref in self.created_containers:
