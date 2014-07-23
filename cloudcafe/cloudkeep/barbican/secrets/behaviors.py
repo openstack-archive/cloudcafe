@@ -109,6 +109,18 @@ class SecretsBehaviors(object):
             self.created_secrets.append(secret_id)
         return behavior_response
 
+    def create_n_secrets(self, n):
+        """Create a number of secrets.
+
+        :param n: The number of secrets to create
+        :return: A list of secret ref urls
+        """
+        result = []
+        for i in xrange(n):
+            secret_resp = self.create_secret_from_config()
+            result.append(secret_resp.ref)
+        return result
+
     def delete_secret(self, secret_id):
         self.remove_from_created_secrets(secret_id=secret_id)
         resp = self.client.delete_secret(secret_id)
