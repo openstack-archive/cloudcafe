@@ -158,6 +158,13 @@ class ServersConfig(ConfigSectionInterface):
         return literal_eval(self.get("default_injected_files", 'None'))
 
     @property
+    def keep_resources_on_failure(self):
+        """
+        If servers from failed or errored tests should be saved.
+        """
+        return self.get_boolean("keep_resources_on_failure", False)
+
+    @property
     def default_scheduler_hints(self):
         """
         A set of scheduler hints that should be used when creating
