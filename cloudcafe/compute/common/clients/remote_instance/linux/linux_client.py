@@ -57,7 +57,9 @@ class LinuxClient(RemoteInstanceClient):
                 break
             time.sleep(retry_interval)
             if int(time.time()) - start >= connection_timeout:
-                raise ServerUnreachable(ip_address)
+                raise ServerUnreachable(
+                    'Could not reach the server at {ip_address}'.format(
+                        ip_address=ip_address))
 
         if key is not None:
             auth_strategy = SSHAuthStrategy.KEY_STRING
