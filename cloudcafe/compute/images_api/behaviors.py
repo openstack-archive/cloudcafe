@@ -213,3 +213,19 @@ class ImageBehaviors(BaseBehavior):
                         self.config.non_inherited_metadata_filepath))
                 non_inherited_metadata = []
         return non_inherited_metadata
+
+    def get_group_of_image_ids_by_name(self, search_name):
+        """
+        @summary:Returns list of desired image ids
+        @param search_name: Name for group of images for example Red Hat
+        @type search_name: String
+        @return: List of image ids
+        @rtype: List
+        """
+        all_images = self.images_client.list_images_with_detail()
+        desired_images = []
+        for image in all_images.entity:
+            if search_name in image.name:
+                desired_images.append(image)
+        images_ids = [image.id for image in desired_images]
+        return images_ids
