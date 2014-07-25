@@ -478,3 +478,20 @@ class LinuxClient(RemoteInstanceClient):
 
         time.sleep(self.connection_timeout)
         return tx_bytes
+
+    def check_rhel_activation(self):
+        """
+        @summary: Returns boolean - true or false depending of the activation
+        if it is passed or failed
+        @return: Activation status
+        @rtype: bool
+        """
+        status_of_activation = False
+        command = 'rhn_check -v'
+        echo_call = 'echo $?'
+        rhel_network_satellite = self.ssh_client.execute_command(command)
+        if rhel_network_satellite.stdout is '':
+            output = self.ssh_client.execute_command(echo_call)
+            if int(output.stdout) is 0:
+                status_of_activation = True
+        return status_of_activation

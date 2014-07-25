@@ -194,7 +194,7 @@ class ImageBehaviors(BaseBehavior):
 
     def read_non_inherited_metadata(self):
         """
-        @summary:Returns the non inherited metadata
+        @summary: Returns the non inherited metadata
         @return: List for user data processing
         @rtype: List
         """
@@ -213,3 +213,25 @@ class ImageBehaviors(BaseBehavior):
                         self.config.non_inherited_metadata_filepath))
                 non_inherited_metadata = []
         return non_inherited_metadata
+
+    def get_image_ids_by_name(self, search_name):
+        """
+        @summary: Returns list of desired image ids
+        @param search_name: Name for group of images for example Red Hat
+        @type search_name: String
+        @return: List of image ids
+        @rtype: List
+        """
+        all_images = self.images_client.list_images_with_detail()
+
+        if all_images.entity is None:
+                raise Exception(
+                    "Response entity of list images with detail was not set. "
+                    "Response was: {0}".format(all_images.content))
+
+        desired_images = []
+        for image in all_images.entity:
+            if search_name in image.name:
+                desired_images.append(image)
+        images_ids = [image.id for image in desired_images]
+        return images_ids
