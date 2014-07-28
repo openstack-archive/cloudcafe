@@ -146,6 +146,25 @@ class WindowsClient(RemoteInstanceClient):
         diff = now - last_boot
         return diff.total_seconds()
 
+    def get_user_list(self):
+        """
+        Return a List of all the users on the server
+        @return: The users on the server
+        @rtype: List
+        """
+
+        command = ('powershell gwmi Win32_UserAccount ')
+        output = self.client.execute_command(command)
+        if not output:
+            return None
+        raw_output = output.std_out.split('\r\n\r\n')
+        raw_users = [user for user in raw_output if user]
+        user_list = []
+        for user in raw_users:
+            user_info = self._convert_powershell_list_to_dict(user)
+            user_list.append(user_info.get('Name'))
+        return user_list
+
     def create_file(self, file_name, file_content, file_path):
         """
         Creates a new file with the provided content.

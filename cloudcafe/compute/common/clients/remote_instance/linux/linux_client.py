@@ -149,6 +149,19 @@ class LinuxClient(RemoteInstanceClient):
             uptime = float(result.stdout.split(' ')[0])
             return uptime
 
+    def get_user_list(self):
+        """
+        Return a List of all the users on the server
+
+        @return: The users on the server
+        @rtype: List
+        """
+
+        command = 'cat /etc/passwd | cut -d: -f1'
+        output = self.ssh_client.execute_command(command)
+        if output:
+            return str(output.stdout).split()
+
     def create_file(self, file_name, file_content, file_path=None):
         """
         Creates a new file with the provided content.
