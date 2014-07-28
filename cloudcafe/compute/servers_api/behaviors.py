@@ -180,7 +180,7 @@ class ServerBehaviors(BaseBehavior):
             if server.status.lower() == ServerStates.ERROR.lower():
                 raise BuildErrorException(
                     "Build failed. Server with uuid {server_id} entered "
-                    "ERROR status.".format(server.id))
+                    "ERROR status.".format(server_id=server.id))
 
             if server.status == desired_status:
                 break
