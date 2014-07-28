@@ -219,7 +219,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             expected_statuses=[self.statuses.Volume.CREATING],
             acceptable_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
-            timeout=self.config.volume_create_min_timeout,
+            timeout=timeout,
             poll_rate=1)
 
         verifier.add_state(
