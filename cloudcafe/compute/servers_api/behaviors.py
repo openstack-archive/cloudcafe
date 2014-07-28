@@ -93,16 +93,12 @@ class ServerBehaviors(BaseBehavior):
             else:
                 scheduler_hints = self.config.default_scheduler_hints
 
-        if self.config.default_injected_files:
-            # Encode the file contents
-            default_files = self.config.default_injected_files
-            for personality_file in default_files:
-                personality_file['contents'] = base64.b64encode(
-                    personality_file['contents'])
-            if personality is None:
-                personality = default_files
-            else:
-                personality += default_files
+        default_files = self.get_default_injected_files()
+
+        if personality and default_files:
+            personality += default_files
+        else:
+            personality = personality or default_files
 
         failures = []
         attempts = self.config.resource_build_attempts
@@ -376,6 +372,23 @@ class ServerBehaviors(BaseBehavior):
             "wait_for_server_status ran for {0} seconds and did not "
             "observe the server achieving the {1} status based on "
             "response code.".format(timeout, 'DELETED'))
+
+    def get_default_injected_files(self):
+        """
+        @summary: Checks for and returns a list of default injected files
+        @return: List of dictionaries containing a default injected file
+                 path and its encoded contents
+        @rtype: List
+        """
+        if self.config.default_injected_files:
+        # Encode the file contents
+            default_files = self.config.default_injected_files
+            for personality_file in default_files:
+                personality_file['contents'] = base64.b64encode(
+                    personality_file['contents'])
+            return default_files
+        else:
+            return None
 
     def get_public_ip_address(self, server):
         """
