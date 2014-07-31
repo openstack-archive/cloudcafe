@@ -15,6 +15,7 @@ limitations under the License.
 """
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.cloudkeep.barbican.containers.models.container import SecretRef
+from cloudcafe.cloudkeep.common.responses import CloudkeepResponse
 
 
 class ContainerBehaviors(BaseBehavior):
@@ -31,10 +32,10 @@ class ContainerBehaviors(BaseBehavior):
         resp = self.client.create_container(
             name=name, container_type=container_type, secret_refs=secret_refs)
 
-        if resp.entity:
+        if resp.entity and resp.entity.reference:
             self.created_containers.append(resp.entity.reference)
 
-        return resp
+        return CloudkeepResponse(resp=resp, entity=resp.entity)
 
     def create_container_with_secret(self, name="test_container",
                                      secret_name="test_secret"):
