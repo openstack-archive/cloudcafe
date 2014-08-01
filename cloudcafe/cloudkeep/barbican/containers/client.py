@@ -20,20 +20,18 @@ from cloudcafe.cloudkeep.barbican.containers.models.container import (
 
 class ContainerClient(BarbicanRestClient):
 
-    def __init__(self, url, api_version, tenant_id, token=None,
+    def __init__(self, url, api_version, token=None,
                  serialize_format=None, deserialize_format=None):
         super(ContainerClient, self).__init__(
             token=token, serialize_format=serialize_format,
             deserialize_format=deserialize_format)
         self.url = url
         self.api_version = api_version
-        self.tenant_id = tenant_id
 
     def _get_base_url(self):
-        return '{base}/{api_version}/{tenant_id}/containers'.format(
+        return '{base}/{api_version}/containers'.format(
             base=self.url,
-            api_version=self.api_version,
-            tenant_id=self.tenant_id)
+            api_version=self.api_version)
 
     def create_container(self, name, container_type, secret_refs):
         """ Creates a Barbican container.

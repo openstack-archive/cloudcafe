@@ -19,19 +19,17 @@ from cloudcafe.cloudkeep.barbican.secrets.models.secret \
 
 
 class SecretsClient(BarbicanRestClient):
-    def __init__(self, url, api_version, tenant_id, token=None,
+    def __init__(self, url, api_version, token=None,
                  serialize_format=None, deserialize_format=None):
         super(SecretsClient, self).__init__(
             token=token, serialize_format=serialize_format,
             deserialize_format=deserialize_format)
         self.url = url
         self.api_version = api_version
-        self.tenant_id = tenant_id
 
     def _get_base_url(self):
-        return '{base}/{api_version}/{tenant_id}'.format(
-            base=self.url, api_version=self.api_version,
-            tenant_id=self.tenant_id)
+        return '{base}/{api_version}'.format(
+            base=self.url, api_version=self.api_version)
 
     def _get_secret_url(self, secret_id):
         remote_url = '{base}/secrets/{secret_id}'.format(
@@ -44,7 +42,7 @@ class SecretsClient(BarbicanRestClient):
                       payload_content_type=None,
                       payload_content_encoding=None, headers=None):
         """
-        POST http://.../v1/{tenant_id}/secrets
+        POST http://.../v1/secrets
         Allows a user to create a new secret
         """
         remote_url = '{base}/secrets'.format(base=self._get_base_url())
@@ -69,7 +67,7 @@ class SecretsClient(BarbicanRestClient):
 
     def add_secret_payload(self, secret_id, payload_content_type, payload,
                            payload_content_encoding=None):
-        """PUT http://.../v1/{tenant_id}/secrets/{secret_uuid}
+        """PUT http://.../v1/secrets/{secret_uuid}
         Allows the user to upload secret data for a specified secret if
         the secret doesn't already exist
         """
@@ -84,7 +82,7 @@ class SecretsClient(BarbicanRestClient):
     def get_secret(self, secret_id=None, payload_content_type=None, ref=None,
                    payload_content_encoding=None):
         """
-        GET http://.../v1/{tenant_id}/secrets/{secret_uuid}
+        GET http://.../v1/secrets/{secret_uuid}
         @param payload_content_type: if not set, it'll only retrieve
         the metadata for the secret.
         """
@@ -113,7 +111,7 @@ class SecretsClient(BarbicanRestClient):
 
     def delete_secret(self, secret_id):
         """
-        DELETE http://.../v1/{tenant_id}/secrets/{secret_uuid}
+        DELETE http://.../v1/secrets/{secret_uuid}
         """
         remote_url = self._get_secret_url(secret_id)
         return self.request('DELETE', remote_url)
