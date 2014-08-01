@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from copy import deepcopy
 import json
 import xml.etree.ElementTree as ET
 
@@ -178,14 +179,14 @@ class UpdateListener(AutoMarshallingModel):
         }
 
     def _obj_to_json(self):
-        body = self._remove_empty_values(self.attr_dict)
+        body = self._remove_empty_values(deepcopy(self.attr_dict))
         return json.dumps({self.ROOT_TAG: body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
         element = ET.Element(self.ROOT_TAG)
         element.set('xmlns', Constants.XML_API_NAMESPACE)
-        elements_dict = self.attr_dict
+        elements_dict = deepcopy(self.attr_dict)
         # cast non-strings into strings
         elements_dict['admin_state_up'] = str(self.admin_state_up)
         element = self._set_xml_etree_element(element, elements_dict)
