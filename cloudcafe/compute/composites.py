@@ -107,8 +107,12 @@ class ComputeComposite(object):
         self.security_groups = SecurityGroupsComposite(auth_composite)
 
         self.servers.behaviors = self.servers.behavior_class(
-            self.servers.client, self.images.client, self.servers.config,
-            self.images.config, self.flavors.config)
+            servers_client=self.servers.client,
+            images_client=self.images.client,
+            servers_config=self.servers.config,
+            images_config=self.images.config,
+            flavors_config=self.flavors.config,
+            security_groups_config=self.security_groups.config)
 
         self.boot_from_volume.behaviors = \
             self.boot_from_volume.behavior_class(
@@ -118,7 +122,7 @@ class ComputeComposite(object):
                 images_config=self.images.config,
                 flavors_config=self.flavors.config,
                 server_behaviors=self.servers.behaviors,
-                boot_from_volume_client=self.boot_from_volume.client)
+                boot_from_volume_client=self.boot_from_volume.client,)
 
         self.images.behaviors = self.images.behavior_class(
             self.images.client, self.servers.client, self.images.config)

@@ -17,6 +17,8 @@ limitations under the License.
 from cloudcafe.compute.common.composites import BaseComputeComposite
 from cloudcafe.compute.extensions.security_groups_api.client import \
     SecurityGroupsClient, SecurityGroupRulesClient
+from cloudcafe.compute.extensions.security_groups_api.config import \
+    SecurityGroupsConfig
 
 
 class SecurityGroupsComposite(BaseComputeComposite):
@@ -27,3 +29,4 @@ class SecurityGroupsComposite(BaseComputeComposite):
             **self.compute_auth_composite.client_args)
         self.rules_client = SecurityGroupRulesClient(
             **self.compute_auth_composite.client_args)
+        self.config = SecurityGroupsConfig()

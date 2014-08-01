@@ -28,7 +28,8 @@ class CreateServer(AutoMarshallingModel):
                  disk_config=None, metadata=None, personality=None,
                  block_device_mapping=None, user_data=None, accessIPv4=None,
                  accessIPv6=None, networks=None, key_name=None,
-                 config_drive=None, scheduler_hints=None):
+                 config_drive=None, scheduler_hints=None,
+                 security_groups=None):
 
         super(CreateServer, self).__init__()
         self.name = name
@@ -46,6 +47,7 @@ class CreateServer(AutoMarshallingModel):
         self.key_name = key_name
         self.config_drive = config_drive
         self.scheduler_hints = scheduler_hints
+        self.security_groups = security_groups
 
     def _obj_to_json(self):
 
@@ -66,7 +68,8 @@ class CreateServer(AutoMarshallingModel):
             'user_data': self.user_data,
             'networks': self.networks,
             'key_name': self.key_name,
-            'config_drive': self.config_drive
+            'config_drive': self.config_drive,
+            'security_groups': self.security_groups
         }
 
         body = self._remove_empty_values(body)
@@ -266,7 +269,7 @@ class Rebuild(AutoMarshallingModel):
                  disk_config=None, metadata=None, personality=None,
                  block_device_mapping=None, user_data=None, accessIPv4=None,
                  accessIPv6=None, networks=None, key_name=None,
-                 config_drive=None):
+                 config_drive=None, security_groups=None):
         super(Rebuild, self).__init__()
         self.name = name
         self.image_ref = image_ref
@@ -281,6 +284,7 @@ class Rebuild(AutoMarshallingModel):
         self.networks = networks
         self.key_name = key_name
         self.config_drive = config_drive
+        self.security_groups = security_groups
 
     def _obj_to_json(self):
 
@@ -300,7 +304,8 @@ class Rebuild(AutoMarshallingModel):
             'user_data': self.user_data,
             'networks': self.networks,
             'key_name': self.key_name,
-            'config_drive': self.config_drive
+            'config_drive': self.config_drive,
+            'security_groups': self.security_groups
         }
 
         body = self._remove_empty_values(body)

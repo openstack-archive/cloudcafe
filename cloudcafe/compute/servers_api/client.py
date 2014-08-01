@@ -164,7 +164,7 @@ class ServersClient(AutoMarshallingHTTPClient):
                       accessIPv6=None, disk_config=None, networks=None,
                       admin_pass=None, key_name=None, config_drive=None,
                       scheduler_hints=None, block_device_mapping=None,
-                      requestslib_kwargs=None,):
+                      security_groups=None, requestslib_kwargs=None):
         """
         @summary: Creates an instance of a server given the
          provided parameters
@@ -192,6 +192,8 @@ class ServersClient(AutoMarshallingHTTPClient):
         @type disk_config: String
         @param config_drive: false/true
         @type config_drive: String
+        @param security_groups: List of security groups for the server
+        @type security_groups: List of dict
         @return: Response Object containing response code and
          the server domain object
         @rtype: Requests.response
@@ -203,7 +205,8 @@ class ServersClient(AutoMarshallingHTTPClient):
             user_data=user_data, metadata=metadata, accessIPv4=accessIPv4,
             accessIPv6=accessIPv6, disk_config=disk_config, networks=networks,
             admin_pass=admin_pass, key_name=key_name,
-            config_drive=config_drive, scheduler_hints=scheduler_hints)
+            config_drive=config_drive, scheduler_hints=scheduler_hints,
+            security_groups=security_groups)
 
         url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('POST', url,
@@ -317,7 +320,7 @@ class ServersClient(AutoMarshallingHTTPClient):
                 personality=None, user_data=None, accessIPv4=None,
                 accessIPv6=None, block_device_mapping=None,
                 key_name=None, config_drive=None, networks=None,
-                requestslib_kwargs=None):
+                security_groups=None, requestslib_kwargs=None):
         """
         @summary: Rebuilds the server
         @param server_id: The id of an existing server.
@@ -342,6 +345,8 @@ class ServersClient(AutoMarshallingHTTPClient):
         @type accessIPv4: String
         @param accessIPv6:The IP version 6 address
         @type accessIPv6: String
+        @param security_groups: List of security groups for the server
+        @type security_groups: List of dict
         @return: Response Object containing response code and
          the server domain object
         @rtype: Requests.response
@@ -362,7 +367,8 @@ class ServersClient(AutoMarshallingHTTPClient):
             accessIPv6=accessIPv6,
             key_name=key_name,
             config_drive=config_drive,
-            networks=networks)
+            networks=networks,
+            security_groups=security_groups)
 
         resp = self.request('POST', url,
                             response_entity_type=Server,
