@@ -506,7 +506,10 @@ class LinuxClient(RemoteInstanceClient):
             raise Exception("File was not created on server: {0}, {1}"
                             .format(public_ip_address, server_filepath))
 
-        md5sum_server = self.get_md5sum_for_remote_file(server_filepath)
+        server_filelocation, server_filename = os.path.split(server_filepath)
+
+        md5sum_server = self.get_md5sum_for_remote_file(server_filelocation,
+                                                        server_filename)
         if not md5sum_server:
             raise Exception("No md5sum from file on server: {0}, {1}"
                             .format(public_ip_address, server_filepath))
