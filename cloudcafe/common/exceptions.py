@@ -31,3 +31,21 @@ class BuildErrorException(Exception):
 
     def __str__(self):
         return repr(self.message)
+
+
+class AttributeException(Exception):
+    """Exception on attribute not found"""
+    def __init__(self, message='Attribute not found'):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
+
+class NotImplementedException(Exception):
+    """Exception on resource or operation not implemented"""
+    def __init__(self, message='Resource or operation not implemented'):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
