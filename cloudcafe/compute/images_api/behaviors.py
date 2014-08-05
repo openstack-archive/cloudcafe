@@ -25,6 +25,7 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 
 
 class ImageBehaviors(BaseBehavior):
+
     def __init__(self, images_client, servers_client, config):
         super(ImageBehaviors, self).__init__()
         self.config = config
@@ -201,15 +202,8 @@ class ImageBehaviors(BaseBehavior):
         if self.config.non_inherited_metadata_filepath is None:
             non_inherited_metadata = []
         else:
-            try:
-                with open(self.config.non_inherited_metadata_filepath, "r") as \
-                        myfile:
-                            data = myfile.read()
-                non_inherited_metadata = data.split(",")
-            except IOError:
-                self._log.debug(
-                    "Defaulting to empty list "
-                    "File does not exist, check file path '{0}'".format(
-                        self.config.non_inherited_metadata_filepath))
-                non_inherited_metadata = []
+            with open(self.config.non_inherited_metadata_filepath, "r") \
+                    as myfile:
+                data = myfile.read()
+            non_inherited_metadata = data.split(",")
         return non_inherited_metadata
