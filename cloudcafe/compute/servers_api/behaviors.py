@@ -23,6 +23,7 @@ from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
+from cloudcafe.compute.common.clients.ping import PingClient
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, RequiredResourceException, \
     ServerUnreachable, SshConnectionException
@@ -640,3 +641,59 @@ class ServerBehaviors(BaseBehavior):
             "destination_type": destination_type,
             "delete_on_termination": delete_on_termination}]
         return block_device_matrix
+
+    def ping_until_reachable(self, ip, timeout=None, interval_time=None):
+        """
+        @summary: Ping an IP address until it responds or a timeout
+                  is reached
+        @param ip: The IP address to ping (either IPv4 or IPv6)
+        @type ip: string
+        @param timeout: The amount of time in seconds to wait before aborting.
+        @type timeout: int
+        @param interval_time: The length of time in seconds to wait between
+                              pings.
+        @type interval_time: int
+
+        """
+
+        interval_time = interval_time or self.config.server_status_interval
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            if PingClient.ping(ip):
+                return
+
+            time.sleep(interval_time)
+
+        raise TimeoutException(
+            "ping_until_reachable ran for {timeout} seconds and did not "
+            "receive a ping response from {ip}"
+            .format(timeout=timeout, ip=ip))
+
+    def ping_until_unreachable(self, ip, timeout=None, interval_time=None):
+        """
+        @summary: Ping an IP address until it stops responding or a
+                  timeout is reached
+        @param ip: The IP address to ping (either IPv4 or IPv6)
+        @type ip: string
+        @param timeout: The amount of time in seconds to wait before aborting.
+        @type timeout: int
+        @param interval_time: The length of time in seconds to wait between
+                              pings.
+        @type interval_time: int
+
+        """
+
+        interval_time = interval_time or self.config.server_status_interval
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            if not PingClient.ping(ip):
+                return
+
+            time.sleep(interval_time)
+
+        raise TimeoutException(
+            "{ip} was expected to become unreachable, but was still pingable "
+            "after {timeout} seconds"
+            .format(timeout=timeout, ip=ip))
