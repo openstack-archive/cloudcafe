@@ -16,9 +16,10 @@ limitations under the License.
 import datetime
 import uuid
 import json
+import gzip
+from StringIO import StringIO
 from copy import deepcopy
 from time import sleep
-
 from cafe.engine.behaviors import BaseBehavior, behavior
 from cloudcafe.objectstorage.objectstorage_api.config \
     import ObjectStorageAPIConfig
@@ -336,44 +337,42 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                 container_name, object_name))
 
     @behavior(ObjectStorageAPIClient)
-    def get_object(self, container_name, object_name, headers=None,
-                   params=None, stream=False,
-                   requestslib_kwargs=None):
+    def decompress_object(self, container_name, object_name,
+                          headers=None, params=None, stream=False,
+                          requestslib_kwargs=None):
         """
-        optional headers
+        decompresses the content of an object.
 
-        If-Match
-        If-None-Match
-        If-Modified-Since
-        If-Unmodified-Since
-        Range
+        @param container_name: container name
+        @type  container_name: string
+        @param obj_name: object name
+        @type  obj_name: string
+        @param headers: headers to be added to the HTTP request.
+        @type  headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type  params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type  requestslib_kwargs: dictionary
 
-        If-Match and If-None-Match check the ETag header
-        200 on 'If' header success
-        If none of the entity tags match, or if "*" is given and no current
-        entity exists, the server MUST NOT perform the requested method, and
-        MUST return a 412 (Precondition Failed) response.
-
-        206 (Partial content) for successful range request
-        If the entity tag does not match, then the server SHOULD
-        return the entire entity using a 200 (OK) response
-        see RFC2616
-
-        If prefetch=False, body download is delayed until response.content is
-        accessed either directly, via response.iter_content() or .iter_lines()
+        @return: decompressed content
+        @rtype: list
         """
-        url = '{0}/{1}/{2}'.format(
-            self.storage_url,
+
+        response = self.client.get_object(
             container_name,
-            object_name)
-
-        response = self.get(
-            url,
+            object_name,
             headers=headers,
             params=params,
             requestslib_kwargs={'stream': stream})
 
-        return response
+        opened_file = gzip.GzipFile(
+            mode='rb',
+            fileobj=StringIO(response.content))
+        uncompressed_data = opened_file.readlines()
+        opened_file.close()
+
+        return uncompressed_data
 
     @behavior(ObjectStorageAPIClient)
     def request(self, method=None, path='', **kwargs):
