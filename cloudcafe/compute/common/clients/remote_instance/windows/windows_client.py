@@ -18,17 +18,18 @@ from dateutil.parser import parse
 import re
 
 from IPy import IP
-
 from cafe.engine.clients.winrm_client import WinRMClient
 from cafe.common.reporting import cclogging
 from cafe.engine.clients.remote_instance.models.dir_details \
     import DirectoryDetails
 from cafe.engine.clients.remote_instance.models.file_details \
     import FileDetails
+
+from cloudcafe.compute.common.clients.ping import PingClient
 from cloudcafe.compute.common.clients.remote_instance.base_client import \
     RemoteInstanceClient
-from cloudcafe.compute.common.exceptions import ServerUnreachable, \
-    WinRMConnectionException
+from cloudcafe.compute.common.exceptions import WinRMConnectionException, \
+    InvalidAddressFormat
 
 
 class WindowsClient(RemoteInstanceClient):
@@ -45,14 +46,12 @@ class WindowsClient(RemoteInstanceClient):
         try:
             IP(ip_address)
         except ValueError:
-            raise ServerUnreachable(ip_address)
+            raise InvalidAddressFormat(ip_address)
 
-        if not self._is_instance_reachable(
-                ip_address=ip_address, retry_interval=retry_interval,
-                timeout=connection_timeout):
-            raise ServerUnreachable(
-                'Could not reach the server at {ip_address}'.format(
-                    ip_address=ip_address))
+        # Verify the server can be pinged before attempting to connect
+        PingClient.ping_until_reachable(ip_address,
+                                        timeout=connection_timeout,
+                                        interval_time=retry_interval)
 
         self.ip_address = ip_address
         self.username = username
