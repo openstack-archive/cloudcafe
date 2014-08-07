@@ -1,9 +1,6 @@
 import abc
-import time
 
 from cafe.engine.clients.base import BaseClient
-
-from cloudcafe.compute.common.clients.ping import PingClient
 
 
 class RemoteInstanceClient(BaseClient):
@@ -60,16 +57,3 @@ class RemoteInstanceClient(BaseClient):
     def can_authenticate(self):
         """Verifies a remote connection can be made to the server."""
         raise NotImplementedError
-
-    @staticmethod
-    def _is_instance_reachable(ip_address, retry_interval, timeout):
-        """Verify the server can be pinged."""
-        start = int(time.time())
-        reachable = False
-        while not reachable:
-            reachable = PingClient.ping(ip_address)
-            if reachable:
-                return True
-            time.sleep(retry_interval)
-            if int(time.time()) - start >= timeout:
-                return False

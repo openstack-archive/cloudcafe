@@ -18,8 +18,7 @@ import os
 import re
 import time
 
-from cloudcafe.common.tools import datagen
-
+from IPy import IP
 from cafe.common.reporting import cclogging
 from cafe.engine.clients.remote_instance.exceptions \
     import DirectoryNotFoundException
@@ -28,11 +27,12 @@ from cafe.engine.clients.remote_instance.models.dir_details \
 from cafe.engine.clients.remote_instance.models.file_details \
     import FileDetails
 from cafe.engine.ssh.client import SSHAuthStrategy, SSHClient
+from cloudcafe.common.tools import datagen
 from cloudcafe.compute.common.clients.ping import PingClient
 from cloudcafe.compute.common.clients.remote_instance.base_client import \
     RemoteInstanceClient
 from cloudcafe.compute.common.exceptions import FileNotFoundException, \
-    ServerUnreachable, SshConnectionException
+    SshConnectionException, ServerUnreachable
 from cloudcafe.common.tools.md5hash import get_md5_hash
 
 
@@ -43,25 +43,21 @@ class LinuxClient(RemoteInstanceClient):
         self.client_log = cclogging.getLogger(
             cclogging.get_object_namespace(self.__class__))
 
-        if ip_address is None:
-            raise ServerUnreachable("None")
         self.ip_address = ip_address
         self.username = username
         self.password = password
         self.connection_timeout = connection_timeout
 
+        # Verify the IP address has a valid format
+        try:
+            IP(ip_address)
+        except ValueError:
+            raise ServerUnreachable(ip_address)
+
         # Verify the server can be pinged before attempting to connect
-        start = int(time.time())
-        reachable = False
-        while not reachable:
-            reachable = PingClient.ping(ip_address)
-            if reachable:
-                break
-            time.sleep(retry_interval)
-            if int(time.time()) - start >= connection_timeout:
-                raise ServerUnreachable(
-                    'Could not reach the server at {ip_address}'.format(
-                        ip_address=ip_address))
+        PingClient.ping_until_reachable(ip_address,
+                                        timeout=connection_timeout,
+                                        interval_time=retry_interval)
 
         if key is not None:
             auth_strategy = SSHAuthStrategy.KEY_STRING
