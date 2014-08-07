@@ -16,9 +16,10 @@ limitations under the License.
 import datetime
 import uuid
 import json
+import gzip
+from StringIO import StringIO
 from copy import deepcopy
 from time import sleep
-
 from cafe.engine.behaviors import BaseBehavior, behavior
 from cloudcafe.objectstorage.objectstorage_api.config \
     import ObjectStorageAPIConfig
@@ -333,6 +334,44 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         if not response.ok:
             raise Exception('could not create object "{0}/{1}"'.format(
                 container_name, object_name))
+
+    @behavior(ObjectStorageAPIClient)
+    def decompress_object(self, container_name, object_name,
+                          headers=None, params=None, stream=False,
+                          requestslib_kwargs=None):
+        """
+        decompresses the content of an object.
+
+        @param container_name: container name
+        @type  container_name: string
+        @param obj_name: object name
+        @type  obj_name: string
+        @param headers: headers to be added to the HTTP request.
+        @type  headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type  params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type  requestslib_kwargs: dictionary
+
+        @return: decompressed content
+        @rtype: string
+        """
+
+        response = self.client.get_object(
+            container_name,
+            object_name,
+            headers=headers,
+            params=params,
+            requestslib_kwargs={'stream': stream})
+
+        opened_file = gzip.GzipFile(
+            mode='rb',
+            fileobj=StringIO(response.content))
+        uncompressed_data = opened_file.read()
+        opened_file.close()
+
+        return uncompressed_data
 
     @behavior(ObjectStorageAPIClient)
     def request(self, method=None, path='', **kwargs):
