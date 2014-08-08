@@ -258,7 +258,8 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         return True
 
     @behavior(ObjectStorageAPIClient)
-    def create_container(self, container_name, log_delivery=False, headers={}):
+    def create_container(self, container_name, log_delivery=False,
+                         headers=None):
 
         if log_delivery:
             headers['X-Container-Meta-Access-Log-Delivery'] = str(True)
@@ -316,7 +317,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
     @behavior(ObjectStorageAPIClient)
     def create_object(self, container_name, object_name, data=None,
-                      headers={}, params={}):
+                      headers=None, params=None):
         if not self.container_exists(container_name):
             self.create_container(container_name)
 
@@ -333,6 +334,46 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         if not response.ok:
             raise Exception('could not create object "{0}/{1}"'.format(
                 container_name, object_name))
+
+    @behavior(ObjectStorageAPIClient)
+    def get_object(self, container_name, object_name, headers=None,
+                   params=None, stream=False,
+                   requestslib_kwargs=None):
+        """
+        optional headers
+
+        If-Match
+        If-None-Match
+        If-Modified-Since
+        If-Unmodified-Since
+        Range
+
+        If-Match and If-None-Match check the ETag header
+        200 on 'If' header success
+        If none of the entity tags match, or if "*" is given and no current
+        entity exists, the server MUST NOT perform the requested method, and
+        MUST return a 412 (Precondition Failed) response.
+
+        206 (Partial content) for successful range request
+        If the entity tag does not match, then the server SHOULD
+        return the entire entity using a 200 (OK) response
+        see RFC2616
+
+        If prefetch=False, body download is delayed until response.content is
+        accessed either directly, via response.iter_content() or .iter_lines()
+        """
+        url = '{0}/{1}/{2}'.format(
+            self.storage_url,
+            container_name,
+            object_name)
+
+        response = self.get(
+            url,
+            headers=headers,
+            params=params,
+            requestslib_kwargs={'stream': stream})
+
+        return response
 
     @behavior(ObjectStorageAPIClient)
     def request(self, method=None, path='', **kwargs):
