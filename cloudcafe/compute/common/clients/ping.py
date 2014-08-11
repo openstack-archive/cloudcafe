@@ -17,10 +17,12 @@ limitations under the License.
 import platform
 import re
 import subprocess
+import time
 
 from IPy import IP
-
 from cafe.common.reporting import cclogging
+
+from cloudcafe.compute.common.exceptions import TimeoutException
 
 
 class PingClient(object):
@@ -70,3 +72,59 @@ class PingClient(object):
         cls._log.debug("Pinged {ip} with {packet_loss}% packet loss.".format(
             ip=ip, packet_loss=packet_loss_percent))
         return packet_loss_percent != '100'
+
+    @classmethod
+    def ping_until_reachable(cls, ip, timeout, interval_time):
+        """
+        @summary: Ping an IP address until it responds or a timeout
+                  is reached
+        @param ip: The IP address to ping (either IPv4 or IPv6)
+        @type ip: string
+        @param timeout: The amount of time in seconds to wait before aborting.
+        @type timeout: int
+        @param interval_time: The length of time in seconds to wait between
+                              pings.
+        @type interval_time: int
+
+        """
+
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            if PingClient.ping(ip):
+                return
+
+            time.sleep(interval_time)
+
+        raise TimeoutException(
+            "ping_until_reachable ran for {timeout} seconds and did not "
+            "receive a ping response from {ip}"
+            .format(timeout=timeout, ip=ip))
+
+    @classmethod
+    def ping_until_unreachable(cls, ip, timeout, interval_time):
+        """
+        @summary: Ping an IP address until it stops responding or a
+                  timeout is reached
+        @param ip: The IP address to ping (either IPv4 or IPv6)
+        @type ip: string
+        @param timeout: The amount of time in seconds to wait before aborting.
+        @type timeout: int
+        @param interval_time: The length of time in seconds to wait between
+                              pings.
+        @type interval_time: int
+
+        """
+
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            if not PingClient.ping(ip):
+                return
+
+            time.sleep(interval_time)
+
+        raise TimeoutException(
+            "{ip} was expected to become unreachable, but was still pingable "
+            "after {timeout} seconds"
+            .format(timeout=timeout, ip=ip))
