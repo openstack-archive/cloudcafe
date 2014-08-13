@@ -21,20 +21,18 @@ from cloudcafe.cloudkeep.barbican.orders.models.order \
 
 class OrdersClient(BarbicanRestClient):
 
-    def __init__(self, url, api_version, tenant_id, token=None,
+    def __init__(self, url, api_version, token=None,
                  serialize_format=None, deserialize_format=None):
         super(OrdersClient, self).__init__(
             token=token, serialize_format=serialize_format,
             deserialize_format=deserialize_format)
         self.url = url
         self.api_version = api_version
-        self.tenant_id = tenant_id
 
     def _get_base_url(self):
-        return '{base}/{api_version}/{tenant_id}/orders'.format(
+        return '{base}/{api_version}/orders'.format(
             base=self.url,
-            api_version=self.api_version,
-            tenant_id=self.tenant_id)
+            api_version=self.api_version)
 
     def _get_order_url(self, order_id):
         return '{base}/{order_id}'.format(base=self._get_base_url(),
@@ -43,7 +41,7 @@ class OrdersClient(BarbicanRestClient):
     def create_order(self, name, payload_content_type, algorithm,
                      bit_length, mode, expiration, headers=None):
         """
-        POST http://.../v1/{tenant_id}/orders/{order_uuid}
+        POST http://.../v1/orders/{order_uuid}
         Creates an order to generate a secret
         """
         remote_url = self._get_base_url()
@@ -62,7 +60,7 @@ class OrdersClient(BarbicanRestClient):
     def create_order_w_payload(self, name, payload_content_type, algorithm,
                                bit_length, mode, expiration, payload):
         """
-        POST http://.../v1/{tenant_id}/orders/{order_uuid}
+        POST http://.../v1/orders/{order_uuid}
         Creates an order to generate a secret with plain text. This is
         separate from the create_order method because it is used for
         negative testing only and is expected to fail.
@@ -83,7 +81,7 @@ class OrdersClient(BarbicanRestClient):
 
     def get_order(self, order_id=None, ref=None):
         """
-        GET http://.../v1/{tenant_id}/orders/{order_uuid}
+        GET http://.../v1/orders/{order_uuid}
         Retrieves an order
         """
         remote_url = ref or self._get_order_url(order_id)
@@ -91,7 +89,7 @@ class OrdersClient(BarbicanRestClient):
 
     def delete_order(self, order_id):
         """
-        DELETE http://.../v1/{tenant_id}/orders/{order_uuid}
+        DELETE http://.../v1/orders/{order_uuid}
         Cancels an order
         """
         return self.request('DELETE', self._get_order_url(order_id))
@@ -109,7 +107,7 @@ class OrdersClient(BarbicanRestClient):
 
     def update_order(self, order_id, payload_content_type=None, data=None):
         """
-        PUT http://.../v1/{tenant_id}/orders/{order_uuid}
+        PUT http://.../v1/orders/{order_uuid}
         Attempts to update order similar to how secrets are updated.
         """
         remote_url = self._get_order_url(order_id)
