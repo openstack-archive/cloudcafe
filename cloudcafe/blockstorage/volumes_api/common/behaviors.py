@@ -201,7 +201,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
         metadata = metadata or {}
         timeout = timeout or self.calculate_volume_create_timeout(size)
-
+        
         self._log.info("create_available_volume() is creating a volume")
         resp = self.create_volume(
             size, volume_type, name=name, description=description,
