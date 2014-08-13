@@ -197,17 +197,37 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
     def create_available_volume(
             self, size, volume_type, name=None, description=None,
             availability_zone=None, metadata=None, bootable=None,
-            image_ref=None, snapshot_id=None, source_volid=None, timeout=None):
+            image_ref=None, snapshot_id=None, source_volid=None, timeout=None,
+            build_attempts=None):
 
         metadata = metadata or {}
         timeout = timeout or self.calculate_volume_create_timeout(size)
 
-        self._log.info("create_available_volume() is creating a volume")
-        resp = self.create_volume(
-            size, volume_type, name=name, description=description,
-            availability_zone=availability_zone, metadata=metadata,
-            bootable=bootable, image_ref=image_ref, snapshot_id=snapshot_id,
-            source_volid=source_volid)
+        failures = []
+        attempts = build_attempts
+        for attempt in range(attempts):
+
+            self._log.debug('Attempt {attempt} of {attempts} '
+                            'to create volume.'.format(attempt=attempt + 1,
+                                                       attempts=attempts))
+            try:
+                resp = self.create_volume(
+                    size, volume_type, name=name, description=description,
+                    availability_zone=availability_zone, metadata=metadata,
+                    bootable=bootable, image_ref=image_ref, snapshot_id=snapshot_id,
+                    source_volid=source_volid)
+
+            except Exception as ex:
+                self._log.error('Failed to build volume {volume_id}: '
+                                '{message}'.format(volume_id=resp.entity.id_,
+                                                   message=ex.message))
+                self._log.error(msg)
+                failures.append(ex.message)
+
+        raise Exception(
+            'Failed to successfully build a volume after '
+            '{attempts} attempts: {failures}'.format(
+                attempts=attempts, failures=failures))
 
         volume = self._verify_entity(resp)
 
