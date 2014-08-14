@@ -2,6 +2,10 @@ from time import time, sleep
 from cafe.engine.behaviors import BaseBehavior
 
 
+class StatusProgressionClassUsageError(Exception):
+    pass
+
+
 class StatusProgressionError(Exception):
     pass
 
@@ -26,6 +30,15 @@ class StatusProgressionVerifier(BaseBehavior):
         self.status_call_args = status_call_args
         self.status_call_kwargs = status_call_kwargs
         self._state_list = []
+        self.global_timeout = None
+
+    def set_global_timeout(self, timeout):
+        """If the global timeout is set, all individual states without timeouts
+        will be timed as part of the global timeout, along with the entire
+        progression verification.  Individual state timeouts will still be
+        honored unless it would be waiting longer than the global timeout.
+        """
+        self.global_timeout = timeout
 
     def add_state(
             self, expected_statuses=None, acceptable_statuses=None,
@@ -33,8 +46,11 @@ class StatusProgressionVerifier(BaseBehavior):
             poll_failure_retry_limit=0):
 
         self._state_list.append(
-            (expected_statuses or [], acceptable_statuses or [],
-             error_statuses or [], timeout, poll_rate,
+            (expected_statuses or [],
+             acceptable_statuses or [],
+             error_statuses or [],
+             timeout,
+             poll_rate,
              poll_failure_retry_limit))
 
     def start(self):
@@ -49,6 +65,9 @@ class StatusProgressionVerifier(BaseBehavior):
         current state) have elapsed, a StatusProgressionError is raised with
         an appropriate error message.
         """
+        global_endtime = None
+        if self.global_timeout:
+            global_endtime = time() + self.global_timeout
 
         # State loop
         for expected_statuses, acceptable_statuses, error_statuses, timeout, \
@@ -69,8 +88,24 @@ class StatusProgressionVerifier(BaseBehavior):
             current_status = None
             poll_failure_retries = 0
 
+            # Timeout calculation
+            actual_timeout_used = None
+            if timeout:
+                endtime = time() + timeout
+                actual_timeout_used = timeout
+            elif global_endtime:
+                endtime = global_endtime
+                actual_timeout_used = global_endtime - time()
+            else:
+                raise StatusProgressionClassUsageError(
+                    "A timeout could not be found for the current state."
+                    "Please either set a global timeout via set_global_timeout"
+                    ", or set an explicit timeout for this state.")
+            if global_endtime:
+                if global_endtime < timeout:
+                    endtime = global_endtime
+
             # State watch loop
-            endtime = time() + timeout
             while time() < endtime:
 
                 # Attempt to get the latest status, retry status_call() up to
@@ -144,7 +179,8 @@ class StatusProgressionVerifier(BaseBehavior):
                     "Last observed status: {current_status}\n"
                     "expected statuses: {expected_statuses}\n"
                     "acceptable statuses: {acceptable_statuses}\n".format(
-                        timeout=timeout, current_status=current_status,
+                        timeout=actual_timeout_used,
+                        current_status=current_status,
                         expected_statuses=expected_statuses,
                         acceptable_statuses=acceptable_statuses))
 
