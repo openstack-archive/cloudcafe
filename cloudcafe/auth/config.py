@@ -91,3 +91,13 @@ class ComputeAuthorizationConfig(UserConfig):
 class ComputeAdminUserConfig(UserConfig):
 
     SECTION_NAME = 'compute_admin_user'
+
+
+class NetworkingAdminAuthConfig(UserAuthConfig):
+
+    SECTION_NAME = 'networking_admin_auth_config'
+
+
+class NetworkingAdminUserConfig(UserConfig):
+
+    SECTION_NAME = 'networking_admin_user'
