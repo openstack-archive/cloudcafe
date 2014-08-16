@@ -132,7 +132,7 @@ class ServerBehaviors(BaseBehavior):
                 block_device_mapping=block_device_mapping,
                 security_groups=security_groups)
             server_obj = resp.entity
-            create_request_id = resp.headers['x-compute-request-id']
+            create_request_id = resp.headers.get('x-compute-request-id')
 
             try:
                 resp = self.wait_for_server_status(
