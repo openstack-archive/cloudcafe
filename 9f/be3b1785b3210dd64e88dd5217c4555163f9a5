@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Daryl Walleck <daryl.walleck@rackspace.com>
+Workflow+1: Daryl Walleck <daryl.walleck@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Sat, 16 Aug 2014 15:22:56 +0000
+Reviewed-on: https://review.openstack.org/114762
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
