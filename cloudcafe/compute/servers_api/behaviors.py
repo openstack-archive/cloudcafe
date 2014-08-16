@@ -132,7 +132,7 @@ class ServerBehaviors(BaseBehavior):
                 block_device_mapping=block_device_mapping,
                 security_groups=security_groups)
             server_obj = resp.entity
-            create_request_id = resp.headers['x-compute-request-id']
+            create_request_id = resp.headers.get('x-compute-request-id')
 
             try:
                 resp = self.wait_for_server_status(
@@ -140,6 +140,8 @@ class ServerBehaviors(BaseBehavior):
                 # Add the password from the create request
                 # into the final response
                 resp.entity.admin_pass = server_obj.admin_pass
+
+                if
                 resp.headers['x-compute-request-id'] = create_request_id
                 return resp
             except (TimeoutException, BuildErrorException) as ex:
