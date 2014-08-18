@@ -76,18 +76,3 @@ class UserConfig(ConfigSectionInterface):
     def project_id(self):
         """The users's project_id, if applicable"""
         return self.get("project_id")
-
-
-class ComputeAdminAuthConfig(UserAuthConfig):
-
-    SECTION_NAME = 'compute_admin_auth_config'
-
-
-class ComputeAuthorizationConfig(UserConfig):
-
-    SECTION_NAME = 'compute_secondary_user'
-
-
-class ComputeAdminUserConfig(UserConfig):
-
-    SECTION_NAME = 'compute_admin_user'
