@@ -41,6 +41,10 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         super(BaseOpenstackPythonCLI_Client, self).__init__()
 
     def base_cmd(self):
+        """Builds the beginning of the command (arguments to the client
+        itself)
+        """
+
         cmd_string = self._CMD
         for attr, flag in self._KWMAP.iteritems():
             value = self._process_boolean_flag_value(getattr(self, attr, None))
@@ -56,6 +60,7 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
     @staticmethod
     def _multiplicable_flag_data_to_string(flag, data):
         """returns a string: '--flag key1=value1 --flag key2-value2...'"""
+
         if flag is None or data is None:
             return None
         return " --{0} ".format(flag).join(
@@ -66,6 +71,7 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         """returns a string of the form "key1=value1 key2=value2 ..."
         Seperator between key=value pairs is a single space by default
         """
+
         if data is None:
             return None
         return "{0}".format(seperator).join(
@@ -78,7 +84,9 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
 
     def _process_command(self):
         """Creates a command from the calling function's locals() and executes
-        that command."""
+        that command.
+        """
+
         # Get local vars of the function that called _process_command
         # Assumes that the calling function is an opencli client.
         frame = inspect.currentframe().f_back
@@ -112,7 +120,7 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
             (kwmap[name], func_locals[name])
             for name in pythonified_flag_names if name not in positional_args)
 
-        #Build a string of all positional argument values
+        # Build a string of all positional argument values
         positional_arguments_string = ' '.join(
             [str(value) for value in positional_arg_values])
 
@@ -146,7 +154,7 @@ class BaseOpenstackPythonCLI_Client(BaseCommandLineClient):
         except Exception as exception:
             self._log.warning(
                 "_response_entity object defined in {0} does not implement "
-                "deserialize() classmethod".format(frame.f_code.co_name))
+                "the deserialize() classmethod".format(frame.f_code.co_name))
             self._log.exception(exception)
 
         return response
