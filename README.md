@@ -20,7 +20,7 @@ CloudCAFE, An Open CAFE Implementation for OpenStack
 </pre>
 
 CloudCAFE is an implementation of the [Open CAFE Framework](https://github.com/stackforge/opencafe) specifically
-designed to test deployed versions of [OpenStack](http://http://www.openstack.org/). It is built using the
+designed to test deployed versions of [OpenStack](http://www.openstack.org/). It is built using the
 [Open CAFE Core](https://github.com/stackforge/opencafe).
 
 
