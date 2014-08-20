@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from cloudcafe.auth.config import UserAuthConfig, UserConfig
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -59,3 +60,18 @@ class ComputeEndpointConfig(ConfigSectionInterface):
 class ComputeAdminEndpointConfig(ComputeEndpointConfig):
 
     SECTION_NAME = 'compute_admin_endpoint'
+
+
+class ComputeAdminAuthConfig(UserAuthConfig):
+
+    SECTION_NAME = 'compute_admin_auth_config'
+
+
+class ComputeAuthorizationConfig(UserConfig):
+
+    SECTION_NAME = 'compute_secondary_user'
+
+
+class ComputeAdminUserConfig(UserConfig):
+
+    SECTION_NAME = 'compute_admin_user'

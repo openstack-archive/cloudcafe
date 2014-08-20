@@ -15,6 +15,8 @@ limitations under the License.
 """
 
 from cloudcafe.compute.cells_api.composites import CellsComposite
+from cloudcafe.compute.config import UserAuthConfig, UserConfig, \
+    ComputeAdminAuthConfig, ComputeAdminUserConfig
 from cloudcafe.compute.extensions.config_drive.composites import \
     ConfigDriveComposite
 from cloudcafe.compute.extensions.console_output_api.composites import \
@@ -37,9 +39,6 @@ from cloudcafe.compute.quotas_api.composites import QuotasComposite
 from cloudcafe.compute.servers_api.composites import ServersComposite
 from cloudcafe.compute.volume_attachments_api.composites import \
     VolumeAttachmentsComposite
-
-from cloudcafe.auth.config import UserAuthConfig, UserConfig, \
-    ComputeAdminAuthConfig, ComputeAdminUserConfig
 from cloudcafe.auth.provider import MemoizedAuthServiceComposite
 from cloudcafe.blockstorage.composites import VolumesAutoComposite
 from cloudcafe.compute.config import ComputeAdminEndpointConfig, \
