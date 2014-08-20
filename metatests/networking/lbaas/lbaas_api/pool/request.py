@@ -38,7 +38,7 @@ class PoolRequestTestBase(unittest.TestCase):
         cls.tenant_id = "352686b7-c4b2-44ec-a458-84239713f685"
         cls.protocol = "HTTPS"
         cls.lb_algorithm = "ROUND_ROBIN"
-        cls.healthmonitor_id = "health_monitor_123"
+        cls.pool_id = "pool_123"
         cls.admin_state_up = True
         cls.sp_type = "COOKIE"
         cls.sp_cookie_name = "session_persistence_cookie"
@@ -51,14 +51,14 @@ class PoolRequestTestBase(unittest.TestCase):
             protocol=cls.protocol,
             session_persistence=cls.session_persistence,
             lb_algorithm=cls.lb_algorithm,
-            healthmonitor_id=cls.healthmonitor_id,
+            pool_id=cls.pool_id,
             admin_state_up=cls.admin_state_up
         )
 
         cls.updated_name = "Updated Example HTTPS Pool"
         cls.updated_description = "A updated example of an HTTPS Pool."
         cls.updated_lb_algorithm = "LEAST_CONNECTIONS"
-        cls.updated_healthmonitor_id = "health_monitor_321"
+        cls.updated_pool_id = "pool_321"
         cls.updated_admin_state_up = False
         cls.updated_sp_type = "SOURCE_IP"
         cls.updated_sp_cookie_name = "updated_session_persistence_cookie"
@@ -69,7 +69,7 @@ class PoolRequestTestBase(unittest.TestCase):
             name=cls.updated_name,
             description=cls.updated_description,
             lb_algorithm=cls.updated_lb_algorithm,
-            healthmonitor_id=cls.updated_healthmonitor_id,
+            pool_id=cls.updated_pool_id,
             admin_state_up=cls.updated_admin_state_up,
             session_persistence=cls.updated_session_persistence
         )
@@ -92,7 +92,7 @@ class CreatePoolRequestTest(PoolRequestTestBase):
             'lb_algorithm': self.lb_algorithm,
             'description': self.description,
             'session_persistence': self.session_persistence,
-            'healthmonitor_id': self.healthmonitor_id,
+            'pool_id': self.pool_id,
             'admin_state_up': self.admin_state_up}}
         expected_json = json.loads(json.dumps(json_dict))
         self.assertEqual(expected_json, actual_json)
@@ -103,9 +103,9 @@ class CreatePoolRequestTest(PoolRequestTestBase):
             '{xml_header}<{root_tag} '
             'admin_state_up="{admin_state_up}" '
             'description="{description}" '
-            'healthmonitor_id="{healthmonitor_id}" '
             'lb_algorithm="{lb_algorithm}" '
             'name="{name}" '
+            'pool_id="{pool_id}" '
             'protocol="{protocol}" '
             'tenant_id="{tenant_id}" xmlns="{xmlns}">'
             '<session_persistence cookie_name="{sp_cookie_name}" '
@@ -119,7 +119,7 @@ class CreatePoolRequestTest(PoolRequestTestBase):
                 description=self.description,
                 sp_cookie_name=self.sp_cookie_name,
                 sp_type=self.sp_type,
-                healthmonitor_id=self.healthmonitor_id,
+                pool_id=self.pool_id,
                 admin_state_up=self.admin_state_up)
         self.assertEqual(expected_xml, actual_xml)
 
@@ -137,7 +137,7 @@ class UpdatePoolRequestTest(PoolRequestTestBase):
             "description": self.updated_description,
             "session_persistence": self.updated_session_persistence,
             "lb_algorithm": self.updated_lb_algorithm,
-            "healthmonitor_id": self.updated_healthmonitor_id,
+            "pool_id": self.updated_pool_id,
             "admin_state_up": self.updated_admin_state_up}}
         expected_json = json.loads(json.dumps(json_dict))
         self.assertEqual(expected_json, actual_json)
@@ -147,9 +147,9 @@ class UpdatePoolRequestTest(PoolRequestTestBase):
         expected_xml = ('{xml_header}<{root_tag} '
                         'admin_state_up="{admin_state_up}" '
                         'description="{description}" '
-                        'healthmonitor_id="{healthmonitor_id}" '
                         'lb_algorithm="{lb_algorithm}" '
-                        'name="{name}" xmlns="{xmlns}">'
+                        'name="{name}" '
+                        'pool_id="{pool_id}" xmlns="{xmlns}">'
                         '<session_persistence cookie_name="{sp_cookie_name}" '
                         'type="{sp_type}" />'
                         '</{root_tag}>').format(
@@ -158,7 +158,7 @@ class UpdatePoolRequestTest(PoolRequestTestBase):
                             root_tag=self.ROOT_TAG,
                             admin_state_up=self.updated_admin_state_up,
                             description=self.updated_description,
-                            healthmonitor_id=self.updated_healthmonitor_id,
+                            pool_id=self.updated_pool_id,
                             lb_algorithm=self.updated_lb_algorithm,
                             name=self.updated_name,
                             sp_cookie_name=self.updated_sp_cookie_name,

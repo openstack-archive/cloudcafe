@@ -41,7 +41,7 @@ class CreatePool(AutoMarshallingModel):
                     "cookie_name": "session_persistence_cookie"
                 },
                 "lb_algorithm": "ROUND_ROBIN",
-                "healthmonitor_id": "health_monitor_123",
+                "pool_id": "pool_123",
                 "admin_state_up": true
             }
         }
@@ -53,7 +53,7 @@ class CreatePool(AutoMarshallingModel):
             tenant_id="7725fe12-1c14-4f45-ba8e-44bf01763578"
             protocol="HTTPS"
             lb_algorithm="ROUND_ROBIN"
-            healthmonitor_id="health_monitor_123"
+            pool_id="pool_123"
             admin_state_up="True" >
             <session_persistence
                 type="COOKIE"
@@ -67,7 +67,7 @@ class CreatePool(AutoMarshallingModel):
 
     def __init__(self, name, tenant_id, protocol, lb_algorithm,
                  description=None, session_persistence=None,
-                 healthmonitor_id=None, admin_state_up=None):
+                 pool_id=None, admin_state_up=None):
         """
         @summary: Create Pool Object Model
         @param name: Name of the Pool that will be created
@@ -86,9 +86,9 @@ class CreatePool(AutoMarshallingModel):
             "type" and "cookie_name".
                 Default: {}
         @type session_persistence: dict
-        @param healthmonitor_id: ID of existing health monitor.
+        @param pool_id: ID of existing pool.
             Default: null
-        @type healthmonitor_id: str
+        @type pool_id: str
         @param admin_state_up: Enabled or disabled.
         @type admin_state_up: bool
         """
@@ -99,7 +99,7 @@ class CreatePool(AutoMarshallingModel):
         self.lb_algorithm = lb_algorithm
         self.description = description
         self.session_persistence = session_persistence
-        self.healthmonitor_id = healthmonitor_id
+        self.pool_id = pool_id
         self.admin_state_up = admin_state_up
 
     def _obj_to_json(self):
@@ -110,7 +110,7 @@ class CreatePool(AutoMarshallingModel):
             'lb_algorithm': self.lb_algorithm,
             'description': self.description,
             'session_persistence': self.session_persistence,
-            'healthmonitor_id': self.healthmonitor_id,
+            'pool_id': self.pool_id,
             'admin_state_up': self.admin_state_up
         }
         body = self._remove_empty_values(body)
@@ -133,8 +133,8 @@ class CreatePool(AutoMarshallingModel):
                     type_=self.session_persistence.get('type'),
                     cookie_name=self.session_persistence.get('cookie_name')
                 )._obj_to_xml()))
-        if self.healthmonitor_id is not None:
-            element.set('healthmonitor_id', self.healthmonitor_id)
+        if self.pool_id is not None:
+            element.set('pool_id', self.pool_id)
         if self.admin_state_up is not None:
             element.set('admin_state_up', str(self.admin_state_up))
         xml = "{0}{1}".format(xml, ET.tostring(element))
@@ -156,7 +156,7 @@ class UpdatePool(AutoMarshallingModel):
                     "cookie_name": "session_persistence_cookie"
                 },
                 "lb_algorithm": "LEAST_CONNECTIONS",
-                "healthmonitor_id": "health_monitor_321",
+                "pool_id": "pool_321",
                 "admin_state_up": false
             }
         }
@@ -166,7 +166,7 @@ class UpdatePool(AutoMarshallingModel):
             name="an_updated-pool"
             description="A new description"
             lb_algorithm="LEAST_CONNECTIONS"
-            healthmonitor_id="health_monitor_321"
+            pool_id="pool_321"
             admin_state_up="False" >
             <sessionPersistence
                 type="COOKIE"
@@ -178,13 +178,13 @@ class UpdatePool(AutoMarshallingModel):
 
     def __init__(self, name=None, description=None,
                  session_persistence=None, lb_algorithm=None,
-                 healthmonitor_id=None, admin_state_up=None):
+                 pool_id=None, admin_state_up=None):
         super(UpdatePool, self).__init__()
         self.name = name
         self.description = description
         self.session_persistence = session_persistence
         self.lb_algorithm = lb_algorithm
-        self.healthmonitor_id = healthmonitor_id
+        self.pool_id = pool_id
         self.admin_state_up = admin_state_up
 
     def _obj_to_json(self):
@@ -193,7 +193,7 @@ class UpdatePool(AutoMarshallingModel):
             'description': self.description,
             'session_persistence': self.session_persistence,
             'lb_algorithm': self.lb_algorithm,
-            'healthmonitor_id': self.healthmonitor_id,
+            'pool_id': self.pool_id,
             'admin_state_up': self.admin_state_up
         }
         body = self._remove_empty_values(body)
@@ -209,8 +209,8 @@ class UpdatePool(AutoMarshallingModel):
             element.set('description', self.description)
         if self.lb_algorithm is not None:
             element.set('lb_algorithm', self.lb_algorithm)
-        if self.healthmonitor_id is not None:
-            element.set('healthmonitor_id', self.healthmonitor_id)
+        if self.pool_id is not None:
+            element.set('pool_id', self.pool_id)
         if self.admin_state_up is not None:
             element.set('admin_state_up', str(self.admin_state_up))
         if self.session_persistence is not None:
