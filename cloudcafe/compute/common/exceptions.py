@@ -41,6 +41,15 @@ class BuildErrorException(Exception):
         return repr(self.message)
 
 
+class BootableVolumeException(Exception):
+    """Exception on volume build"""
+    def __init__(self, message='Call failed with status_code 507'):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
+
 class DeleteException(Exception):
     def __init__(self, message):
         self.message = message
