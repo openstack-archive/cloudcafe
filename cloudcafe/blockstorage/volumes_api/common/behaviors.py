@@ -18,7 +18,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             self._log.error(msg)
             raise VolumesAPIBehaviorException(msg)
 
-        #Verify volume response entity deserialized correctly
+        # Verify volume response entity deserialized correctly
         if resp.entity is None:
             msg = "Response body did not deserialize as expected"
             self._log.error(msg)
@@ -69,6 +69,31 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         else:
             timeout += self.config.volume_clone_base_timeout
 
+        return timeout
+
+    def calculate_copy_image_to_volume_timeout(self, image_size):
+        timeout = self._calculate_timeout(
+            size=image_size,
+            max_timeout=self.config.copy_image_to_volume_max_timeout,
+            min_timeout=self.config.copy_image_to_volume_min_timeout,
+            wait_per_gb=self.config.copy_image_to_volume_wait_per_gigabyte)
+        if not timeout:
+            timeout = self.config.copy_image_to_volume_base_timeout
+        else:
+            timeout += self.config.copy_image_to_volume_base_timeout
+
+        return timeout
+
+    def calculate_restore_snapshot_timeout(self, image_size):
+        timeout = self._calculate_timeout(
+            size=image_size,
+            max_timeout=self.config.restore_snapshot_max_timeout,
+            min_timeout=self.config.restore_snapshot_min_timeout,
+            wait_per_gb=self.config.restore_snapshot_wait_per_gigabyte)
+        if not timeout:
+            timeout = self.config.snapshot_restore_base_timeout
+        else:
+            timeout += self.config.snapshot_restore_base_timeout
         return timeout
 
     def calculate_snapshot_create_timeout(self, volume_size):
@@ -181,8 +206,9 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             self._verify_entity(resp)
 
             if resp.entity.status == expected_status:
-                self._log.info('Expected Snapshot status "{0}" observed'
-                    .format(expected_status))
+                self._log.info(
+                    'Expected Snapshot status "{0}" observed'.format(
+                        expected_status))
                 break
             sleep(poll_rate)
 
@@ -198,16 +224,45 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             self, size, volume_type, name=None, description=None,
             availability_zone=None, metadata=None, bootable=None,
             image_ref=None, snapshot_id=None, source_volid=None, timeout=None):
+        """Create a volume and wait for it to reach the 'available' status"""
 
         metadata = metadata or {}
         timeout = timeout or self.calculate_volume_create_timeout(size)
 
+        try:
+            if image_ref:
+                timeout = self.calculate_copy_image_to_volume_timeout(size)
+                self._log.info(
+                    "Copy image to volume timeout calculated at {0} "
+                    "seconds".format(timeout))
+
+            elif snapshot_id:
+                timeout = self.calculate_snapshot_restore_timeout(size)
+                self._log.info(
+                    "Create volume from snapshot timeout calculated at {0} "
+                    "seconds".format(timeout))
+
+            elif source_volid:
+                timeout = self.calculate_volume_clone_timeout(size)
+                self._log.info(
+                    "Clone a volume timeout calculated at {0} "
+                    "seconds".format(timeout))
+        except:
+            # Worst case if no config values are set.
+            # Use the default volume create timeout.
+            self._log.info(
+                "Unable to use create-method-specific timeout, "
+                "defaulting to normal volume create timeout of {0} "
+                "seconds".format(timeout))
+
         self._log.info("create_available_volume() is creating a volume")
+        start_time = time()
         resp = self.create_volume(
             size, volume_type, name=name, description=description,
             availability_zone=availability_zone, metadata=metadata,
             bootable=bootable, image_ref=image_ref, snapshot_id=snapshot_id,
             source_volid=source_volid)
+        timeout = timeout - (time() - start_time)
 
         volume = self._verify_entity(resp)
 
@@ -215,20 +270,19 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         verifier = StatusProgressionVerifier(
             'volume', volume.id_, self.get_volume_status, volume.id_)
 
+        verifier.set_global_timeout(timeout)
         verifier.add_state(
             expected_statuses=[self.statuses.Volume.CREATING],
             acceptable_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
-            timeout=timeout,
-            poll_rate=1)
+            poll_rate=self.config.volume_status_poll_frequency)
 
         verifier.add_state(
             expected_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
-            timeout=timeout, poll_rate=1)
+            poll_rate=self.config.volume_status_poll_frequency)
 
         verifier.start()
-
         # Return volume model
         resp = self.client.get_volume_info(volume.id_)
         volume = self._verify_entity(resp)
@@ -325,9 +379,9 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             self._log.error(timeout_msg)
             return False
 
-        #Contine where last timeout loop left off
+        # Contine where last timeout loop left off
         while time() < end:
-            #Poll volume status to make sure it deleted properly
+            # Poll volume status to make sure it deleted properly
             status_resp = self.client.get_volume_info(volume_id)
             if status_resp.status_code == 404:
                 self._log.info(
@@ -398,7 +452,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
     def delete_volume_with_snapshots_confirmed(self, volume_id):
         """Returns True if volume deleted, False otherwise"""
 
-        #Attempt to delete all snapshots associated with provided volume_id
+        # Attempt to delete all snapshots associated with provided volume_id
         snapshots = self.list_volume_snapshots(volume_id)
         if snapshots:
             for snap in snapshots:
