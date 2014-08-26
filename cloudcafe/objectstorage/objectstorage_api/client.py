@@ -60,13 +60,13 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             try:
                 log.debug(logline.decode('utf-8', 'replace'))
             except Exception as exception:
-                #Ignore all exceptions that happen in logging, then log them
+                # Ignore all exceptions that happen in logging, then log them
                 log.info(
                     'Exception occured while logging signature of calling'
                     'method in http client')
                 log.exception(exception)
 
-            #Make the request and time it's execution
+            # Make the request and time it's execution
             response = None
             elapsed = None
             try:
@@ -78,7 +78,7 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
                 log.exception(exception)
                 raise exception
 
-            #requests lib 1.0.0 renamed body to data in the request object
+            # requests lib 1.0.0 renamed body to data in the request object
             request_body = ''
             if 'body' in dir(response.request):
                 request_body = response.request.body
@@ -93,7 +93,7 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             if request_body and len(request_body) > 100:
                 request_body = '{0}...<truncated>'.format(request_body[:100])
 
-            #requests lib 1.0.4 removed params from response.request
+            # requests lib 1.0.4 removed params from response.request
             request_params = ''
             request_url = response.request.url
             if 'params' in dir(response.request):
@@ -111,7 +111,7 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             try:
                 log.log(level, logline.decode('utf-8', 'replace'))
             except Exception as exception:
-                #Ignore all exceptions that happen in logging, then log them
+                # Ignore all exceptions that happen in logging, then log them
                 log.log(level, '\n{0}\nREQUEST INFO\n{0}\n'.format('-' * 12))
                 log.exception(exception)
 
@@ -131,7 +131,7 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             try:
                 log.log(level, logline.decode('utf-8', 'replace'))
             except Exception as exception:
-                #Ignore all exceptions that happen in logging, then log them
+                # Ignore all exceptions that happen in logging, then log them
                 log.log(level, '\n{0}\nRESPONSE INFO\n{0}\n'.format('-' * 13))
                 log.exception(exception)
             return response
@@ -177,43 +177,43 @@ class ObjectStorageAPIClient(HTTPClient):
         @param requestlib_kwargs: kwargs to be passed to requests.
         @type requestlib_kwargs: dict
         """
-        #set requestslib_kwargs to an empty dict if None
+        # set requestslib_kwargs to an empty dict if None
         requestslib_kwargs = requestslib_kwargs if (
             requestslib_kwargs is not None) else {}
 
-        #Set defaults
+        # Set defaults
         params = params if params is not None else {}
         verify = False
 
-        #If headers are provided by both, headers "wins" over default_headers
+        # If headers are provided by both, headers "wins" over default_headers
         headers = dict(self.default_headers, **(headers or {}))
 
-        #Override url if present in requestslib_kwargs
+        # Override url if present in requestslib_kwargs
         if 'url' in requestslib_kwargs.keys():
             url = requestslib_kwargs.get('url', None) or url
             del requestslib_kwargs['url']
 
-        #Override method if present in requestslib_kwargs
+        # Override method if present in requestslib_kwargs
         if 'method' in requestslib_kwargs.keys():
             method = requestslib_kwargs.get('method', None) or method
             del requestslib_kwargs['method']
 
-        #The requests lib already removes None key/value pairs, but we force it
-        #here in case that behavior ever changes
+        # The requests lib already removes None key/value pairs, but we
+        # force it here in case that behavior ever changes
         for key in requestslib_kwargs.keys():
             if requestslib_kwargs[key] is None:
                 del requestslib_kwargs[key]
 
-        #Create the final parameters for the call to the base request()
-        #Wherever a parameter is provided both by the calling method AND
-        #the requests_lib kwargs dictionary, requestslib_kwargs "wins"
+        # Create the final parameters for the call to the base request()
+        # Wherever a parameter is provided both by the calling method AND
+        # the requests_lib kwargs dictionary, requestslib_kwargs "wins"
         requestslib_kwargs = dict({'headers': headers,
                                    'params': params,
                                    'verify': verify,
                                    'data': data},
                                   **requestslib_kwargs)
 
-        #Make the request
+        # Make the request
         return requests.request(method, url, **requestslib_kwargs)
 
     def get_swift_info(self, headers=None, params=None,
@@ -238,7 +238,7 @@ class ObjectStorageAPIClient(HTTPClient):
                         params=params,
                         requestslib_kwargs=requestslib_kwargs)
 
-    #Account-------------------------------------------------------------------
+    # Account----------------------------------------------------------------
 
     def retrieve_account_metadata(self):
         response = self.head(self.storage_url)
@@ -275,7 +275,7 @@ class ObjectStorageAPIClient(HTTPClient):
 
         return response
 
-    #Container-----------------------------------------------------------------
+    # Container--------------------------------------------------------------
 
     def get_container_metadata(self, container_name, headers=None,
                                requestslib_kwargs=None):
@@ -369,7 +369,7 @@ class ObjectStorageAPIClient(HTTPClient):
 
         return response
 
-    #Storage Object------------------------------------------------------------
+    # Storage Object--------------------------------------------------------
 
     def get_object(self, container_name, object_name, headers=None,
                    params=None, stream=False,
@@ -564,7 +564,8 @@ class ObjectStorageAPIClient(HTTPClient):
     def create_formpost(self, container, files, object_prefix='',
                         redirect='http://example.com/formpost',
                         max_file_size=104857600, max_file_count=10,
-                        expires=None, key=''):
+                        expires=None, key='', signature="",
+                        x_delete_at=None, x_delete_after=None):
         """
         Creates RFC-2388.
 
@@ -602,6 +603,14 @@ class ObjectStorageAPIClient(HTTPClient):
         @param key: The account's X-Tempurl-Key used in creating the signatre
                     which authorizes the form to be POSTed.
         @type  key: string
+        @param signature: The HMAC-SHA1 signature of the form.
+        @type signature: string
+        @param x_delete_at: The unix time relating to when the object will
+                            be deleted from the container.
+        @type x_delete_at: int
+        @param x_delete_after: The amount of time, in seconds, after which
+                               the object will be deleted from the container.
+        @type x_delete_after: int
 
         @return: Data to be POSTed in the following format:
             {
@@ -622,12 +631,15 @@ class ObjectStorageAPIClient(HTTPClient):
         url = ''.join([base_url, path])
         hmac_body = '{0}\n{1}\n{2}\n{3}\n{4}'.format(
             path, redirect, max_file_size, max_file_count, expires)
-        sig = hmac.new(key, hmac_body, sha1).hexdigest()
+        if not signature:
+            signature = hmac.new(key, hmac_body, sha1).hexdigest()
 
         form = []
-        form.append({
-            'headers': {'Content-Disposition': 'form-data; name="redirect"'},
-            'data': redirect})
+        if redirect != '':
+            form.append({
+                'headers':
+                {'Content-Disposition': 'form-data; name="redirect"'},
+                'data': redirect})
         form.append({
             'headers': {'Content-Disposition':
                         'form-data; name="max_file_size"'},
@@ -639,14 +651,25 @@ class ObjectStorageAPIClient(HTTPClient):
         form.append({
             'headers': {'Content-Disposition': 'form-data; name="expires"'},
             'data': str(expires)})
+        if x_delete_at:
+            form.append({
+                'headers': {'Content-Disposition':
+                            'form-data; name="x_delete_at"'},
+                'data': str(x_delete_at)})
+        if x_delete_after:
+            form.append({
+                'headers': {'Content-Disposition':
+                            'form-data; name="x_delete_after"'},
+                'data': str(x_delete_after)})
         form.append({
             'headers': {'Content-Disposition': 'form-data; name="signature"'},
-            'data': sig})
-        for f in files:
-            form_name = f.get('name')
-            form_filename = f.get('filename', form_name)
-            form_content_type = f.get('content_type', 'text/plain')
-            form_data = f.get('data', get_md5_hash(form_name))
+            'data': signature})
+
+        for data_file in files:
+            form_name = data_file.get('name')
+            form_filename = data_file.get('filename', form_name)
+            form_content_type = data_file.get('content_type', 'text/plain')
+            form_data = data_file.get('data', get_md5_hash(form_name))
             form.append({
                 'headers': {'Content-Disposition':
                             'form-data; name="{0}"; filename="{1}"'.format(
@@ -655,22 +678,22 @@ class ObjectStorageAPIClient(HTTPClient):
                 'data': form_data})
 
         data = []
-        boundry = '----WebKitFormBoundary40Q4WaJHO84PBBIa'
+        boundary = '----WebKitFormBoundary40Q4WaJHO84PBBIa'
 
         for section in form:
-            data.append('--{0}\r\n'.format(boundry))
+            data.append('--{0}\r\n'.format(boundary))
             for key, value in section['headers'].iteritems():
                 data.append('{0}: {1}\r\n'.format(key, value))
             data.append('\r\n')
             data.append(section['data'])
             data.append('\r\n')
-        data.append('\r\n--{0}'.format(boundry))
+        data.append('\r\n--{0}'.format(boundary))
 
         post_headers = {
             'Cache-Control': 'max-age=0',
             'Accept': '*/*;q=0.8',
             'Content-Type': 'multipart/form-data; boundary={0}'.format(
-                boundry)}
+                boundary)}
 
         return {'target_url': url, 'headers': post_headers,
                 'body': ''.join(data)}
