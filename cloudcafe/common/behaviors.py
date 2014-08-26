@@ -101,9 +101,10 @@ class StatusProgressionVerifier(BaseBehavior):
                 state_timeout = state_endtime - time()
             else:
                 raise StatusProgressionClassUsageError(
-                    "A timeout could not be found for the current state."
-                    "Please either set a global timeout via set_global_timeout"
-                    ", or set an explicit timeout for this state.")
+                    "A timeout could not be found for the current state. "
+                    "Please either set a global timeout via "
+                    "set_global_state_properties, or set an explicit timeout "
+                    "for this state.")
 
             if global_endtime is not None and global_endtime < state_endtime:
                     state_endtime = global_endtime
