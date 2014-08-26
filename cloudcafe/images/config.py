@@ -143,6 +143,16 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get('size_max'))
 
     @property
+    def additional_property(self):
+        """Default additional property in image properties"""
+        return self.get('additional_property')
+
+    @property
+    def additional_property_value(self):
+        """Default additional property value in image properties"""
+        return self.get('additional_property_value')
+
+    @property
     def results_limit(self):
         """Default number of results to return is list requests"""
         return int(self.get('results_limit'))
