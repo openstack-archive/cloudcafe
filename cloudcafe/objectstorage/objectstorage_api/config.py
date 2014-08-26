@@ -223,3 +223,11 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         The max number of objects bulk delete can delete.
         """
         return int(self.get('bulk_delete_max_count', 1000))
+
+    @property
+    def object_deletion_wait_interval(self):
+        """
+        Interval in seconds to wait for x_delete_at
+        """
+        return int(self.get('object_deletion_wait_interval', '70'))
+
