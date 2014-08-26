@@ -180,6 +180,16 @@ class ServerUnreachable(Exception):
         return repr(self.message)
 
 
+class InvalidAddressFormat(Exception):
+    def __init__(self, ip_address):
+        self.message = (
+            'Invalid IP address provided: {ip_address}').format(
+                ip_address=ip_address)
+
+    def __str__(self):
+        return repr(self.message)
+
+
 class InvalidJSON(Exception):
     def __init__(self, message, expected_response):
         self.message = ('Unexpected JSON response. '
