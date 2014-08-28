@@ -785,3 +785,27 @@ class AddSecurityGroup(AutoMarshallingModel):
         element.append(name_ele)
         xml = ET.tostring(element)
         return xml
+
+
+class AssociateFloatingIP(AutoMarshallingModel):
+
+    def __init__(self, address):
+        super(AssociateFloatingIP, self).__init__()
+        self.address = address
+
+    def _obj_to_json(self):
+        json_dict = {"address": self.address}
+        return json.dumps({'addFloatingIp': json_dict})
+
+
+class DisassociateFloatingIP(AutoMarshallingModel):
+
+    def __init__(self, address):
+        super(DisassociateFloatingIP, self).__init__()
+        self.address = address
+
+    def _obj_to_json(self):
+        json_dict = {"address": self.address}
+        return json.dumps({'removeFloatingIp': json_dict})
+
+

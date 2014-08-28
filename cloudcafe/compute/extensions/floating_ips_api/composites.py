@@ -13,3 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+from cloudcafe.compute.common.composites import BaseComputeComposite
+from cloudcafe.compute.extensions.floating_ips_api.client import \
+    FloatingIPsClient
+
+
+class FloatingIPsComposite(BaseComputeComposite):
+
+    def __init__(self, auth_composite):
+        super(FloatingIPsComposite, self).__init__(auth_composite)
+        self.client = FloatingIPsClient(
+            **self.compute_auth_composite.client_args)

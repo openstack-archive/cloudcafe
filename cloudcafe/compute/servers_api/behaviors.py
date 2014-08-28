@@ -30,13 +30,15 @@ from cloudcafe.compute.common.exceptions import ItemNotFound, \
 
 class ServerBehaviors(BaseBehavior):
 
-    def __init__(self, servers_client, images_client, servers_config,
-                 images_config, flavors_config, boot_from_volume_client=None,
-                 security_groups_config=None):
+    def __init__(
+            self, servers_client, images_client, floating_ips_client,
+            servers_config, images_config, flavors_config,
+            boot_from_volume_client=None, security_groups_config=None):
         super(ServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
         self.images_client = images_client
+        self.floating_ips_client = floating_ips_client
         self.images_config = images_config
         self.flavors_config = flavors_config
         self.boot_from_volume_client = boot_from_volume_client
@@ -141,6 +143,10 @@ class ServerBehaviors(BaseBehavior):
                 # into the final response
                 resp.entity.admin_pass = server_obj.admin_pass
                 resp.headers['x-compute-request-id'] = create_request_id
+
+                # If a floating IP should be assigned, create and assign one
+                if self.config.auto_assign_floating_ip:
+                    self._create_and_assign_floating_ip(server_obj.id)
                 return resp
             except (TimeoutException, BuildErrorException) as ex:
                 self._log.error('Failed to build server {server_id}: '
@@ -153,6 +159,28 @@ class ServerBehaviors(BaseBehavior):
             'Failed to successfully build a server after '
             '{attempts} attempts: {failures}'.format(
                 attempts=attempts, failures=failures))
+
+    def _create_and_assign_floating_ip(self, server_id):
+        """
+        @summary: Creates a floating IP and assigns to the given server
+        @param server_id: The uuid of the server
+        @type server_id: String
+        """
+
+        pool_name = self.config.network_for_ssh
+        response = self.floating_ips_client.create_floating_ip(pool=pool_name)
+        if not response.ok:
+            self._log.error('Failed to create a floating IP address.')
+            return
+
+        floating_ip = response.entity
+        response = self.servers_client.add_floating_ip(
+            server_id, floating_ip.ip)
+        if not response.ok:
+            self._log.error(
+                'Failed to assign floating ip {address} '
+                'to server {server_id}.'.format(address=floating_ip.ip,
+                                                server_id=server_id))
 
     def wait_for_server_status(self, server_id, desired_status,
                                interval_time=None, timeout=None):

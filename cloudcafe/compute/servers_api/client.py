@@ -30,7 +30,8 @@ from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
     Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
-    Rebuild, ResetState, CreateBackup, LiveMigrateServer
+    Rebuild, ResetState, CreateBackup, LiveMigrateServer, \
+    AssociateFloatingIP, DisassociateFloatingIP
 
 
 class ServersClient(AutoMarshallingHTTPClient):
@@ -826,5 +827,42 @@ class ServersClient(AutoMarshallingHTTPClient):
         resp = self.request('POST', url,
                             request_entity=add_security_group_request_object,
                             response_entity_type=SecurityGroup,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def add_floating_ip(self, server_id, ip_address, requestslib_kwargs=None):
+        """
+        @summary: Associates a floating IP with the given server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @param ip_address: The IP address of a floating IP
+        @type ip_address: String
+        @rtype: Requests.response
+        """
+
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        request = AssociateFloatingIP(address=ip_address)
+        resp = self.request('POST', url,
+                            request_entity=request,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def delete_floating_ip(self, server_id, ip_address,
+                           requestslib_kwargs=None):
+        """
+        @summary: Associates a floating IP with the given server
+        @param server_id: The id of an existing server
+        @type server_id: String
+        @param ip_address: The IP address of a floating IP
+        @type ip_address: String
+        @rtype: Requests.response
+        """
+        
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        request = DisassociateFloatingIP(address=ip_address)
+        resp = self.request('POST', url,
+                            request_entity=request,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

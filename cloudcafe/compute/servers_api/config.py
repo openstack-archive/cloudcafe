@@ -178,3 +178,11 @@ class ServersConfig(ConfigSectionInterface):
         The path to which files will be injected.
         """
         return self.get("default_file_path")
+
+    @property
+    def auto_assign_floating_ip(self):
+        """
+        If a floating IP address should be assigned to created
+        servers by default.
+        """
+        return self.get_boolean("auto_assign_floating_ip", False)

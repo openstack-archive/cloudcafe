@@ -21,6 +21,8 @@ from cloudcafe.compute.extensions.config_drive.composites import \
     ConfigDriveComposite
 from cloudcafe.compute.extensions.console_output_api.composites import \
     ConsoleOutputComposite
+from cloudcafe.compute.extensions.floating_ips_api.composites import \
+    FloatingIPsComposite
 from cloudcafe.compute.extensions.keypairs_api.composites import \
     KeypairsComposite
 from cloudcafe.compute.extensions.rescue_api.composites import RescueComposite
@@ -104,6 +106,7 @@ class ComputeComposite(object):
         self.boot_from_volume = BootFromVolumeComposite(auth_composite)
         self.config_drive = ConfigDriveComposite(auth_composite)
         self.security_groups = SecurityGroupsComposite(auth_composite)
+        self.floating_ips = FloatingIPsComposite(auth_composite)
 
         self.servers.behaviors = self.servers.behavior_class(
             servers_client=self.servers.client,
