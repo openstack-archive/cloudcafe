@@ -133,6 +133,16 @@ class ServerBehaviors(BaseBehavior):
                 security_groups=security_groups)
             server_obj = resp.entity
             create_request_id = resp.headers.get('x-compute-request-id')
+            if not resp.ok:
+                self._log.error(
+                    'Failed to build server. Initial POST failed with an HTTP '
+                    '{0} error code'.format(resp.status_code))
+                break
+            if not resp.entity:
+                self._log.error(
+                    'Failed to build server. Could not deserialize initial '
+                    'POST response.')
+                break
 
             try:
                 resp = self.wait_for_server_status(
