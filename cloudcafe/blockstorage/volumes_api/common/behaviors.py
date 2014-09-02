@@ -270,7 +270,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         verifier = StatusProgressionVerifier(
             'volume', volume.id_, self.get_volume_status, volume.id_)
 
-        verifier.set_global_timeout(timeout)
+        verifier.set_global_state_properties(timeout)
         verifier.add_state(
             expected_statuses=[self.statuses.Volume.CREATING],
             acceptable_statuses=[self.statuses.Volume.AVAILABLE],
