@@ -14,13 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.common.models.configuration import ConfigSectionInterface
+from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 
 
-class NetworksAPIConfig(ConfigSectionInterface):
+class NetworksConfig(NetworkingBaseConfig):
     """Network is the resource"""
 
-    SECTION_NAME = 'networks_api'
+    SECTION_NAME = 'networks'
+
+    @property
+    def public_network_id(self):
+        """The uuid of the public network"""
+        return self.get("public_network_id",
+                        "00000000-0000-0000-0000-000000000000")
+
+    @property
+    def service_network_id(self):
+        """The uuid of the service network (aka private)"""
+        return self.get("service_network_id",
+                        "11111111-1111-1111-1111-111111111111")
 
     @property
     def resource_build_attempts(self):
@@ -48,6 +60,6 @@ class NetworksAPIConfig(ConfigSectionInterface):
         return int(self.get("resource_delete_timeout", 15))
 
     @property
-    def resource_change_status_timeout(self):
-        """Seconds to wait for a status change in the resource"""
-        return int(self.get("resource_change_status_timeout", 15))
+    def starts_with_name(self):
+        """Network start name label for test runs"""
+        return self.get("starts_with_name", "test_net")
