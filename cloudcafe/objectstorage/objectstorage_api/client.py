@@ -90,7 +90,8 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
                     "'body' object could be found")
 
             # NOTE: Truncating request_body if > 100 bytes.
-            if request_body and len(request_body) > 100:
+            if (request_body and (isinstance(request_body, str) and len(
+                    request_body) > 100)):
                 request_body = '{0}...<truncated>'.format(request_body[:100])
 
             # requests lib 1.0.4 removed params from response.request
