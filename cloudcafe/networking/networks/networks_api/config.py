@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.common.models.configuration import ConfigSectionInterface
+from cloudcafe.networking.networks.config import NetworksConfig
 
 
-class NetworksAPIConfig(ConfigSectionInterface):
+class NetworksAPIConfig(NetworksConfig):
     """Network is the resource"""
 
     SECTION_NAME = 'networks_api'
@@ -48,6 +48,6 @@ class NetworksAPIConfig(ConfigSectionInterface):
         return int(self.get("resource_delete_timeout", 15))
 
     @property
-    def resource_change_status_timeout(self):
-        """Seconds to wait for a status change in the resource"""
-        return int(self.get("resource_change_status_timeout", 15))
+    def starts_with_name(self):
+        """Network start name label for test runs"""
+        return self.get("name_starts_with", "test_net")

@@ -19,6 +19,9 @@ from cloudcafe.networking.networks.config import MarshallingConfig,\
     NetworksConfig, NetworksEndpointConfig, NetworksAdminEndpointConfig,\
     NetworksAdminAuthConfig, NetworksSecondUserConfig, \
     NetworksAdminUserConfig, UserAuthConfig, UserConfig
+from cloudcafe.networking.networks.behaviors import NetworksBehaviors
+from cloudcafe.networking.networks.common.behaviors \
+    import NetworksCommonBehaviors
 from cloudcafe.networking.networks.networks_api.client import NetworksClient
 from cloudcafe.networking.networks.networks_api.config import NetworksAPIConfig
 from cloudcafe.networking.networks.networks_api.behaviors \
@@ -80,6 +83,7 @@ class _NetworksAdminAuthComposite(_NetworksAuthComposite):
 
 class NetworksComposite(object):
     networks_auth_composite = _NetworksAuthComposite
+    behavior_class = NetworksBehaviors
 
     def __init__(self):
         auth_composite = self.networks_auth_composite()
@@ -89,6 +93,16 @@ class NetworksComposite(object):
         self.networks = NetworksAPIComposite(auth_composite)
         self.subnets = SubnetsAPIComposite(auth_composite)
         self.ports = PortsAPIComposite(auth_composite)
+        self.common = NetworksCommonComposite()
+
+        # Parent behavior can be used directly with parent config values
+        self.behaviors = NetworksBehaviors(
+            networks_client=self.networks.client,
+            networks_config=self.networks.config,
+            subnets_client=self.subnets.client,
+            subnets_config=self.subnets.config,
+            ports_client=self.ports.client,
+            ports_config=self.ports.config)
 
         self.networks.behaviors = self.networks.behavior_class(
             networks_client=self.networks.client,
@@ -114,9 +128,23 @@ class NetworksComposite(object):
             subnets_client=self.subnets.client,
             subnets_config=self.subnets.config)
 
+        # Integrates all behaviors for helper methods
+        self.common.behaviors = self.common.behavior_class(
+            networks_behaviors=self.networks.behaviors,
+            subnets_behaviors=self.subnets.behaviors,
+            ports_behaviors=self.ports.behaviors,
+            parent_behaviors=self.behaviors)
+
 
 class NetworksAdminComposite(NetworksComposite):
     _auth_composite = _NetworksAdminAuthComposite
+
+
+class NetworksCommonComposite(NetworksComposite):
+    behavior_class = NetworksCommonBehaviors
+
+    def __init__(self):
+        self.behaviors = None
 
 
 class NetworksAPIComposite(NetworksComposite):

@@ -31,6 +31,7 @@ class MarshallingConfig(ConfigSectionInterface):
 
 
 class NetworksConfig(ConfigSectionInterface):
+    """Config parent class to be inherited by all networks api configs"""
 
     SECTION_NAME = 'networks'
 
@@ -45,6 +46,16 @@ class NetworksConfig(ConfigSectionInterface):
         """The uuid of the service network (aka private)"""
         return self.get("service_network_id",
                         "11111111-1111-1111-1111-111111111111")
+
+    @property
+    def resource_change_status_timeout(self):
+        """Seconds to wait for a status change in the resource"""
+        return int(self.get("resource_change_status_timeout", 15))
+
+    @property
+    def api_poll_rate(self):
+        """Time interval for api calls on while loops retries"""
+        return int(self.get("api_poll_rate", 4))
 
 
 class NetworksEndpointConfig(ConfigSectionInterface):
