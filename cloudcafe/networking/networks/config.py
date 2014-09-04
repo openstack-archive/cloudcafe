@@ -30,39 +30,22 @@ class MarshallingConfig(ConfigSectionInterface):
         return self.get("deserialize_format")
 
 
-class NetworksConfig(ConfigSectionInterface):
+class NetworkingEndpointConfig(ConfigSectionInterface):
 
-    SECTION_NAME = 'networks'
-
-    @property
-    def public_network_id(self):
-        """The uuid of the public network"""
-        return self.get("public_network_id",
-                        "00000000-0000-0000-0000-000000000000")
-
-    @property
-    def service_network_id(self):
-        """The uuid of the service network (aka private)"""
-        return self.get("service_network_id",
-                        "11111111-1111-1111-1111-111111111111")
-
-
-class NetworksEndpointConfig(ConfigSectionInterface):
-
-    SECTION_NAME = 'networks_endpoint'
+    SECTION_NAME = 'networking_endpoint'
 
     @property
     def region(self):
         return self.get("region")
 
     @property
-    def networks_endpoint_name(self):
-        return self.get("networks_endpoint_name")
+    def networking_endpoint_name(self):
+        return self.get("networking_endpoint_name")
 
     @property
-    def networks_endpoint_url(self):
-        """Optional override of the Networks url"""
-        return self.get("networks_endpoint_url")
+    def networking_endpoint_url(self):
+        """Optional override of the Networking url"""
+        return self.get("networking_endpoint_url")
 
     @property
     def header_tenant_id(self):
@@ -70,21 +53,21 @@ class NetworksEndpointConfig(ConfigSectionInterface):
         return self.get("header_tenant_id")
 
 
-class NetworksAdminEndpointConfig(NetworksEndpointConfig):
+class NetworkingAdminEndpointConfig(NetworkingEndpointConfig):
     """RackerAdmin API endpoint and name"""
-    SECTION_NAME = 'networks_admin_endpoint'
+    SECTION_NAME = 'networking_admin_endpoint'
 
 
-class NetworksAdminAuthConfig(UserAuthConfig):
-    """Networks Admin endpoint and auth strategy, for ex. keystone"""
-    SECTION_NAME = 'networks_admin_auth_config'
+class NetworkingAdminAuthConfig(UserAuthConfig):
+    """Networking Admin endpoint and auth strategy, for ex. keystone"""
+    SECTION_NAME = 'networking_admin_auth_config'
 
 
-class NetworksSecondUserConfig(UserConfig):
+class NetworkingSecondUserConfig(UserConfig):
 
-    SECTION_NAME = 'networks_secondary_user'
+    SECTION_NAME = 'networking_secondary_user'
 
 
-class NetworksAdminUserConfig(UserConfig):
+class NetworkingAdminUserConfig(UserConfig):
 
-    SECTION_NAME = 'networks_admin_user'
+    SECTION_NAME = 'networking_admin_user'
