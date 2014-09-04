@@ -61,8 +61,13 @@ class ImageBehaviors(BaseBehavior):
 
             if image.status.lower() == ImageStates.ERROR.lower():
                 raise BuildErrorException(
-                    'Build failed. Image with uuid %s entered ERROR status.'
-                    % image.id)
+                    'Build failed. Image with UUID {0} '
+                    'entered ERROR status.'.format(image.id))
+
+            if image.status.lower() == ImageStates.DELETED.lower():
+                raise BuildErrorException(
+                    'Build failed. Image with UUID {0} '
+                    'entered DELETED status.'.format(image.id))
 
             if image.status == desired_status:
                 break
