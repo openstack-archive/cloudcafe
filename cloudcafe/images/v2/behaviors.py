@@ -1,5 +1,5 @@
 """
-Copyright 2013 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -391,9 +391,9 @@ class ImagesBehaviors(BaseBehavior):
         if task.owner is None:
             errors.append(self.error_msg.format(
                 'owner', 'not None', task.owner))
-        if task.message != 'None':
+        if task.message != '':
             errors.append(self.error_msg.format(
-                'message', 'None', task.message))
+                'message', '', task.message))
         if task.schema != '/v2/schemas/task':
             errors.append(self.error_msg.format(
                 'schema', '/v2/schemas/task', task.schema))
