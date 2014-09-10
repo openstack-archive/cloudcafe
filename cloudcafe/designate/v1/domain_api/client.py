@@ -18,13 +18,15 @@ from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.designate.v1.domain_api.models.requests import DomainRequest
 from cloudcafe.designate.v1.domain_api.models.responses import (
     DomainResponse, DomainListResponse)
+from cloudcafe.designate.v1.server_api.models.responses import (
+    ServerResponse, ServerListResponse)
 
 
 class DomainAPIClient(AutoMarshallingRestClient):
 
     def __init__(self, url, serialize_format=None,
                  deserialize_format=None):
-        super(DomainApiClient, self).__init__(serialize_format,
+        super(DomainAPIClient, self).__init__(serialize_format,
                                               deserialize_format)
         self.url = url.rstrip('/')
         self.default_headers['Content-Type'] = 'application/{0}'.format(
@@ -73,4 +75,11 @@ class DomainAPIClient(AutoMarshallingRestClient):
         """DELETE /domains/{domainID}"""
         url = self._get_domain_url(domain_id)
         return self.request('DELETE', url, response_entity_type=DomainResponse,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def list_domain_servers(self, domain_id, **requestslib_kwargs):
+        """GET v1/domains/{domainID}/servers"""
+        url = self._get_domain_url(domain_id) + "/servers"
+        return self.request('GET', url,
+                            response_entity_type=ServerListResponse,
                             requestslib_kwargs=requestslib_kwargs)
