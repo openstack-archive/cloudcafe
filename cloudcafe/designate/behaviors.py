@@ -54,3 +54,25 @@ class DomainBehaviors(BaseBehavior):
         if response.status_code == 200:
             self.created_domains.add(response.entity.id)
         return response
+
+
+class ServerBehaviors(BaseBehavior):
+
+    def __init__(self, server_client):
+        super(ServerBehaviors, self).__init__()
+        self.server_client = server_client
+        self.created_servers = set()
+
+    def create_server(self, name=None):
+        if name is None:
+            name = rand_name("namespace.server") + ".com."
+        response = self.server_client.create_server(name=name)
+        # store the id for cleanup
+        if response.status_code == 200:
+            self.created_servers.add(response.entity.id)
+        return response
+
+    def delete_created_servers(self):
+        for server_id in self.created_servers:
+            self.server_client.delete_server(server_id)
+        self.created_servers.clear()
