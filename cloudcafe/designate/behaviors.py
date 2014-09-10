@@ -55,3 +55,25 @@ class DomainBehaviors(BaseBehavior):
         response = self.domain_client.create_domain(
             name=name, email=email, ttl=ttl)
         return DesignateResponse(response=response, entity=response.entity)
+
+
+class ServerBehaviors(BaseBehavior):
+
+    def __init__(self, server_client):
+        super(ServerBehaviors, self).__init__()
+        self.server_client = server_client
+
+    def create_server(self, name=None):
+        if name is None:
+            name = rand_name("namespace.server") + ".com."
+        response = self.server_client.create_server(name=name)
+        return DesignateResponse(response=response, entity=response.entity)
+
+    def delete_all_servers(self):
+        list_resp = self.server_client.list_servers()
+        if list_resp.status_code != 200:
+            self._log.error("Server list failed during cleanup")
+            return
+        servers = list_resp.entity
+        for server in servers:
+            self.server_client.delete_server(server.id)

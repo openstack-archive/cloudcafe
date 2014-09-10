@@ -17,6 +17,7 @@ limitations under the License.
 from cafe.engine.clients.rest import AutoMarshallingRestClient
 from cloudcafe.designate.v1.domain_api.models.requests import DomainRequest
 from cloudcafe.designate.v1.domain_api.models.responses import DomainResponse
+from cloudcafe.designate.v1.server_api.models.responses import ServerResponse
 
 
 class DomainApiClient(AutoMarshallingRestClient):
@@ -71,4 +72,10 @@ class DomainApiClient(AutoMarshallingRestClient):
         """DELETE v1/domains/{domainID}"""
         url = self._get_domain_url(domain_id)
         return self.request('DELETE', url, response_entity_type=DomainResponse,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def list_domain_servers(self, domain_id, **requestslib_kwargs):
+        """GET v1/domains/{domainID}/servers"""
+        url = self._get_domain_url(domain_id) + "/servers"
+        return self.request('GET', url, response_entity_type=ServerResponse,
                             requestslib_kwargs=requestslib_kwargs)
