@@ -104,10 +104,11 @@ class ServerBehaviors(BaseBehavior):
         else:
             personality = personality or default_files
 
-        default_group_id = self.security_groups_config.default_security_group
         default_groups = None
-        if default_group_id:
-            default_groups = [{"name": default_group_id}]
+        if (self.security_groups_config
+                and self.security_groups_config.default_security_group):
+            default_groups = [
+                {"name": self.security_groups_config.default_security_group}]
 
         if default_groups and security_groups:
             security_groups.update(default_groups)
