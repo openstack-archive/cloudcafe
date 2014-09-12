@@ -43,6 +43,16 @@ class CinderCLI_Config(ConfigSectionInterface):
         return self.get('os_volume_api_version')
 
     @property
+    def os_region_name(self):
+        """cinder cli endpoint region"""
+        return self.get('os_region_name')
+
+    @property
+    def os_auth_system(self):
+        """Selects which auth system to use"""
+        return self.get('os_auth_system')
+
+    @property
     def environment_variable_dictionary(self):
         """Expects a python dictionary as a string.  Returns an empty dict
         by default.
