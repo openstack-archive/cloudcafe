@@ -580,3 +580,6 @@ class LinuxClient(RemoteInstanceClient):
         if result:
             distro = result.stdout.split(':')[1]
             return distro
+
+    def filesystem_sync(self):
+        self.ssh_client.execute_command('sync')
