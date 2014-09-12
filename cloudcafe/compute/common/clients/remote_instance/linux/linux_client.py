@@ -565,3 +565,6 @@ class LinuxClient(RemoteInstanceClient):
             if int(output.stdout) is 0:
                 status_of_activation = True
         return status_of_activation
+
+    def filesystem_sync(self):
+        self.ssh_client.execute_command('sync')
