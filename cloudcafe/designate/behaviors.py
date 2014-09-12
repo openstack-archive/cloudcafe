@@ -50,3 +50,15 @@ class DomainBehaviors(BaseBehavior):
         return self.domain_client.update_domain(name=name, domain_id=domain_id,
                                                 email=email, ttl=ttl,
                                                 **requestslib_kwargs)
+
+
+class ServerBehaviors(BaseBehavior):
+
+    def __init__(self, server_client):
+        super(ServerBehaviors, self).__init__()
+        self.server_client = server_client
+
+    def create_server(self, name=None):
+        if name is None:
+            name = rand_name("namespace.server") + ".com."
+        return self.server_client.create_server(name=name)
