@@ -141,6 +141,27 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         also call create_volume."""
         raise NotImplementedError
 
+    def get_configured_volume_type_property(
+            self, configured_property, id_=None, name=None):
+        configured_data = self.config.volume_type_properties
+
+        # Raise an exception if any of the configured data has null
+        # values in it
+        property_names = ["name", "id"]
+        for entry in configured_data:
+            for pname in property_names:
+                if hasattr(entry, pname):
+                    if entry.get(pname) is None:
+                        raise Exception(
+                            "Ambiguous volume type properties: 'null' value "
+                            "found for configured volume type property '{0}'"
+                            .format(pname))
+
+            if name and str(entry.get('name') == str(name)):
+                return entry.get(configured_property)
+            if id_ is not None and str(entry.get('id')) == str(id_):
+                return entry.get(configured_property)
+
     def get_volume_info(self, volume_id):
         resp = self.client.get_volume_info(volume_id=volume_id)
         self._verify_entity(resp)
@@ -470,7 +491,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             return False
         return True
 
-    def get_volume_types(self):
+    def get_volume_type_list(self):
         resp = self.client.list_all_volume_types()
         self._verify_entity(resp)
         return resp.entity
