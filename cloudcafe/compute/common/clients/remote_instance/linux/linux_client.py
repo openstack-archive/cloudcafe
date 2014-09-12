@@ -565,3 +565,18 @@ class LinuxClient(RemoteInstanceClient):
             if int(output.stdout) is 0:
                 status_of_activation = True
         return status_of_activation
+
+    def get_distribution_and_version(self):
+        """
+        Get the distribution and version of the server
+        Works for all Linux distibutions, not working for freebsd
+        example root@ivo-ubuntu-2:~# lsb_release -d
+            Description:    Ubuntu 12.04.4 LTS
+        @return: Full name of the distibution
+        @rtype: int
+        """
+
+        result = self.ssh_client.execute_command('lsb_release -d')
+        if result:
+            distro = result.stdout.split(':')[1]
+            return distro
