@@ -69,6 +69,7 @@ def random_string(prefix=None, suffix=None, size=8):
     """
 
     charpool = tuple(string.ascii_letters + string.digits)
+    charpool = charpool * size if len(charpool) < size else charpool
     rstr = "".join(random.sample((charpool), size))
     return "{0}{1}{2}".format(prefix or '', rstr, suffix or '')
 
