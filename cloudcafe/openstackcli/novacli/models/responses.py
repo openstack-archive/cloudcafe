@@ -157,7 +157,7 @@ class VolumeSnapshotCreateResponse(KeyValuePrettyTableWithHeaders):
 
 class VolumeSnapshotShowResponse(VolumeSnapshotCreateResponse):
     """ This model is empty because it has extensions that apply only
-    to this snapshot show response.  Otherwise, it is identical to the
+    to this snapshot show response.  Otherwise, it is identitcal to the
     snapshot create response"""
     pass
 
