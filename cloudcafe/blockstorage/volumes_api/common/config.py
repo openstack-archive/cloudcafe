@@ -15,6 +15,8 @@ limitations under the License.
 """
 
 import json
+from warnings import warn
+
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -38,22 +40,6 @@ class VolumesAPIConfig(ConfigSectionInterface):
         """Version of the cinder api under test, either '1'  or '2' """
         return self.get("version_under_test", default="1")
 
-# Volume and Snapshot behavior config
-    @property
-    def default_volume_type(self):
-        """Sets the default volume type for some behaviors and tests"""
-        return self.get("default_volume_type")
-
-    @property
-    def max_volume_size(self):
-        """Maximum volume size allowed by the environment under test"""
-        return int(self.get("max_volume_size", default=1024))
-
-    @property
-    def min_volume_size(self):
-        """Minimum volume size allowed by the environment under test"""
-        return int(self.get("min_volume_size", default=1))
-
     @property
     def volume_status_poll_frequency(self):
         """Controls the rate at which some behaviors will poll the cinder
@@ -67,6 +53,54 @@ class VolumesAPIConfig(ConfigSectionInterface):
         api for snapshot information.
         """
         return int(self.get("snapshot_status_poll_frequency", default=10))
+
+# Volume Type configuration
+    @property
+    def volume_type_properties(self):
+        """Dictionary of volume type properties"""
+        data = self.get(
+            'volume_type_properties',
+            '[{"name":null, "id":null, "min_size":null, "max_size":null}]')
+        return json.loads(data)
+
+    @property
+    def default_volume_type(self):
+        """Sets the default volume type for some non-data-driven tests."""
+        return self.get("default_volume_type")
+
+    @property
+    def default_volume_type_min_size(self):
+        """The minimum size allowed by the API for the configured
+        default volume type
+        """
+        return int(self.get("default_volume_type_min_size"))
+
+    @property
+    def default_volume_type_max_size(self):
+        """The maximum size allowed by the API for the configured
+        default volume type
+        """
+        return int(self.get("default_volume_type_max_size"))
+
+    @property
+    def min_volume_size(self):
+        """Deprecated.  Use default_volume_type_min_size instead"""
+        warn(
+            "This config property is deprecated. Please use the config "
+            "property 'default_volume_type_min_size' or the much more flexible"
+            " 'volume_type_properties' instead.")
+
+        return int(self.get("min_volume_size"))
+
+    @property
+    def max_volume_size(self):
+        """Deprecated.  Use default_volume_type_max_size instead"""
+        warn(
+            "This config property is deprecated. Please use the config "
+            "property 'default_volume_type_max_size' or the much more flexible"
+            " 'volume_type_properties' instead.")
+
+        return int(self.get("max_volume_size"))
 
 # Volume create timeouts
     @property
@@ -157,7 +191,8 @@ class VolumesAPIConfig(ConfigSectionInterface):
         """Minimum size a volume can be if building from an image.
         Used by some behaviors and tests.  Depending on how the environment
         under test is deployed, this value may be superceded by the
-        minimum allowed volume size
+        minimum allowed volume size, and is otherwise dependent on the image
+        being used for testing.
         """
         return int(self.get("min_volume_from_image_size"))
 
@@ -295,6 +330,24 @@ class VolumesAPIConfig(ConfigSectionInterface):
         return json.loads(self.get('image_filter', '{}'))
 
     @property
+    def image_filter_mode(self):
+        return self.get("image_filter_mode", 'inclusion')
+
+    @property
+    def flavor_filter(self):
+        """Expects Json.  Returns an empty dictionary by default (no filter).
+        Dictionary keys should be attributes of the flavor model, and key
+        values should be a list of values for that model attribute.
+        Used by some tests to decide which flavors to target for a given
+        test run.
+        """
+        return json.loads(self.get('flavor_filter', '{}'))
+
+    @property
+    def flavor_filter_mode(self):
+        return self.get("flavor_filter_mode", 'inclusion')
+
+    @property
     def volume_type_filter(self):
         """Expects Json.  Returns an empty dictionary by default.
         Dictionary keys should be attributes of the volume type model, and
@@ -303,3 +356,13 @@ class VolumesAPIConfig(ConfigSectionInterface):
         test run.
         """
         return json.loads(self.get('volume_type_filter', '{}'))
+
+    @property
+    def volume_type_filter_mode(self):
+        return self.get("volume_type_filter_mode", 'inclusion')
+
+# API configuration
+    @property
+    def allow_snapshot_restore_to_different_type(self):
+        return self.get_boolean(
+            "allow_snapshot_restore_to_different_type", False)
