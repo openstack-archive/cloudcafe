@@ -33,6 +33,11 @@ class NovaCLI_Config(ConfigSectionInterface):
         return self.get('os_auth_system')
 
     @property
+    def os_region_name(self):
+        """nova cli endpoint region"""
+        return self.get('os_region_name')
+
+    @property
     def environment_variable_dictionary(self):
         """Expects a python dictionary as a string.  Returns an empty dict
         by default.
