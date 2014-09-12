@@ -583,3 +583,6 @@ class LinuxClient(RemoteInstanceClient):
                 return distro
             except IndexError:
                 return ''
+
+    def filesystem_sync(self):
+        self.ssh_client.execute_command('sync')

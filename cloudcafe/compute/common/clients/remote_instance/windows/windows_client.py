@@ -485,6 +485,11 @@ class WindowsClient(RemoteInstanceClient):
         output = self.client.execute_command(command)
         return output.std_out[0]
 
+    def filesystem_sync(self):
+        # This works as a non-powershell command, but it may not
+        # be installed on all versions of windows.
+        self.client.execute_command('sync')
+
     @staticmethod
     def _convert_powershell_list_to_dict(response):
         data = {}
