@@ -39,3 +39,15 @@ class DomainBehaviors(BaseBehavior):
         name, email = self._prepare_domain_and_email(name, email)
         return self.domain_client.create_domain(
             name=name, email=email, ttl=ttl)
+
+
+class ServerBehaviors(BaseBehavior):
+
+    def __init__(self, server_client):
+        super(ServerBehaviors, self).__init__()
+        self.server_client = server_client
+
+    def create_server(self, name=None):
+        if name is None:
+            name = rand_name("namespace.server") + ".com."
+        return self.server_client.create_server(name=name)
