@@ -83,3 +83,15 @@ class ResourcePool(object):
                 p.join()
             except:
                 pass
+
+    def release_lifo(self):
+        """
+        @summary: Delete all the resources in the Resource Pool in reverse
+        order in which they were added. Since a specific order is required,
+        there is no asynch option
+        """
+        for resource in reversed(self.resources):
+            try:
+                resource.delete()
+            except:
+                pass
