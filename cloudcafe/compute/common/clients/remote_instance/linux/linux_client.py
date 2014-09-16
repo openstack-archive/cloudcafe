@@ -578,5 +578,8 @@ class LinuxClient(RemoteInstanceClient):
 
         result = self.ssh_client.execute_command('lsb_release -d')
         if result:
-            distro = result.stdout.split(':')[1]
-            return distro
+            try:
+                distro = result.stdout.split(':')[1]
+                return distro
+            except IndexError:
+                return ''
