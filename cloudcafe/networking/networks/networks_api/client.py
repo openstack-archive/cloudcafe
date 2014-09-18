@@ -26,12 +26,17 @@ class NetworksClient(AutoMarshallingHTTPClient):
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None, tenant_id=None):
         """
-        @param string url: Base URL for the networks service
-        @param string auth_token: Auth token to be used for all requests
-        @param string serialize_format: Format for serializing requests
-        @param string deserialize_format: Format for de-serializing responses
-        @param string tenant_id: optional tenant id to be included in the
+        @param url: Base URL for the networks service
+        @type url: string
+        @param auth_token: Auth token to be used for all requests
+        @type auth_token: string
+        @param serialize_format: Format for serializing requests
+        @type serialize_format: string
+        @param deserialize_format: Format for de-serializing responses
+        @type deserialize_format: string
+        @param tenant_id: optional tenant id to be included in the
             header if given
+        @type tenant_id: string
         """
         super(NetworksClient, self).__init__(serialize_format,
                                              deserialize_format)
@@ -53,14 +58,20 @@ class NetworksClient(AutoMarshallingHTTPClient):
                        tenant_id=None, requestslib_kwargs=None):
         """
         @summary: Creates a Network
-        @param string name: human readable name for the network,
+        @param name: human readable name for the network,
             may not be unique. (CRUD: CRU)
-        @param bool admin_state_up: true or false, the admin state
+        @type name: string
+        @param admin_state_up: true or false, the admin state
             of the network. If down, the network does not forward packets.
             Default value is True (CRUD: CRU)
-        @param bool shared: specifies if the network can be accessed by any
+        @type admin_state_up: bool
+        @param shared: specifies if the network can be accessed by any
             tenant. Default value is False. (CRUD: CRU)
-        @param string tenant_id: owner of the network. (CRUD: CR)
+        @type shared: bool
+        @param tenant_id: owner of the network. (CRUD: CR)
+        @type tenant_id: string
+        @return: network create response
+        @rtype: Requests.response
         """
         url = '{base_url}/networks'.format(base_url=self.url)
 
@@ -77,15 +88,22 @@ class NetworksClient(AutoMarshallingHTTPClient):
                        shared=None, tenant_id=None, requestslib_kwargs=None):
         """
         @summary: Updates a specified Network
-        @param string network_id: The UUID for the network
-        @param string name: human readable name for the network,
-            may not be unique. (CRUD: CRU)
-        @param bool admin_state_up: true or false, the admin state
-            of the network. If down, the network does not forward packets.
-            Default value is True (CRUD: CRU)
-        @param bool shared: specifies if the network can be accessed by any
-            tenant. Default value is False. (CRUD: CRU)
-        @param string tenant_id: owner of the network. (CRUD: CR)
+        @param network_id: The UUID for the network
+        @type network_id: string
+        @param name: human readable name for the network, may not be unique.
+            (CRUD: CRU)
+        @type name: string
+        @param admin_state_up: true or false, the admin state of the network.
+            If down, the network does not forward packets. Default value is
+            True (CRUD: CRU)
+        @type admin_state_up: bool
+        @param shared: specifies if the network can be accessed by any tenant.
+            Default value is False. (CRUD: CRU)
+        @type shared: bool
+        @param tenant_id: owner of the network. (CRUD: CR)
+        @type tenant_id: string
+        @return: update network response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/networks/{network_id}'.format(
@@ -102,7 +120,10 @@ class NetworksClient(AutoMarshallingHTTPClient):
     def get_network(self, network_id, requestslib_kwargs=None):
         """
         @summary: Shows information for a specified network
-        @param string network_id: The UUID for the network
+        @param network_id: The UUID for the network
+        @type network_id: string
+        @return: get network response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/networks/{network_id}'.format(
@@ -112,14 +133,40 @@ class NetworksClient(AutoMarshallingHTTPClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-    def list_networks(self, requestslib_kwargs=None):
+    def list_networks(self, network_id=None, name=None, status=None,
+                      admin_state_up=None, shared=None, tenant_id=None,
+                      limit=None, marker=None, page_reverse=None,
+                      requestslib_kwargs=None):
         """
-        @summary: Lists networks
+        @summary: Lists networks, filtered by params if given
+        @param network_id: network ID to filter by
+        @type network_id: string
+        @param name: network name to filter by
+        @type name: string
+        @param status: network status to filter by
+        @type status: string
+        @param admin_state_up: Admin state of the network to filter by
+        @type admin_state_up: bool
+        @param shared: If network is shared across tenants status to filter by
+        @type shared: bool
+        @param tenant_id: tenant ID network owner to filter by
+        @type tenant_id: string
+        @param limit: page size
+        @type limit: int
+        @param marker: Id of the last item of the previous page
+        @type marker: string
+        @param page_reverse: direction of the page
+        @type page_reverse: bool
+        @return: list networks response
+        @rtype: Requests.response
         """
 
-        # TODO: add field query params to filter the response
+        params = {'id': network_id, 'name': name, 'status': status,
+                  'admin_state_up': admin_state_up, 'shared': shared,
+                  'tenant_id': tenant_id, 'limit': limit, 'marker': marker,
+                  'page_reverse': page_reverse}
         url = '{base_url}/networks'.format(base_url=self.url)
-        resp = self.request('GET', url,
+        resp = self.request('GET', url, params=params,
                             response_entity_type=Networks,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
@@ -127,7 +174,10 @@ class NetworksClient(AutoMarshallingHTTPClient):
     def delete_network(self, network_id, requestslib_kwargs=None):
         """
         @summary: Deletes a specified network and its associated resources
-        @param string network_id: The UUID for the network
+        @param network_id: The UUID for the network
+        @type network_id: string
+        @return: delete network response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/networks/{network_id}'.format(
