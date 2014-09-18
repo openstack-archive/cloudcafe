@@ -25,12 +25,17 @@ class PortsClient(AutoMarshallingHTTPClient):
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None, tenant_id=None):
         """
-        @param string url: Base URL for the ports service
-        @param string auth_token: Auth token to be used for all requests
-        @param string serialize_format: Format for serializing requests
-        @param string deserialize_format: Format for de-serializing responses
-        @param string tenant_id: optional tenant id to be included in the
+        @param url: Base URL for the ports service
+        @type url: string
+        @param auth_token: Auth token to be used for all requests
+        @type auth_token: string
+        @param serialize_format: Format for serializing requests
+        @type serialize_format: string
+        @param deserialize_format: Format for de-serializing responses
+        @type deserialize_format: string
+        @param tenant_id: optional tenant id to be included in the
             header if given
+        @type tenant_id: string
         """
         super(PortsClient, self).__init__(serialize_format,
                                           deserialize_format)
@@ -54,21 +59,31 @@ class PortsClient(AutoMarshallingHTTPClient):
                     requestslib_kwargs=None):
         """
         @summary: Creates a Port
-        @param string network_id: network port is associated with (CRUD: CR)
-        @param string name: human readable name for the port,
+        @param network_id: network port is associated with (CRUD: CR)
+        @type network_id: string
+        @param name: human readable name for the port,
             may not be unique. (CRUD: CRU)
-        @param bool admin_state_up: true or false (default true),
+        @type name: string
+        @param admin_state_up: true or false (default true),
             the admin state of the port. If down, the port does not forward
             packets (CRUD: CRU)
-        @param string mac_address: mac address to use on the port (CRUD: CR)
-        @param list(dict) fixed_ips: ip addresses for the port associating the
-            port with the subnets where the IPs come from (CRUD: CRU)
-        @param string device_id: id of device using this port (CRUD: CRUD)
-        @param string device_owner: entity using this port (ex. dhcp agent,
-            CRUD: CRUD)
-        @param string tenant_id: owner of the port (CRUD: CR)
-        @param list(dict) security_groups: ids of any security groups
-            associated with the port (CRUD: CRUD)
+        @type admin_state_up: bool
+        @param mac_address: mac address to use on the port (CRUD: CR)
+        @type mac_address: string
+        @param fixed_ips: ip addresses for the port associating the port with
+            the subnets where the IPs come from (CRUD: CRU)
+        @type fixed_ips: list(dict)
+        @param device_id: id of device using this port (CRUD: CRUD)
+        @type device_id: string
+        @param device_owner: entity using this port (ex. dhcp agent,CRUD: CRUD)
+        @type device_owner: string
+        @param tenant_id: owner of the port (CRUD: CR)
+        @type tenant_id: string
+        @param security_groups: ids of any security groups associated with the
+            port (CRUD: CRUD)
+        @type security_groups: list(dict)
+        @return: port create response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/ports'.format(base_url=self.url)
@@ -90,19 +105,27 @@ class PortsClient(AutoMarshallingHTTPClient):
                     security_groups=None, requestslib_kwargs=None):
         """
         @summary: Updates a specified Port
-        @param string port_id: The UUID for the port
-        @param string name: human readable name for the port,
-            may not be unique. (CRUD: CRU)
-        @param bool admin_state_up: true or false (default true),
-            the admin state of the port. If down, the port does not forward
-            packets (CRUD: CRU)
-        @param list(dict) fixed_ips: ip addresses for the port associating the
-            port with the subnets where the IPs come from (CRUD: CRU)
-        @param string device_id: id of device using this port (CRUD: CRUD)
+        @param port_id: The UUID for the port
+        @type port_id: string
+        @param name: human readable name for the port, may not be unique
+            (CRUD: CRU)
+        @type name: string
+        @param admin_state_up: true or false (default true), the admin state
+            of the port. If down, the port does not forward packets (CRUD: CRU)
+        @type admin_state_up: bool
+        @param fixed_ips: ip addresses for the port associating the port with
+            the subnets where the IPs come from (CRUD: CRU)
+        @type fixed_ips: list(dict)
+        @param device_id: id of device using this port (CRUD: CRUD)
+        @type device_id: string
         @param string device_owner: entity using this port (ex. dhcp agent,
             CRUD: CRUD)
-        @param list(dict) security_groups: ids of any security groups
-            associated with the port (CRUD: CRUD)
+        @type device_owner: string
+        @param security_groups: ids of any security groups associated with the
+            port (CRUD: CRUD)
+        @type security_groups: list(dict)
+        @return: update port response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/ports/{port_id}'.format(
@@ -120,7 +143,10 @@ class PortsClient(AutoMarshallingHTTPClient):
     def get_port(self, port_id, requestslib_kwargs=None):
         """
         @summary: Shows information for a specified port
-        @param string port_id: The UUID for the port
+        @param port_id: The UUID for the port
+        @type port_id: string
+        @return: get port response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/ports/{port_id}'.format(
@@ -130,14 +156,48 @@ class PortsClient(AutoMarshallingHTTPClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-    def list_ports(self, requestslib_kwargs=None):
+    def list_ports(self, port_id=None, network_id=None, name=None, status=None,
+                   admin_state_up=None, device_id=None, tenant_id=None,
+                   device_owner=None, mac_address=None, limit=None,
+                   marker=None, page_reverse=None, requestslib_kwargs=None):
         """
-        @summary: Lists ports
+        @summary: Lists ports, filtered by params if given
+        @param port_id: The UUID for the port to filter by
+        @type port_id: string
+        @param network_id: network ID to filter by
+        @type network_id: string
+        @param name: port name to filter by
+        @type name: string
+        @param status: port status to filter by
+        @type status: string
+        @param admin_state_up: Admin state of the port to filter by
+        @type admin_state_up: bool
+        @param device_id: id of device to filter by
+        @type device_id: string
+        @param tenant_id: owner of the port to filter by
+        @type tenant_id: string
+        @param device_owner: device owner to filter by
+        @type device_owner: string
+        @param mac_address: mac address to filter by
+        @type mac_address: string
+        @param limit: page size
+        @type limit: int
+        @param marker: Id of the last item of the previous page
+        @type marker: string
+        @param page_reverse: direction of the page
+        @type page_reverse: bool
+        @return: list ports response
+        @rtype: Requests.response
         """
 
-        # TODO: add field query params to filter the response
+        params = {'id': port_id, 'network_id': network_id, 'name': name,
+                  'status': status, 'admin_state_up': admin_state_up,
+                  'device_id': device_id, 'tenant_id': tenant_id,
+                  'device_owner': device_owner, 'mac_address': mac_address,
+                  'limit': limit, 'marker': marker,
+                  'page_reverse': page_reverse}
         url = '{base_url}/ports'.format(base_url=self.url)
-        resp = self.request('GET', url,
+        resp = self.request('GET', url, params=params,
                             response_entity_type=Ports,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
@@ -146,6 +206,9 @@ class PortsClient(AutoMarshallingHTTPClient):
         """
         @summary: Deletes a specified port
         @param string port_id: The UUID for the port
+        @type port_id: string
+        @return: delete port response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/ports/{port_id}'.format(

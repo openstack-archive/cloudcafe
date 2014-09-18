@@ -25,12 +25,17 @@ class SubnetsClient(AutoMarshallingHTTPClient):
     def __init__(self, url, auth_token, serialize_format=None,
                  deserialize_format=None, tenant_id=None):
         """
-        @param string url: Base URL for the subnets service
-        @param string auth_token: Auth token to be used for all requests
-        @param string serialize_format: Format for serializing requests
-        @param string deserialize_format: Format for de-serializing responses
-        @param string tenant_id: optional tenant id to be included in the
-            header if given
+        @param url: Base URL for the subnets service
+        @type url: string
+        @param auth_token: Auth token to be used for all requests
+        @type auth_token: string
+        @param serialize_format: Format for serializing requests
+        @type serialize_format: string
+        @param deserialize_format: Format for de-serializing responses
+        @type deserialize_format: string
+        @param tenant_id: optional tenant id to be included in the header if
+            given
+        @type tenant_id: string
         """
         super(SubnetsClient, self).__init__(serialize_format,
                                             deserialize_format)
@@ -54,23 +59,34 @@ class SubnetsClient(AutoMarshallingHTTPClient):
                       enable_dhcp=None, requestslib_kwargs=None):
         """
         @summary: Creates a Subnet
-        @param string name: human readable name for the subnet,
-            may not be unique. (CRUD: CRU)
-        @param string tenant_id: owner of the network. (CRUD: CR)
-        @param string network_id: network subnet is associated with (CRUD: CR)
-        @param int ip_version: IP version 4 or 6 (CRUD: CR)
-        @param string cidr: represents IP range for the subnet and should be in
-            the form <network_address>/<prefix> (CRUD: CR)
-        @param string gateway_ip: default gateway used by devices in the subnet
-            (CRUD: CRUD)
-        @param list(str) dns_nameservers: DNS name servers used by subnet hosts
+        @param name: human readable name for the subnet, may not be unique
             (CRUD: CRU)
-        @param list(dict) allocation_pools: sub range of cidr available for
-            dynamic allocation to ports (CRUD: CR)
-        @param list(dict) host_routes: routes that should be used by devices
-            with IPs from this subnet (does not includes the local route,
-            CRUD: CRU)
-        @param bool enable_dhcp: whether DHCP is enabled (CRUD:CRU)
+        @type name: string
+        @param tenant_id: owner of the network. (CRUD: CR)
+        @type tenant_id: string
+        @param network_id: network subnet is associated with (CRUD: CR)
+        @type network_id: string
+        @param ip_version: IP version 4 or 6 (CRUD: CR)
+        @type ip_version: int
+        @param cidr: represents IP range for the subnet and should be in the
+            form <network_address>/<prefix> (CRUD: CR)
+        @type cidr: string
+        @param gateway_ip: default gateway used by devices in the subnet
+            (CRUD: CRUD)
+        @type gateway_ip: string
+        @param dns_nameservers: DNS name servers used by subnet hosts
+            (CRUD: CRU)
+        @type dns_nameservers: list(str)
+        @param allocation_pools: sub range of cidr available for dynamic
+            allocation to ports (CRUD: CRU)
+        @type allocation_pools: list(dict)
+        @param host_routes: routes that should be used by devices with IPs
+            from this subnet (does not includes the local route, CRUD: CRU)
+        @type host_routes: list(dict)
+        @param enable_dhcp: whether DHCP is enabled (CRUD:CRU)
+        @type enable_dhcp: bool
+        @return: subnet create response
+        @rtype: Requests.response
         """
         url = '{base_url}/subnets'.format(base_url=self.url)
 
@@ -90,20 +106,31 @@ class SubnetsClient(AutoMarshallingHTTPClient):
 
     def update_subnet(self, subnet_id, name=None, gateway_ip=None,
                       dns_nameservers=None, host_routes=None,
-                      enable_dhcp=None, requestslib_kwargs=None):
+                      enable_dhcp=None, allocation_pools=None,
+                      requestslib_kwargs=None):
         """
         @summary: Updates a specified Subnet
-        @param string subnet_id: The UUID for the subnet
-        @param string name: human readable name for the subnet,
-            may not be unique. (CRUD: CRU)
-        @param string gateway_ip: default gateway used by devices in the subnet
-            (CRUD: CRUD)
-        @param list(str) dns_nameservers: DNS name servers used by subnet hosts
+        @param subnet_id: The UUID for the subnet
+        @type subnet_id: string
+        @param name: human readable name for the subnet, may not be unique
             (CRUD: CRU)
-        @param list(dict) host_routes: routes that should be used by devices
-            with IPs from this subnet (does not includes the local route,
-            CRUD: CRU)
-        @param bool enable_dhcp: whether DHCP is enabled (CRUD:CRU)
+        @type name: string
+        @param gateway_ip: default gateway used by devices in the subnet
+            (CRUD: CRUD)
+        @type gateway_ip: string
+        @param dns_nameservers: DNS name servers used by subnet hosts
+            (CRUD: CRU)
+        @type dns_nameservers: list(str)
+        @param host_routes: routes that should be used by devices with IPs
+            from this subnet (does not includes the local route (CRUD: CRU)
+        @type host_routes: list(dict)
+        @param enable_dhcp: whether DHCP is enabled (CRUD:CRU)
+        @type enable_dhcp: bool
+        @param allocation_pools: sub range of cidr available for dynamic
+            allocation to ports (CRUD: CRU)
+        @type allocation_pools: list(dict)
+        @return: subnet update response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/subnets/{subnet_id}'.format(
@@ -112,7 +139,8 @@ class SubnetsClient(AutoMarshallingHTTPClient):
         request = SubnetRequest(name=name, gateway_ip=gateway_ip,
                                 dns_nameservers=dns_nameservers,
                                 host_routes=host_routes,
-                                enable_dhcp=enable_dhcp)
+                                enable_dhcp=enable_dhcp,
+                                allocation_pools=allocation_pools)
         resp = self.request('PUT', url,
                             response_entity_type=Subnet,
                             request_entity=request,
@@ -122,7 +150,10 @@ class SubnetsClient(AutoMarshallingHTTPClient):
     def get_subnet(self, subnet_id, requestslib_kwargs=None):
         """
         @summary: Shows information for a specified subnet
-        @param string subnet_id: The UUID for the subnet
+        @param subnet_id: The UUID for the subnet
+        @type subnet_id: string
+        @return: get subnet response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/subnets/{subnet_id}'.format(
@@ -132,14 +163,45 @@ class SubnetsClient(AutoMarshallingHTTPClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-    def list_subnets(self, requestslib_kwargs=None):
+    def list_subnets(self, subnet_id=None, network_id=None, cidr=None,
+                     tenant_id=None, gateway_ip=None, ip_version=None,
+                     enable_dhcp=None, name=None, limit=None, marker=None,
+                     page_reverse=None, requestslib_kwargs=None):
         """
-        @summary: Lists subnets
+        @summary: Lists subnets, filtered by params if given
+        @param subnet_id: subnet ID to filter by
+        @type subnet_id: string
+        @param network_id: network ID to filter by
+        @type network_id: string
+        @param cidr: cider to filter by
+        @type cidr: string
+        @param tenant_id: owner of the network to filter by
+        @type tenant_id: string
+        @param gateway_ip: gateway_ip to filter by
+        @type gateway_ip: string
+        @param ip_version: IP version 4 or 6 to filter by
+        @type ip_version: int
+        @param enable_dhcp: enable_dhcp status to filter by
+        @type enable_dhcp: bool
+        @param name: subnet name to filter by
+        @type name: string
+        @param limit: page size
+        @type limit: int
+        @param marker: Id of the last item of the previous page
+        @type marker: string
+        @param page_reverse: direction of the page
+        @type page_reverse: bool
+        @return: list subnet response
+        @rtype: Requests.response
         """
 
-        # TODO: add field query params to filter the response
+        params = {'id': subnet_id, 'network_id': network_id, 'cidr': cidr,
+                  'tenant_id': tenant_id, 'gteway_ip': gateway_ip,
+                  'ip_version': ip_version, 'enable_dhcp': enable_dhcp,
+                  'name': name, 'limit': limit, 'marker': marker,
+                  'page_reverse': page_reverse}
         url = '{base_url}/subnets'.format(base_url=self.url)
-        resp = self.request('GET', url,
+        resp = self.request('GET', url, params=params,
                             response_entity_type=Subnets,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
@@ -147,7 +209,10 @@ class SubnetsClient(AutoMarshallingHTTPClient):
     def delete_subnet(self, subnet_id, requestslib_kwargs=None):
         """
         @summary: Deletes a specified subnet
-        @param string subnet_id: The UUID for the subnet
+        @param subnet_id: The UUID for the subnet
+        @type subnet_id: string
+        @return: delete subnet response
+        @rtype: Requests.response
         """
 
         url = '{base_url}/subnets/{subnet_id}'.format(
