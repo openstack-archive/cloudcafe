@@ -67,10 +67,17 @@ def random_string(prefix=None, suffix=None, size=8):
     """
     Return a random string of alphanumeric characaters of 'size' length.
     """
+    if size <= 0:
+        return "{0}{1}".format(prefix or '', suffix or '')
 
     charpool = tuple(string.ascii_letters + string.digits)
-    rstr = "".join(random.sample((charpool), size))
-    return "{0}{1}{2}".format(prefix or '', rstr, suffix or '')
+    final_string = ""
+    while size > 0:
+        segment_size = min(int(len(charpool)/2), size)
+        size = size - segment_size
+        final_string += "".join(
+            random.sample((charpool), segment_size))
+    return "{0}{1}{2}".format(prefix or '', final_string, suffix or '')
 
 
 def random_ip(pattern=None):
