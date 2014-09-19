@@ -236,6 +236,9 @@ class ServerBehaviors(BaseBehavior):
         @type interval_time: Integer
         """
 
+        if state_to_wait_for is not None:
+            state_to_wait_for = state_to_wait_for.lower()
+
         interval_time = interval_time or self.config.server_status_interval
         end_time = time.time() + timeout
 
@@ -253,17 +256,18 @@ class ServerBehaviors(BaseBehavior):
                     "Response entity was not set. "
                     "Response was: {0}".format(response.content))
 
-            task_state = response.entity.task_state.lower()
+            task_state = response.entity.task_state
+            if task_state is not None:
+                task_state = task_state.lower()
 
-            if response.entity.status.lower() != ServerStates.ERROR.lower():
+            if response.entity.status.lower() == ServerStates.ERROR.lower():
                 raise BuildErrorException(
                     "Build failed. Server with uuid {server_id} entered "
-                    "ERROR status.".format(server_id))
+                    "ERROR status.".format(server_id=server_id))
 
-            if task_state == state_to_wait_for.lower():
+            if task_state == state_to_wait_for:
                 break
             time.sleep(interval_time)
-
         else:
             raise TimeoutException(
                 "Wait for server task ran for {timeout} seconds and did not "
