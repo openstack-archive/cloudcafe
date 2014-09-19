@@ -45,6 +45,22 @@ class ResourceBuildException(BaseNetworkingException):
     MSG = 'Unable to create resource'
 
 
+class ResourceUpdateException(BaseNetworkingException):
+    MSG = 'Unable to update resource'
+
+
+class ResourceGetException(BaseNetworkingException):
+    MSG = 'Unable to get resource'
+
+
+class ResourceListException(BaseNetworkingException):
+    MSG = 'Unable to list resource'
+
+
+class ResourceDeleteException(BaseNetworkingException):
+    MSG = 'Unable to delete resource'
+
+
 class TimeoutException(BaseNetworkingException):
     MSG = 'Request timed out'
 
