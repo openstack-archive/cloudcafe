@@ -24,11 +24,56 @@ class NetworkingBaseConfig(ConfigSectionInterface):
     SECTION_NAME = 'networking'
 
     @property
-    def resource_change_status_timeout(self):
-        """Seconds to wait for a status change in the resource"""
-        return int(self.get("resource_change_status_timeout", 15))
+    def keep_resources(self):
+        """Flag for not deleting resources on tearDown"""
+        return self.get_boolean("keep_resources", False)
+
+    @property
+    def keep_resources_on_failure(self):
+        """Flag for not deleting resources w failures on tearDown"""
+        return self.get_boolean("keep_resources_on_failure", False)
 
     @property
     def api_poll_rate(self):
         """Time interval for api calls on while loops retries"""
         return int(self.get("api_poll_rate", 4))
+
+    @property
+    def resource_create_timeout(self):
+        """Seconds to wait for creating a resource"""
+        return int(self.get("resource_create_timeout", 15))
+
+    @property
+    def resource_delete_timeout(self):
+        """Seconds to wait for deleting a resource"""
+        return int(self.get("resource_delete_timeout", 15))
+
+    @property
+    def resource_change_status_timeout(self):
+        """Seconds to wait for a status change in the resource"""
+        return int(self.get("resource_change_status_timeout", 15))
+
+    @property
+    def resource_build_attempts(self):
+        """Number of times to try to create a resource"""
+        return int(self.get("resource_build_attempts", 1))
+
+    @property
+    def resource_update_attempts(self):
+        """Number of times to try to update a resource"""
+        return int(self.get("resource_update_attempts", 1))
+
+    @property
+    def resource_get_attempts(self):
+        """Number of times to try to get a resource"""
+        return int(self.get("resource_get_attempts", 1))
+
+    @property
+    def resource_list_attempts(self):
+        """Number of times to try to list a resource"""
+        return int(self.get("resource_list_attempts", 1))
+
+    @property
+    def resource_delete_attempts(self):
+        """Number of times to try to delete a resource"""
+        return int(self.get("resource_delete_attempts", 1))
