@@ -40,6 +40,26 @@ class NetworksConfig(NetworkingBaseConfig):
         return int(self.get("resource_build_attempts", 1))
 
     @property
+    def resource_update_attempts(self):
+        """Number of times to try to update a resource"""
+        return int(self.get("resource_update_attempts", 1))
+
+    @property
+    def resource_get_attempts(self):
+        """Number of times to try to get a resource"""
+        return int(self.get("resource_get_attempts", 1))
+
+    @property
+    def resource_list_attempts(self):
+        """Number of times to try to list a resource"""
+        return int(self.get("resource_list_attempts", 1))
+
+    @property
+    def resource_delete_attempts(self):
+        """Number of times to try to delete a resource"""
+        return int(self.get("resource_delete_attempts", 1))
+
+    @property
     def keep_resources(self):
         """Flag for not deleting resources on tearDown"""
         return self.get_boolean("keep_resources", False)
