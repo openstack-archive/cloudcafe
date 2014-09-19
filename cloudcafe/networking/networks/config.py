@@ -45,12 +45,12 @@ class NetworkingEndpointConfig(ConfigSectionInterface):
     @property
     def networking_endpoint_url(self):
         """Optional override of the Networking url"""
-        return self.get("networking_endpoint_url")
+        return self.get("networking_endpoint_url", '')
 
     @property
     def header_tenant_id(self):
         """Optional tenant ID to set in client request headers"""
-        return self.get("header_tenant_id")
+        return self.get("header_tenant_id", '')
 
 
 class NetworkingAdminEndpointConfig(NetworkingEndpointConfig):

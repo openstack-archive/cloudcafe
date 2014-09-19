@@ -168,3 +168,7 @@ class NetworkingResponse(object):
     def __init__(self):
         self.response = None
         self.failures = list()
+
+    def __repr__(self):
+        return 'response: {0}\nfailures: {1}'.format(self.response,
+                                                     self.failures)

@@ -24,8 +24,9 @@ from cloudcafe.networking.networks.common.behaviors \
 from cloudcafe.networking.networks.common.constants \
     import NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
-    import ResourceBuildException, NetworkIDMissingException, \
-    InvalidIPException
+    import InvalidIPException, NetworkIDMissingException,\
+    ResourceBuildException, ResourceDeleteException, ResourceGetException,\
+    ResourceListException, ResourceUpdateException
 
 
 class SubnetsBehaviors(NetworkingBaseBehaviors):
@@ -240,9 +241,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @type use_exact_name: bool
         @param poll_interval: sleep time interval between API retries
         @type poll_interval: int
-        @return: Subnet entity and failure list if created successful, or
-            None and the failure list if the raise_exception flag was False
-        @rtype: tuple with Subnet or None and failure list (may be empty)
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
         """
         if not network_id:
             raise NetworkIDMissingException
@@ -286,9 +286,12 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
                 status_code=NeutronResponseCodes.CREATE_SUBNET, label=name,
                 message=err_msg, network_id=network_id)
 
+            result.response = resp
             if not resp_check:
-                result.response = resp
                 return result
+
+            # Failures will be an empty list if the update was successful the
+            # first time
             result.failures.append(resp_check)
             time.sleep(poll_interval)
 
@@ -300,3 +303,316 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
             if raise_exception:
                 raise ResourceBuildException(err_msg)
             return result
+
+    def update_subnet(self, subnet_id, name=None, gateway_ip=None,
+                      dns_nameservers=None, host_routes=None,
+                      enable_dhcp=None, allocation_pools=None,
+                      resource_update_attempts=None, raise_exception=False,
+                      poll_interval=None):
+        """
+        @summary: Updates and verifies a specified Subnet
+        @param subnet_id: The UUID for the subnet
+        @type subnet_id: string
+        @param name: human readable name for the subnet, may not be unique
+            (CRUD: CRU)
+        @type name: string
+        @param gateway_ip: default gateway used by devices in the subnet
+            (CRUD: CRUD)
+        @type gateway_ip: string
+        @param dns_nameservers: DNS name servers used by subnet hosts
+            (CRUD: CRU)
+        @type dns_nameservers: list(str)
+        @param host_routes: routes that should be used by devices with IPs
+            from this subnet (does not includes the local route (CRUD: CRU)
+        @type host_routes: list(dict)
+        @param enable_dhcp: whether DHCP is enabled (CRUD:CRU)
+        @type enable_dhcp: bool
+        @param allocation_pools: sub range of cidr available for dynamic
+            allocation to ports (CRUD: CRU)
+        @type allocation_pools: list(dict)
+        @param resource_update_attempts: number of API retries
+        @type resource_update_attempts: int
+        @param raise_exception: flag to raise an exception if the
+            Subnet was not updated or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_update_attempts = (resource_update_attempts or
+            self.config.api_retries)
+
+        result = NetworkingResponse()
+        err_msg = 'Subnet Update failure'
+        for attempt in range(resource_update_attempts):
+            self._log.debug('Attempt {0} of {1} updating subnet {2}'.format(
+                attempt + 1, resource_update_attempts, subnet_id))
+
+            resp = self.client.update_subnet(
+                subnet_id=subnet_id, name=name, gateway_ip=gateway_ip,
+                dns_nameservers=dns_nameservers, host_routes=host_routes,
+                enable_dhcp=enable_dhcp, allocation_pools=allocation_pools)
+
+            resp_check = self.check_response(resp=resp,
+                status_code=NeutronResponseCodes.UPDATE_SUBNET,
+                label=subnet_id, message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the update was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to update {0} subnet after {1} attempts: '
+                '{2}').format(subnet_id, resource_update_attempts,
+                              result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceUpdateException(err_msg)
+            return result
+
+    def get_subnet(self, subnet_id, resource_get_attempts=None,
+                    raise_exception=False, poll_interval=None):
+        """
+        @summary: Shows and verifies a specified subnet
+        @param subnet_id: The UUID for the subnet
+        @type subnet_id: string
+        @param resource_get_attempts: number of API retries
+        @type resource_get_attempts: int
+        @param raise_exception: flag to raise an exception if the get
+            Subnet was not as expected or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_get_attempts = (resource_get_attempts or
+            self.config.api_retries)
+
+        result = NetworkingResponse()
+        err_msg = 'Subnet Get failure'
+        for attempt in range(resource_get_attempts):
+            self._log.debug('Attempt {0} of {1} getting subnet {2}'.format(
+                attempt + 1, resource_get_attempts, subnet_id))
+
+            resp = self.client.get_subnet(subnet_id=subnet_id)
+
+            resp_check = self.check_response(resp=resp,
+                status_code=NeutronResponseCodes.GET_SUBNET,
+                label=subnet_id, message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the get was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to GET {0} subnet after {1} attempts: '
+                '{2}').format(subnet_id, resource_get_attempts,
+                              result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceGetException(err_msg)
+            return result
+
+    def list_subnets(self, subnet_id=None, network_id=None, cidr=None,
+                     tenant_id=None, gateway_ip=None, ip_version=None,
+                     enable_dhcp=None, name=None, limit=None, marker=None,
+                     page_reverse=None, resource_list_attempts=None,
+                     raise_exception=False, poll_interval=None):
+        """
+        @summary: Lists subnets and verifies the response is the expected
+        @param subnet_id: subnet ID to filter by
+        @type subnet_id: string
+        @param network_id: network ID to filter by
+        @type network_id: string
+        @param cidr: cider to filter by
+        @type cidr: string
+        @param tenant_id: owner of the network to filter by
+        @type tenant_id: string
+        @param gateway_ip: gateway_ip to filter by
+        @type gateway_ip: string
+        @param ip_version: IP version 4 or 6 to filter by
+        @type ip_version: int
+        @param enable_dhcp: enable_dhcp status to filter by
+        @type enable_dhcp: bool
+        @param name: subnet name to filter by
+        @type name: string
+        @param limit: page size
+        @type limit: int
+        @param marker: Id of the last item of the previous page
+        @type marker: string
+        @param page_reverse: direction of the page
+        @type page_reverse: bool
+        @param resource_list_attempts: number of API retries
+        @type resource_list_attempts: int
+        @param raise_exception: flag to raise an exception if the list
+            Subnet was not as expected or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_list_attempts = (resource_list_attempts or
+            self.config.api_retries)
+
+        result = NetworkingResponse()
+        err_msg = 'Subnet List failure'
+        for attempt in range(resource_list_attempts):
+            self._log.debug('Attempt {0} of {1} with subnet list'.format(
+                attempt + 1, resource_list_attempts))
+
+            resp = self.client.list_subnets(
+                subnet_id=subnet_id, network_id=network_id, cidr=cidr,
+                     tenant_id=tenant_id, gateway_ip=gateway_ip,
+                     ip_version=ip_version, enable_dhcp=enable_dhcp, name=name,
+                     limit=limit, marker=marker, page_reverse=page_reverse)
+
+            resp_check = self.check_response(resp=resp,
+                status_code=NeutronResponseCodes.LIST_SUBNETS,
+                label='', message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the list was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to LIST subnets after {0} attempts: '
+                '{1}').format(resource_list_attempts, result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceListException(err_msg)
+            return result
+
+    def delete_subnet(self, subnet_id, resource_delete_attempts=None,
+                      raise_exception=False, poll_interval=None):
+        """
+        @summary: Deletes and verifies a specified subnet is deleted
+        @param subnet_id: The UUID for the subnet
+        @type subnet_id: string
+        @param resource_delete_attempts: number of API retries
+        @type resource_delete_attempts: int
+        @param raise_exception: flag to raise an exception if the deleted
+            Subnet was not as expected or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_delete_attempts = (resource_delete_attempts or
+            self.config.api_retries)
+
+        result = NetworkingResponse()
+        for attempt in range(resource_delete_attempts):
+            self._log.debug('Attempt {0} of {1} deleting subnet {2}'.format(
+                attempt + 1, resource_delete_attempts, subnet_id))
+
+            resp = self.client.delete_subnet(subnet_id=subnet_id)
+            result.response = resp
+
+            # Delete response is without entity so resp_check can not be used
+            if (resp.ok and
+                resp.status_code == NeutronResponseCodes.DELETE_SUBNET):
+                return result
+
+            err_msg = ('{subnet} Subnet Delete failure, expected status '
+                'code: {expected_status}. Response: {status} {reason} '
+                '{content}').format(
+                subnet=subnet_id,
+                expected_status=NeutronResponseCodes.DELETE_SUBNET,
+                status=resp.status_code, reason=resp.reason,
+                content=resp.content)
+            self._log.error(err_msg)
+            result.failures.append(err_msg)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to DELETE {0} subnet after {1} attempts: '
+                '{2}').format(subnet_id, resource_delete_attempts,
+                              result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceDeleteException(err_msg)
+            return result
+
+    def clean_subnet(self, subnet_id, timeout=None, poll_interval=None):
+        """
+        @summary: deletes a subnet within a time out
+        @param subnet_id: The UUID for the subnet
+        @type subnet_id: string
+        @param timeout: seconds to wait for the subnet to be deleted
+        @type timeout: int
+        @param poll_interval: sleep time interval between API delete/get calls
+        @type poll_interval: int
+        @return: None if delete was successful or the undeleted subnet_id
+        @rtype: None or string
+        """
+        timeout = timeout or self.config.resource_delete_timeout
+        poll_interval = poll_interval or self.config.api_poll_interval
+        endtime = time.time() + int(timeout)
+        log_msg = 'Deleting {0} subnet within a {1}s timeout '.format(
+            subnet_id, timeout)
+        self._log.info(log_msg)
+        while time.time() < endtime:
+            try:
+                self.client.delete_subnet(subnet_id=subnet_id)
+                resp = self.client.get_subnet(subnet_id=subnet_id)
+            except Exception as err:
+                err_msg = ('Encountered an exception deleting a subnet with'
+                    'the clean_subnet method. Exception: {0}').format(err)
+                self._log.error(err_msg)
+
+            if resp.status_code == NeutronResponseCodes.NOT_FOUND:
+                return None
+            time.sleep(poll_interval)
+
+        err_msg = 'Unable to delete {0} subnet within a {1}s timeout'.format(
+            subnet_id, timeout)
+        self._log.error(err_msg)
+        return subnet_id
+
+    def clean_subnets(self, subnets_list):
+        """
+        @summary: deletes each subnet from a list calling clean_subnet
+        @param subnets_list: list of subnets UUIDs
+        @type subnets_list: list(str)
+        @return: list of undeleted subnets UUIDs
+        @rtype: list(str)
+        """
+        log_msg = 'Deleting subnets: {0}'.format(subnets_list)
+        self._log.info(log_msg)
+        undeleted_subnets = []
+        for subnet in subnets_list:
+            result = self.clean_subnet(subnet_id=subnet)
+            if result:
+                undeleted_subnets.append(result)
+        if undeleted_subnets:
+            err_msg = 'Unable to delete subnets: {0}'.format(
+                undeleted_subnets)
+            self._log.error(err_msg)
+        return undeleted_subnets
