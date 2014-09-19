@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import time
+
 import IPy
 
 from cloudcafe.common.tools.datagen import rand_name, random_cidr
 from cloudcafe.networking.networks.common.behaviors \
-    import NetworkingBaseBehaviors
+    import NetworkingBaseBehaviors, NetworkingResponse
 from cloudcafe.networking.networks.common.constants \
     import NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
@@ -198,7 +200,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
                       tenant_id=None, gateway_ip=None, dns_nameservers=None,
                       allocation_pools=None, host_routes=None,
                       enable_dhcp=None, resource_build_attempts=None,
-                      raise_exception=True, use_exact_name=False):
+                      raise_exception=True, use_exact_name=False,
+                      poll_interval=None):
         """
         @summary: Creates and verifies a Subnet is created as expected
         @param name: human readable name for the subnet, may not be unique.
@@ -235,6 +238,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @type raise_exception: bool
         @param use_exact_name: flag if the exact name given should be used
         @type use_exact_name: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
         @return: Subnet entity and failure list if created successful, or
             None and the failure list if the raise_exception flag was False
         @rtype: tuple with Subnet or None and failure list (may be empty)
@@ -260,10 +265,12 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         elif not use_exact_name:
             name = rand_name(name)
 
+        poll_interval = poll_interval or self.config.api_poll_interval
         resource_build_attempts = (resource_build_attempts or
-            self.config.resource_build_attempts)
+            self.config.api_retries)
 
-        failures = []
+        result = NetworkingResponse()
+        err_msg = 'Subnet Create failure'
         for attempt in range(resource_build_attempts):
             self._log.debug('Attempt {0} of {1} building subnet {2}'.format(
                 attempt + 1, resource_build_attempts, name))
@@ -275,21 +282,21 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
                 allocation_pools=allocation_pools, host_routes=host_routes,
                 enable_dhcp=enable_dhcp)
 
-            err_msg = 'Subnet Create failure'
             resp_check = self.check_response(resp=resp,
                 status_code=NeutronResponseCodes.CREATE_SUBNET, label=name,
                 message=err_msg, network_id=network_id)
 
             if not resp_check:
-                return (resp.entity, failures)
-            else:
-                failures.append(resp_check)
+                result.response = resp
+                return result
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
 
         else:
             err_msg = (
                 'Unable to create {0} subnet after {1} attempts: '
-                '{2}').format(name, resource_build_attempts, failures)
+                '{2}').format(name, resource_build_attempts, result.failures)
             self._log.error(err_msg)
             if raise_exception:
                 raise ResourceBuildException(err_msg)
-            return (None, failures)
+            return result
