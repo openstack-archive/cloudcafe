@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import time
 
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.networking.networks.common.behaviors \
-    import NetworkingBaseBehaviors
+    import NetworkingBaseBehaviors, NetworkingResponse
 from cloudcafe.networking.networks.common.constants \
     import NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
@@ -37,7 +38,7 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                     mac_address=None, fixed_ips=None, device_id=None,
                     device_owner=None, tenant_id=None, security_groups=None,
                     resource_build_attempts=None, raise_exception=True,
-                    use_exact_name=False):
+                    use_exact_name=False, poll_interval=None):
         """
         @summary: Creates and verifies a Port is created as expected
         @param network_id: network port is associated with (CRUD: CR)
@@ -69,6 +70,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type raise_exception: bool
         @param use_exact_name: flag if the exact name given should be used
         @type use_exact_name: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
         @return: Port entity if created successful and the failure list, or
             None and the failure list if the raise_exception flag was False
         @rtype: tuple with Port or None and failure list (may be empty)
@@ -81,10 +84,13 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         elif not use_exact_name:
             name = rand_name(name)
 
+        poll_interval = poll_interval or self.config.api_poll_interval
         resource_build_attempts = (resource_build_attempts or
-            self.config.resource_build_attempts)
+            self.config.self.config.api_retries)
 
         failures = []
+        result = NetworkingResponse()
+        err_msg = 'Port Create failure'
         for attempt in range(resource_build_attempts):
             self._log.debug('Attempt {0} of {1} building port {2}'.format(
                 attempt + 1, resource_build_attempts, name))
@@ -96,7 +102,6 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                 device_owner=device_owner, tenant_id=tenant_id,
                 security_groups=security_groups)
 
-            err_msg = 'Port Create failure'
             resp_check = self.check_response(resp=resp,
                 status_code=NeutronResponseCodes.CREATE_PORT, label=name,
                 message=err_msg, network_id=network_id)
@@ -104,9 +109,11 @@ class PortsBehaviors(NetworkingBaseBehaviors):
             # Failures will be an empty list if the create was successful the
             # first time
             if not resp_check:
-                return (resp.entity, failures)
-            else:
-                failures.append(resp_check)
+                result.response = resp
+                result.failures = failures
+                return result
+            failures.append(resp_check)
+            time.sleep(poll_interval)
 
         else:
             err_msg = (
@@ -115,4 +122,5 @@ class PortsBehaviors(NetworkingBaseBehaviors):
             self._log.error(err_msg)
             if raise_exception:
                 raise ResourceBuildException(err_msg)
-            return (None, failures)
+            result.failures = failures
+            return result

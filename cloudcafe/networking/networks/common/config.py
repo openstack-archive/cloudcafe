@@ -24,11 +24,41 @@ class NetworkingBaseConfig(ConfigSectionInterface):
     SECTION_NAME = 'networking'
 
     @property
-    def resource_change_status_timeout(self):
-        """Seconds to wait for a status change in the resource"""
-        return int(self.get("resource_change_status_timeout", 15))
+    def keep_resources(self):
+        """Flag for not deleting resources on tearDown"""
+        return self.get_boolean("keep_resources", False)
 
     @property
-    def api_poll_rate(self):
+    def keep_resources_on_failure(self):
+        """Flag for not deleting resources w failures on tearDown"""
+        return self.get_boolean("keep_resources_on_failure", False)
+
+    @property
+    def api_poll_interval(self):
         """Time interval for api calls on while loops retries"""
-        return int(self.get("api_poll_rate", 4))
+        return int(self.get("api_poll_interval", 2))
+
+    @property
+    def api_retries(self):
+        """Number of times to retry an API call"""
+        return int(self.get("api_retries", 1))
+
+    @property
+    def resource_create_timeout(self):
+        """Seconds to wait for creating a resource"""
+        return int(self.get("resource_create_timeout", 10))
+
+    @property
+    def resource_delete_timeout(self):
+        """Seconds to wait for deleting a resource"""
+        return int(self.get("resource_delete_timeout", 10))
+
+    @property
+    def resource_change_status_timeout(self):
+        """Seconds to wait for a status change in the resource"""
+        return int(self.get("resource_change_status_timeout", 10))
+
+    @property
+    def api_retries(self):
+        """Number of times to retry an API call"""
+        return int(self.get("api_retries", 1))
