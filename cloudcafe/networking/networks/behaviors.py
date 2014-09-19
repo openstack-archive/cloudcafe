@@ -91,47 +91,46 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         """
         # Get or Create network depending if the network id is given
         if network_id:
-            resp = self.networks_behaviors.client.get_network(
+            get_network = self.networks_behaviors.get_network(
                 network_id=network_id)
 
-            err_msg = 'Network Get failure'
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.GET_NETWORK, label=network_id,
-                message=err_msg)
-
-            if not resp_check:
-                network = resp.entity
+            if get_network.response:
+                network = get_network.response.entity
             elif raise_exception:
-                raise NetworkGETException(resp_check)
+                raise NetworkGETException(get_network.failures)
             else:
                 return (None, None, None)
         else:
-            network = self.networks_behaviors.create_network(
-                name=name, raise_exception=raise_exception)[0]
-        if network is None:
-            return (None, None, None)
+            create_network = self.networks_behaviors.create_network(
+                name=name, raise_exception=raise_exception)
+
+            if not create_network.response:
+                return (None, None, None)
+            network = create_network.response.entity
 
         # Create a Subnet if needed
         subnet = None
         if not network.subnets:
-            subnet = self.subnets_behaviors.create_subnet(
+            create_subnet = self.subnets_behaviors.create_subnet(
                 network_id=network.id, name=name, ip_version=ip_version,
-                raise_exception=raise_exception)[0]
+                raise_exception=raise_exception)
 
             # Return only the network if the subnet create was unsuccessful
             # and the raise_exception flag is False
-            if subnet is None:
+            if not create_subnet.response:
                 return (network, None, None)
+            subnet = create_subnet.response.entity
 
         # Create the port
-        port = self.ports_behaviors.create_port(
+        create_port = self.ports_behaviors.create_port(
             network_id=network.id, name=name,
-            raise_exception=raise_exception)[0]
+            raise_exception=raise_exception)
 
         # Return the network and subnet (if created) if the port create was
         # unsuccessful and the raise_exception flag is False
-        if port is None:
+        if not create_port.response:
             return (network, subnet, None)
+        port = create_port.response.entity
 
         # Get the port subnet, needed since subnet will not
         # always be created or the network used may have multiple subnets

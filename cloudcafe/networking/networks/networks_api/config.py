@@ -35,31 +35,6 @@ class NetworksConfig(NetworkingBaseConfig):
                         "11111111-1111-1111-1111-111111111111")
 
     @property
-    def resource_build_attempts(self):
-        """Number of times to try to create a resource"""
-        return int(self.get("resource_build_attempts", 1))
-
-    @property
-    def keep_resources(self):
-        """Flag for not deleting resources on tearDown"""
-        return self.get_boolean("keep_resources", False)
-
-    @property
-    def keep_resources_on_failure(self):
-        """Flag for not deleting resources w failures on tearDown"""
-        return self.get_boolean("keep_resources_on_failure", False)
-
-    @property
-    def resource_create_timeout(self):
-        """Seconds to wait for creating a resource"""
-        return int(self.get("resource_create_timeout", 15))
-
-    @property
-    def resource_delete_timeout(self):
-        """Seconds to wait for deleting a resource"""
-        return int(self.get("resource_delete_timeout", 15))
-
-    @property
     def starts_with_name(self):
         """Network start name label for test runs"""
         return self.get("starts_with_name", "test_net")

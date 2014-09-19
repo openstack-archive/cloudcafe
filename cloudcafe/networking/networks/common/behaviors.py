@@ -32,14 +32,14 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
     To be inherited by all networks api behaviors and can be called for ex.
 
-    nets = NetworksComposite()
-    nets.behaviors.updated_status(p, 'ACTIVE')
+    net = NetworkingComposite()
+    net.common.behaviors.wait_for_status(port, 'ACTIVE')
 
     or
-    nets.ports.behaviors.updated_status(p, 'ACTIVE')
+    net.ports.behaviors.wait_for_status_status(port, 'ACTIVE')
 
-    in this last call methods and config values, if present in the ports api,
-    will be overwritten and used instead of the main ones
+    in this last call methods and config values will be overwritten if present
+    in the ports config
     """
 
     def __init__(self, networks_client, networks_config, subnets_client,
@@ -152,3 +152,19 @@ class NetworkingBaseBehaviors(BaseBehavior):
                 return True
             time.sleep(poll_rate)
         return False
+
+
+class NetworkingResponse(object):
+    """
+    @summary:
+    @param response: response object for client calls done by behavior methods,
+        can also be set to None (for ex. there was no entity obj.),
+        True (for ex. the delete was successful) or False
+    @type response: Requests.response, None or bool
+    @param failures: list with error messages created by the check_response
+        method. Empty list if no errors were found while checking the response
+    @type failures: list
+    """
+    def __init__(self, response=None, failures=None):
+        self.response = response
+        self.failures = failures
