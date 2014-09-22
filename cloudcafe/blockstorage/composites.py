@@ -42,7 +42,6 @@ class _BaseVolumesComposite(object):
         self.behaviors = self._behaviors(self.client)
 
 
-#For version specific tests
 class VolumesV1Composite(_BaseVolumesComposite):
     _config = v1Config
     _client = v1Client
@@ -55,7 +54,6 @@ class VolumesV2Composite(_BaseVolumesComposite):
     _behaviors = v2Behaviors
 
 
-#For version agnostic tests
 class VolumesAutoComposite(object):
     def __new__(cls):
         config = VolumesAPIConfig()
