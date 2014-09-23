@@ -84,12 +84,12 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
         return timeout
 
-    def calculate_restore_snapshot_timeout(self, image_size):
+    def calculate_snapshot_restore_timeout(self, image_size):
         timeout = self._calculate_timeout(
             size=image_size,
-            max_timeout=self.config.restore_snapshot_max_timeout,
-            min_timeout=self.config.restore_snapshot_min_timeout,
-            wait_per_gb=self.config.restore_snapshot_wait_per_gigabyte)
+            max_timeout=self.config.snapshot_restore_max_timeout,
+            min_timeout=self.config.snapshot_restore_min_timeout,
+            wait_per_gb=self.config.snapshot_restore_wait_per_gigabyte)
         if not timeout:
             timeout = self.config.snapshot_restore_base_timeout
         else:
