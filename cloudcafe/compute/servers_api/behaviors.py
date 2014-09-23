@@ -25,7 +25,7 @@ from cloudcafe.compute.common.types import NovaServerStatusTypes \
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, RequiredResourceException, \
-    ServerUnreachable, SshConnectionException
+    SshConnectionException
 
 
 class ServerBehaviors(BaseBehavior):
@@ -489,8 +489,8 @@ class ServerBehaviors(BaseBehavior):
                 return client(
                     ip_address=ip_address, username=user, key=key,
                     connection_timeout=self.config.connection_timeout)
-        except ServerUnreachable:
-            raise ServerUnreachable(
+        except TimeoutException:
+            raise TimeoutException(
                 'Unable to ping server {id} at address {address} '
                 'within the allowed time of {timeout} seconds. '
                 'Test unable to proceed.'.format(
