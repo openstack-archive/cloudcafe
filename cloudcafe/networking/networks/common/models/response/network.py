@@ -26,18 +26,24 @@ class Network(AutoMarshallingModel):
     """
     @summary: Network model object for the OpenStack Neutron v2.0 API
     responses for networks show and list (GET) calls
-    @param string id: UUID for the network (CRUD: R)
-    @param string name: human readable name for the network,
-        may not be unique. (CRUD: CRU)
-    @param bool admin_state_up: true or false, the admin state
-        of the network. If down, the network does not forward packets.
-        Default value is True (CRUD: CRU)
-    @param string status: Indicates if the network is currently
-        operational. Possible values: ACTIVE, DOWN, BUILD, ERROR. (CRUD: R)
-    @param list subnets: associated network subnets UUID list. (CRUD: R)
-    @param bool shared: specifies if the network can be accessed by any
-        tenant. Default value is False. (CRUD: CRU)
-    @param string tenant_id: owner of the network. (CRUD: CR)
+    @param id_: UUID for the network (CRUD: R)
+    @type id_: string
+    @param name: human readable name for the network, may not be unique
+        (CRUD: CRU)
+    @type name: string
+    @param admin_state_up: true or false, the admin state of the network.
+        If down, the network does not forward packets. Usually True (CRUD: CRU)
+    @type admin_state_up: bool
+    @param status: Indicates if the network is currently operational.
+        Possible values: ACTIVE, DOWN, BUILD, ERROR. (CRUD: R)
+    @type status: string
+    @param subnets: associated network subnets UUID list. (CRUD: R)
+    @type subnets: list(str)
+    @param shared: specifies if the network can be accessed by any tenant.
+        Usually False (CRUD: CRU)
+    @type shared: bool
+    @param tenant_id: owner of the network. (CRUD: CR)
+    @type tenant_id: string
     """
     NETWORK = 'network'
 
@@ -54,6 +60,7 @@ class Network(AutoMarshallingModel):
         self.subnets = subnets
         self.shared = shared
         self.tenant_id = tenant_id
+        self.kwargs = kwargs
 
     @classmethod
     def _json_to_obj(cls, serialized_str):

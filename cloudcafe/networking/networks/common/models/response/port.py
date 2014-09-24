@@ -26,23 +26,32 @@ class Port(AutoMarshallingModel):
     """
     @summary: Port model object for the OpenStack Neutron v2.0 API
     responses for ports show and list (GET) calls
-    @param string id: UUID for the port (CRUD: R)
-    @param string network_id: network port is associated with (CRUD: CR)
-    @param string name: human readable name for the port,
-        may not be unique. (CRUD: CRU)
-    @param bool admin_state_up: true or false (default true), the admin state
-        of the port. If down, the port does not forward packets (CRUD: CRU)
-    @param string status: Indicates if the port is currently
-        operational. Possible values: ACTIVE, DOWN, BUILD, ERROR (CRUD: R)
-    @param string mac_address: mac address to use on the port (CRUD: CR)
-    @param list(dict) fixed_ips: ip addresses for the port associating the
-        port with the subnets where the IPs come from (CRUD: CRU)
-    @param string device_id: id of device using this port (CRUD: CRUD)
-    @param string device_owner: entity using this port (ex. dhcp agent,
-        CRUD: CRUD)
-    @param string tenant_id: owner of the port (CRUD: CR)
-    @param list(dict) security_groups: ids of any security groups associated
-        with the port (CRUD: CRUD)
+    @param id_: UUID for the port (CRUD: R)
+    @type id_: string
+    @param network_id: network port is associated with (CRUD: CR)
+    @type network_id: string
+    @param name: human readable name for the port, may not be unique(CRUD: CRU)
+    @type name: string
+    @param admin_state_up: true or false (default true), the admin state of the
+        port. If down, the port does not forward packets (CRUD: CRU)
+    @type admin_state_up: bool
+    @param status: Indicates if the port is currently operational.
+        Possible values: ACTIVE, DOWN, BUILD, ERROR (CRUD: R)
+    @type status: string
+    @param mac_address: mac address to use on the port (CRUD: CR)
+    @type mac_address: string
+    @param fixed_ips: ip addresses for the port associating the port with the
+        subnets where the IPs come from (CRUD: CRU)
+    @type fixed_ips: list(dict)
+    @param device_id: id of device using this port (CRUD: CRUD)
+    @type device_id: string
+    @param device_owner: entity using this port (ex. dhcp agent (CRUD: CRUD)
+    @type device_owner: string
+    @param tenant_id: owner of the port (CRUD: CR)
+    @type tenant_id: string
+    @param security_groups: ids of any security groups associated with the port
+        (CRUD: CRUD)
+    @type security_groups: list(dict)
     """
 
     PORT = 'port'
@@ -65,6 +74,7 @@ class Port(AutoMarshallingModel):
         self.device_owner = device_owner
         self.tenant_id = tenant_id
         self.security_groups = security_groups
+        self.kwargs = kwargs
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
