@@ -25,13 +25,6 @@ class ServersConfig(ConfigSectionInterface):
     SECTION_NAME = 'servers'
 
     @property
-    def resource_build_attempts(self):
-        """
-        Number of times to try to build a resource when using a behavior.
-        """
-        return int(self.get("resource_build_attempts", 1))
-
-    @property
     def instance_auth_strategy(self):
         """Strategy to use for authenticating to an instance (password|key)"""
         return self.get("instance_auth_strategy")
