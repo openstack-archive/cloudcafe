@@ -19,13 +19,13 @@ import time
 
 from cafe.engine.behaviors import BaseBehavior
 
+from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
-    TimeoutException, BuildErrorException, RequiredResourceException, \
-    SshConnectionException
+    TimeoutException, BuildErrorException, SshConnectionException
 
 
 class ServerBehaviors(BaseBehavior):
@@ -115,55 +115,41 @@ class ServerBehaviors(BaseBehavior):
         else:
             security_groups = security_groups or default_groups
 
-        failures = []
-        attempts = self.config.resource_build_attempts
-        for attempt in range(attempts):
+        create_response = self.servers_client.create_server(
+            name, image_ref, flavor_ref, personality=personality,
+            config_drive=config_drive, metadata=metadata,
+            accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+            disk_config=disk_config, networks=networks,
+            scheduler_hints=scheduler_hints, user_data=user_data,
+            admin_pass=admin_pass, key_name=key_name,
+            block_device_mapping=block_device_mapping,
+            security_groups=security_groups)
+        self.verify_entity(create_response)
+        server_obj = create_response.entity
+        create_request_id = create_response.headers.get(
+            'x-compute-request-id')
 
-            self._log.debug('Attempt {attempt} of {attempts} '
-                            'to create server.'.format(attempt=attempt + 1,
-                                                       attempts=attempts))
+        verifier = StatusProgressionVerifier(
+            'server', server_obj.id, self.get_server_status, server_obj.id)
 
-            resp = self.servers_client.create_server(
-                name, image_ref, flavor_ref, personality=personality,
-                config_drive=config_drive, metadata=metadata,
-                accessIPv4=accessIPv4, accessIPv6=accessIPv6,
-                disk_config=disk_config, networks=networks,
-                scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass, key_name=key_name,
-                block_device_mapping=block_device_mapping,
-                security_groups=security_groups)
-            server_obj = resp.entity
-            create_request_id = resp.headers.get('x-compute-request-id')
-            if not resp.ok:
-                self._log.error(
-                    'Failed to build server. Initial POST failed with an HTTP '
-                    '{0} error code'.format(resp.status_code))
-                break
-            if not resp.entity:
-                self._log.error(
-                    'Failed to build server. Could not deserialize initial '
-                    'POST response.')
-                break
+        verifier.set_global_state_properties(self.config.server_build_timeout)
+        verifier.add_state(
+            expected_statuses=[ServerStates.BUILD],
+            acceptable_statuses=[ServerStates.ACTIVE],
+            error_statuses=[ServerStates.ERROR],
+            poll_rate=self.config.server_status_interval)
 
-            try:
-                resp = self.wait_for_server_status(
-                    server_obj.id, ServerStates.ACTIVE)
-                # Add the password from the create request
-                # into the final response
-                resp.entity.admin_pass = server_obj.admin_pass
-                resp.headers['x-compute-request-id'] = create_request_id
-                return resp
-            except (TimeoutException, BuildErrorException) as ex:
-                self._log.error('Failed to build server {server_id}: '
-                                '{message}'.format(server_id=server_obj.id,
-                                                   message=ex.message))
-                failures.append(ex.message)
-                self.servers_client.delete_server(server_obj.id)
+        verifier.add_state(
+            expected_statuses=[ServerStates.ACTIVE],
+            error_statuses=[ServerStates.ERROR],
+            poll_rate=self.config.server_status_interval)
+        verifier.start()
 
-        raise RequiredResourceException(
-            'Failed to successfully build a server after '
-            '{attempts} attempts: {failures}'.format(
-                attempts=attempts, failures=failures))
+        response = self.servers_client.get_server(server_obj.id)
+        self.verify_entity(response)
+        response.entity.admin_pass = server_obj.admin_pass
+        response.headers['x-compute-request-id'] = create_request_id
+        return response
 
     def wait_for_server_status(self, server_id, desired_status,
                                interval_time=None, timeout=None):
@@ -191,19 +177,7 @@ class ServerBehaviors(BaseBehavior):
         time.sleep(interval_time)
         while time.time() < end_time:
             resp = self.servers_client.get_server(server_id)
-
-            if not resp.ok:
-                raise Exception(
-                    "Failed to get server information: "
-                    "{code} - {reason}".format(code=resp.status_code,
-                                               reason=resp.reason))
-
-            if resp.entity is None:
-                raise Exception(
-                    "Response entity was not set. "
-                    "Response was: {0}".format(resp.content))
-
-            server = resp.entity
+            server = self.verify_entity(resp)
 
             if server.status.lower() == ServerStates.ERROR.lower():
                 raise BuildErrorException(
@@ -220,6 +194,28 @@ class ServerBehaviors(BaseBehavior):
                     timeout, server_id, desired_status))
 
         return resp
+
+    def get_server_status(self, server_id):
+        """Returns the status of a given server."""
+        resp = self.servers_client.get_server(server_id)
+        self.verify_entity(resp)
+        return resp.entity.status
+
+    def verify_entity(self, response):
+        """Verifies if a request was successful and if an entity was
+        properly deserialized."""
+        if not response.ok:
+            msg = "Call failed with status_code {0} ".format(
+                response.status_code)
+            self._log.error(msg)
+            raise Exception(msg)
+
+        if response.entity is None:
+            msg = "Response body did not deserialize as expected"
+            self._log.error(msg)
+            raise Exception(msg)
+
+        return response.entity
 
     def wait_for_server_task_state(self, server_id, state_to_wait_for,
                                    timeout, interval_time=None):
@@ -245,21 +241,8 @@ class ServerBehaviors(BaseBehavior):
 
         while time.time() < end_time:
             response = self.servers_client.get_server(server_id)
-
-            if not response.ok:
-                raise Exception(
-                    "Failed to get server information: "
-                    "{code} - {reason}".format(code=response.status_code,
-                                               reason=response.reason))
-
-            if response.entity is None:
-                raise Exception(
-                    "Response entity was not set. "
-                    "Response was: {0}".format(response.content))
-
-            task_state = response.entity.task_state
-            if task_state is not None:
-                task_state = task_state.lower()
+            self.verify_entity(response)
+            task_state = response.entity.task_state.lower()
 
             if response.entity.status.lower() == ServerStates.ERROR.lower():
                 raise BuildErrorException(
@@ -276,7 +259,6 @@ class ServerBehaviors(BaseBehavior):
                 "{state_to_wait_for}."
                 .format(timeout=timeout, server_id=server_id,
                         state_to_wait_for=state_to_wait_for))
-
         return response
 
     def wait_for_metadata_value(self, server_id, metadata_key,
@@ -308,19 +290,7 @@ class ServerBehaviors(BaseBehavior):
 
         while time.time() < end_time:
             response = self.servers_client.list_server_metadata(server_id)
-
-            if not response.ok:
-                raise Exception(
-                    "Failed to list server metadata: "
-                    "{code} - {reason}".format(code=response.status_code,
-                                               reason=response.reason))
-
-            if response.entity is None:
-                raise Exception(
-                    "Response entity not set. "
-                    "Response was: {0}".format(response.content))
-
-            metadata = response.entity
+            metadata = self.verify_entity(response)
 
             # Key may not exist yet, so check before accessing
             if metadata_key in metadata:
@@ -413,7 +383,7 @@ class ServerBehaviors(BaseBehavior):
         @rtype: List
         """
         if self.config.default_injected_files:
-        # Encode the file contents
+            # Encode the file contents
             default_files = self.config.default_injected_files
             for personality_file in default_files:
                 personality_file['contents'] = base64.b64encode(
