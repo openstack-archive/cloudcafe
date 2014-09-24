@@ -16,15 +16,16 @@ limitations under the License.
 
 import time
 
-from cafe.engine.behaviors import BaseBehavior
-
+from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.common.tools.datagen import rand_name
+from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.common.types import NovaImageStatusTypes as ImageStates
+from cloudcafe.compute.common.types import ComputeTaskStates
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException
 
 
-class ImageBehaviors(BaseBehavior):
+class ImageBehaviors(BaseComputeBehavior):
 
     def __init__(self, images_client, servers_client, config):
         super(ImageBehaviors, self).__init__()
@@ -117,7 +118,49 @@ class ImageBehaviors(BaseBehavior):
                     timeout, response_code, image_id))
         return resp
 
-    def create_active_image(self, server_id):
+    def wait_for_image_creation(self, server_id, image_id):
+        """
+        @summary: Waits for an image to be created successfully
+        @param server_id: The uuid of the server the image was created from
+        @type server_id: String
+        @param image_id: The uuid of the image being created
+        @type image_id: String
+        @return: An image object after it has been built successfully
+        @rtype: Image
+        """
+
+        # Wait while the server is imaging
+        verifier = StatusProgressionVerifier(
+            'server', server_id,
+            lambda id_: self.verify_entity(self.servers_client.get_server(id_)).task_state,
+            server_id)
+
+        verifier.set_global_state_properties(
+            timeout=self.config.snapshot_timeout)
+        verifier.add_state(
+            expected_statuses=[ComputeTaskStates.IMAGE_SNAPSHOT],
+            acceptable_statuses=[ComputeTaskStates.IMAGE_PENDING_UPLOAD,
+                                 ComputeTaskStates.IMAGE_UPLOADING],
+            poll_rate=self.config.image_status_interval)
+        verifier.add_state(
+            expected_statuses=[ComputeTaskStates.IMAGE_PENDING_UPLOAD],
+            acceptable_statuses=[ComputeTaskStates.IMAGE_UPLOADING],
+            error_statuses=[ComputeTaskStates.NONE],
+            poll_rate=self.config.image_status_interval)
+        verifier.add_state(
+            expected_statuses=[ComputeTaskStates.IMAGE_UPLOADING],
+            error_statuses=[ComputeTaskStates.NONE],
+            poll_rate=self.config.image_status_interval)
+        verifier.add_state(
+            expected_statuses=[ComputeTaskStates.NONE],
+            poll_rate=self.config.image_status_interval)
+        verifier.start()
+
+        response = self.wait_for_image_status(
+            image_id, ImageStates.ACTIVE)
+        return self.verify_entity(response)
+
+    def create_active_image(self, server_id, name=None, metadata=None):
         """
         @summary: Creates an image from a server and waits for
                   the image to become active
@@ -128,14 +171,21 @@ class ImageBehaviors(BaseBehavior):
         @rtype: requests.Response
         """
 
-        name = rand_name('image')
-        resp = self.servers_client.create_image(server_id, name)
-        assert resp.status_code == 202
+        response = self.servers_client.get_server(server_id)
+        server = self.verify_entity(response)
+
+        if name is None:
+            name = rand_name('image')
+
+        response = self.servers_client.create_image(
+            server.id, name, metadata)
 
         # Retrieve the image id from the response header
-        image_id = resp.headers['location'].rsplit('/')[-1]
-        resp = self.wait_for_image_status(image_id, ImageStates.ACTIVE)
-        return resp
+        image_id = response.headers['location'].rsplit('/')[-1]
+        finished_image = self.wait_for_image_creation(
+            server_id, image_id)
+        response.entity = finished_image
+        return response
 
     def create_active_backup(self, server_id, backup_type, backup_rotation):
         """

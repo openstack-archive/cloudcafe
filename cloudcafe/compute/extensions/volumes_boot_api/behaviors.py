@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
@@ -22,7 +22,7 @@ from cloudcafe.compute.common.exceptions import \
     TimeoutException, BuildErrorException, RequiredResourceException
 
 
-class VolumeServerBehaviors(BaseBehavior):
+class VolumeServerBehaviors(BaseComputeBehavior):
 
     def __init__(self, servers_client, images_client, servers_config,
                  images_config, flavors_config, server_behaviors,
