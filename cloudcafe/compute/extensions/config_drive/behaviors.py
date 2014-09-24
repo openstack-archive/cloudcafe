@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.extensions.config_drive.models.\
     config_drive_openstack_meta import OpenStackMeta
 from cloudcafe.compute.extensions.config_drive.models.\
     config_drive_ec_metadata import EcMetadata
 
 
-class ConfigDriveBehaviors(BaseBehavior):
+class ConfigDriveBehaviors(BaseComputeBehavior):
 
     def __init__(self, servers_client, servers_config,
                  server_behaviors):
