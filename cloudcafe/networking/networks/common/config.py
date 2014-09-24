@@ -32,3 +32,8 @@ class NetworkingBaseConfig(ConfigSectionInterface):
     def api_poll_rate(self):
         """Time interval for api calls on while loops retries"""
         return int(self.get("api_poll_rate", 4))
+
+    @property
+    def check_response_attrs(self):
+        """Flag to enable checking the response attributes"""
+        return self.get("check_response_attrs", True)

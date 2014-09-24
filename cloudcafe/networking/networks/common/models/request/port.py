@@ -24,20 +24,27 @@ class PortRequest(AutoMarshallingModel):
     """
     @summary: Port model object for the OpenStack Neutron v2.0 API
     requests for creating (POST) and updating (PUT) ports calls
-    @param string network_id: network port is associated with (CRUD: CR)
-    @param string name: human readable name for the port,
-        may not be unique. (CRUD: CRU)
-    @param bool admin_state_up: true or false (default true), the admin state
-        of the port. If down, the port does not forward packets (CRUD: CRU)
-    @param string mac_address: mac address to use on the port (CRUD: CR)
-    @param list(dict) fixed_ips: ip addresses for the port associating the
-        port with the subnets where the IPs come from (CRUD: CRU)
-    @param string device_id: id of device using this port (CRUD: CRUD)
-    @param string device_owner: entity using this port (ex. dhcp agent,
-        CRUD: CRUD)
-    @param string tenant_id: owner of the port (CRUD: CR)
-    @param list(dict) security_groups: ids of any security groups associated
-        with the port (CRUD: CRUD)
+    @param network_id: network port is associated with (CRUD: CR)
+    @type network_id: string
+    @param name: human readable name for the port, may not be unique(CRUD: CRU)
+    @type name: string
+    @param admin_state_up: true or false (default true), the admin state of the
+        port. If down, the port does not forward packets (CRUD: CRU)
+    @type admin_state_up: bool
+    @param mac_address: mac address to use on the port (CRUD: CR)
+    @type mac_address: string
+    @param fixed_ips: ip addresses for the port associating the port with the
+        subnets where the IPs come from (CRUD: CRU)
+    @type fixed_ips: list(dict)
+    @param device_id: id of device using this port (CRUD: CRUD)
+    @type device_id: string
+    @param device_owner: entity using this port (ex. dhcp agent (CRUD: CRUD)
+    @type device_owner: string
+    @param tenant_id: owner of the port (CRUD: CR)
+    @type tenant_id: string
+    @param security_groups: ids of any security groups associated with the port
+        (CRUD: CRUD)
+    @type security_groups: list(dict)
     """
 
     def __init__(self, network_id=None, name=None, admin_state_up=None,
