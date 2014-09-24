@@ -1,6 +1,6 @@
 from time import sleep, time
-from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.behaviors import StatusProgressionVerifier
+from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.volume_attachments_api.config import \
     VolumeAttachmentsAPIConfig
 
@@ -9,7 +9,7 @@ class VolumeAttachmentBehaviorError(Exception):
     pass
 
 
-class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
+class VolumeAttachmentsAPI_Behaviors(BaseComputeBehavior):
 
     def __init__(
             self, volume_attachments_client=None,
