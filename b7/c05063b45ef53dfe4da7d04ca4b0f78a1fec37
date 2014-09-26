@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: jose-idar <jose.idar@rackspace.com>
+Workflow+1: jose-idar <jose.idar@rackspace.com>
+Code-Review+2: Christopher Hunt <chris.hunt@RACKSPACE.COM>
+Code-Review+1: Levi Blackstone <levi.blackstone@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 26 Sep 2014 19:20:03 +0000
+Reviewed-on: https://review.openstack.org/123729
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
