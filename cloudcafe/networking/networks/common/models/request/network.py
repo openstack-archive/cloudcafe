@@ -24,14 +24,17 @@ class NetworkRequest(AutoMarshallingModel):
     """
     @summary: Network model object for the OpenStack Neutron v2.0 API
     requests for creating (POST) and updating (PUT) networks calls
-    @param string name: human readable name for the network,
-        may not be unique. (CRUD: CRU)
-    @param bool admin_state_up: true or false, the admin state
-        of the network. If down, the network does not forward packets.
-        Default value is True (CRUD: CRU)
-    @param bool shared: specifies if the network can be accessed by any
-        tenant. Default value is False. (CRUD: CRU)
-    @param string tenant_id: owner of the network. (CRUD: CR)
+    @param name: human readable name for the network, may not be unique
+        (CRUD: CRU)
+    @type name: string
+    @param admin_state_up: true or false, the admin state of the network.
+        If down, the network does not forward packets. Usually True (CRUD: CRU)
+    @type admin_state_up: bool
+    @param shared: specifies if the network can be accessed by any tenant.
+        Usually False (CRUD: CRU)
+    @type shared: bool
+    @param tenant_id: owner of the network. (CRUD: CR)
+    @type tenant_id: string
     """
 
     def __init__(self, name=None, admin_state_up=None, shared=None,

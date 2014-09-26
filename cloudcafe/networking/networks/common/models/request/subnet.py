@@ -24,22 +24,31 @@ class SubnetRequest(AutoMarshallingModel):
     """
     @summary: Subnet model object for the OpenStack Neutron v2.0 API
     requests for creating (POST) and updating (PUT) subnets
-    @param string name: human readable name for the subnet,
-        may not be unique. (CRUD: CRU)
-    @param string tenant_id: owner of the network. (CRUD: CR)
-    @param string network_id: network subnet is associated with (CRUD: CR)
-    @param int ip_version: IP version 4 or 6 (CRUD: CR)
-    @param string cidr: represents IP range for the subnet and should be in
-        the form <network_address>/<prefix> (CRUD: CR)
-    @param string gateway_ip: default gateway used by devices in the subnet
-        (CRUD: CRUD)
-    @param list(str) dns_nameservers: DNS name servers used by subnet hosts
+    @param name: human readable name for the subnet, may not be unique
         (CRUD: CRU)
-    @param list(dict) allocation_pools: sub range of cidr available for dynamic
-        allocation to ports (CRUD: CR)
-    @param list(dict) host_routes: routes that should be used by devices with
-        IPs from this subnet (does not includes the local route, CRUD: CRU)
-    @param bool enable_dhcp: whether DHCP is enabled (CRUD:CRU)
+    @type name: string
+    @param tenant_id: owner of the network. (CRUD: CR)
+    @type tenant_id: string
+    @param network_id: network subnet is associated with (CRUD: CR)
+    @type network_id: string
+    @param ip_version: IP version 4 or 6 (CRUD: CR)
+    @type ip_version: int
+    @param cidr: represents IP range for the subnet and should be in the form
+        <network_address>/<prefix> (CRUD: CR)
+    @type cidr: string
+    @param gateway_ip: default gateway used by devices in the subnet
+        (CRUD: CRUD)
+    @type gateway_ip: string
+    @param dns_nameservers: DNS name servers used by subnet hosts (CRUD: CRU)
+    @type dns_nameservers: list(str)
+    @param allocation_pools: sub range of cidr available for dynamic allocation
+        to ports (CRUD: CRU)
+    @type allocation_pools: list(dict)
+    @param host_routes: routes that should be used by devices with IPs from
+        this subnet (does not includes the local route, CRUD: CRU)
+    @type host_routes: list(dict)
+    @param enable_dhcp: whether DHCP is enabled (CRUD:CRU)
+    @type enable_dhcp: bool
     """
 
     def __init__(self, name=None, tenant_id=None, network_id=None,
