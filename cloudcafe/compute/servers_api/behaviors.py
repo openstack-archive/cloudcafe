@@ -25,7 +25,9 @@ from cloudcafe.compute.common.types import NovaServerStatusTypes \
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, RequiredResourceException, \
-    SshConnectionException
+    ServerUnreachable, SshConnectionException
+from cloudcafe.compute.config import UserConfig
+from cloudcafe.compute.config import ComputeEndpointConfig
 
 
 class ServerBehaviors(BaseBehavior):
@@ -80,6 +82,14 @@ class ServerBehaviors(BaseBehavior):
                  the server domain object
         @rtype: Request Response Object
         """
+
+        auth_user_config = UserConfig()
+        self.compute_endpoint_config = ComputeEndpointConfig()
+        public_url = self.servers_client.url
+        if self.compute_endpoint_config.compute_endpoint_url:
+            self.servers_client.url = '{0}/{1}'.format(
+                self.compute_endpoint_config.compute_endpoint_url,
+                auth_user_config.tenant_id)
 
         if name is None:
             name = rand_name('testserver')
@@ -152,6 +162,7 @@ class ServerBehaviors(BaseBehavior):
                 # into the final response
                 resp.entity.admin_pass = server_obj.admin_pass
                 resp.headers['x-compute-request-id'] = create_request_id
+                self.servers_client.url = public_url
                 return resp
             except (TimeoutException, BuildErrorException) as ex:
                 self._log.error('Failed to build server {server_id}: '
