@@ -16,6 +16,7 @@ limitations under the License.
 
 import base64
 import time
+import re
 
 from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.compute.common.behaviors import BaseComputeBehavior
@@ -196,6 +197,16 @@ class ServerBehaviors(BaseComputeBehavior):
         @rtype: Request Response Object
         """
 
+        public_url = self.servers_client.url
+        if (self.config.default_scheduler_hints and
+            self.config.scheduler_hints_url):
+                # Extract tenant id from the url
+                tenant_id = re.findall('\d+', public_url)[1]
+                # Replace Create Server url only with that from scheduler hints
+                self.servers_client.url = '{0}/{1}'.format(
+                    self.config.scheduler_hints_url.rstrip('/'),
+                    tenant_id)
+
         create_response = self.create_server_with_defaults(
             name, image_ref, flavor_ref, personality=personality,
             config_drive=config_drive, metadata=metadata,
@@ -210,6 +221,8 @@ class ServerBehaviors(BaseComputeBehavior):
         built_server = self.wait_for_server_creation(server.id)
         built_server.admin_pass = server.admin_pass
         create_response.entity = built_server
+        # The url is restored to the original one always in case cell is linked
+        self.servers_client.url = public_url
         return create_response
 
     def wait_for_server_status(self, server_id, desired_status,
