@@ -180,6 +180,13 @@ class ServersConfig(ConfigSectionInterface):
         return literal_eval(self.get("default_scheduler_hints", 'None'))
 
     @property
+    def scheduler_hints_url(self):
+        """
+        Endpoint to be used when scheduler hints used
+        """
+        return self.get("scheduler_hints_url")
+
+    @property
     def default_file_path(self):
         """
         The path to which files will be injected.

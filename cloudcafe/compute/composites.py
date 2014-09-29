@@ -67,9 +67,9 @@ class _ComputeAuthComposite(MemoizedAuthServiceComposite):
         self.servers_url = self.public_url
 
         if self.compute_endpoint_config.compute_endpoint_url:
-            self.servers_url = '{0}/{1}'.format(
-                self.compute_endpoint_config.compute_endpoint_url,
-                self.tenant_id)
+                self.servers_url = '{0}/{1}'.format(
+                    self.compute_endpoint_config.compute_endpoint_url,
+                    self.tenant_id)
 
         self.client_args = {
             'url': self.servers_url,
