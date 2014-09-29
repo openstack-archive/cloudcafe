@@ -16,6 +16,7 @@ limitations under the License.
 
 import base64
 import time
+import re
 
 from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.compute.common.behaviors import BaseComputeBehavior
@@ -113,6 +114,18 @@ class ServerBehaviors(BaseComputeBehavior):
         else:
             security_groups = security_groups or default_groups
 
+        public_url = self.servers_client.url
+        if (self.config.default_scheduler_hints and
+            self.config.scheduler_hints_url):
+                # Extract tenant id from the url
+                tenant_id = re.findall('\d+', public_url)[1]
+                # Replace Create Server url only with that from scheduler hints
+                client_url = '{0}/{1}'.format(
+                    self.config.scheduler_hints_url.rstrip('/'),
+                    tenant_id)
+                bypass_url = '{client_url}/servers'.format(client_url=client_url)
+                kwargs = {'url': bypass_url}
+
         response = self.servers_client.create_server(
             name, image_ref, flavor_ref, personality=personality,
             config_drive=config_drive, metadata=metadata,
@@ -121,7 +134,7 @@ class ServerBehaviors(BaseComputeBehavior):
             scheduler_hints=scheduler_hints, user_data=user_data,
             admin_pass=admin_pass, key_name=key_name,
             block_device_mapping=block_device_mapping,
-            security_groups=security_groups)
+            security_groups=security_groups, requestslib_kwargs=kwargs)
         self.verify_entity(response)
         return response
 
