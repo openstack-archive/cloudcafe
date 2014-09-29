@@ -56,6 +56,11 @@ class ComputeEndpointConfig(ConfigSectionInterface):
         """Optional override of the Compute url"""
         return self.get("compute_endpoint_url")
 
+    @property
+    def linked_cell(self):
+        """Config for testing cells shows if the cell is linked or not"""
+        return self.get_boolean("linked_cell", False)
+
 
 class ComputeAdminEndpointConfig(ComputeEndpointConfig):
 
