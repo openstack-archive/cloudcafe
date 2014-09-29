@@ -25,6 +25,7 @@ from cloudcafe.compute.common.types import NovaServerStatusTypes \
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
     TimeoutException, BuildErrorException, SshConnectionException
+from cloudcafe.compute.config import UserConfig
 
 
 class ServerBehaviors(BaseComputeBehavior):
@@ -196,6 +197,13 @@ class ServerBehaviors(BaseComputeBehavior):
         @rtype: Request Response Object
         """
 
+        auth_user_config = UserConfig()
+        public_url = self.servers_client.url
+        if self.config.servers_config.default_scheduler_hints:
+            self.servers_client.url = '{0}/{1}'.format(
+                self.config.servers_config.scheduler_hints_url.rstrip('/'),
+                auth_user_config.tenant_id)
+
         create_response = self.create_server_with_defaults(
             name, image_ref, flavor_ref, personality=personality,
             config_drive=config_drive, metadata=metadata,
@@ -210,6 +218,8 @@ class ServerBehaviors(BaseComputeBehavior):
         built_server = self.wait_for_server_creation(server.id)
         built_server.admin_pass = server.admin_pass
         create_response.entity = built_server
+        # The url is restored to the original one always in case cell is linked
+        self.servers_client.url = public_url
         return create_response
 
     def wait_for_server_status(self, server_id, desired_status,
