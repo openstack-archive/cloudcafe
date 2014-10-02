@@ -22,9 +22,9 @@ from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.common.behaviors import StatusProgressionVerifier
 from cloudcafe.common.resources import ResourcePool
 from cloudcafe.common.tools.datagen import rand_name
-from cloudcafe.images.common.constants import ImageProperties, Messages
-from cloudcafe.images.common.exceptions import (
+from cloudcafe.compute.common.exceptions import (
     BuildErrorException, RequiredResourceException, TimeoutException)
+from cloudcafe.images.common.constants import ImageProperties, Messages
 from cloudcafe.images.common.types import (
     ImageContainerFormat, ImageDiskFormat, ImageStatus, Schemas, TaskStatus,
     TaskTypes)
@@ -295,14 +295,16 @@ class ImagesBehaviors(BaseBehavior):
 
         for attempt in range(attempts):
             try:
-                response = self.client.create_task(input_=input_, type_=type_)
-                task_id = response.entity.id_
+                resp = self.client.create_task(input_=input_, type_=type_)
+                task_id = resp.entity.id_
                 task = self.wait_for_task_status(task_id, TaskStatus.SUCCESS)
                 return task
-            except (TimeoutException, BuildErrorException) as ex:
-                self._log.error('Failed to create task with uuid {0}: '
-                                '{1}'.format(task_id, ex.message))
-                failures.append(ex.message)
+            except (BuildErrorException, TimeoutException) as ex:
+                failure = ('Attempt {0}: Failed to create task with '
+                           'the message '
+                           '{1}'.format(attempt + 1, ex.message))
+                self._log.error(failure)
+                failures.append(failure)
         raise RequiredResourceException(
             'Failed to successfully create a task after {0} attempts: '
             '{1}'.format(attempts, failures))
@@ -440,7 +442,7 @@ class ImagesBehaviors(BaseBehavior):
                 raise BuildErrorException(
                     'Task with uuid {0} entered {1} status. Task responded '
                     'with the message {2}'.format(
-                        task.id_, task.status, task.message))
+                        task.id_, task.status, task.message.replace('\\', '')))
 
             if task.status == desired_status:
                 break
