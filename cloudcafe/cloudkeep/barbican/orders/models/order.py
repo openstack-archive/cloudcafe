@@ -22,9 +22,11 @@ from cloudcafe.cloudkeep.barbican.secrets.models.secret import Secret
 
 class Order(AutoMarshallingModel):
 
-    def __init__(self, secret, secret_href=None, status=None, order_ref=None):
+    def __init__(self, meta=None, secret_href=None, status=None,
+                 order_ref=None, order_type=None):
         super(Order, self).__init__()
-        self.secret = secret
+        self.order_type = order_type
+        self.meta = meta
         self.secret_href = secret_href
         self.status = status
         self.order_ref = order_ref
@@ -45,8 +47,8 @@ class Order(AutoMarshallingModel):
         return self.get_id_from_ref(ref=self.secret_href)
 
     def _obj_to_json(self):
-        secret_dict = self.secret._obj_to_dict()
-        return dict_to_str({'secret': secret_dict})
+        secret_dict = self.meta._obj_to_dict()
+        return dict_to_str({'type': self.order_type, 'meta': secret_dict})
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -59,7 +61,8 @@ class Order(AutoMarshallingModel):
             'order_ref': json_dict.get('order_ref'),
             'status': json_dict.get('status'),
             'secret_href': json_dict.get('secret_ref'),
-            'secret': Secret._dict_to_obj(json_dict.get('secret'))
+            'meta': Secret._dict_to_obj(json_dict.get('meta')),
+            'order_type': json_dict.get('type')
         }
         return Order(**args)
 
