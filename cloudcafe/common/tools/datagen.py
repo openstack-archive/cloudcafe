@@ -19,6 +19,8 @@ import string
 import time
 from math import pow
 
+from cloudcafe.common.tools import randomstring
+
 SOURCE_RANDOM = '/dev/urandom'
 SOURCE_ZEROS = '/dev/zero'
 TEMP_LOCATION = '/tmp'
@@ -115,7 +117,8 @@ def random_int(min_int, max_int):
 
 
 def rand_name(name='test'):
-    return name + str(random.randint(99999, 1000000))
+    return "{name}_{suffix}".format(
+        name=name, suffix=randomstring.get_random_string())
 
 
 def random_item_in_list(selection_list):
