@@ -62,3 +62,54 @@ class ServerBehaviors(BaseBehavior):
         if name is None:
             name = rand_name("namespace.server") + ".com."
         return self.server_client.create_server(name=name)
+
+
+class ZoneBehaviors(BaseBehavior):
+
+    def __init__(self, zone_client, config):
+        super(ZoneBehaviors, self).__init__()
+        self.zone_client = zone_client
+        self.config = config
+
+    def create_zone(self, name=None, email=None, ttl=None, description=None,
+                    tld="com"):
+        name, email = DomainBehaviors._prepare_domain_and_email(
+            name=name, email=email, tld=tld)
+        if ttl is None:
+            ttl = self.config.default_ttl
+        return self.zone_client.create_zone(
+            name=name, email=email, ttl=ttl, description=description)
+
+    def update_zone(self, name=None, zone_id=None, email=None, ttl=None,
+                    description=None, **requestslib_kwargs):
+        if ttl is None:
+            ttl = self.config.default_ttl
+        return self.zone_client.update_zone(name=name, zone_id=zone_id,
+                                            email=email, ttl=ttl,
+                                            description=description,
+                                            **requestslib_kwargs)
+
+
+class TLDBehaviors(BaseBehavior):
+
+    def __init__(self, tld_client):
+        super(TLDBehaviors, self).__init__()
+        self.tld_client = tld_client
+
+    def delete_all_tlds(self):
+        """Returns False on failing to delete any tld, and True otherwise."""
+        list_resp = self.tld_client.list_tlds()
+        if list_resp.status_code != 200:
+            return False
+
+        success = True
+        for tld in list_resp.entity.tlds:
+            del_resp = self.tld_client.delete_tld(tld.id)
+            if del_resp.status_code != 204:
+                success = False
+        return success
+
+    def create_tld(self, name=None, description=None):
+        if name == None:
+            name = rand_name('tld')
+        return self.tld_client.create_tld(name=name, description=description)
