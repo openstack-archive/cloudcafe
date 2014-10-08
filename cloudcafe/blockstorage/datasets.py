@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cafe.drivers.unittest.datasets import DatasetList
+from cafe.drivers.unittest.datasets import DatasetList, _Dataset
 from cafe.drivers.unittest.decorators import memoized
 
 from cloudcafe.common.datasets import ModelBasedDatasetToolkit
@@ -33,6 +33,30 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
         future calls"""
         return cls._get_model_list(
             cls._volumes.client.list_all_volume_types, 'volume_types')
+
+
+    @classmethod
+    def default_volume_type_model(cls):
+        default_volume_type = None
+        for vtype in cls._get_volume_types():
+            if (vtype.id_ == cls._volumes.config.default_volume_type
+                    or vtype.name == cls._volumes.config.default_volume_type):
+                return vtype
+
+            raise Exception("Unable to get configured default volume type")
+
+    @classmethod
+    def default_volume_type(cls):
+        vol_type = cls.default_volume_type_model()
+        dataset = _Dataset(
+            name=vol_type.name,
+            data_dict={
+                'volume_type_name': vol_type.name,
+                'volume_type_id': vol_type.id_})
+        dataset_list = DatasetList()
+        dataset_list.append(dataset)
+        return dataset_list
+
 
     @classmethod
     @memoized
@@ -66,8 +90,8 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
         pre-configured image and volume_type filters.
         """
 
-        volume_type_filter = cls.volumes.config.volume_type_filter
-        volume_type_filter_mode = cls.volumes.config.volume_type_filter_mode
+        volume_type_filter = cls._volumes.config.volume_type_filter
+        volume_type_filter_mode = cls._volumes.config.volume_type_filter_mode
         return cls.volume_types(
             max_datasets=max_datasets, randomize=randomize,
             model_filter=volume_type_filter,
