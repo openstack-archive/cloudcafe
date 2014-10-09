@@ -1,5 +1,6 @@
 mock
 unittest2
 IPy
+netaddr
 XenAPI
 dateutils
