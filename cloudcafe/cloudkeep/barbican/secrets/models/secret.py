@@ -21,8 +21,9 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class Secret(AutoMarshallingModel):
 
-    def __init__(self, name, expiration, algorithm, bit_length, mode,
-                 payload_content_type=None, payload=None, content_types=None,
+    def __init__(self, name=None, expiration=None, algorithm=None,
+                 bit_length=None, mode=None, payload_content_type=None,
+                 payload=None, content_types=None,
                  payload_content_encoding=None):
         super(Secret, self).__init__()
 

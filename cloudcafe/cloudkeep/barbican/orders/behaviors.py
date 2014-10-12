@@ -77,37 +77,45 @@ class OrdersBehavior(object):
             algorithm=self.config.algorithm,
             bit_length=self.config.bit_length,
             mode=self.config.mode,
-            expiration=expiration)
+            expiration=expiration,
+            order_type='key')
         return resp
 
-    def create_order_overriding_cfg(self, name=None, payload_content_type=None,
-                                    expiration=None, algorithm=None,
-                                    bit_length=None, mode=None, headers=None):
+    def create_order_overriding_cfg(
+            self, name=None, expiration=None, algorithm=None, bit_length=None,
+            payload_content_type=None, payload_content_encoding=None,
+            mode=None, headers=None, order_type='key'):
         """Creates order using provided parameters or default configurations.
         Allows for testing individual parameters on creation.
         """
+        content_type = payload_content_type or self.config.payload_content_type
         resp = self.create_order(
             name=name or self.config.name,
-            payload_content_type=
-            payload_content_type or self.config.payload_content_type,
+            payload_content_type=content_type,
+            payload_content_encoding=payload_content_encoding,
             algorithm=algorithm or self.config.algorithm,
             bit_length=bit_length or self.config.bit_length,
             mode=mode or self.config.mode,
-            expiration=expiration, headers=headers)
+            expiration=expiration,
+            order_type=order_type,
+            headers=headers)
 
         return resp
 
-    def create_order(self, name=None, payload_content_type=None,
-                     algorithm=None, bit_length=None, mode=None,
-                     expiration=None, headers=None):
+    def create_order(
+            self, name=None, algorithm=None, bit_length=None, mode=None,
+            payload_content_type=None, payload_content_encoding=None,
+            expiration=None, headers=None, order_type='key'):
         try:
             resp = self.orders_client.create_order(
                 name=name,
                 payload_content_type=payload_content_type,
+                payload_content_encoding=payload_content_encoding,
                 algorithm=algorithm,
                 bit_length=bit_length,
                 mode=mode,
                 expiration=expiration,
+                order_type=order_type,
                 headers=headers)
         except ConnectionError as e:
             # Gracefully handling when Falcon doesn't properly handle our req
@@ -124,10 +132,10 @@ class OrdersBehavior(object):
             self.created_orders.append(behavior_response.id)
         return behavior_response
 
-    def create_order_w_payload(self, name=None, algorithm=None,
-                               bit_length=None, mode=None,
-                               payload_content_type=None, expiration=None,
-                               payload=None):
+    def create_order_w_payload(
+            self, name=None, algorithm=None, bit_length=None, mode=None,
+            payload_content_type=None, payload_content_encoding=None,
+            expiration=None, payload=None, order_type='key'):
         """Creates an order with a plain_text value. Separate from
         standard create order method because it is used for negative
         testing only and is expected to fail.
@@ -140,7 +148,9 @@ class OrdersBehavior(object):
                 mode=mode or self.config.mode,
                 expiration=expiration,
                 payload_content_type=payload_content_type,
-                payload=payload)
+                payload_content_encoding=payload_content_encoding,
+                payload=payload,
+                order_type=order_type)
         except ConnectionError as e:
             # Gracefully handling when Falcon doesn't properly handle our req
             if type(e.message.reason) is BadStatusLine:
