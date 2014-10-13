@@ -117,7 +117,7 @@ def random_int(min_int, max_int):
 
 
 def rand_name(name='test'):
-    return "{name}_{suffix}".format(
+    return "{name}{suffix}".format(
         name=name, suffix=randomstring.get_random_string())
 
 
