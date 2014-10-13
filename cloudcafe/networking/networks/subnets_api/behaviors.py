@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import random
 import time
 
 import IPy
+import netaddr
+
 
 from cloudcafe.common.tools.datagen import rand_name, random_cidr
 from cloudcafe.networking.networks.common.behaviors \
@@ -171,7 +174,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
             raise InvalidIPException(msg)
 
     def create_ipv6_cidr(self, ipv6_suffix=None, ipv6_prefix=None,
-                         ip_range=None, suffix_max=None):
+                         ip_range=None, suffix_max=None, randomize=True):
         """
         @summary: Creates an IPv6 cidr with given or default values
         @param ipv6_suffix: the CIDR suffix, by default 64
@@ -183,11 +186,32 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @type ip_range: string
         @param suffix_max: the prefix that the CIDR should be less or
             equal than, by default 64
+        @type suffix_max: int
+        @param randomize: randomize 32 bits of the 40-bit global identifier in
+            the routing prefix to prevent collisions when two private networks
+            are interconnected
+        @type randomize: bool
         @return: an IPv6 CIDR
         @rtype: string
         """
         ipv6_suffix = ipv6_suffix or self.config.ipv6_suffix
         ipv6_prefix = ipv6_prefix or self.config.ipv6_prefix
+
+        if randomize:
+            b1 = random.getrandbits(16)
+            b2 = random.getrandbits(16)
+            prefix_dual_octets = ipv6_prefix.split(':')
+            prefix_dual_octets[1] = '{:x}'.format(b1)
+            prefix_dual_octets[2] = '{:x}'.format(b2)
+            ipv6_prefix = '{0}::'.format(':'.join(prefix_dual_octets))
+
+            # To be used with /64 IPv6 networks, overwriting suffix if other
+            if ipv6_suffix != 64:
+                msg = ('Subnet create_ipv6_cidr behavior method using '
+                       'default 64 suffix instead of {0} when creating a '
+                       'random cidr').format(ipv6_suffix)
+                self._log.info(msg)
+                ipv6_suffix = 64
 
         cidr = '{0}/{1}'.format(ipv6_prefix, ipv6_suffix)
         if self.verify_private_ip(ip_cidr=cidr, ip_version=6,
@@ -196,6 +220,48 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         else:
             msg = 'Invalid IPv6 cidr {0}'.format(cidr)
             raise InvalidIPException(msg)
+
+    def get_allocation_pools(self, cidr, first_increment=1,
+                             last_decrement=1):
+        """
+        @summary: gets default allocation pools for an IPv4/IPv6 address
+        @param cidr: represents IP range for the subnet and should be in the
+            form <network_address>/<prefix>
+        @type cidr: string
+        @param first_increment: places from the fist IP of the CIDR to the
+            first IP of the allocation pool
+        @type first_increment: int
+        @param last_decrement: places from the last IP of the CIDR to the last
+            IP of the allocation pool
+        @type last_decrement: int
+        @return: allocation pool
+        @rtype: dict
+       """
+
+        if not self.verify_ip(cidr):
+            raise InvalidIPException
+
+        net = netaddr.IPNetwork(cidr)
+        first_ip = str(netaddr.IPAddress(net.first + first_increment))
+        last_ip = str(netaddr.IPAddress(net.last - last_decrement))
+
+        return dict(start=first_ip, end=last_ip)
+
+    def format_allocation_pools(self, allocation_pools):
+        """
+        @summary: formats allocation pools for assertions removing zeros on
+            IPv6 addresses
+        @param allocation_pools: list of allocation pools
+        @type allocation_pools: list
+        @return: formated allocation pools
+        @rtype: list(dict)
+        """
+        formated_allocation_pools = []
+        for pool in allocation_pools:
+            result = dict(start=str(netaddr.IPAddress(pool['start'])),
+                          end=str(netaddr.IPAddress(pool['end'])))
+            formated_allocation_pools.append(result)
+        return formated_allocation_pools
 
     def create_subnet(self, network_id, ip_version=None, cidr=None, name=None,
                       tenant_id=None, gateway_ip=None, dns_nameservers=None,

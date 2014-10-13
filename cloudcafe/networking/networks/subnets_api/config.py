@@ -28,6 +28,16 @@ class SubnetsConfig(NetworkingBaseConfig):
         return self.get("starts_with_name", "test_subnet")
 
     @property
+    def v4_subnets_per_network(self):
+        """Subnets IPv4 quota per network"""
+        return int(self.get("v4_subnets_per_network", 1))
+
+    @property
+    def v6_subnets_per_network(self):
+        """Subnets IPv6 quota per network"""
+        return int(self.get("v6_subnets_per_network", 1))
+
+    @property
     def ipv4_suffix(self):
         """Subnet create default IPv4 suffix"""
         return int(self.get("ipv4_suffix", 24))
