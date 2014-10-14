@@ -44,7 +44,7 @@ class StatusProgressionVerifier(BaseBehavior):
 
     def add_state(
             self, expected_statuses=None, acceptable_statuses=None,
-            error_statuses=None, timeout=None, poll_rate=None,
+            error_statuses=None, timeout=None, poll_interval=None,
             poll_failure_retry_limit=0):
 
         self._state_list.append(
@@ -52,7 +52,7 @@ class StatusProgressionVerifier(BaseBehavior):
              acceptable_statuses or [],
              error_statuses or [],
              timeout,
-             poll_rate,
+             poll_interval,
              poll_failure_retry_limit))
 
     def start(self):

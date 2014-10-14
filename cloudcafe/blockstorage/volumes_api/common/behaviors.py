@@ -296,12 +296,12 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             expected_statuses=[self.statuses.Volume.CREATING],
             acceptable_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
-            poll_rate=self.config.volume_status_poll_frequency)
+            poll_interval=self.config.volume_status_poll_frequency)
 
         verifier.add_state(
             expected_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
-            poll_rate=self.config.volume_status_poll_frequency)
+            poll_interval=self.config.volume_status_poll_frequency)
 
         verifier.start()
         # Return volume model
@@ -344,12 +344,12 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             expected_statuses=[self.statuses.Snapshot.CREATING],
             acceptable_statuses=[self.statuses.Snapshot.AVAILABLE],
             error_statuses=[self.statuses.Snapshot.ERROR],
-            timeout=self.config.snapshot_create_min_timeout, poll_rate=1)
+            timeout=self.config.snapshot_create_min_timeout, poll_interval=1)
         verifier.add_state(
             expected_statuses=[self.statuses.Snapshot.AVAILABLE],
             error_statuses=[self.statuses.Snapshot.ERROR],
             timeout=timeout,
-            poll_rate=self.config.snapshot_status_poll_frequency)
+            poll_interval=self.config.snapshot_status_poll_frequency)
         verifier.start()
 
         # Return snapshot model

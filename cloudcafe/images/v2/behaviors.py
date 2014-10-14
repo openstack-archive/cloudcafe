@@ -483,19 +483,19 @@ class ImagesBehaviors(BaseBehavior):
             expected_statuses=[TaskStatus.PENDING],
             acceptable_statuses=[TaskStatus.PROCESSING, TaskStatus.SUCCESS],
             error_statuses=[TaskStatus.FAILURE],
-            timeout=self.config.task_timeout, poll_rate=1)
+            timeout=self.config.task_timeout, poll_interval=1)
 
         verifier.add_state(
             expected_statuses=[TaskStatus.PROCESSING],
             acceptable_statuses=[TaskStatus.SUCCESS],
             error_statuses=[TaskStatus.PENDING, TaskStatus.FAILURE],
-            timeout=self.config.task_timeout, poll_rate=1)
+            timeout=self.config.task_timeout, poll_interval=1)
 
         if final_status == TaskStatus.SUCCESS:
             verifier.add_state(
                 expected_statuses=[TaskStatus.SUCCESS],
                 error_statuses=[TaskStatus.PENDING, TaskStatus.FAILURE],
-                timeout=self.config.task_timeout, poll_rate=1)
+                timeout=self.config.task_timeout, poll_interval=1)
 
         verifier.start()
 
@@ -521,19 +521,19 @@ class ImagesBehaviors(BaseBehavior):
             expected_statuses=[TaskStatus.PENDING],
             acceptable_statuses=[TaskStatus.PROCESSING, TaskStatus.FAILURE],
             error_statuses=[TaskStatus.SUCCESS],
-            timeout=self.config.task_timeout, poll_rate=1)
+            timeout=self.config.task_timeout, poll_interval=1)
 
         verifier.add_state(
             expected_statuses=[TaskStatus.PROCESSING],
             acceptable_statuses=[TaskStatus.FAILURE],
             error_statuses=[TaskStatus.PENDING, TaskStatus.SUCCESS],
-            timeout=self.config.task_timeout, poll_rate=1)
+            timeout=self.config.task_timeout, poll_interval=1)
 
         if final_status == TaskStatus.FAILURE:
             verifier.add_state(
                 expected_statuses=[TaskStatus.FAILURE],
                 error_statuses=[TaskStatus.PENDING, TaskStatus.SUCCESS],
-                timeout=self.config.task_timeout, poll_rate=1)
+                timeout=self.config.task_timeout, poll_interval=1)
 
         verifier.start()
 

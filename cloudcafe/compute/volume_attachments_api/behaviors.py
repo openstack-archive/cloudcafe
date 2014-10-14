@@ -62,21 +62,21 @@ class VolumeAttachmentsAPI_Behaviors(BaseBehavior):
             expected_statuses=['available'],
             acceptable_statuses=['attaching', 'in-use'],
             error_statuses=['error', 'creating'],
-            timeout=10, poll_rate=1, poll_failure_retry_limit=3)
+            timeout=10, poll_interval=1, poll_failure_retry_limit=3)
 
         verifier.add_state(
             expected_statuses=['attaching'],
             acceptable_statuses=['in-use'],
             error_statuses=['error', 'creating'],
             timeout=self.config.attachment_timeout,
-            poll_rate=self.config.api_poll_rate,
+            poll_interval=self.config.api_poll_rate,
             poll_failure_retry_limit=3)
 
         verifier.add_state(
             expected_statuses=['in-use'],
             error_statuses=['available', 'error', 'creating'],
             timeout=self.config.attachment_timeout,
-            poll_rate=self.config.api_poll_rate,
+            poll_interval=self.config.api_poll_rate,
             poll_failure_retry_limit=3)
 
         verifier.start()
