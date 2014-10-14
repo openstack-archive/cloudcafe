@@ -367,6 +367,7 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         log_msg = 'Deleting {0} network within a {1}s timeout '.format(
                     network_id, timeout)
         self._log.info(log_msg)
+        resp = None
         while time.time() < endtime:
             try:
                 self.client.delete_network(network_id=network_id)
@@ -376,7 +377,8 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
                     'the clean_network method. Exception: {0}').format(err)
                 self._log.error(err_msg)
 
-            if resp.status_code == NeutronResponseCodes.NOT_FOUND:
+            if (resp is not None and hasattr(resp, 'status_code') and
+                resp.status_code == NeutronResponseCodes.NOT_FOUND):
                 return None
             time.sleep(poll_interval)
 

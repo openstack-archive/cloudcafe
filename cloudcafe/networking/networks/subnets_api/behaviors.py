@@ -221,6 +221,44 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
             msg = 'Invalid IPv6 cidr {0}'.format(cidr)
             raise InvalidIPException(msg)
 
+    def get_ip(self, cidr, increment=None, decrement=None, randomize=False):
+        """
+        @summary: gets an IP address within a CIDR
+        @param cidr: represents IP range for the subnet and should be in the
+            form <network_address>/<prefix>
+        @type cidr: string
+        @param increment: places from the fist IP of the CIDR to get the IP
+        @type increment: int
+        @param decrement: places from the last IP of the CIDR to get the IP
+            (if increment given this will be ignored)
+        @type last_decrement: int
+        @param randomize: generate a random IP within the CIDR excluding first
+            and last IPs. if True, increment and decrement are ignored if given
+        @type randomize: bool
+        @return: IP address
+        @rtype: string
+       """
+
+        if not self.verify_ip(cidr):
+            msg = 'Invalid CIDR {0}'.format(cidr)
+            raise InvalidIPException(msg)
+
+        net = netaddr.IPNetwork(cidr)
+
+        if randomize:
+            increment = random.randint(1, net.size - 2)
+
+        if increment is not None and increment < net.size:
+            ip = str(netaddr.IPAddress(net.first + int(increment)))
+        elif decrement is not None and decrement < net.size:
+            ip = str(netaddr.IPAddress(net.last - int(decrement)))
+        else:
+            msg = ('Invalid increment/decrement value. Expected value less '
+                   'than network size of {0}').format(net.size)
+            raise InvalidIPException(msg)
+
+        return ip
+
     def get_allocation_pools(self, cidr, first_increment=1,
                              last_decrement=1):
         """
@@ -644,6 +682,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         log_msg = 'Deleting {0} subnet within a {1}s timeout '.format(
             subnet_id, timeout)
         self._log.info(log_msg)
+        resp = None
         while time.time() < endtime:
             try:
                 self.client.delete_subnet(subnet_id=subnet_id)
@@ -652,8 +691,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
                 err_msg = ('Encountered an exception deleting a subnet with'
                     'the clean_subnet method. Exception: {0}').format(err)
                 self._log.error(err_msg)
-
-            if resp.status_code == NeutronResponseCodes.NOT_FOUND:
+            if (resp is not None and hasattr(resp, 'status_code') and
+                resp.status_code == NeutronResponseCodes.NOT_FOUND):
                 return None
             time.sleep(poll_interval)
 
