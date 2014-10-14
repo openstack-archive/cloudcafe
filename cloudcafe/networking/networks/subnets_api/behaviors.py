@@ -221,10 +221,114 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
             msg = 'Invalid IPv6 cidr {0}'.format(cidr)
             raise InvalidIPException(msg)
 
-    def get_allocation_pools(self, cidr, first_increment=1,
-                             last_decrement=1):
+    def get_random_ip(self, cidr):
         """
-        @summary: gets default allocation pools for an IPv4/IPv6 address
+        @summary: gets a random IP address within a CIDR excluding first and
+            last IPs
+        @param cidr: represents IP range to get the IP from and should be in
+            the form <network_address>/<prefix>
+        @type cidr: string
+        @return: IP address
+        @rtype: string
+       """
+        if not self.verify_ip(cidr):
+            msg = 'Invalid CIDR {0}'.format(cidr)
+            raise InvalidIPException(msg)
+
+        net = netaddr.IPNetwork(cidr)
+        increment = random.randint(1, net.size - 2)
+        ip = str(netaddr.IPAddress(net.first + int(increment)))
+
+        return ip
+
+    def get_next_ip(self, cidr, num=0):
+        """
+        @summary: gets the IP address of a CIDR starting at the first IP
+        @param cidr: represents IP range to get the IP from and should be in
+            the form <network_address>/<prefix>
+        @type cidr: string
+        @param num: number of places from the first IP of the CIDR
+        @type num: int
+        @return: IP address
+        @rtype: string
+       """
+        if not self.verify_ip(cidr):
+            msg = 'Invalid CIDR {0}'.format(cidr)
+            raise InvalidIPException(msg)
+
+        net = netaddr.IPNetwork(cidr)
+
+        if num < net.size and num >= 0:
+            ip = str(netaddr.IPAddress(net.first + int(num)))
+        else:
+            msg = ('Invalid next value. Expected value greater than 0 and less'
+                   ' than the network size of {0}').format(net.size)
+            raise InvalidIPException(msg)
+
+        return ip
+
+    def get_previous_ip(self, cidr, num=0):
+        """
+        @summary: gets an IP address within a CIDR
+        @param cidr: represents IP range to get the IP from and should be in
+            the form <network_address>/<prefix>
+        @type cidr: string
+        @param num: number of places from the last IP of the CIDR
+        @type num: int
+        @return: IP address
+        @rtype: string
+       """
+
+        if not self.verify_ip(cidr):
+            msg = 'Invalid CIDR {0}'.format(cidr)
+            raise InvalidIPException(msg)
+
+        net = netaddr.IPNetwork(cidr)
+
+        if num < net.size and num >= 0:
+            ip = str(netaddr.IPAddress(net.last - int(num)))
+        else:
+            msg = ('Invalid next value. Expected value greater than 0 and less'
+                   ' than the network size of {0}').format(net.size)
+            raise InvalidIPException(msg)
+
+        return ip
+
+    def get_ips(self, cidr, num=1):
+        """
+        @summary: get n random IPs within a cidr
+        @param cidr: represents IP range to get the IPs from and should be in
+            the form <network_address>/<prefix>
+        @type cidr: string
+        @param num: number of IPs to get
+        @type num: int
+        @return: IP list
+        @rtype: list
+        """
+        ips = [self.get_random_ip(cidr) for x in range(num)]
+        return ips
+
+    def get_fixed_ip(self, subnet_id, cidr, num=1):
+        """
+        @summary: gets a subnet fixed IP
+        @param subnet_id: subnet ID
+        @type subnet_id: string
+        @param cidr: represents IP range to get the IP from and should be in
+            the form <network_address>/<prefix>
+        @type cidr: string
+        @param num: number of places from the first IP of the CIDR for the
+            fixed IP address
+        @type num: int
+        @return: fixed IP
+        @rtype: dict
+        """
+        ip = self.get_random_ip(cidr=cidr, num=num)
+        return dict(subnet_id=subnet_id, ip_address=ip)
+
+    def get_allocation_pool(self, cidr, first_increment=1, last_decrement=1,
+                             start_increment=None, end_increment=None):
+        """
+        @summary: gets default allocation pool for an IPv4/IPv6 address
         @param cidr: represents IP range for the subnet and should be in the
             form <network_address>/<prefix>
         @type cidr: string
@@ -234,25 +338,56 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @param last_decrement: places from the last IP of the CIDR to the last
             IP of the allocation pool
         @type last_decrement: int
+        @param start_increment: if given, start IP of allocation pool
+        @type start_increment: int
+        @param end_increment: if given, end IP of allocation pool
+        @type end_increment: int
         @return: allocation pool
         @rtype: dict
        """
 
         if not self.verify_ip(cidr):
             raise InvalidIPException
-
         net = netaddr.IPNetwork(cidr)
-        first_ip = str(netaddr.IPAddress(net.first + first_increment))
-        last_ip = str(netaddr.IPAddress(net.last - last_decrement))
+
+        if start_increment and end_increment:
+            first_ip = str(netaddr.IPAddress(net.first + start_increment))
+            last_ip = str(netaddr.IPAddress(net.first + end_increment))
+        else:
+            first_ip = str(netaddr.IPAddress(net.first + first_increment))
+            last_ip = str(netaddr.IPAddress(net.last - last_decrement))
 
         return dict(start=first_ip, end=last_ip)
+
+    def get_host_routes(self, cidr, ips):
+        """
+        @summary: create 1 or more host routes
+        @param cidr: host_route destination CIDR
+        @type cidr: string
+        @param ips: host_routes nexthops
+        @type ips: list(str)
+        """
+        host_routes = [dict(destination=cidr, nexthop=ip) for ip in ips]
+        return host_routes
+
+    def format_dns_nameservers(self, dns_nameservers):
+        """
+        @summary: formats dns_nameservers for assertions removing zeros on
+            IPv6 addresses
+        @param dns_nameservers: list of dns_nameservers
+        @type dns_nameservers: list(str)
+        @return: formated dns_nameservers
+        @rtype: list(str)
+        """
+        dns_ns = [str(netaddr.IPAddress(svr)) for svr in dns_nameservers]
+        return dns_ns
 
     def format_allocation_pools(self, allocation_pools):
         """
         @summary: formats allocation pools for assertions removing zeros on
             IPv6 addresses
         @param allocation_pools: list of allocation pools
-        @type allocation_pools: list
+        @type allocation_pools: list(dict)
         @return: formated allocation pools
         @rtype: list(dict)
         """
@@ -644,6 +779,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         log_msg = 'Deleting {0} subnet within a {1}s timeout '.format(
             subnet_id, timeout)
         self._log.info(log_msg)
+        resp = None
         while time.time() < endtime:
             try:
                 self.client.delete_subnet(subnet_id=subnet_id)
@@ -652,8 +788,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
                 err_msg = ('Encountered an exception deleting a subnet with'
                     'the clean_subnet method. Exception: {0}').format(err)
                 self._log.error(err_msg)
-
-            if resp.status_code == NeutronResponseCodes.NOT_FOUND:
+            if (resp is not None and
+                resp.status_code == NeutronResponseCodes.NOT_FOUND):
                 return None
             time.sleep(poll_interval)
 

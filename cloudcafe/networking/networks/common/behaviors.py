@@ -107,7 +107,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
         return response_msg
 
     def wait_for_status(self, resource_entity, new_status, timeout=None,
-                       poll_rate=None):
+                       poll_interval=None):
         """
         @summary: Check a new status is reached by an entity object
         @param resource_entity: entity object like Network and Port
@@ -117,8 +117,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
         @type new_status: string
         @param timeout: seconds to wait for the new status
         @type timeout: int
-        @param poll_rate: seconds between API calls
-        @type poll_rate: int
+        @param poll_interval: seconds between API calls
+        @type poll_interval: int
         @return: True or False depending if the new status was reached
             within the expected timeout
         @rtype: bool
@@ -138,7 +138,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
         entity_id = resource_entity.id
         initial_status = resource_entity.status
         timeout = timeout or self.config.resource_change_status_timeout
-        poll_rate = poll_rate or self.config.api_poll_rate
+        poll_interval = poll_interval or self.config.api_poll_interval
         endtime = time.time() + int(timeout)
 
         log_msg = ('Checking {0} entity type initial {1} status is updated '
@@ -150,7 +150,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
             resp = client_call(entity_id)
             if resp.ok and resp.entity and resp.entity.status == new_status:
                 return True
-            time.sleep(poll_rate)
+            time.sleep(poll_interval)
         return False
 
 

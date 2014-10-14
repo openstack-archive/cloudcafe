@@ -38,6 +38,21 @@ class SubnetsConfig(NetworkingBaseConfig):
         return int(self.get("v6_subnets_per_network", 1))
 
     @property
+    def dns_nameservers_per_subnet(self):
+        """dns nameservers per subnet quota"""
+        return int(self.get("dns_nameservers_per_subnet", 2))
+
+    @property
+    def routes_per_subnet(self):
+        """host routes per subnet quota"""
+        return int(self.get("routes_per_subnet", 3))
+
+    @property
+    def alloc_pools_per_subnet(self):
+        """allocation pools per subnet quota"""
+        return int(self.get("alloc_pools_per_subnet", 5))
+
+    @property
     def ipv4_suffix(self):
         """Subnet create default IPv4 suffix"""
         return int(self.get("ipv4_suffix", 24))
