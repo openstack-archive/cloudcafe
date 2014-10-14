@@ -221,8 +221,64 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
             msg = 'Invalid IPv6 cidr {0}'.format(cidr)
             raise InvalidIPException(msg)
 
-    def get_allocation_pools(self, cidr, first_increment=1,
-                             last_decrement=1):
+    def get_ip(self, cidr, increment=None, decrement=None, randomize=True):
+        """
+        @summary: gets an IP address within a CIDR
+        @param cidr: represents IP range for the subnet and should be in the
+            form <network_address>/<prefix>
+        @type cidr: string
+        @param increment: places from the fist IP of the CIDR to get the IP
+        @type increment: int
+        @param decrement: places from the last IP of the CIDR to get the IP
+            (if increment given this will be ignored)
+        @type last_decrement: int
+        @param randomize: generate a random IP within the CIDR excluding first
+            and last IPs. if True, increment and decrement are ignored if given
+        @type randomize: bool
+        @return: IP address
+        @rtype: string
+       """
+
+        if not self.verify_ip(cidr):
+            msg = 'Invalid CIDR {0}'.format(cidr)
+            raise InvalidIPException(msg)
+
+        net = netaddr.IPNetwork(cidr)
+
+        if increment is not None and increment < net.size:
+            ip = str(netaddr.IPAddress(net.first + int(increment)))
+        elif decrement is not None and decrement < net.size:
+            ip = str(netaddr.IPAddress(net.last - int(decrement)))
+        elif randomize:
+            increment = random.randint(1, net.size - 2)
+            ip = str(netaddr.IPAddress(net.first + int(increment)))
+        else:
+            msg = ('Invalid increment/decrement value. Expected value less '
+                   'than network size of {0}').format(net.size)
+            raise InvalidIPException(msg)
+
+        return ip
+
+    def get_ips(self, cidr, increment, n=1):
+        """
+        @summary: create n IPs within a cidr
+        @param cidr: represents IP range and should be in the form
+        <network_address>/<prefix>
+        @type cidr: string
+        @param increment: intervals to pick up IPs within the cidr
+        @type increment: int
+        @param n: number of IPs to get
+        @type n: int
+        @return: IP list
+        @rtype: list
+        """
+        ips = []
+        for _ in range(n):
+            ips.append(self.get_ip(cidr=cidr, increment=increment))
+        return ips
+
+    def get_allocation_pools(self, cidr, first_increment=1, last_decrement=1,
+                             start_increment=None, end_increment=None):
         """
         @summary: gets default allocation pools for an IPv4/IPv6 address
         @param cidr: represents IP range for the subnet and should be in the
@@ -234,25 +290,60 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @param last_decrement: places from the last IP of the CIDR to the last
             IP of the allocation pool
         @type last_decrement: int
+        @param start_increment: if given, start IP of allocation pool
+        @type start_increment: int
+        @param end_increment: if given, end IP of allocation pool
+        @type end_increment: int
         @return: allocation pool
         @rtype: dict
        """
 
         if not self.verify_ip(cidr):
             raise InvalidIPException
-
         net = netaddr.IPNetwork(cidr)
-        first_ip = str(netaddr.IPAddress(net.first + first_increment))
-        last_ip = str(netaddr.IPAddress(net.last - last_decrement))
+
+        if start_increment and end_increment:
+            first_ip = str(netaddr.IPAddress(net.first + start_increment))
+            last_ip = str(netaddr.IPAddress(net.first + end_increment))
+        else:
+            first_ip = str(netaddr.IPAddress(net.first + first_increment))
+            last_ip = str(netaddr.IPAddress(net.last - last_decrement))
 
         return dict(start=first_ip, end=last_ip)
+
+    def get_host_routes(self, cidr, ips):
+        """
+        @summary: create 1 or more host routes
+        @param cidr: host_route destination CIDR
+        @type cidr: string
+        @param ips: host_routes nexthops
+        @type ips: list(str)
+        """
+        host_routes = []
+        for ip in ips:
+            host_routes.append(dict(destination=cidr, nexthop=ip))
+        return host_routes
+
+    def format_dns_nameservers(self, dns_nameservers):
+        """
+        @summary: formats dns_nameservers for assertions removing zeros on
+            IPv6 addresses
+        @param dns_nameservers: list of dns_nameservers
+        @type dns_nameservers: list(str)
+        @return: formated dns_nameservers
+        @rtype: list(str)
+        """
+        formated_dns_nameservers = []
+        for server in dns_nameservers:
+            formated_dns_nameservers.append(str(netaddr.IPAddress(server)))
+        return formated_dns_nameservers
 
     def format_allocation_pools(self, allocation_pools):
         """
         @summary: formats allocation pools for assertions removing zeros on
             IPv6 addresses
         @param allocation_pools: list of allocation pools
-        @type allocation_pools: list
+        @type allocation_pools: list(dict)
         @return: formated allocation pools
         @rtype: list(dict)
         """
@@ -644,6 +735,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         log_msg = 'Deleting {0} subnet within a {1}s timeout '.format(
             subnet_id, timeout)
         self._log.info(log_msg)
+        resp = None
         while time.time() < endtime:
             try:
                 self.client.delete_subnet(subnet_id=subnet_id)
@@ -652,8 +744,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
                 err_msg = ('Encountered an exception deleting a subnet with'
                     'the clean_subnet method. Exception: {0}').format(err)
                 self._log.error(err_msg)
-
-            if resp.status_code == NeutronResponseCodes.NOT_FOUND:
+            if (resp is not None and
+                resp.status_code == NeutronResponseCodes.NOT_FOUND):
                 return None
             time.sleep(poll_interval)
 
