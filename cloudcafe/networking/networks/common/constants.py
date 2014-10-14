@@ -40,3 +40,17 @@ class NeutronResponseCodes(object):
     NOT_FOUND = 404
     CONFLICT = 409
     MAC_GENERATION_FAILURE = 503
+
+
+class NeutronErrorTypes(object):
+    """Neutron Error Types"""
+
+    ADDR_FORMAT_ERROR = 'AddrFormatError'
+    GATEWAY_CONFLICT_WITH_ALLOCATION_POOLS = \
+        'GatewayConflictWithAllocationPools'
+    INVALID_ALLOCATION_POOL = 'InvalidAllocationPool'
+    NETWORK_NOT_FOUND = 'NetworkNotFound'
+    OUT_OF_BOUNDS_ALLOCATION_POOL = 'OutOfBoundsAllocationPool'
+    OVERLAPPING_ALLOCATION_POOLS = 'OverlappingAllocationPools'
+    OVER_QUOTA = 'OverQuota'
+    POLICY_NOT_AUTHORIZED = 'PolicyNotAuthorized'
