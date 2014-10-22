@@ -16,8 +16,7 @@ limitations under the License.
 
 import json
 from ast import literal_eval
-from warnings import warn, simplefilter
-simplefilter("default", DeprecationWarning)
+from warnings import warn
 
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
