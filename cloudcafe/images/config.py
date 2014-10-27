@@ -244,6 +244,16 @@ class ImagesConfig(ConfigSectionInterface):
                  self.get('do_not_delete_files', "").split(',')])
 
     @property
+    def versions_data(self):
+        """Path to versions data"""
+        return self.get('versions_data')
+
+    @property
+    def versions_list(self):
+        """List of versions"""
+        return [x.strip() for x in self.get('versions_list', "").split(',')]
+
+    @property
     def image_schema_json(self):
         """Path to json file which contains the image schema data"""
         return self.get('image_schema_json')
