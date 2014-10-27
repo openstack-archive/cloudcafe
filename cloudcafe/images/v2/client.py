@@ -1,5 +1,5 @@
 """
-Copyright 2013 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.images.v2.models.image import (Image, Images, ImageUpdate,
                                               Member, Members)
 from cloudcafe.images.v2.models.task import Task, Tasks
+from cloudcafe.images.common.models.versions import Versions
 
 
 class ImagesClient(AutoMarshallingHTTPClient):
@@ -38,6 +39,19 @@ class ImagesClient(AutoMarshallingHTTPClient):
         self.default_headers['Content-Type'] = ct
         self.default_headers['Accept'] = accept
         self.base_url = base_url
+
+    def get_versions(self, url_addition=None, requestslib_kwargs=None):
+        """@summary: List all available Cloud Images versions"""
+
+        endpoint = self.base_url.replace('/v2', '')
+
+        url = endpoint
+
+        if url_addition:
+            url = '{0}{1}'.format(endpoint, url_addition)
+
+        return self.request('GET', url, response_entity_type=Versions,
+                            requestslib_kwargs=requestslib_kwargs)
 
     def get_images_schema(self, requestslib_kwargs=None):
         """@summary: Get json schema of the images object"""
