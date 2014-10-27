@@ -16,7 +16,7 @@ limitations under the License.
 
 from cafe.engine.behaviors import BaseBehavior, behavior
 from cloudcafe.extensions.rax_auth.v2_0.tokens_api.client \
-    import TokenAPI_Client
+    import TokenAPI_Client, MFA_TokenAPI_Client
 from cloudcafe.extensions.rax_auth.v2_0.tokens_api.config \
     import TokenAPI_Config
 
@@ -24,6 +24,7 @@ from cloudcafe.extensions.rax_auth.v2_0.tokens_api.config \
 class TokenAPI_Behaviors(BaseBehavior):
 
     def __init__(self, identity_user_api_client=None):
+        super(TokenAPI_Behaviors, self).__init__()
         self._client = identity_user_api_client
         self.config = TokenAPI_Config()
 
@@ -42,4 +43,28 @@ class TokenAPI_Behaviors(BaseBehavior):
                 tenant_id=tenant_id)
             access_data = response.entity
 
+        return access_data
+
+
+class MFA_TokenAPI_Behaviors(BaseBehavior):
+
+    def __init__(self, identity_user_api_client=None):
+        super(MFA_TokenAPI_Behaviors, self).__init__()
+        self._client = identity_user_api_client
+        self.config = TokenAPI_Config()
+
+    @behavior(MFA_TokenAPI_Client)
+    def get_access_data(self, username=None, password=None,
+                        tenant_id=None, passcode=None):
+        username = username or self.config.username
+        password = password or self.config.password
+        tenant_id = tenant_id or self.config.tenant_id
+        passcode = passcode or 'bypassed_passcode'
+
+        access_data = None
+        if username is not None and password is not None:
+            response = self._client.authenticate(
+                username=username, password=password,
+                tenant_id=tenant_id, passcode=passcode)
+            access_data = response.entity
         return access_data
