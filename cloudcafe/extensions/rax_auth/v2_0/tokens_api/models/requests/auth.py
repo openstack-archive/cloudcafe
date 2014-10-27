@@ -23,28 +23,36 @@ from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.constants \
     import V2_0Constants
 from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests. \
     credentials import ApiKeyCredentials
+from cloudcafe.extensions.rax_auth.v2_0.tokens_api.models.requests. \
+    passcode import PasscodeCredentials
 
 
 class Auth(BaseIdentityModel):
 
     ROOT_TAG = 'auth'
 
-    def __init__(self, apiKeyCredentials=None,
+    def __init__(self, apiKeyCredentials=None, passcodeCredentials=None,
                  tenantId=None, token=None):
         super(Auth, self).__init__()
         self.apiKeyCredentials = apiKeyCredentials
+        self.passcode_credentials = passcodeCredentials
         self.token = token
         self.tenantId = tenantId
 
     def _obj_to_json(self):
         ret = {}
 
-        ret[ApiKeyCredentials.JSON_ROOT_TAG] = \
-            self.apiKeyCredentials._obj_to_dict()
-        if self.token is not None:
-            ret[Token.ROOT_TAG] = self.token._obj_to_dict()
-        if self.tenantId is not None:
-            ret['tenantId'] = self.tenantId
+        if self.apiKeyCredentials is not None:
+            ret[ApiKeyCredentials.JSON_ROOT_TAG] = \
+                self.apiKeyCredentials._obj_to_dict()
+            if self.token is not None:
+                ret[Token.ROOT_TAG] = self.token._obj_to_dict()
+            if self.tenantId is not None:
+                ret['tenantId'] = self.tenantId
+        else:
+            ret[PasscodeCredentials.RAW_NAME] = \
+                self.passcode_credentials._obj_to_dict()
+
         ret = {self.ROOT_TAG: ret}
         return json.dumps(ret)
 
