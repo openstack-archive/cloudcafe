@@ -62,7 +62,7 @@ class ComputeDatasets(ModelBasedDatasetToolkit):
         for img in image_list:
             data = {'image': img}
             dataset_list.append_new_dataset(
-                str(img.name).replace(" ", "_"), data)
+                str(img.name).replace(" ", "_").replace("/", "-"), data)
 
         # Apply modifiers
         return cls._modify_dataset_list(
@@ -84,7 +84,7 @@ class ComputeDatasets(ModelBasedDatasetToolkit):
         for flavor in flavor_list:
             data = {'flavor': flavor}
             dataset_list.append_new_dataset(
-                str(flavor.name).replace(" ", "_"), data)
+                str(flavor.name).replace(" ", "_").replace("/", "-"), data)
 
         # Apply modifiers
         return cls._modify_dataset_list(
@@ -117,8 +117,8 @@ class ComputeDatasets(ModelBasedDatasetToolkit):
                         'image': image}
                 testname = \
                     "image_{0}_and_flavor_{1}".format(
-                        str(image.name).replace(" ", "_"),
-                        str(flavor.name).replace(" ", "_"))
+                        str(image.name).replace(" ", "_").replace("/", "-"),
+                        str(flavor.name).replace(" ", "_").replace("/", "-"))
                 dataset_list.append_new_dataset(testname, data)
 
         # Apply modifiers
