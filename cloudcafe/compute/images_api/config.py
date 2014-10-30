@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -85,3 +86,18 @@ class ImagesConfig(ConfigSectionInterface):
         """A device name where the volume will be attached in the system
         at /dev/dev_name. This value is typically vda."""
         return self.get("primary_image_default_device")
+
+    @property
+    def image_model_filter_std(self):
+        """Images to be used when building image baked instances"""
+        return json.loads(self.get("image_model_filter_std"))
+
+    @property
+    def image_model_filter_bfv(self):
+        """Images to be used when building bfv instances"""
+        return json.loads(self.get("image_model_filter_bfv"))
+
+    @property
+    def image_filter_mode(self):
+        """Image filter to be used when building parametrized compute tests"""
+        return self.get("image_filter_mode")
