@@ -55,7 +55,7 @@ class VolumesBootClient(AutoMarshallingHTTPClient):
                       metadata=None, accessIPv4=None, accessIPv6=None,
                       disk_config=None, admin_pass=None, key_name=None,
                       config_drive=None, scheduler_hints=None,
-                      requestslib_kwargs=None):
+                      security_groups=None, requestslib_kwargs=None):
         """
         @summary: Creates an instance of a  block Version 2 server given the
          provided parameters
@@ -95,6 +95,8 @@ class VolumesBootClient(AutoMarshallingHTTPClient):
         @type config_drive: String
         @param scheduler_hints: Target compute
         @type scheduler_hints: String
+        @param security_groups: List of security groups for the server
+        @type security_groups: List of dict
         @return: Response Object containing response code and
          the server domain object
         @rtype: Requests.response
@@ -107,7 +109,8 @@ class VolumesBootClient(AutoMarshallingHTTPClient):
             image_ref=image_ref, personality=personality, user_data=user_data,
             metadata=metadata, accessIPv4=accessIPv4, accessIPv6=accessIPv6,
             disk_config=disk_config, admin_pass=admin_pass, key_name=key_name,
-            config_drive=config_drive, scheduler_hints=scheduler_hints)
+            config_drive=config_drive, scheduler_hints=scheduler_hints,
+            security_groups=security_groups)
 
         url = '{base_url}/os-volumes_boot'.format(base_url=self.url)
         resp = self.request('POST', url,

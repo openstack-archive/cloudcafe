@@ -26,7 +26,7 @@ class VolumeServerBehaviors(BaseBehavior):
 
     def __init__(self, servers_client, images_client, servers_config,
                  images_config, flavors_config, server_behaviors,
-                 boot_from_volume_client=None):
+                 boot_from_volume_client=None, security_groups_config=None):
         super(VolumeServerBehaviors, self).__init__()
         self.config = servers_config
         self.servers_client = servers_client
@@ -35,6 +35,7 @@ class VolumeServerBehaviors(BaseBehavior):
         self.flavors_config = flavors_config
         self.server_behaviors = server_behaviors
         self.boot_from_volume_client = boot_from_volume_client
+        self.security_groups_config = security_groups_config
 
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
@@ -42,7 +43,8 @@ class VolumeServerBehaviors(BaseBehavior):
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
             scheduler_hints=None, admin_pass=None, max_count=None,
-            min_count=None, block_device_mapping=None, block_device=None):
+            min_count=None, block_device_mapping=None, block_device=None,
+            security_groups=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
@@ -68,6 +70,8 @@ class VolumeServerBehaviors(BaseBehavior):
         @type disk_config: String
         @parm block_device_mapping:fields needed to boot a server from a volume
         @type block_device_mapping: dict
+        @param security_groups: List of security groups for the server
+        @type security_groups: List of dict
         @return: Response Object containing response code and
                  the server domain object
         @rtype: Request Response Object
@@ -82,6 +86,17 @@ class VolumeServerBehaviors(BaseBehavior):
             flavor_ref = self.flavors_config.primary_flavor
         if self.config.default_network:
             networks = [{'uuid': self.config.default_network}]
+
+        default_groups = None
+        if (self.security_groups_config
+                and self.security_groups_config.default_security_group):
+            default_groups = [
+                {"name": self.security_groups_config.default_security_group}]
+
+        if default_groups and security_groups:
+            security_groups.extend(default_groups)
+        else:
+            security_groups = security_groups or default_groups
 
         failures = []
         attempts = self.config.resource_build_attempts
@@ -99,7 +114,8 @@ class VolumeServerBehaviors(BaseBehavior):
                 metadata=metadata, accessIPv4=accessIPv4,
                 accessIPv6=accessIPv6, disk_config=disk_config,
                 admin_pass=admin_pass, key_name=key_name,
-                config_drive=config_drive, scheduler_hints=scheduler_hints)
+                config_drive=config_drive, scheduler_hints=scheduler_hints,
+                security_groups=security_groups)
             server_obj = resp.entity
             create_request_id = resp.headers.get('x-compute-request-id')
 
