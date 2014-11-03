@@ -30,7 +30,8 @@ class CreateServerFromVolume(AutoMarshallingModel):
                  image_ref=None, personality=None, user_data=None,
                  metadata=None, accessIPv4=None, accessIPv6=None,
                  disk_config=None, admin_pass=None, key_name=None,
-                 config_drive=None, scheduler_hints=None):
+                 config_drive=None, scheduler_hints=None,
+                 security_groups=None):
 
         super(CreateServerFromVolume, self).__init__()
         self.name = name
@@ -50,6 +51,7 @@ class CreateServerFromVolume(AutoMarshallingModel):
         self.key_name = key_name
         self.config_drive = config_drive
         self.scheduler_hints = scheduler_hints
+        self.security_groups = security_groups
 
     def _obj_to_json(self):
         body = {
@@ -68,7 +70,8 @@ class CreateServerFromVolume(AutoMarshallingModel):
             'OS-DCF:diskConfig': self.disk_config,
             'adminPass': self.admin_pass,
             'key_name': self.key_name,
-            'config_drive': self.config_drive
+            'config_drive': self.config_drive,
+            'security_groups': self.security_groups
         }
 
         body = self._remove_empty_values(body)
@@ -91,7 +94,8 @@ class CreateServerFromVolume(AutoMarshallingModel):
             'accessIPv6': self.accessIPv6,
             'adminPass': self.admin_pass,
             'key_name': self.key_name,
-            'config_drive': self.config_drive
+            'config_drive': self.config_drive,
+            'security_groups': self.security_groups
         }
         element = ET.Element('server')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
