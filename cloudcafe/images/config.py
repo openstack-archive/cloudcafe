@@ -254,6 +254,11 @@ class ImagesConfig(ConfigSectionInterface):
         return [x.strip() for x in self.get('versions_list', "").split(',')]
 
     @property
+    def account_list(self):
+        """List of accounts"""
+        return [x.strip() for x in self.get('account_list', "").split(',')]
+
+    @property
     def image_schema_json(self):
         """Path to json file which contains the image schema data"""
         return self.get('image_schema_json')
