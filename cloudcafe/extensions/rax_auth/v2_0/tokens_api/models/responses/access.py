@@ -1,5 +1,5 @@
 """
-Copyright 2013 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -211,7 +211,7 @@ class RoleList(BaseIdentityListModel):
         return role_list
 
 
-class Role(BaseIdentityListModel):
+class Role(BaseIdentityModel):
 
     def __init__(self, name=None):
         super(Role, self).__init__()
