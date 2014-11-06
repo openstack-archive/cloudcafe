@@ -13,8 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import time
-
+import netaddr
 import time
 
 from cloudcafe.common.tools.datagen import rand_name
@@ -37,6 +36,20 @@ class PortsBehaviors(NetworkingBaseBehaviors):
               ports_client, ports_config)
         self.config = ports_config
         self.client = ports_client
+
+    def format_fixed_ips(self, fixed_ips):
+        """
+        @summary: formats fixed ips for assertions removing zeros on
+            IPv6 addresses
+        @param fixed_ips: list of fixed_ips
+        @type fixed_ips: list(dict)
+        @return: formated fixed_ips
+        @rtype: list(dict)
+        """
+        result = [dict(subnet_id=fixed_ip['subnet_id'], ip_address=str(
+            netaddr.IPAddress(fixed_ip['ip_address'])))
+            for fixed_ip in fixed_ips]
+        return result
 
     def create_port(self, network_id, name=None, admin_state_up=None,
                     mac_address=None, fixed_ips=None, device_id=None,

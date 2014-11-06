@@ -55,4 +55,5 @@ class NeutronErrorTypes(object):
     OVERLAPPING_ALLOCATION_POOLS = 'OverlappingAllocationPools'
     OVER_QUOTA = 'OverQuota'
     POLICY_NOT_AUTHORIZED = 'PolicyNotAuthorized'
+    PORT_NOT_FOUND = 'PortNotFound'
     SECURITY_GROUPS_NOT_IMPLEMENTED = 'SecurityGroupsNotImplemented'

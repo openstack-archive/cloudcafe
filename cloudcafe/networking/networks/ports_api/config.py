@@ -26,3 +26,23 @@ class PortsConfig(NetworkingBaseConfig):
     def starts_with_name(self):
         """Port start name label for test runs"""
         return self.get("starts_with_name", "test_port")
+
+    @property
+    def multiple_ports(self):
+        """Test multiple ports smoke test ports number"""
+        return int(self.get("multiple_ports", 10))
+
+    @property
+    def ports_per_network(self):
+        """Ports per network quota"""
+        return int(self.get("ports_per_network", 250))
+
+    @property
+    def test_quotas(self):
+        """Flag for running the ports quotas tests"""
+        return self.get_boolean("test_quotas", False)
+
+    @property
+    def fixed_ips_per_port(self):
+        """Ports fixed IPs quota"""
+        return int(self.get("fixed_ips_per_port", 4))
