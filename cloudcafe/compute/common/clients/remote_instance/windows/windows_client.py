@@ -485,10 +485,25 @@ class WindowsClient(RemoteInstanceClient):
         output = self.client.execute_command(command)
         return output.std_out[0]
 
+    def get_distribution_and_version(self):
+        """
+        Gets the distribution and version of a server
+        @return: Full name of the distribution
+        @rtype: str
+        """
+        output = self.client.execute_command(
+            'powershell gwmi win32_operatingsystem |% caption')
+        if output.std_out:
+            return output.std_out
+        else:
+            return ''
+
     def filesystem_sync(self):
         # This works as a non-powershell command, but it may not
         # be installed on all versions of windows.
         self.client.execute_command('sync')
+
+    # gwmi
 
     @staticmethod
     def _convert_powershell_list_to_dict(response):
