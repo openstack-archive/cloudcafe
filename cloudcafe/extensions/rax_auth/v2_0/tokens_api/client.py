@@ -92,18 +92,15 @@ class TokenAPI_Client(BaseTokenAPI_Client):
 
 
 class MFA_TokenAPI_Client(BaseTokenAPI_Client):
-    def __init__(self, url, serialize_format, deserialize_format=None,
-                 auth_token=None):
+    def __init__(self, url, serialize_format, deserialize_format=None):
         super(MFA_TokenAPI_Client, self).__init__(
             serialize_format, deserialize_format)
+
         self.base_url = '{0}/{1}'.format(url, _version)
         self.default_headers['Content-Type'] = 'application/{0}'.format(
             serialize_format)
         self.default_headers['Accept'] = 'application/{0}'.format(
             serialize_format)
-
-        if auth_token is not None:
-            self.default_headers['X-Auth-Token'] = auth_token
 
     def authenticate(self, username, password, tenant_id,
                      requestslib_kwargs=None):
@@ -123,7 +120,7 @@ class MFA_TokenAPI_Client(BaseTokenAPI_Client):
             username=username, password=password, tenant_id=tenant_id)
         url = '{0}/{1}'.format(self.base_url, _tokens)
         return self.post(url, request_entity=request_entity,
-                             requestslib_kwargs=requestslib_kwargs)
+                         requestslib_kwargs=requestslib_kwargs)
 
     def authenticate_passcode(self, session_id, passcode,
                               requestslib_kwargs=None):

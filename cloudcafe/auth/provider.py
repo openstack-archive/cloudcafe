@@ -63,9 +63,11 @@ class MemoizedAuthServiceComposite(object):
             # Also add this to get_access_data() in the AuthProvider class
             pass
         token_client = RaxToken_MFA_API_Client(
-            auth_endpoint, 'json', 'json', passcode)
+            url=auth_endpoint, serialize_format='json',
+            deserialize_format='json')
         token_behaviors = RaxToken_MFA_API_Behaviors(token_client)
-        return token_behaviors.get_access_data(username, password, tenant_id)
+        return token_behaviors.get_access_data(
+            username=username, password=password, tenant_id=tenant_id)
 
     @classmethod
     @memoized
@@ -169,11 +171,12 @@ class AuthProvider(object):
                 # use an external service (e.g. - SMS) to provide the passcode
                 pass
             token_client = RaxToken_MFA_API_Client(
-                endpoint_config.auth_endpoint, 'json', 'json', passcode)
+                url=endpoint_config.auth_endpoint,
+                serialize_format='json', deserialize_format='json')
             token_behaviors = RaxToken_MFA_API_Behaviors(token_client)
-            return token_behaviors.get_access_data(user_config.username,
-                                                   user_config.api_key,
-                                                   user_config.tenant_id)
+            return token_behaviors.get_access_data(
+                username=user_config.username, password=user_config.password,
+                tenant_id=user_config.tenant_id, passcode=passcode)
 
         elif endpoint_config.strategy.lower() == 'saio_tempauth':
             auth_client = SaioAuthAPI_Client(endpoint_config.auth_endpoint)
