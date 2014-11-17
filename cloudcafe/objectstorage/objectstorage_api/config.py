@@ -231,3 +231,18 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         """
         return int(self.get('object_deletion_wait_interval', '70'))
 
+    @property
+    def max_retry_count(self):
+        """
+        The maximum number of retries the retry_until_success method will
+        run.
+        """
+        return int(self.get('max_retry_count', '5'))
+
+    @property
+    def retry_sleep_time(self):
+        """
+        The amount of time, in seconds, that the retry_until_success method
+        will wait between retries.
+        """
+        return int(self.get('retry_sleep_time', '5'))
