@@ -1,6 +1,10 @@
 from cafe.engine.behaviors import BaseBehavior
 
 
+class TokensBehaviorException(Exception):
+    pass
+
+
 class TokensBehavior(BaseBehavior):
 
     def __init__(self, client):
@@ -12,15 +16,26 @@ class TokensBehavior(BaseBehavior):
         @summary Authenticate the user with username and password
         """
 
-        if self.client.url.endswith("v3") or self.client.url.endswith("v3/"):
-            pass
-        else:
-            self.client.url = '{0}/v3'.format(self.client.url)
+        if not self.client.url.endswith(("v3", "v3/")):
+            self.client.url = '{url}/v3'.format(url=self.client.url)
 
         auth_response = self.client.authenticate(
             username=username, password=password)
-        if not auth_response.ok:
-            raise Exception("Failed to authenticate")
-        if auth_response.entity is None:
-            raise Exception("Failed to parse Auth response Body")
+        self._verify_entity(auth_response)
         return auth_response
+
+    def _verify_entity(self, resp):
+        """
+        Verify authentication call succeeded and verify auth response entity
+        deserialized correctly
+        """
+        if not resp.ok:
+            msg = "Auth failed with status_code {0} ".format(resp.status_code)
+            self._log.error(msg)
+            raise TokensBehaviorException(msg)
+
+        if resp.entity is None:
+            msg = "Response body did not deserialize as expected"
+            self._log.error(msg)
+            raise TokensBehaviorException(msg)
+        return resp.entity

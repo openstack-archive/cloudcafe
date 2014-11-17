@@ -52,7 +52,8 @@ class IdentityV3Composite(object):
         # subdirectories. It then loads those and gets the client or behavior
         # that is set within the __init__.py
         for name, module in self.get_modules_within(lib_pt).iteritems():
-            module_path = "{}.{}".format(lib_pt.__name__, module)
+            module_path = "{path}.{module}".format(
+                path=lib_pt.__name__, module=module)
             module = module.replace("common.", "")
             package = importlib.import_module(module_path)
             client_class = getattr(package, "client", None)
