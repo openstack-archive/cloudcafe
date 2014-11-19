@@ -46,3 +46,13 @@ class PortsConfig(NetworkingBaseConfig):
     def fixed_ips_per_port(self):
         """Ports fixed IPs quota"""
         return int(self.get("fixed_ips_per_port", 4))
+
+    @property
+    def use_wait(self):
+        """Flag to enable/disable the ports create wait time"""
+        return self.get_boolean("use_wait", True)
+
+    @property
+    def port_create_wait(self):
+        """Ports create delay time used at behavior method for rate-limits"""
+        return int(self.get("port_create_wait", 20))
