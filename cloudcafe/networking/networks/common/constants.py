@@ -50,6 +50,7 @@ class NeutronErrorTypes(object):
         'GatewayConflictWithAllocationPools'
     INVALID_ALLOCATION_POOL = 'InvalidAllocationPool'
     IP_ADDRESS_GENERATION_FAILURE = 'IpAddressGenerationFailure'
+    NETWORK_IN_USE = 'NetworkInUse'
     NETWORK_NOT_FOUND = 'NetworkNotFound'
     OUT_OF_BOUNDS_ALLOCATION_POOL = 'OutOfBoundsAllocationPool'
     OVERLAPPING_ALLOCATION_POOLS = 'OverlappingAllocationPools'
@@ -57,3 +58,4 @@ class NeutronErrorTypes(object):
     POLICY_NOT_AUTHORIZED = 'PolicyNotAuthorized'
     PORT_NOT_FOUND = 'PortNotFound'
     SECURITY_GROUPS_NOT_IMPLEMENTED = 'SecurityGroupsNotImplemented'
+    SUBNET_NOT_FOUND = 'SubnetNotFound'
