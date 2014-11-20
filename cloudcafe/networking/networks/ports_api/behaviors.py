@@ -55,7 +55,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                     mac_address=None, fixed_ips=None, device_id=None,
                     device_owner=None, tenant_id=None, security_groups=None,
                     resource_build_attempts=None, raise_exception=True,
-                    use_exact_name=False, poll_interval=None):
+                    use_exact_name=False, poll_interval=None,
+                    port_create_wait=None, use_wait=None):
         """
         @summary: Creates and verifies a Port is created as expected
         @param network_id: network port is associated with (CRUD: CR)
@@ -89,6 +90,11 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type use_exact_name: bool
         @param poll_interval: sleep time interval between API retries
         @type poll_interval: int
+        @param port_create_wait: sleep time before creating a port, used to
+            consider port create rate-limits in the environment
+        @type port_create_wait: int
+        @param use_wait: flag to enable/disable the port create wait
+        @type use_wait: bool
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
@@ -99,6 +105,13 @@ class PortsBehaviors(NetworkingBaseBehaviors):
             name = rand_name(self.config.starts_with_name)
         elif not use_exact_name:
             name = rand_name(name)
+
+        wait_on_port_create = use_wait or self.config.use_wait
+
+        # Delay considering port create rate-limits
+        if wait_on_port_create:
+            create_wait = port_create_wait or self.config.port_create_wait
+            time.sleep(create_wait)
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_build_attempts = (resource_build_attempts or
