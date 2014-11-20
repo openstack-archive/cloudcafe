@@ -57,3 +57,7 @@ class RemoteInstanceClient(BaseClient):
     def can_authenticate(self):
         """Verifies a remote connection can be made to the server."""
         raise NotImplementedError
+
+    def get_distribution_and_version(self):
+        """Gets the distribution and version of a server."""
+        raise NotImplementedError
