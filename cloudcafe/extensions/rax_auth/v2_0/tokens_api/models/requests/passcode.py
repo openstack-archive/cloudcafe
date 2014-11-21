@@ -1,6 +1,7 @@
-import json
 import xml.etree.ElementTree as ET
-from cloudcafe.identity.v2_0.common.models.base import BaseIdentityModel
+
+import json
+from cloudcafe.identity.common.models.base import BaseIdentityModel
 from cloudcafe.identity.v2_0.common.models.constants import V2_0Constants
 
 

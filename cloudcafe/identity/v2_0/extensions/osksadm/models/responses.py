@@ -16,7 +16,7 @@ limitations under the License.
 
 import json
 
-from cloudcafe.identity.v2_0.common.models.base import (
+from cloudcafe.identity.common.models.base import (
     BaseIdentityModel, BaseIdentityListModel)
 
 

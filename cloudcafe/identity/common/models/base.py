@@ -56,7 +56,19 @@ class BaseIdentity(object):
 
 
 class BaseIdentityModel(BaseIdentity, AutoMarshallingModel):
-    pass
+
+    @classmethod
+    def _remove_extension_prefix(cls, prefix, data_dict, delimiter=':'):
+        """
+        @summary: This function is to remove the prefix of the extensions. This
+        is required to verify the response
+        """
+        for key in data_dict.keys():
+            if key.startswith(prefix):
+                new_key = key.split(delimiter)[1]
+                data_dict[new_key] = data_dict[key]
+                del data_dict[key]
+        return data_dict
 
 
 class BaseIdentityListModel(BaseIdentity, AutoMarshallingListModel):

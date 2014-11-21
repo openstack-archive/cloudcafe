@@ -16,8 +16,8 @@ limitations under the License.
 
 import json
 
-from cloudcafe.identity.v2_0.common.models.base import (BaseIdentityModel,
-                                                        BaseIdentityListModel)
+from cloudcafe.identity.common.models.base import (
+    BaseIdentityModel, BaseIdentityListModel)
 
 
 class UserList(BaseIdentityListModel):
@@ -324,7 +324,7 @@ class Service(BaseIdentityModel):
 
 
 class EndpointsLinks(BaseIdentityListModel):
-    #always returns an empty list since no documentation on endpoint links
+    # always returns an empty list since no documentation on endpoint links
     @classmethod
     def _dict_to_obj(cls, data):
         return EndpointsLinks()
@@ -388,7 +388,7 @@ class Endpoint(BaseIdentityModel):
 
 
 class RolesLinks(BaseIdentityListModel):
-    #always returns an empty list since no documentation on role links
+    # always returns an empty list since no documentation on role links
     @classmethod
     def _dict_to_obj(cls, data):
         return RolesLinks()

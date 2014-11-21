@@ -16,7 +16,7 @@ limitations under the License.
 
 from xml.etree import ElementTree as ET
 
-from cloudcafe.identity.v2_0.common.models.base import BaseIdentityModel
+from cloudcafe.identity.common.models.base import BaseIdentityModel
 
 
 class Auth(BaseIdentityModel):

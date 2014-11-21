@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-import json
 from xml.etree import ElementTree as ET
 
-from cloudcafe.identity.v2_0.common.models.base import (
+import json
+from cloudcafe.identity.common.models.base import (
     BaseIdentityModel)
 
 
