@@ -48,11 +48,26 @@ class PortsConfig(NetworkingBaseConfig):
         return int(self.get("fixed_ips_per_port", 4))
 
     @property
-    def use_wait(self):
-        """Flag to enable/disable the ports create wait time"""
-        return self.get_boolean("use_wait", True)
+    def use_over_limit_retry(self):
+        """Flag to enable/disable retries due to over limits responses"""
+        return self.get_boolean("use_over_limit_retry", False)
 
     @property
-    def port_create_wait(self):
-        """Ports create delay time used at behavior method for rate-limits"""
-        return int(self.get("port_create_wait", 20))
+    def api_poll_interval(self):
+        """Time interval for api calls on retry loops"""
+        return int(self.get("api_poll_interval", 7))
+
+    @property
+    def resource_create_timeout(self):
+        """Seconds to wait for creating a resource"""
+        return int(self.get("resource_create_timeout", 60))
+
+    @property
+    def resource_update_timeout(self):
+        """Seconds to wait for updating a resource"""
+        return int(self.get("resource_update_timeout", 60))
+
+    @property
+    def resource_delete_timeout(self):
+        """Seconds to wait for deleting a resource"""
+        return int(self.get("resource_delete_timeout", 60))

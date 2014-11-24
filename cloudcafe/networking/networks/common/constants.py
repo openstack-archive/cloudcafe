@@ -39,6 +39,7 @@ class NeutronResponseCodes(object):
     FORBIDDEN = 403
     NOT_FOUND = 404
     CONFLICT = 409
+    REQUEST_ENTITY_TOO_LARGE = 413
     MAC_GENERATION_FAILURE = 503
 
 

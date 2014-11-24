@@ -387,11 +387,15 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         self._log.error(err_msg)
         return network_id
 
-    def clean_networks(self, networks_list):
+    def clean_networks(self, networks_list, timeout=None, poll_interval=None):
         """
         @summary: deletes each network from a list calling clean_network
         @param networks_list: list of network UUIDs
         @type networks_list: list(str)
+        @param timeout: seconds to wait for the network to be deleted
+        @type timeout: int
+        @param poll_interval: sleep time interval between API delete/get calls
+        @type poll_interval: int
         @return: list of undeleted networks UUIDs
         @rtype: list(str)
         """
@@ -399,7 +403,8 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         self._log.info(log_msg)
         undeleted_networks = []
         for network in networks_list:
-            result = self.clean_network(network_id=network)
+            result = self.clean_network(network_id=network, timeout=timeout,
+                                        poll_interval=poll_interval)
             if result:
                 undeleted_networks.append(result)
         if undeleted_networks:
