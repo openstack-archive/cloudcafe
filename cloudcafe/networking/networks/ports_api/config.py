@@ -56,3 +56,13 @@ class PortsConfig(NetworkingBaseConfig):
     def port_create_wait(self):
         """Ports create delay time used at behavior method for rate-limits"""
         return int(self.get("port_create_wait", 20))
+
+    @property
+    def port_update_wait(self):
+        """Ports update delay time used at behavior method for rate-limits"""
+        return int(self.get("port_update_wait", 20))
+
+    @property
+    def port_delete_wait(self):
+        """Ports delete delay time used at behavior method for rate-limits"""
+        return int(self.get("port_delete_wait", 20))

@@ -108,9 +108,12 @@ class PortsBehaviors(NetworkingBaseBehaviors):
 
         wait_on_port_create = use_wait or self.config.use_wait
 
-        # Delay considering port create rate-limits
+        # Delay considering rate-limits
         if wait_on_port_create:
             create_wait = port_create_wait or self.config.port_create_wait
+            wait_msg = ('Waiting {0}s prior creating port on network '
+                        '{1}').format(create_wait, network_id)
+            self._log.info(wait_msg)
             time.sleep(create_wait)
 
         poll_interval = poll_interval or self.config.api_poll_interval
@@ -155,7 +158,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
     def update_port(self, port_id, name=None, admin_state_up=None,
                     fixed_ips=None, device_id=None, device_owner=None,
                     security_groups=None, resource_update_attempts=None,
-                    raise_exception=False, poll_interval=None):
+                    raise_exception=False, poll_interval=None,
+                    port_update_wait=None, use_wait=None):
         """
         @summary: Updates and verifies a specified Port
         @param port_id: The UUID for the port
@@ -184,12 +188,27 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type raise_exception: bool
         @param poll_interval: sleep time interval between API retries
         @type poll_interval: int
+        @param port_update_wait: sleep time before updating a port, used to
+            consider port update rate-limits in the environment
+        @type port_create_wait: int
+        @param use_wait: flag to enable/disable the port update wait
+        @type use_wait: bool
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_update_attempts = (resource_update_attempts or
             self.config.api_retries)
+
+        wait_on_port_update = use_wait or self.config.use_wait
+
+        # Delay considering rate-limits
+        if wait_on_port_update:
+            update_wait = port_update_wait or self.config.port_update_wait
+            wait_msg = 'Waiting {0}s prior updating port {1}'.format(
+                update_wait, port_id)
+            self._log.info(wait_msg)
+            time.sleep(update_wait)
 
         result = NetworkingResponse()
         err_msg = 'Port Update failure'
@@ -356,7 +375,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
             return result
 
     def delete_port(self, port_id, resource_delete_attempts=None,
-                    raise_exception=False, poll_interval=None):
+                    raise_exception=False, poll_interval=None,
+                    port_delete_wait=None, use_wait=None):
         """
         @summary: Deletes and verifies a specified port is deleted
         @param string port_id: The UUID for the port
@@ -368,12 +388,27 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type raise_exception: bool
         @param poll_interval: sleep time interval between API retries
         @type poll_interval: int
+        @param port_delete_wait: sleep time before updating a port, used to
+            consider port update rate-limits in the environment
+        @type port_delete_wait: int
+        @param use_wait: flag to enable/disable the port delete wait
+        @type use_wait: bool
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_delete_attempts = (resource_delete_attempts or
             self.config.api_retries)
+
+        wait_on_port_delete = use_wait or self.config.use_wait
+
+        # Delay considering rate-limits
+        if wait_on_port_delete:
+            delete_wait = port_delete_wait or self.config.port_delete_wait
+            wait_msg = 'Waiting {0}s prior deleting port {1}'.format(
+                delete_wait, port_id)
+            self._log.info(wait_msg)
+            time.sleep(delete_wait)
 
         result = NetworkingResponse()
         for attempt in range(resource_delete_attempts):
@@ -409,7 +444,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                 raise ResourceDeleteException(err_msg)
             return result
 
-    def clean_port(self, port_id, timeout=None, poll_interval=None):
+    def clean_port(self, port_id, timeout=None, poll_interval=None,
+                   port_delete_wait=None, use_wait=None):
         """
         @summary: deletes a port within a time out
         @param string port_id: The UUID for the port
@@ -418,11 +454,27 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type timeout: int
         @param poll_interval: sleep time interval between API delete/get calls
         @type poll_interval: int
+        @param port_delete_wait: sleep time before updating a port, used to
+            consider port update rate-limits in the environment
+        @type port_delete_wait: int
+        @param use_wait: flag to enable/disable the port delete wait
+        @type use_wait: bool
         @return: None if delete was successful or the undeleted port_id
         @rtype: None or string
         """
         timeout = timeout or self.config.resource_delete_timeout
         poll_interval = poll_interval or self.config.api_poll_interval
+
+        wait_on_port_delete = use_wait or self.config.use_wait
+
+        # Delay considering rate-limits
+        if wait_on_port_delete:
+            delete_wait = port_delete_wait or self.config.port_delete_wait
+            wait_msg = 'Waiting {0}s prior deleting port {1}'.format(
+                delete_wait, port_id)
+            self._log.info(wait_msg)
+            time.sleep(delete_wait)
+
         endtime = time.time() + int(timeout)
         log_msg = 'Deleting {0} port within a {1}s timeout '.format(
             port_id, timeout)
