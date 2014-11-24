@@ -16,6 +16,8 @@ limitations under the License.
 
 import json
 from ast import literal_eval
+from warnings import warn, simplefilter
+simplefilter("default", DeprecationWarning)
 
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
@@ -29,6 +31,11 @@ class ServersConfig(ConfigSectionInterface):
         """
         Number of times to try to build a resource when using a behavior.
         """
+        warn(
+            "The resource_build_attempts parameter is deprecated. "
+            "If you want to retry builds, you will need to do so in "
+            "your own logic.",
+            DeprecationWarning)
         return int(self.get("resource_build_attempts", 1))
 
     @property

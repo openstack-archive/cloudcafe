@@ -85,10 +85,9 @@ class ComputeTaskStates(object):
 
     # Imaging
     IMAGE_SNAPSHOT = 'image_snapshot'
+    IMAGE_SNAPSHOT_PENDING = 'image_snapshot_pending'
     IMAGE_PENDING_UPLOAD = 'image_pending_upload'
     IMAGE_UPLOADING = 'image_uploading'
-    IMAGE_BACKUP = 'image_backup'
-    IMAGE_LIVE_SNAPSHOT = 'image_live_snapshot'
 
 
 class NovaImageStatusTypes(object):

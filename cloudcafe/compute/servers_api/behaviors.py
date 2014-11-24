@@ -17,18 +17,17 @@ limitations under the License.
 import base64
 import time
 
-from cafe.engine.behaviors import BaseBehavior
-
+from cloudcafe.common.behaviors import StatusProgressionVerifier
+from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
 from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import ItemNotFound, \
-    TimeoutException, BuildErrorException, RequiredResourceException, \
-    SshConnectionException
+    TimeoutException, BuildErrorException, SshConnectionException
 
 
-class ServerBehaviors(BaseBehavior):
+class ServerBehaviors(BaseComputeBehavior):
 
     def __init__(self, servers_client, images_client, servers_config,
                  images_config, flavors_config, boot_from_volume_client=None,
@@ -41,6 +40,122 @@ class ServerBehaviors(BaseBehavior):
         self.flavors_config = flavors_config
         self.boot_from_volume_client = boot_from_volume_client
         self.security_groups_config = security_groups_config
+
+    def create_server_with_defaults(
+            self, name=None, image_ref=None, flavor_ref=None,
+            personality=None, user_data=None, metadata=None,
+            accessIPv4=None, accessIPv6=None, disk_config=None,
+            networks=None, key_name=None, config_drive=None,
+            scheduler_hints=None, admin_pass=None, max_count=None,
+            min_count=None, block_device_mapping=None, security_groups=None):
+        """
+        @summary:Creates a server using any configured default values
+        @type name: String
+        @param image_ref: The reference to the image used to build the server.
+        @type image_ref: String
+        @param flavor_ref: The flavor used to build the server.
+        @type flavor_ref: String
+        @param metadata: A dictionary of values to be used as metadata.
+        @type metadata: Dictionary. The limit is 5 key/values.
+        @param personality: A list of dictionaries for files to be
+                            injected into the server.
+        @type personality: List
+        @param user_data: Config Init User data
+        @type user_data: String
+        @param config_drive: Config Drive flag
+        @type config_drive: String
+        @param accessIPv4: IPv4 address for the server.
+        @type accessIPv4: String
+        @param accessIPv6: IPv6 address for the server.
+        @type accessIPv6: String
+        @param disk_config: MANUAL/AUTO/None
+        @type disk_config: String
+        @parm block_device_mapping:fields needed to boot a server from a volume
+        @type block_device_mapping: dict
+        @param security_groups: List of security groups for the server
+        @type security_groups: List of dict
+        @return: Response Object containing response code and
+                 the server domain object
+        @rtype: Request Response Object
+        """
+
+        if name is None:
+            name = rand_name('testserver')
+        if image_ref is None and block_device_mapping is None:
+            image_ref = self.images_config.primary_image
+        if flavor_ref is None:
+            flavor_ref = self.flavors_config.primary_flavor
+        if self.config.default_network:
+            networks = [{'uuid': self.config.default_network}]
+
+        # If default scheduler hints are set, add them to the request
+        if self.config.default_scheduler_hints:
+            if scheduler_hints:
+                scheduler_hints.update(self.config.default_scheduler_hints)
+            else:
+                scheduler_hints = self.config.default_scheduler_hints
+
+        default_files = self.get_default_injected_files()
+
+        if personality and default_files:
+            personality += default_files
+        else:
+            personality = personality or default_files
+
+        default_groups = None
+        if (self.security_groups_config
+                and self.security_groups_config.default_security_group):
+            default_groups = [
+                {"name": self.security_groups_config.default_security_group}]
+
+        if default_groups and security_groups:
+            security_groups.extend(default_groups)
+        else:
+            security_groups = security_groups or default_groups
+
+        response = self.servers_client.create_server(
+            name, image_ref, flavor_ref, personality=personality,
+            config_drive=config_drive, metadata=metadata,
+            accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+            disk_config=disk_config, networks=networks,
+            scheduler_hints=scheduler_hints, user_data=user_data,
+            admin_pass=admin_pass, key_name=key_name,
+            block_device_mapping=block_device_mapping,
+            security_groups=security_groups)
+        self.verify_entity(response)
+        return response
+
+    def wait_for_server_creation(self, server_id):
+        """
+        @summary: Waits for a server to be created successfully
+        @param server_id: The uuid of the server
+        @type server_id: String
+        @return: A server object after it has been successfully built
+        @rtype: Server
+        """
+
+        verifier = StatusProgressionVerifier(
+            'server', server_id,
+            lambda id_: self.verify_entity(
+                self.servers_client.get_server(id_)).status,
+            server_id)
+
+        verifier.set_global_state_properties(
+            timeout=self.config.server_build_timeout)
+        verifier.add_state(
+            expected_statuses=[ServerStates.BUILD],
+            acceptable_statuses=[ServerStates.ACTIVE],
+            error_statuses=[ServerStates.ERROR],
+            poll_rate=self.config.server_status_interval)
+
+        verifier.add_state(
+            expected_statuses=[ServerStates.ACTIVE],
+            error_statuses=[ServerStates.ERROR],
+            poll_rate=self.config.server_status_interval)
+        verifier.start()
+
+        response = self.servers_client.get_server(server_id)
+        return self.verify_entity(response)
 
     def create_active_server(
             self, name=None, image_ref=None, flavor_ref=None,
@@ -81,89 +196,21 @@ class ServerBehaviors(BaseBehavior):
         @rtype: Request Response Object
         """
 
-        if name is None:
-            name = rand_name('testserver')
-        if ((image_ref is None) and (block_device_mapping is None)):
-                    image_ref = self.images_config.primary_image
-        if flavor_ref is None:
-            flavor_ref = self.flavors_config.primary_flavor
-        if self.config.default_network:
-            networks = [{'uuid': self.config.default_network}]
+        create_response = self.create_server_with_defaults(
+            name, image_ref, flavor_ref, personality=personality,
+            config_drive=config_drive, metadata=metadata,
+            accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+            disk_config=disk_config, networks=networks,
+            scheduler_hints=scheduler_hints, user_data=user_data,
+            admin_pass=admin_pass, key_name=key_name,
+            block_device_mapping=block_device_mapping,
+            security_groups=security_groups)
+        server = create_response.entity
 
-        # If default scheduler hints are set, add them to the request
-        if self.config.default_scheduler_hints:
-            if scheduler_hints:
-                scheduler_hints.update(self.config.default_scheduler_hints)
-            else:
-                scheduler_hints = self.config.default_scheduler_hints
-
-        default_files = self.get_default_injected_files()
-
-        if personality and default_files:
-            personality += default_files
-        else:
-            personality = personality or default_files
-
-        default_groups = None
-        if (self.security_groups_config
-                and self.security_groups_config.default_security_group):
-            default_groups = [
-                {"name": self.security_groups_config.default_security_group}]
-
-        if default_groups and security_groups:
-            security_groups.extend(default_groups)
-        else:
-            security_groups = security_groups or default_groups
-
-        failures = []
-        attempts = self.config.resource_build_attempts
-        for attempt in range(attempts):
-
-            self._log.debug('Attempt {attempt} of {attempts} '
-                            'to create server.'.format(attempt=attempt + 1,
-                                                       attempts=attempts))
-
-            resp = self.servers_client.create_server(
-                name, image_ref, flavor_ref, personality=personality,
-                config_drive=config_drive, metadata=metadata,
-                accessIPv4=accessIPv4, accessIPv6=accessIPv6,
-                disk_config=disk_config, networks=networks,
-                scheduler_hints=scheduler_hints, user_data=user_data,
-                admin_pass=admin_pass, key_name=key_name,
-                block_device_mapping=block_device_mapping,
-                security_groups=security_groups)
-            server_obj = resp.entity
-            create_request_id = resp.headers.get('x-compute-request-id')
-            if not resp.ok:
-                self._log.error(
-                    'Failed to build server. Initial POST failed with an HTTP '
-                    '{0} error code'.format(resp.status_code))
-                break
-            if not resp.entity:
-                self._log.error(
-                    'Failed to build server. Could not deserialize initial '
-                    'POST response.')
-                break
-
-            try:
-                resp = self.wait_for_server_status(
-                    server_obj.id, ServerStates.ACTIVE)
-                # Add the password from the create request
-                # into the final response
-                resp.entity.admin_pass = server_obj.admin_pass
-                resp.headers['x-compute-request-id'] = create_request_id
-                return resp
-            except (TimeoutException, BuildErrorException) as ex:
-                self._log.error('Failed to build server {server_id}: '
-                                '{message}'.format(server_id=server_obj.id,
-                                                   message=ex.message))
-                failures.append(ex.message)
-                self.servers_client.delete_server(server_obj.id)
-
-        raise RequiredResourceException(
-            'Failed to successfully build a server after '
-            '{attempts} attempts: {failures}'.format(
-                attempts=attempts, failures=failures))
+        built_server = self.wait_for_server_creation(server.id)
+        built_server.admin_pass = server.admin_pass
+        create_response.entity = built_server
+        return create_response
 
     def wait_for_server_status(self, server_id, desired_status,
                                interval_time=None, timeout=None):
@@ -191,19 +238,7 @@ class ServerBehaviors(BaseBehavior):
         time.sleep(interval_time)
         while time.time() < end_time:
             resp = self.servers_client.get_server(server_id)
-
-            if not resp.ok:
-                raise Exception(
-                    "Failed to get server information: "
-                    "{code} - {reason}".format(code=resp.status_code,
-                                               reason=resp.reason))
-
-            if resp.entity is None:
-                raise Exception(
-                    "Response entity was not set. "
-                    "Response was: {0}".format(resp.content))
-
-            server = resp.entity
+            server = self.verify_entity(resp)
 
             if server.status.lower() == ServerStates.ERROR.lower():
                 raise BuildErrorException(
@@ -245,21 +280,8 @@ class ServerBehaviors(BaseBehavior):
 
         while time.time() < end_time:
             response = self.servers_client.get_server(server_id)
-
-            if not response.ok:
-                raise Exception(
-                    "Failed to get server information: "
-                    "{code} - {reason}".format(code=response.status_code,
-                                               reason=response.reason))
-
-            if response.entity is None:
-                raise Exception(
-                    "Response entity was not set. "
-                    "Response was: {0}".format(response.content))
-
-            task_state = response.entity.task_state
-            if task_state is not None:
-                task_state = task_state.lower()
+            self.verify_entity(response)
+            task_state = response.entity.task_state.lower()
 
             if response.entity.status.lower() == ServerStates.ERROR.lower():
                 raise BuildErrorException(
@@ -276,7 +298,6 @@ class ServerBehaviors(BaseBehavior):
                 "{state_to_wait_for}."
                 .format(timeout=timeout, server_id=server_id,
                         state_to_wait_for=state_to_wait_for))
-
         return response
 
     def wait_for_metadata_value(self, server_id, metadata_key,
@@ -308,19 +329,7 @@ class ServerBehaviors(BaseBehavior):
 
         while time.time() < end_time:
             response = self.servers_client.list_server_metadata(server_id)
-
-            if not response.ok:
-                raise Exception(
-                    "Failed to list server metadata: "
-                    "{code} - {reason}".format(code=response.status_code,
-                                               reason=response.reason))
-
-            if response.entity is None:
-                raise Exception(
-                    "Response entity not set. "
-                    "Response was: {0}".format(response.content))
-
-            metadata = response.entity
+            metadata = self.verify_entity(response)
 
             # Key may not exist yet, so check before accessing
             if metadata_key in metadata:
@@ -413,7 +422,7 @@ class ServerBehaviors(BaseBehavior):
         @rtype: List
         """
         if self.config.default_injected_files:
-        # Encode the file contents
+            # Encode the file contents
             default_files = self.config.default_injected_files
             for personality_file in default_files:
                 personality_file['contents'] = base64.b64encode(
