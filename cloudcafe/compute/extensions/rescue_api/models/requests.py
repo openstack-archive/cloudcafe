@@ -22,14 +22,29 @@ from cloudcafe.compute.common.constants import Constants
 
 
 class RescueMode(AutoMarshallingModel):
+    """
+    @summary: Rebuild Request Object for Server
+    """
+
+    def __init__(self, rescue_image_ref=None):
+        super(RescueMode, self).__init__()
+        self.rescue_image_ref = rescue_image_ref
 
     def _obj_to_json(self):
-        return json.dumps({'rescue': {}})
+
+        body = {
+            'rescue_image_ref': self.rescue_image_ref
+        }
+
+        body = self._remove_empty_values(body)
+        return json.dumps({'rescue': body})
 
     def _obj_to_xml(self):
         xml = Constants.XML_HEADER
         element = ET.Element('rescue')
         element.set('xmlns', Constants.XML_API_RESCUE)
+        if self.rescue_image_ref is not None:
+            element.set('rescue_image_ref', self.rescue_image_ref)
         xml += ET.tostring(element)
         return xml
 
