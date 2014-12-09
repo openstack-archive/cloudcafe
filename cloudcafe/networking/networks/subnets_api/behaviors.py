@@ -798,11 +798,15 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         self._log.error(err_msg)
         return subnet_id
 
-    def clean_subnets(self, subnets_list):
+    def clean_subnets(self, subnets_list, timeout=None, poll_interval=None):
         """
         @summary: deletes each subnet from a list calling clean_subnet
         @param subnets_list: list of subnets UUIDs
         @type subnets_list: list(str)
+        @param timeout: seconds to wait for the subnet to be deleted
+        @type timeout: int
+        @param poll_interval: sleep time interval between API delete/get calls
+        @type poll_interval: int
         @return: list of undeleted subnets UUIDs
         @rtype: list(str)
         """
@@ -810,7 +814,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         self._log.info(log_msg)
         undeleted_subnets = []
         for subnet in subnets_list:
-            result = self.clean_subnet(subnet_id=subnet)
+            result = self.clean_subnet(subnet_id=subnet, timeout=timeout,
+                                       poll_interval=poll_interval)
             if result:
                 undeleted_subnets.append(result)
         if undeleted_subnets:
