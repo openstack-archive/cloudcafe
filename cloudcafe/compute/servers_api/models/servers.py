@@ -39,7 +39,7 @@ class Server(AutoMarshallingModel):
                  addresses=None, flavor=None, image=None, links=None,
                  metadata=None, admin_pass=None, key_name=None,
                  config_drive=None, host=None, instance_name=None,
-                 hypervisor_name=None, security_groups=None):
+                 hypervisor_name=None, security_groups=None, fault=None):
         super(Server, self).__init__()
 
         self.disk_config = disk_config
@@ -78,6 +78,7 @@ class Server(AutoMarshallingModel):
         self.host = host
         self.instance_name = instance_name
         self.security_groups = security_groups
+        self.fault = fault
 
     @classmethod
     def _json_to_obj(cls, serialized_str):
@@ -117,6 +118,7 @@ class Server(AutoMarshallingModel):
         flavor = None
         image = None
         metadata = None
+        fault = None
         links = Links._xml_ele_to_obj(element)
 
         if element.find('addresses') is not None:
@@ -127,6 +129,8 @@ class Server(AutoMarshallingModel):
             image = Image._xml_ele_to_obj(element.find('image'))
         if element.find('metadata') is not None:
             metadata = Metadata._xml_ele_to_obj(element.find('metadata'))
+        if element.find('fault') is not None:
+            fault = Fault._xml_ele_to_obj(element.find('fault'))
 
         if 'progress' in server:
             progress = (server.get('progress')
@@ -150,7 +154,8 @@ class Server(AutoMarshallingModel):
             key_name=server.get('key_name'), host=server.get('host'),
             instance_name=server.get('instance_name'),
             hypervisor_name=server.get('hypervisor_hostname'),
-            security_groups=server.get('security_groups'))
+            security_groups=server.get('security_groups'),
+            fault=fault)
 
         return server
 
@@ -163,6 +168,7 @@ class Server(AutoMarshallingModel):
         image = None
         links = None
         metadata = None
+        fault = None
 
         if 'links' in server_dict:
             links = Links._dict_to_obj(server_dict['links'])
@@ -174,6 +180,8 @@ class Server(AutoMarshallingModel):
             image = ImageMin._dict_to_obj(server_dict['image'])
         if 'metadata' in server_dict:
             metadata = Metadata._dict_to_obj(server_dict['metadata'])
+        if 'fault' in server_dict:
+            fault = Fault._dict_to_obj(server_dict['fault'])
 
         server = Server(
             id=server_dict.get('id') or server_dict.get('uuid'),
@@ -199,7 +207,8 @@ class Server(AutoMarshallingModel):
             instance_name=server_dict.get('OS-EXT-SRV-ATTR:instance_name'),
             hypervisor_name=server_dict.get(
                 'OS-EXT-SRV-ATTR:hypervisor_hostname'),
-            security_groups=server_dict.get('security_groups'))
+            security_groups=server_dict.get('security_groups'),
+            fault=fault)
 
         return server
 
@@ -213,6 +222,28 @@ class Server(AutoMarshallingModel):
 
     def min_details(self):
         return ServerMin(name=self.name, id=self.id, links=self.links)
+
+
+class Fault(AutoMarshallingModel):
+
+    def __init__(
+            self, message=None, code=None, created=None):
+        self.message = message
+        self.code = code
+        self.created = created
+
+    @classmethod
+    def _xml_ele_to_obj(cls, element):
+        fault_dict = element.attrib
+        return cls._dict_to_obj(fault_dict)
+
+    @classmethod
+    def _dict_to_obj(cls, fault_dict):
+        fault = Fault(
+            message=fault_dict.get('message'),
+            code=fault_dict.get('code'),
+            created=fault_dict.get('created'))
+        return fault
 
 
 class ServerMin(Server):
