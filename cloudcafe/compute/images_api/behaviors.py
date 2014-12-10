@@ -209,7 +209,8 @@ class ImageBehaviors(BaseComputeBehavior):
 
         self.verify_server_snapshotting_progression(server_id)
         image = self.verify_image_creation_progression(image_id)
-        return self.images_client.get_image(image.id)
+        response.entity = image
+        return response
 
     def create_active_backup(self, server_id, backup_type, backup_rotation):
         """
