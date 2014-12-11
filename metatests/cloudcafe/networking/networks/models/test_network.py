@@ -75,16 +75,14 @@ class ShowNetworkTest(unittest.TestCase):
     def setUpClass(cls):
         """Creating network_model with currently supported attributes"""
         show_attrs = dict(
-            status='ACTIVE', subnets=['54d6f61d-db07-451c-9ab3-b9609b6b6f0b',
-                                      '79d6f61d-d007-51cd-9a33-b9609b6b6f0c'],
+            status='ACTIVE', subnets=[u'54d6f61d-db07-451c-9ab3-b9609b6b6f0b',
+                                      u'79d6f61d-d007-51cd-9a33-b9609b6b6f0c'],
             name='net1', admin_state_up=True,
             tenant_id='9bacb3c5d39d41a79512987f338cf177', shared=False,
-            id_='4e8e5957-649f-477b-9e5b-f1f75b21c03c', router_external=True)
+            id_='4e8e5957-649f-477b-9e5b-f1f75b21c03c')
         cls.expected_response = Network(**show_attrs)
 
     def test_json_response(self):
-        # Response data with extension attributes, if supported later on they
-        # will need to be added to the setUp object model in this test class
         api_json_resp = (
             """{{
                 "{tag}": {{
@@ -96,24 +94,8 @@ class ShowNetworkTest(unittest.TestCase):
                     "name": "net1",
                     "admin_state_up": true,
                     "tenant_id": "9bacb3c5d39d41a79512987f338cf177",
-                    "segments": [
-                        {{
-                            "provider:segmentation_id": 2,
-                            "provider:physical_network":
-                                "8bab8453-1bc9-45af-8c70-f83aa9b50453",
-                            "provider:network_type": "vlan"
-                        }},
-                        {{
-                            "provider:segmentation_id": null,
-                            "provider:physical_network":
-                                "8bab8453-1bc9-45af-8c70-f83aa9b50453",
-                            "provider:network_type": "stt"
-                        }}
-                    ],
                     "shared": false,
-                    "port_security_enabled": true,
-                    "id": "4e8e5957-649f-477b-9e5b-f1f75b21c03c",
-                    "router:external": true
+                    "id": "4e8e5957-649f-477b-9e5b-f1f75b21c03c"
                 }}
             }}""").format(tag=NETWORK_TAG)
         response_obj = Network()._json_to_obj(api_json_resp)
@@ -127,22 +109,20 @@ class ShowMultipleNetworksTest(unittest.TestCase):
     def setUpClass(cls):
         """Creating network_model with currently supported attributes"""
         show_attrs_1 = dict(
-            status='ACTIVE', subnets=['54d6f61d-db07-451c-9ab3-b9609b6b6f0b'],
+            status='ACTIVE', subnets=[u'54d6f61d-db07-451c-9ab3-b9609b6b6f0b'],
             name='private-network', admin_state_up=True,
             tenant_id='4fd44f30292945e481c7b8a0c8908869', shared=True,
-            id_='d32019d3-bc6e-4319-9c1d-6722fc136a22', router_external=True)
+            id_='d32019d3-bc6e-4319-9c1d-6722fc136a22')
         show_attrs_2 = dict(
-            status='ACTIVE', subnets=['08eae331-0402-425a-923c-34f7cfe39c1b'],
+            status='ACTIVE', subnets=[u'08eae331-0402-425a-923c-34f7cfe39c1b'],
             name='private', admin_state_up=True,
             tenant_id='26a7980765d0414dbc1fc1f88cdb7e6e', shared=True,
-            id_='db193ab3-96e3-4cb3-8fc5-05f4296d0324', router_external=True)
+            id_='db193ab3-96e3-4cb3-8fc5-05f4296d0324')
         net1 = Network(**show_attrs_1)
         net2 = Network(**show_attrs_2)
         cls.expected_response = [net1, net2]
 
     def test_json_response(self):
-        # Response data with extension attributes, if supported later on they
-        # will need to be added to the setUp object model in this test class
         api_json_resp = (
             """{{
                 "{tag}": [
@@ -152,14 +132,10 @@ class ShowMultipleNetworksTest(unittest.TestCase):
                             "54d6f61d-db07-451c-9ab3-b9609b6b6f0b"
                         ],
                         "name": "private-network",
-                        "provider:physical_network": null,
                         "admin_state_up": true,
                         "tenant_id": "4fd44f30292945e481c7b8a0c8908869",
-                        "provider:network_type": "local",
-                        "router:external": true,
                         "shared": true,
-                        "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22",
-                        "provider:segmentation_id": null
+                        "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22"
                     }},
                     {{
                         "status": "ACTIVE",
@@ -167,14 +143,10 @@ class ShowMultipleNetworksTest(unittest.TestCase):
                             "08eae331-0402-425a-923c-34f7cfe39c1b"
                         ],
                         "name": "private",
-                        "provider:physical_network": null,
                         "admin_state_up": true,
                         "tenant_id": "26a7980765d0414dbc1fc1f88cdb7e6e",
-                        "provider:network_type": "local",
-                        "router:external": true,
                         "shared": true,
-                        "id": "db193ab3-96e3-4cb3-8fc5-05f4296d0324",
-                        "provider:segmentation_id": null
+                        "id": "db193ab3-96e3-4cb3-8fc5-05f4296d0324"
                     }}
                 ]
             }}""").format(tag=NETWORKS_TAG)
