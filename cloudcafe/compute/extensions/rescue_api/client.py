@@ -47,13 +47,14 @@ class RescueClient(AutoMarshallingHTTPClient):
         self.default_headers['Accept'] = accept
         self.url = url
 
-    def rescue(self, server_id, requestslib_kwargs=None):
+    def rescue(self, server_id, rescue_image_ref=None,
+               requestslib_kwargs=None):
         self.server_id = server_id
         url = '{base_url}/servers/{server_id}/action'.format(
             base_url=self.url, server_id=server_id)
         resp = self.request(
             'POST', url, response_entity_type=RescueResponse,
-            request_entity=RescueMode(),
+            request_entity=RescueMode(rescue_image_ref=rescue_image_ref),
             requestslib_kwargs=requestslib_kwargs)
         return resp
 
