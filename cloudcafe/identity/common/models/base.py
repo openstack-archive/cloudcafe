@@ -24,6 +24,12 @@ from cloudcafe.identity.v2_0.common.models.constants import V2_0Constants
 
 
 class BaseIdentity(object):
+    def __init__(self, kwargs):
+        super(BaseIdentity, self).__init__()
+        for var in kwargs:
+            if var != "self" and not var.startswith("_"):
+                setattr(self, var, kwargs.get(var))
+
     @classmethod
     def _remove_identity_xml_namespaces(cls, element):
         ns_list = [key for key in V2_0Constants.__dict__ if "__" not in key]
@@ -73,3 +79,14 @@ class BaseIdentityModel(BaseIdentity, AutoMarshallingModel):
 
 class BaseIdentityListModel(BaseIdentity, AutoMarshallingListModel):
     pass
+
+
+class EmptyModel(object):
+    """
+    Representation of an empty model
+    """
+    def _obj_to_dict(self):
+        return None
+
+    def _obj_to_xml_ele(self):
+        return ElementTree.Element(None)
