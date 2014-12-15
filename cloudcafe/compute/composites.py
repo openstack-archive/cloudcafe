@@ -28,6 +28,8 @@ from cloudcafe.compute.extensions.security_groups_api.composites import \
     SecurityGroupsComposite
 from cloudcafe.compute.extensions.vnc_console_api.composites import \
     VncConsoleComposite
+from cloudcafe.compute.extensions.extensions_api.composites import \
+    ExtensionComposite
 from cloudcafe.compute.extensions.volumes_boot_api.composites import \
     BootFromVolumeComposite
 from cloudcafe.compute.flavors_api.composites import FlavorsComposite
@@ -94,6 +96,7 @@ class ComputeComposite(object):
         self.keypairs = KeypairsComposite(auth_composite)
         self.console_output = ConsoleOutputComposite(auth_composite)
         self.rescue = RescueComposite(auth_composite)
+        self.extension = ExtensionComposite(auth_composite)
         self.vnc_console = VncConsoleComposite(auth_composite)
         self.limits = LimitsComposite(auth_composite)
         self.quotas = QuotasComposite(auth_composite)
