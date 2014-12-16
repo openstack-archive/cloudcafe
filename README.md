@@ -53,7 +53,7 @@ to your deployment of OpenStack.
 At this stage you will have the Open CAFE Core engine and the CloudCAFE Framework implementation. From this point you
 are ready to:
 
-1. Write entirely new tests using the CloudCAFE Framework,  
+1. Write entirely new tests using the CloudCAFE Framework,
 
    *or...*
 
@@ -74,21 +74,28 @@ Basic CloudCAFE Package Anatomy
 -------------------------------
 Below is a short description of the top level CloudCAFE Packages.
 
-* **cloudcafe**  
+* **cloudcafe**
   This is the root package for all things CloudCAFE.
 
-* **common**  
+* **common**
   Contains modules that extend the CAFE Core engine specific to OpenStack. This is the primary namespace for tools,
   data generators, common reporting classes, etc.
 
-* **identity**  
+* **identity**
   OpenStack Identity Service plug-in based on CAFE Core extensions.
 
-* **compute**  
+* **compute**
   OpenStack Compute plug-in based on CAFE Core extensions.
 
-* **blockstorage**  
+* **blockstorage**
   OpenStack Block Storage plug-in based on CAFE Core extensions.
 
-* **objectstorage**  
+* **objectstorage**
   OpenStack Object Storage plug-in based on CAFE Core extensions.
+
+
+Join us
+-------
+
+* IRC: #cafehub on irc.freenode.net
+* Mailing list: openstack-dev@lists.openstack.org
