@@ -97,12 +97,12 @@ class Task(AutoMarshallingModel):
     @classmethod
     def _xml_to_obj(cls):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')
 
     @classmethod
     def _obj_to_xml(cls):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')
 
 
 class Tasks(AutoMarshallingListModel):
@@ -176,12 +176,12 @@ class Input(AutoMarshallingModel):
     @classmethod
     def _xml_to_obj(cls):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')
 
     @classmethod
     def _obj_to_xml(cls):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')
 
 
 class Result(AutoMarshallingModel):
@@ -215,9 +215,9 @@ class Result(AutoMarshallingModel):
     @classmethod
     def _xml_to_obj(cls):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')
 
     @classmethod
     def _obj_to_xml(cls):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')

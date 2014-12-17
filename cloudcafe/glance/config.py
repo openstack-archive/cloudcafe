@@ -32,16 +32,16 @@ class MarshallingConfig(ConfigSectionInterface):
         return self.get("deserialize_format")
 
 
-class AltUserConfig(BaseUserConfig):
-    SECTION_NAME = 'alt_user'
+class AltOneUserConfig(BaseUserConfig):
+    SECTION_NAME = 'alt_one_user'
 
 
-class ThirdUserConfig(BaseUserConfig):
-    SECTION_NAME = 'third_user'
+class AltTwoUserConfig(BaseUserConfig):
+    SECTION_NAME = 'alt_two_user'
 
 
-class GlanceConfig(ConfigSectionInterface):
-    SECTION_NAME = 'glance'
+class ImagesConfig(ConfigSectionInterface):
+    SECTION_NAME = 'images'
 
     @property
     def override_url(self):

@@ -30,11 +30,11 @@ from cloudcafe.glance.common.types import (
     TaskTypes)
 
 
-class GlanceBehaviors(BaseBehavior):
-    """@summary: Behaviors class for Glance"""
+class ImagesBehaviors(BaseBehavior):
+    """@summary: Behaviors class for Images"""
 
     def __init__(self, glance_client, glance_config):
-        super(GlanceBehaviors, self).__init__()
+        super(ImagesBehaviors, self).__init__()
         self.config = glance_config
         self.client = glance_client
         self.resources = ResourcePool()
