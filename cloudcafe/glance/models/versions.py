@@ -61,11 +61,11 @@ class Version(AutoMarshallingModel):
     @classmethod
     def _xml_to_obj(cls, serialized_str):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')
 
     def _obj_to_xml(self):
         raise NotImplementedError(
-            'Glance does not serve XML-formatted resources')
+            'Images does not serve XML-formatted resources')
 
 
 class Versions(AutoMarshallingListModel):

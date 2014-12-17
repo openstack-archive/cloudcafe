@@ -21,14 +21,14 @@ from cloudcafe.glance.models.task import Task, Tasks
 from cloudcafe.glance.models.versions import Versions
 
 
-class GlanceClient(AutoMarshallingHTTPClient):
-    """@summary: Client for Glance"""
+class ImagesClient(AutoMarshallingHTTPClient):
+    """@summary: Client for Images"""
 
     def __init__(self, base_url, auth_token, serialize_format,
                  deserialize_format):
-        """@summary: Constructs the Glance API client"""
+        """@summary: Constructs the Images API client"""
 
-        super(GlanceClient, self).__init__(serialize_format,
+        super(ImagesClient, self).__init__(serialize_format,
                                            deserialize_format)
         self.auth_token = auth_token
         self.serialize_format = serialize_format
@@ -86,7 +86,7 @@ class GlanceClient(AutoMarshallingHTTPClient):
                        tags=None, updated_at=None, visibility=None,
                        additional_properties=None, requestslib_kwargs=None):
         """
-        @summary:  Register an image - Not listed in the Glance API docs
+        @summary:  Register an image - Not listed in the Images API docs
 
         @param checksum: Checksum for the image being created
         @type checksum: String
@@ -150,7 +150,7 @@ class GlanceClient(AutoMarshallingHTTPClient):
     def store_image_file(self, image_id, file_data, content_type=None,
                          requestslib_kwargs=None):
         """
-        @summary: Store an image file data - Not listed in the Glance API docs
+        @summary: Store an image file data - Not listed in the Images API docs
 
         @param image_id: Id of image to store image file data to
         @type image_id: UUID
@@ -174,7 +174,7 @@ class GlanceClient(AutoMarshallingHTTPClient):
 
     def get_image_file(self, image_id, requestslib_kwargs=None):
         """
-        @summary: Get an image file data - Not listed in the Glance API docs
+        @summary: Get an image file data - Not listed in the Images API docs
 
         @param image_id: Id of image to return image file data from
         @type image_id: UUID
@@ -497,7 +497,7 @@ class GlanceClient(AutoMarshallingHTTPClient):
 
     def delete_task(self, task_id, requestslib_kwargs=None):
         """
-        @summary: Delete a task - Not listed in the Glance API docs
+        @summary: Delete a task - Not listed in the Images API docs
 
         @param task_id: Id of the task being deleted
         @type task_id: UUID
@@ -612,7 +612,7 @@ class GlanceClient(AutoMarshallingHTTPClient):
 
     def get_versions(self, url_addition=None, requestslib_kwargs=None):
         """
-        @summary: List all versions - Not listed in the Glance API docs
+        @summary: List all versions - Not listed in the Images API docs
 
         @param url_addition: Additional text to be added to the end of the url
         @type url_addition: String
