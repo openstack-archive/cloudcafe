@@ -40,7 +40,7 @@ class ThirdUserConfig(BaseUserConfig):
     SECTION_NAME = 'third_user'
 
 
-class GlanceConfig(ConfigSectionInterface):
+class ImagesConfig(ConfigSectionInterface):
     SECTION_NAME = 'glance'
 
     @property
