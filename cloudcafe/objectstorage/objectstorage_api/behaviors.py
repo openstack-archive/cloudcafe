@@ -25,6 +25,9 @@ from cloudcafe.objectstorage.objectstorage_api.config \
     import ObjectStorageAPIConfig
 from cloudcafe.objectstorage.objectstorage_api.client \
     import ObjectStorageAPIClient
+from random import choice
+from hashlib import md5
+from cafe.common.unicode import UNICODE_BLOCKS, BLOCK_NAMES
 
 
 class ObjectStorageAPIBehaviorException(Exception):
@@ -58,6 +61,9 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             self.config = config
         else:
             self.config = ObjectStorageAPIConfig()
+
+        self.data_pool = [char for char in UNICODE_BLOCKS.get_range(
+            BLOCK_NAMES.basic_latin).encoded_codepoints()]
 
     def retry_until_success(self, func, func_args=None, func_kwargs=None,
                             success_func=None, max_retries=None,
@@ -334,6 +340,103 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         if not response.ok:
             raise Exception('could not create object "{0}/{1}"'.format(
                 container_name, object_name))
+
+    @behavior(ObjectStorageAPIClient)
+    def create_static_large_object(self, container_name, object_name,
+                                   segments_info=None, manifest=None,
+                                   headers=None):
+        """
+        Create a Static Large Object via one of two methods. If a list of
+        segments is received, use that info to create all the segment
+        objects, generate the manifest, and upload the manifest. If a
+        manifest file is received, assume that the objects have already been
+        created and simply upload the manifest file.
+
+        @param container_name: Name of container to upload manifest
+        @type container_name: string
+        @param object_name: Name of SLO object
+        @type object_name: string
+        @param segments_info: A list of segment objects that will be
+                              created. Each segment object should have the
+                              following data:
+            container_name - the container where the segment will be created
+            segment_name - the name of the segment
+            segment_size - The size of the segment. Note that the min
+            segment size for SLOs is 1MB, except for the final segment.
+        @type segments_info: List of dictionaries
+        @param manifest: An ordered list of files in JSON data format. The
+                         data to be supplied for each segment is as follows:
+            path - The container and object name in the following format:
+            containerName/objectName
+            etag - The ETag header from the successful 201 response of the PUT
+            operation that uploaded the segment. This is the MD5 checksum of
+            the segment object's data.
+            size_bytes - The segment object's size in bytes. This value must
+            match the Content-Length of that object.
+        @type manifest: List of dictionaries
+        @param headers: Headers to be added to HTTP request
+        @type headers: dictionary
+        @param params: Query string parameters to be added to the request
+        @type params: dictionary
+
+        @return: Response for manifest upload
+        @rtype: Response Object
+        """
+
+        # If segment info was received, create the segments, then create
+        # the manifest, and finally upload the manifest.
+        if segments_info and not manifest:
+            slo_manifest = []
+
+            for segment in segments_info:
+
+                if "container_name" not in segment:
+                    raise ObjectStorageAPIBehaviorException(
+                        "Can't create a segment without a container")
+                if "segment_name" not in segment:
+                    raise ObjectStorageAPIBehaviorException(
+                        "Can't create a segment without a name")
+                if "segment_size" not in segment:
+                    raise ObjectStorageAPIBehaviorException(
+                        "Can't create a segment without a size")
+
+                segment_data = ''.join([choice(self.data_pool) for x in xrange(
+                    segment.get("segment_size"))])
+                segment_etag = md5(segment_data).hexdigest()
+
+                segment_response = self.client.create_object(
+                    container_name,
+                    segment.get("segment_name"),
+                    data=segment_data)
+
+                if not segment_response.ok:
+                    raise Exception("Failed to create SLO Segment {0}".format(
+                        segment.get("segment_name")))
+
+                slo_manifest.append({
+                    'path': '/{0}/{1}'.format(
+                        container_name, segment.get("segment_name")),
+                    'etag': segment_etag,
+                    'size_bytes': len(segment_data)})
+
+            manifest_response = self.client.create_object(
+                container_name,
+                object_name,
+                data=json.dumps(slo_manifest),
+                params={'multipart-manifest': 'put'}, headers=headers)
+
+            return manifest_response
+
+        # If a manifest is received assume that the segment objects exist
+        # and upload the manifest file.
+        if manifest and not segments_info:
+            manifest_response = self.client.create_object(
+                container_name,
+                object_name,
+                data=json.dumps(manifest),
+                params={'multipart-manifest': 'put'}, headers=headers)
+
+            return manifest_response
 
     @behavior(ObjectStorageAPIClient)
     def decompress_object(self, container_name, object_name,
