@@ -19,9 +19,9 @@ from cloudcafe.compute.extensions.extensions_api.clients.extensions_client \
     import ExtensionClient
 
 
-class ExtensionListComposite(BaseComputeComposite):
+class ExtensionComposite(BaseComputeComposite):
 
     def __init__(self, auth_composite):
-        super(ExtensionListComposite, self).__init__(auth_composite)
+        super(ExtensionComposite, self).__init__(auth_composite)
         self.client = ExtensionClient(
             **self.compute_auth_composite.client_args)
