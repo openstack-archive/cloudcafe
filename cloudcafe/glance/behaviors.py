@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,6 +41,17 @@ class ImagesBehaviors(BaseBehavior):
         self.error_msg = Messages.ERROR_MSG
         self.id_regex = re.compile(ImageProperties.ID_REGEX)
 
+    @staticmethod
+    def read_data_file(file_path):
+        """@summary: Returns data file given a valid data file path"""
+        try:
+            with open(file_path, "r") as DATA:
+                test_data = DATA.read().rstrip()
+        except IOError as file_error:
+            raise file_error
+
+        return test_data
+
     def create_image_via_task(self, image_properties=None, import_from=None,
                               import_from_format=None):
         """
@@ -58,7 +69,7 @@ class ImagesBehaviors(BaseBehavior):
         task = self.create_new_task(input_=input_, type_=TaskTypes.IMPORT)
         image_id = task.result.image_id
 
-        response = self.client.get_image(image_id=image_id)
+        response = self.client.get_image_details(image_id=image_id)
         image = response.entity
 
         if image is not None:
@@ -264,7 +275,7 @@ class ImagesBehaviors(BaseBehavior):
         end_time = time.time() + timeout
 
         while time.time() < end_time:
-            resp = self.client.get_image(image_id)
+            resp = self.client.get_image_details(image_id)
             image = resp.entity
 
             if image.status.lower() == ImageStatus.ERROR.lower():
@@ -435,7 +446,7 @@ class ImagesBehaviors(BaseBehavior):
         end_time = time.time() + timeout
 
         while time.time() < end_time:
-            resp = self.client.get_task(task_id)
+            resp = self.client.get_task_details(task_id)
             task = resp.entity
 
             if ((task.status.lower() == TaskStatus.FAILURE and
@@ -464,7 +475,7 @@ class ImagesBehaviors(BaseBehavior):
     def get_task_status(self, task_id):
         """@summary: Retrieve task status"""
 
-        response = self.client.get_task(task_id)
+        response = self.client.get_task_details(task_id)
         return response.entity.status.lower()
 
     def create_task_with_transitions(self, input_, task_type, outcome,
@@ -508,5 +519,5 @@ class ImagesBehaviors(BaseBehavior):
 
         verifier.start()
 
-        response = self.client.get_task(task.id_)
+        response = self.client.get_task_details(task.id_)
         return response.entity
