@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from cafe.engine.http.client import AutoMarshallingHTTPClient
+
 from cloudcafe.glance.models.image import (
     Image, Images, ImageUpdate, Member, Members)
 from cloudcafe.glance.models.task import Task, Tasks
@@ -267,15 +268,14 @@ class ImagesClient(AutoMarshallingHTTPClient):
                             response_entity_type=Members,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def get_image_member(self, image_id, image_member_id,
-                         requestslib_kwargs=None):
+    def get_image_member(self, image_id, member_id, requestslib_kwargs=None):
         """
-        @summary: Get an image member of a image
+        @summary: Get an image member of an image
 
         @param image_id: Id of image to use to get image member id
         @type image_id: UUID
-        @param image_member_id: Id of image member to return
-        @type image_member_id: String
+        @param member_id: Id of image member to return
+        @type member_id: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
                                    python requests
         @type requestslib_kwargs: Dictionary
@@ -285,20 +285,20 @@ class ImagesClient(AutoMarshallingHTTPClient):
         """
 
         url = '{0}/images/{1}/members/{2}'.format(self.base_url, image_id,
-                                                  image_member_id)
+                                                  member_id)
 
         return self.request('GET', url, response_entity_type=Member,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def create_image_member(self, image_id, image_member_id,
+    def create_image_member(self, image_id, member_id,
                             requestslib_kwargs=None):
         """
         @summary: Create an image member
 
         @param image_id: Id of image to add image member id to
         @type image_id: UUID
-        @param image_member_id: Id of image member to add to the image
-        @type image_member_id: String
+        @param member_id: Id of image member to add to the image
+        @type member_id: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
                                    python requests
         @type requestslib_kwargs: Dictionary
@@ -308,21 +308,21 @@ class ImagesClient(AutoMarshallingHTTPClient):
         """
 
         url = '{0}/images/{1}/members'.format(self.base_url, image_id)
-        member = Member(member_id=image_member_id)
+        member = Member(member_id=member_id)
 
         return self.request('POST', url, request_entity=member,
                             response_entity_type=Member,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def delete_image_member(self, image_id, image_member_id,
+    def delete_image_member(self, image_id, member_id,
                             requestslib_kwargs=None):
         """
         @summary: Delete an image member
 
         @param image_id: Id of image to delete image member id from
         @type image_id: UUID
-        @param image_member_id: Id of image member to delete from the image
-        @type image_member_id: String
+        @param member_id: Id of image member to delete from the image
+        @type member_id: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
                                    python requests
         @type requestslib_kwargs: Dictionary
@@ -332,19 +332,19 @@ class ImagesClient(AutoMarshallingHTTPClient):
         """
 
         url = '{0}/images/{1}/members/{2}'.format(self.base_url, image_id,
-                                                  image_member_id)
+                                                  member_id)
 
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def update_image_member(self, image_id, image_member_id, status,
+    def update_image_member(self, image_id, member_id, status,
                             requestslib_kwargs=None):
         """@summary: Update an image member
 
         @param image_id: Id of image to update the image member id of
         @type image_id: UUID
-        @param image_member_id: Id of image member to update from the image
-        @type image_member_id: String
+        @param member_id: Id of image member to update from the image
+        @type member_id: String
         @param status: Status to which the image member should be set
         @type status: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
@@ -356,21 +356,21 @@ class ImagesClient(AutoMarshallingHTTPClient):
         """
 
         url = '{0}/images/{1}/members/{2}'.format(self.base_url, image_id,
-                                                  image_member_id)
+                                                  member_id)
         member = Member(status=status)
 
         return self.request('PUT', url, request_entity=member,
                             response_entity_type=Member,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def add_image_tag(self, image_id, image_tag, requestslib_kwargs=None):
+    def add_image_tag(self, image_id, tag, requestslib_kwargs=None):
         """
         @summary: Add an image tag
 
         @param image_id: Id of image to add image tag to
         @type image_id: UUID
-        @param image_tag: Image tag to add to the image
-        @type image_member_id: String
+        @param tag: Image tag to add to the image
+        @type tag: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
                                    python requests
         @type requestslib_kwargs: Dictionary
@@ -379,19 +379,18 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @rtype: Object
         """
 
-        url = '{0}/images/{1}/tags/{2}'.format(self.base_url, image_id,
-                                               image_tag)
+        url = '{0}/images/{1}/tags/{2}'.format(self.base_url, image_id, tag)
 
         return self.request('PUT', url, requestslib_kwargs=requestslib_kwargs)
 
-    def delete_image_tag(self, image_id, image_tag, requestslib_kwargs=None):
+    def delete_image_tag(self, image_id, tag, requestslib_kwargs=None):
         """
         @summary: Delete an image tag
 
         @param image_id: Id of image to delete image tag from
         @type image_id: UUID
-        @param image_tag: Image tag to delete from the image
-        @type image_member_id: String
+        @param tag: Image tag to delete from the image
+        @type tag: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
                                    python requests
         @type requestslib_kwargs: Dictionary
@@ -400,8 +399,7 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @rtype: Object
         """
 
-        url = '{0}/images/{1}/tags/{2}'.format(self.base_url, image_id,
-                                               image_tag)
+        url = '{0}/images/{1}/tags/{2}'.format(self.base_url, image_id, tag)
 
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
