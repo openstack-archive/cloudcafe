@@ -8,9 +8,6 @@ class IdentityV3Composite(IdentityComposite):
     def __init__(self, user_config=None):
         super(IdentityV3Composite, self).__init__(user_config=user_config)
         self.version = 'v3'
-        self.url = (
-            self.user_config.authentication_endpoint or
-            self.ident_config.global_authentication_endpoint)
         self.tokens_client = TokensClient(
             url=self.url,
             serialize_format=self.ident_config.serialize_format,

@@ -1,7 +1,7 @@
 import exceptions
 
 from cloudcafe.identity.common.client import BaseIdentityAPIClient
-from cloudcafe.identity.v3.common.tokens.models import responses, request
+from cloudcafe.identity.v3.common.tokens.models import response, request
 
 
 class ModelNotDefined(exceptions.Exception):
@@ -52,7 +52,7 @@ class TokensClient(BaseIdentityAPIClient):
         @type requestslib_kwargs: dictionary
         """
 
-        response_models = {'default': responses.AuthResponse}
+        response_models = {'default': response.AuthResponse}
         if response_model.lower() not in response_models.keys():
             raise ModelNotDefined(model_name=response_model)
         response_model = response_models[response_model.lower()]
@@ -98,7 +98,7 @@ class TokensClient(BaseIdentityAPIClient):
         params = {"nocatalog": nocatalog}
         return self.get(url, params=params,
                         headers={'x-subject-token': token},
-                        response_entity_type=responses.AuthResponse,
+                        response_entity_type=response.AuthResponse,
                         requestslib_kwargs=requestslib_kwargs)
 
     def revoke_token(self, token, requestslib_kwargs=None):
