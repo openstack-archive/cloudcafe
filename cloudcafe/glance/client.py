@@ -404,12 +404,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         return self.request('DELETE', url,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def list_tasks(self, params=None, requestslib_kwargs=None):
+    def list_tasks(self, requestslib_kwargs=None):
         """
         @summary: List all tasks
 
-        @param params: Parameters to alter the returned list of images
-        @type params: Dictionary
         @param requestslib_kwargs: Keyword arguments to be passed on to
                                    python requests
         @type requestslib_kwargs: Dictionary
@@ -420,8 +418,7 @@ class ImagesClient(AutoMarshallingHTTPClient):
 
         url = '{0}/tasks'.format(self.base_url)
 
-        return self.request('GET', url, params=params,
-                            response_entity_type=Tasks,
+        return self.request('GET', url, response_entity_type=Tasks,
                             requestslib_kwargs=requestslib_kwargs)
 
     def get_task_details(self, task_id, requestslib_kwargs=None):
@@ -608,7 +605,7 @@ class ImagesClient(AutoMarshallingHTTPClient):
 
         return self.request('GET', url, requestslib_kwargs=requestslib_kwargs)
 
-    def get_versions(self, url_addition=None, requestslib_kwargs=None):
+    def list_versions(self, url_addition=None, requestslib_kwargs=None):
         """
         @summary: List all versions - Not listed in the Images API docs
 
