@@ -85,3 +85,21 @@ class ImagesConfig(ConfigSectionInterface):
         """A device name where the volume will be attached in the system
         at /dev/dev_name. This value is typically vda."""
         return self.get("primary_image_default_device")
+
+    @property
+    def swift_store(self):
+        """True if Swift is enabled for this Openstack Installation"""
+        return self.get_boolean(
+            "swift_store", True)
+
+    @property
+    def image_factor(self):
+        """The first N characters of the image UUID, where N is a
+        configurable integer between 1 and 32 stored in glance api nodes"""
+        return int(self.get("image_factor"))
+
+    @property
+    def image_base_container(self):
+        """Base container name convention which will be used as a static part
+        of the container automated name creation"""
+        return self.get("image_base_container")
