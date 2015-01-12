@@ -59,6 +59,11 @@ class NetworkingBaseConfig(ConfigSectionInterface):
         return int(self.get("resource_delete_timeout", 7))
 
     @property
+    def resource_get_timeout(self):
+        """Seconds to wait for getting a resource"""
+        return int(self.get("resource_get_timeout", 7))
+
+    @property
     def resource_change_status_timeout(self):
         """Seconds to wait for a status change in the resource"""
         return int(self.get("resource_change_status_timeout", 10))

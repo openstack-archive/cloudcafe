@@ -37,6 +37,17 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         self.config = ports_config
         self.client = ports_client
 
+    def get_subnet_ids_from_fixed_ips(self, fixed_ips):
+        """
+        @summary: gets the subnet ids from the port fixed ips attribute
+        @param fixed_ips: list of fixed_ips
+        @type fixed_ips: list(dict)
+        @return: subnet ids
+        @rtype: list
+        """
+        subnet_ids = [fixed_ip['subnet_id'] for fixed_ip in fixed_ips]
+        return subnet_ids
+
     def format_fixed_ips(self, fixed_ips):
         """
         @summary: formats fixed ips for assertions removing zeros on
@@ -263,7 +274,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
             return result
 
     def get_port(self, port_id, resource_get_attempts=None,
-                 raise_exception=False, poll_interval=None):
+                 raise_exception=False, poll_interval=None,
+                 timeout=None, use_over_limit_retry=None):
         """
         @summary: Shows and verifies a specified port
         @param port_id: The UUID for the port
@@ -275,12 +287,20 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type raise_exception: bool
         @param poll_interval: sleep time interval between API retries
         @type poll_interval: int
+        @param timeout: port get timeout for over limit retries
+        @type timeout: int
+        @param use_over_limit_retry: flag to enable/disable the port update
+            over limits retries
+        @type use_over_limit_retry: bool
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_get_attempts = (resource_get_attempts or
             self.config.api_retries)
+        poll_interval = poll_interval or self.config.api_poll_interval
+        use_over_limit_retry = (use_over_limit_retry or
+                                self.config.use_over_limit_retry)
 
         result = NetworkingResponse()
         err_msg = 'Port Get failure'
@@ -289,6 +309,18 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                 attempt + 1, resource_get_attempts, port_id))
 
             resp = self.client.get_port(port_id=port_id)
+
+            if use_over_limit_retry:
+                timeout = timeout or self.config.resource_get_timeout
+                endtime = time.time() + int(timeout)
+                retry_msg = ('OverLimit retry with a {0}s timeout getting '
+                             'port {1}').format(timeout, port_id)
+                self._log.info(retry_msg)
+                while (resp.status_code ==
+                       NeutronResponseCodes.REQUEST_ENTITY_TOO_LARGE and
+                       time.time() < endtime):
+                    resp = self.client.get_port(port_id=port_id)
+                    time.sleep(poll_interval)
 
             resp_check = self.check_response(resp=resp,
                 status_code=NeutronResponseCodes.GET_PORT,
@@ -316,7 +348,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                    admin_state_up=None, device_id=None, tenant_id=None,
                    device_owner=None, mac_address=None, limit=None,
                    marker=None, page_reverse=None, resource_list_attempts=None,
-                   raise_exception=False, poll_interval=None):
+                   raise_exception=False, poll_interval=None, timeout=None,
+                   use_over_limit_retry=None):
         """
         @summary: Lists ports and verifies the response is the expected
         @param port_id: The UUID for the port to filter by
@@ -350,12 +383,19 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type raise_exception: bool
         @param poll_interval: sleep time interval between API retries
         @type poll_interval: int
+        @param timeout: port get timeout for over limit retries
+        @type timeout: int
+        @param use_over_limit_retry: flag to enable/disable the port update
+            over limits retries
+        @type use_over_limit_retry: bool
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_list_attempts = (resource_list_attempts or
             self.config.api_retries)
+        use_over_limit_retry = (use_over_limit_retry or
+                                self.config.use_over_limit_retry)
 
         result = NetworkingResponse()
         err_msg = 'Port List failure'
@@ -369,6 +409,23 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                 device_id=device_id, tenant_id=tenant_id,
                 device_owner=device_owner, mac_address=mac_address,
                 limit=limit, marker=marker, page_reverse=page_reverse)
+
+            if use_over_limit_retry:
+                timeout = timeout or self.config.resource_get_timeout
+                endtime = time.time() + int(timeout)
+                retry_msg = ('OverLimit retry with a {0}s timeout listing '
+                             'ports').format(timeout, port_id)
+                self._log.info(retry_msg)
+                while (resp.status_code ==
+                       NeutronResponseCodes.REQUEST_ENTITY_TOO_LARGE and
+                       time.time() < endtime):
+                    resp = self.client.list_ports(
+                        port_id=port_id, network_id=network_id, name=name,
+                        status=status, admin_state_up=admin_state_up,
+                        device_id=device_id, tenant_id=tenant_id,
+                        device_owner=device_owner, mac_address=mac_address,
+                        limit=limit, marker=marker, page_reverse=page_reverse)
+                    time.sleep(poll_interval)
 
             resp_check = self.check_response(resp=resp,
                 status_code=NeutronResponseCodes.LIST_PORTS,
