@@ -32,6 +32,11 @@ class ConfigDriveConfig(ConfigSectionInterface):
         return self.get("ec_meta_path")
 
     @property
+    def vendor_meta_filepath(self):
+        """Path to the Vendor Config Drive metadata"""
+        return self.get("vendor_meta_path")
+
+    @property
     def base_path_to_mount(self):
         """Path to the desired location to mount"""
         return self.get("base_path_to_mount")

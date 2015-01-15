@@ -18,6 +18,8 @@ from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.extensions.config_drive.models.\
     config_drive_openstack_meta import OpenStackMeta
 from cloudcafe.compute.extensions.config_drive.models.\
+    config_drive_vendor_meta import VendorMetadata
+from cloudcafe.compute.extensions.config_drive.models.\
     config_drive_ec_metadata import EcMetadata
 
 
@@ -57,6 +59,20 @@ class ConfigDriveBehaviors(BaseComputeBehavior):
         ec_meta_str = remote_client.get_file_details(
             file_path=filepath)
         return EcMetadata.deserialize(ec_meta_str.content, 'json')
+
+    def get_vendor_metadata(self, server, servers_config, key,
+                            filepath):
+        """
+        @summary:Returns vendor metadata on config drive
+        @return: Response Object containing vendor meta domain object
+        @rtype: Request Response Object
+        """
+
+        remote_client = self.server_behaviors.get_remote_instance_client(
+            server, servers_config, key=key)
+        vendor_meta_str = remote_client.get_file_details(
+            file_path=filepath)
+        return VendorMetadata.deserialize(vendor_meta_str.content, 'json')
 
     def mount_config_drive(self, server, servers_config, key,
                            source_path, destination_path):
