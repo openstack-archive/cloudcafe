@@ -18,7 +18,7 @@ from dateutil.parser import parse
 import re
 
 from IPy import IP
-from cafe.engine.clients.winrm_client import WinRMClient
+from cafe.engine.winrm.client import WinRMClient
 from cafe.common.reporting import cclogging
 from cafe.engine.clients.remote_instance.models.dir_details \
     import DirectoryDetails
