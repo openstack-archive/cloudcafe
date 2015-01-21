@@ -20,7 +20,7 @@ from cafe.engine.models.base \
     import AutoMarshallingModel, AutoMarshallingListModel
 
 
-class VendorMeta(AutoMarshallingModel):
+class VendorMetadata(AutoMarshallingModel):
 
     def __init__(self, network_info=None, region=None,
                  ip_whitelist=None, roles=None, provider=None):
