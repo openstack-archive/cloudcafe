@@ -43,7 +43,14 @@ class ImagesBehaviors(BaseBehavior):
 
     @staticmethod
     def read_data_file(file_path):
-        """@summary: Returns data file given a valid data file path"""
+        """
+        @summary: Retrieve data file for a given file path
+
+        @param file_path: Location of data file
+        @type file_path: String
+        @return: Test_data
+        @rtype: String
+        """
         try:
             with open(file_path, "r") as DATA:
                 test_data = DATA.read().rstrip()
@@ -52,51 +59,75 @@ class ImagesBehaviors(BaseBehavior):
 
         return test_data
 
-    def create_image_via_task(self, image_properties=None, import_from=None,
-                              import_from_format=None):
+    def create_image_via_task(self, image_properties=None, import_from=None):
         """
-        @summary: Create new image via the create new task method and add it
-        for deletion
+        @summary: Create new image via task
+
+        @param image_properties: Properties to use for the image creation
+        @type image_properties: Dictionary
+        @param import_from: Location of image
+        @type import_from: String
+        @return: Image
+        @rtype: Object
         """
 
         image_properties = image_properties or {'name': rand_name('image')}
         import_from = import_from or self.config.import_from
-        import_from_format = import_from or self.config.import_from_format
 
         input_ = {'image_properties': image_properties,
-                  'import_from': import_from,
-                  'import_from_format': import_from_format}
+                  'import_from': import_from}
         task = self.create_new_task(input_=input_, type_=TaskTypes.IMPORT)
         image_id = task.result.image_id
+
+        self.client.add_image_tag(image_id=image_id, tag=rand_name('tag'))
 
         response = self.client.get_image_details(image_id=image_id)
         image = response.entity
 
-        if image is not None:
-            self.resources.add(image.id_, self.client.delete_image)
-
         return image
 
     def create_images_via_task(self, image_properties=None, import_from=None,
-                               import_from_format=None, count=1):
+                               count=2):
         """
-        @summary: Create new images via the create new task method and add them
-        for deletion
+        @summary: Create new images via tasks
+
+        @param image_properties: Properties to use for the image creation
+        @type image_properties: Dictionary
+        @param import_from: Location of image
+        @type import_from: String
+        @param count: Number of images to create
+        @type count: Integer
+        @return: Image_list
+        @rtype: List
         """
 
         image_list = []
 
         for i in range(count):
             image = self.create_image_via_task(
-                image_properties=image_properties, import_from=import_from,
-                import_from_format=import_from_format)
+                image_properties=image_properties, import_from=import_from)
             image_list.append(image)
 
         return image_list
 
     def register_new_image(self, container_format=None, disk_format=None,
                            name=None, protected=None, tags=None):
-        """@summary: Register new image and add it for deletion"""
+        """
+        @summary: Register new image and add it for deletion
+
+        @param container_format: Format of source container
+        @type container_format: String
+        @param disk_format: Format of source disk
+        @type disk_format: String
+        @param name: Name of image
+        @type name: String
+        @param protected: Flag to determine if image is able to be deleted
+        @type name: Boolean
+        @param tags: Tags to be added to the image
+        @type tags: Dictionary
+        @return: Image
+        @rtype: Object
+        """
 
         container_format = container_format or ImageContainerFormat.BARE
         disk_format = disk_format or ImageDiskFormat.RAW
@@ -113,8 +144,25 @@ class ImagesBehaviors(BaseBehavior):
         return image
 
     def register_new_images(self, container_format=None, disk_format=None,
-                            name=None, protected=None, tags=None, count=1):
-        """@summary: Register new images and add them for deletion"""
+                            name=None, protected=None, tags=None, count=2):
+        """
+        @summary: Register new images and add them for deletion
+
+        @param container_format: Format of source container
+        @type container_format: String
+        @param disk_format: Format of source disk
+        @type disk_format: String
+        @param name: Name of image
+        @type name: String
+        @param protected: Flag to determine if image is able to be deleted
+        @type name: Boolean
+        @param tags: Tags to be added to the image
+        @type tags: Dictionary
+        @param count: Number of images to register
+        @type count: Integer
+        @return: Image_list
+        @rtype: List
+        """
 
         image_list = []
 
@@ -126,23 +174,28 @@ class ImagesBehaviors(BaseBehavior):
 
         return image_list
 
-    def list_all_images(self, **filters):
+    def list_all_images(self, **params):
         """
-        @summary: Return a complete list of images accounting for any
-        additional parameters
+        @summary: Retrieve a complete list of images accounting for any
+        query parameters
+
+        @param params: Parameters to alter the returned list of images
+        @type params: Dictionary
+        @return: Image_list
+        @rtype: List
         """
 
         image_list = []
         results_limit = self.config.results_limit
 
-        response = self.client.list_images(filters=filters)
+        response = self.client.list_images(params)
         images = response.entity
 
         while len(images) == results_limit:
             image_list += images
             marker = images[results_limit - 1].id_
-            filters.update({"marker": marker})
-            response = self.client.list_images(filters=filters)
+            params.update({"marker": marker})
+            response = self.client.list_images(params)
             images = response.entity
 
         image_list += images
@@ -151,7 +204,12 @@ class ImagesBehaviors(BaseBehavior):
 
     def list_all_image_member_ids(self, image_id):
         """
-        @summary: Return a complete list of image member ids
+        @summary: Retrieve a complete list of image member ids
+
+        @param image_id: Image id to retrieve image members for
+        @type image_id: UUID
+        @return: members
+        @rtype: List
         """
 
         response = self.client.list_members(image_id)
@@ -162,8 +220,15 @@ class ImagesBehaviors(BaseBehavior):
     @staticmethod
     def get_time_delta(time_in_sec, time_property):
         """
-        @summary: Calculate and return the difference between an image
-        attribute's time value and a time_property
+        @summary: Calculate the difference between an image attribute's time
+        value and a time_property
+
+        @param time_in_sec: Current time in seconds
+        @type time_in_sec: Integer
+        @param time_property: Image property containing a time
+        @type time_property: Datetime
+        @return: Time_delta
+        @rtype: Integer
         """
 
         time_property_in_sec = calendar.timegm(time_property.timetuple())
@@ -171,8 +236,14 @@ class ImagesBehaviors(BaseBehavior):
         return abs(time_property_in_sec - time_in_sec)
 
     def validate_image(self, image):
-        """@summary: Generically validate an image contains crucial expected
+        """
+        @summary: Generically validate an image contains crucial expected
         data
+
+        @param image: Image to be validated
+        @type image: Object
+        @return: Errors
+        @rtype: List
         """
 
         errors = []
@@ -223,8 +294,18 @@ class ImagesBehaviors(BaseBehavior):
         return errors
 
     def validate_image_member(self, image_id, image_member, member_id):
-        """@summary: Generically validate an image member contains crucial
+        """
+        @summary: Generically validate an image member contains crucial
         expected data
+
+        @param image_id: Image containing image members
+        @type image_id: UUID
+        @param image_member: Image member to be validated
+        @type image_member: Object
+        @param member_id: Image member id to compare against
+        @type member_id: Integer
+        @return: Errors
+        @rtype: List
         """
 
         errors = []
@@ -253,20 +334,17 @@ class ImagesBehaviors(BaseBehavior):
     def wait_for_image_status(self, image_id, desired_status,
                               interval_time=15, timeout=900):
         """
-        @summary: Waits for a image to reach a desired status
+        @summary: Wait for a image to reach a desired status
 
-        @param image_id: The uuid of the image
-        @type image_id: String
-        @param desired_status: The desired final status of the image
+        @param image_id: Image id to evaluate
+        @type image_id: UUID
+        @param desired_status: Expected final status of image
         @type desired_status: String
-        @param interval_time: The amount of time in seconds to wait
-                              between polling
+        @param interval_time: Amount of time in seconds to wait between polling
         @type interval_time: Integer
-        @param timeout: The amount of time in seconds to wait
-                              before aborting
+        @param timeout: Amount of time in seconds to wait before aborting
         @type timeout: Integer
-
-        @return: Response object
+        @return: Resp
         @rtype: Object
         """
 
@@ -296,13 +374,20 @@ class ImagesBehaviors(BaseBehavior):
         return resp
 
     def create_new_task(self, input_=None, type_=None):
-        """@summary: Create new task and wait for success status"""
+        """
+        @summary: Create new task and wait for success status
+
+        @param input_: Image properties and location data
+        @type input_: Dictionary
+        @param type_: Type of task
+        @type type_: String
+        @return: Task
+        @rtype: Object
+        """
 
         import_from = self.config.import_from
-        import_from_format = self.config.import_from_format
         input_ = input_ or {'image_properties': {},
-                            'import_from': import_from,
-                            'import_from_format': import_from_format}
+                            'import_from': import_from}
         type_ = type_ or TaskTypes.IMPORT
         failures = []
         attempts = self.config.resource_creation_attempts
@@ -324,8 +409,19 @@ class ImagesBehaviors(BaseBehavior):
             'Failed to successfully create a task after {0} attempts: '
             '{1}'.format(attempts, failures))
 
-    def create_new_tasks(self, input_=None, type_=None, count=1):
-        """@summary: Create new tasks and wait for success status for each"""
+    def create_new_tasks(self, input_=None, type_=None, count=2):
+        """
+        @summary: Create new tasks and wait for success status for each
+
+        @param input_: Image properties and image location
+        @type input_: Dictionary
+        @param type_: Type of task
+        @type type_: String
+        @param count: Number of tasks to create
+        @type count: Integer
+        @return: Task_list
+        @rtype: List
+        """
 
         task_list = []
 
@@ -337,7 +433,23 @@ class ImagesBehaviors(BaseBehavior):
 
     def list_all_tasks(self, limit=None, marker=None, sort_dir=None,
                        status=None, type_=None):
-        """@summary: Return a complete list of tasks"""
+        """
+        @summary: Retrieve a complete list of tasks accounting for query
+        parameters
+
+        @param limit: Number of tasks to return
+        @type limit: Integer
+        @param marker: Task to start from
+        @type marker: UUID
+        @param sort_dir: Direction in which tasks will be returned
+        @type sort_dir: String
+        @param status: Status of tasks to return
+        @type status: String
+        @param type_: Type of tasks to return
+        @type type_: String
+        @return: Task_list
+        @rtype: List
+        """
 
         task_list = []
         results_limit = limit or self.config.results_limit
@@ -360,8 +472,14 @@ class ImagesBehaviors(BaseBehavior):
         return task_list
 
     def validate_task(self, task):
-        """@summary: Generically validate a task contains crucial expected
+        """
+        @summary: Generically validate a task contains crucial expected
         data
+
+        @param task: Task to be validated
+        @type task: UUID
+        @return: Errors
+        @rtype: List
         """
 
         errors = []
@@ -421,6 +539,18 @@ class ImagesBehaviors(BaseBehavior):
         """
         @summary: Validate that a given storage location contains a
         given file or not
+
+        @param expect_success: Flag to determine if tasks completed
+        successfully
+        @type expect_success: Boolean
+        @param files: File objects to be validated
+        @type files: List
+        @param image_id: Image id to validate against
+        @type image_id: UUID
+        @return: Errors
+        @rtype: List
+        @return: file_names
+        @rtype: List
         """
 
         errors = []
@@ -439,7 +569,20 @@ class ImagesBehaviors(BaseBehavior):
 
     def wait_for_task_status(self, task_id, desired_status, interval_time=10,
                              timeout=1200):
-        """@summary: Waits for a task to reach a desired status"""
+        """
+        @summary: Waits for a task to reach a desired status
+
+        @param task_id: Task id to evaluate
+        @type task_id: UUID
+        @param desired_status: Expected final status of task
+        @type desired_status: String
+        @param interval_time: Amount of time in seconds to wait between polling
+        @type interval_time: Integer
+        @param timeout: Amount of time in seconds to wait before aborting
+        @type timeout: Integer
+        @return: Task
+        @rtype: Object
+        """
 
         interval_time = interval_time or self.config.task_status_interval
         timeout = timeout or self.config.task_timeout
@@ -472,26 +615,34 @@ class ImagesBehaviors(BaseBehavior):
 
         return task
 
-    def get_task_status(self, task_id):
-        """@summary: Retrieve task status"""
-
-        response = self.client.get_task_details(task_id)
-        return response.entity.status.lower()
-
     def create_task_with_transitions(self, input_, task_type, outcome,
                                      final_status=None):
         """
         @summary: Create a task and verify that it transitions through the
         expected statuses
+
+        @param input_: Image properties and location data
+        @type input_: Dictionary
+        @param task_type: Type of task
+        @type task_type: String
+        @param outcome: Expected final status
+        @type outcome: Integer
+        @param final_status: Flag to determine success or failure
+        @type final_status: String
+        @return: Task
+        @rtype: Object
         """
 
         response = self.client.create_task(
             input_=input_, type_=task_type)
         task = response.entity
 
+        response = self.client.get_task_details(task.id_)
+        task_status = response.entity.status.lower()
+
         # Verify task progresses as expected
         verifier = StatusProgressionVerifier(
-            'task', task.id_, self.get_task_status, task.id_)
+            'task', task.id_, task_status, task.id_)
 
         verifier.add_state(
             expected_statuses=[TaskStatus.PENDING],
