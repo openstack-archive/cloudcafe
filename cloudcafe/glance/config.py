@@ -213,11 +213,6 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('import_from_bootable')
 
     @property
-    def import_from_format(self):
-        """Format for which to import the a given file"""
-        return self.get('import_from_format')
-
-    @property
     def export_to(self):
         """Location to export a given file"""
         return self.get('export_to')
