@@ -64,8 +64,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @rtype: list(dict)
         """
         result = [dict(subnet_id=fixed_ip['subnet_id'], ip_address=str(
-            netaddr.IPAddress(fixed_ip['ip_address'])),
-            enabled=fixed_ip['enabled']) for fixed_ip in fixed_ips]
+            netaddr.IPAddress(fixed_ip['ip_address'])))
+            for fixed_ip in fixed_ips]
         return result
 
     def create_port(self, network_id, name=None, admin_state_up=None,
