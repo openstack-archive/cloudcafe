@@ -43,7 +43,7 @@ class ImagesClient(AutoMarshallingHTTPClient):
 
     def list_images(self, params=None, requestslib_kwargs=None):
         """
-        @summary: List all images
+        @summary: List subset of images
 
         @param params: Parameters to alter the returned list of images
         @type params: Dictionary
@@ -406,7 +406,7 @@ class ImagesClient(AutoMarshallingHTTPClient):
 
     def list_tasks(self, requestslib_kwargs=None):
         """
-        @summary: List all tasks
+        @summary: List subset of tasks
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
                                    python requests
