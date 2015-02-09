@@ -48,6 +48,13 @@ class ImageMemberStatus(object):
     ALL = 'all'
 
 
+class ImageOSType(object):
+    """@summary: Types denoting an Image's os type"""
+
+    LINUX = 'linux'
+    WINDOWS = 'windows'
+
+
 class ImageStatus(object):
     """@summary: Types denoting an Image's status"""
 
