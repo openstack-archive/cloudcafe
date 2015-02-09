@@ -32,6 +32,7 @@ class Messages(object):
                                   'please consult the documentation.')
     NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
     OBJECT_NOT_FOUND = 'Error: Swift could not find object {0}.'
+    OK_RESP_MSG = 'Unexpected response received.  Expected: OK, Received: {0}'
     STATUS_CODE_MSG = ('Unexpected status code received. Expected: {0},'
                        ' Received: {1}')
     UPDATE_IMAGE_MEMBER_STATUS = ('You are not permitted to modify \'status\' '
