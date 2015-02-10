@@ -133,6 +133,11 @@ class ImagesConfig(ConfigSectionInterface):
         return int(self.get('min_ram'))
 
     @property
+    def size(self):
+        """Default image size in image properties"""
+        return int(self.get('size'))
+
+    @property
     def size_min(self):
         """Default minimum size in image properties"""
         return int(self.get('size_min'))
