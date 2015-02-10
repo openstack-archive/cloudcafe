@@ -38,7 +38,6 @@ class ImagesBehaviors(BaseBehavior):
         self.config = glance_config
         self.client = glance_client
         self.resources = ResourcePool()
-        self.error_msg = Messages.ERROR_MSG
         self.id_regex = re.compile(ImageProperties.ID_REGEX)
 
     @staticmethod
@@ -248,48 +247,57 @@ class ImagesBehaviors(BaseBehavior):
 
         errors = []
 
+        # The following properties do not always have values:
+        # checksum, container_format, disk_format, name, tags
+
         if image.auto_disk_config is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'auto_disk_config', 'not None', image.auto_disk_config))
         if image.created_at is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', image.created_at))
         if image.file_ != '/v2/images/{0}/file'.format(image.id_):
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'file_', '/v2/images/{0}/file'.format(image.id_), image.file_))
-        if image.image_type is None:
-            errors.append(self.error_msg.format(
-                'image_type', 'not None', image.image_type))
         if self.id_regex.match(image.id_) is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'id_', 'not None', self.id_regex))
+        if image.image_type is None:
+            errors.append(Messages.PROPERTY_MSG.format(
+                'image_type', 'not None', image.image_type))
         if image.min_disk is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'min_disk', 'not None', image.min_disk))
         if image.min_ram is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'min_ram', 'not None', image.min_ram))
         if image.os_type is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'os_type', 'not None', image.os_type))
+        if image.owner is None:
+            errors.append(Messages.PROPERTY_MSG.format(
+                'owner', 'not None', image.owner))
         if image.protected is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'protected', 'not None', image.protected))
         if image.schema != Schemas.IMAGE_SCHEMA:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'schema', Schemas.IMAGE_SCHEMA, image.schema))
         if image.self_ != '/v2/images/{0}'.format(image.id_):
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'schema', '/v2/images/{0}'.format(image.id_), image.self_))
         if image.status is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'status', 'not None', image.status))
         if image.updated_at is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'updated_at', 'not None', image.updated_at))
         if image.user_id is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'user_id', 'not None', image.user_id))
+        if image.visibility is None:
+            errors.append(Messages.PROPERTY_MSG.format(
+                'visibility', 'not None', image.visibility))
 
         return errors
 
@@ -311,22 +319,22 @@ class ImagesBehaviors(BaseBehavior):
         errors = []
 
         if image_member.created_at is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', image_member.created_at))
         if image_member.image_id != image_id:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'image_id', image_id, image_member.image_id))
         if image_member.member_id != member_id:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'member_id', member_id, image_member.member_id))
         if image_member.schema != Schemas.IMAGE_MEMBER_SCHEMA:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'schema', Schemas.IMAGE_MEMBER_SCHEMA, image_member.schema))
         if image_member.status is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'status', 'not None', image_member.status))
         if image_member.updated_at is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'updated_at', 'not None', image_member.updated_at))
 
         return errors
@@ -485,52 +493,52 @@ class ImagesBehaviors(BaseBehavior):
         errors = []
 
         if task.status is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'status', 'not None', task.status))
         if self.id_regex.match(task.id_) is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'id_', 'not None', self.id_regex.match(task.id_)))
         if task.created_at is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', task.created_at))
         if task.type_ == TaskTypes.IMPORT:
             if task.input_.import_from is None:
-                errors.append(self.error_msg.format(
+                errors.append(Messages.PROPERTY_MSG.format(
                     'import_from', 'not None', task.input_.import_from))
             if (task.result is not None and
                     self.id_regex.match(task.result.image_id) is None):
-                errors.append(self.error_msg.format(
+                errors.append(Messages.PROPERTY_MSG.format(
                     'image_id', 'not None',
                     self.id_regex.match(task.result.image_id)))
         elif task.type_ == TaskTypes.EXPORT:
             if task.input_.image_uuid is None:
-                errors.append(self.error_msg.format(
+                errors.append(Messages.PROPERTY_MSG.format(
                     'image_uuid', 'not None', task.input_.image_uuid))
             if task.input_.receiving_swift_container is None:
-                errors.append(self.error_msg.format(
+                errors.append(Messages.PROPERTY_MSG.format(
                     'receiving_swift_container', 'not None',
                     task.input_.receiving_swift_container))
             if task.result is not None and task.result.export_location is None:
-                errors.append(self.error_msg.format(
+                errors.append(Messages.PROPERTY_MSG.format(
                     'export_location', 'not None',
                     task.result.export_location))
         elif task.type_ is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'type_', 'not None', task.type_))
         if task.updated_at is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'updated_at', 'not None', task.updated_at))
         if task.self_ != '/v2/tasks/{0}'.format(task.id_):
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'self_', '/v2/tasks/{0}'.format(task.id_), task.self_))
         if task.owner is None:
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'owner', 'not None', task.owner))
         if task.message != '':
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'message', '', task.message))
         if task.schema != '/v2/schemas/task':
-            errors.append(self.error_msg.format(
+            errors.append(Messages.PROPERTY_MSG.format(
                 'schema', '/v2/schemas/task', task.schema))
 
         return errors
@@ -556,12 +564,14 @@ class ImagesBehaviors(BaseBehavior):
 
         if expect_success:
             if '{0}.vhd'.format(image_id) not in file_names:
-                errors.append(self.error_msg.format(
-                    'file present', True, False))
+                errors.append(msg=('Unexpected file presence status.'
+                                   'Expected: {0}'
+                                   'Received: {1}').format('True', 'False'))
         else:
             if '{0}.vhd'.format(image_id) in file_names:
-                errors.append(self.error_msg.format(
-                    'file present', False, True))
+                errors.append(msg=('Unexpected file presence status.'
+                                   'Expected: {0}'
+                                   'Received: {1}').format('False', 'True'))
 
         return errors, file_names
 
