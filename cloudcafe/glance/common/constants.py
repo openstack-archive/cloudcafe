@@ -24,7 +24,6 @@ class Messages(object):
     CONTAINER_DNE = 'Container not found. Container: {0}'
     DUPLICATE_FILE_MSG = ('Object already exists in user\'s container.'
                           ' Container/Object: {0}/{1}.vhd')
-    ERROR_MSG = 'Unexpected {0} value received. Expected: {1}, Received: {2}'
     EXPORT_WINDOWS_MSG = ('Image cannot be exported due to licensing or '
                           'billing restrictions (com.rackspace__1__options: '
                           '\'{0}\')')
@@ -33,6 +32,8 @@ class Messages(object):
     NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
     OBJECT_NOT_FOUND = 'Error: Swift could not find object {0}.'
     OK_RESP_MSG = 'Unexpected response received.  Expected: OK, Received: {0}'
+    PROPERTY_MSG = ('Unexpected value for {0} received. Expected: {1},'
+                    'Received: {2}')
     STATUS_CODE_MSG = ('Unexpected status code received. Expected: {0},'
                        ' Received: {1}')
     UPDATE_IMAGE_MEMBER_STATUS = ('You are not permitted to modify \'status\' '
