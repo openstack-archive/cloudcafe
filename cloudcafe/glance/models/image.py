@@ -32,7 +32,6 @@ class Image(AutoMarshallingModel):
                  schema=None, self_=None, size=None, status=None, tags=None,
                  updated_at=None, user_id=None, visibility=None, owner=None,
                  additional_properties=None):
-        # TODO: 'direct_url' and 'locations' should be added at a later date
         self.auto_disk_config = auto_disk_config
         self.checksum = checksum
         self.container_format = container_format
@@ -189,21 +188,21 @@ class ImageUpdate(AutoMarshallingModel):
     def _obj_to_json(self):
         replace_list = []
         if self.add_dict:
-            for key, val in self.add_dict.items():
+            for key, value in self.add_dict.items():
                 replace_list.append(
-                    {'add': '/{0}'.format(key),
-                     'value': val})
+                    {'op': 'add', 'path': '/{0}'.format(key),
+                     'value': value})
 
         if self.replace_dict:
-            for key, val in self.replace_dict.items():
+            for key, value in self.replace_dict.items():
                 replace_list.append(
-                    {'replace': '/{0}'.format(key),
-                     'value': val})
+                    {'op': 'replace', 'path': '/{0}'.format(key),
+                     'value': value})
 
         if self.remove_list:
             for prop in self.remove_list:
                 replace_list.append(
-                    {'remove': '/{0}'.format(prop)})
+                    {'op': 'remove', 'path': '/{0}'.format(prop)})
         return json.dumps(replace_list)
 
 
