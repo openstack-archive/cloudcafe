@@ -582,7 +582,12 @@ class LinuxClient(RemoteInstanceClient):
                 distro = result.stdout.split(':')[1]
                 return distro
             except IndexError:
-                return ''
+                result = self.ssh_client.execute_command('cat /etc/*-release |'
+                                                         ' head -1')
+                if result:
+                    return result
+                else:
+                    return ''
 
     def filesystem_sync(self):
         self.ssh_client.execute_command('sync')
