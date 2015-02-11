@@ -308,7 +308,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         ips = [self.get_random_ip(cidr) for x in range(num)]
         return ips
 
-    def get_fixed_ip(self, subnet_id, cidr, num=1, enabled=True):
+    def get_fixed_ip(self, subnet_id, cidr, num=1):
         """
         @summary: gets a Subnet fixed IP
         @param subnet_id: Subnet ID
@@ -323,7 +323,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @rtype: dict
         """
         ip = self.get_next_ip(cidr=cidr, num=num)
-        return dict(subnet_id=subnet_id, ip_address=ip, enabled=enabled)
+        return dict(subnet_id=subnet_id, ip_address=ip)
 
     def get_allocation_pool(self, cidr, first_increment=1, last_decrement=1,
                             start_increment=None, end_increment=None):
