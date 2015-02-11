@@ -35,9 +35,9 @@ class ImagesClient(AutoMarshallingHTTPClient):
         self.serialize_format = serialize_format
         self.deserialize_format = deserialize_format
         self.default_headers['X-Auth-Token'] = auth_token
-        ct = ''.join(['application/', self.serialize_format])
-        accept = ''.join(['application/', self.deserialize_format])
-        self.default_headers['Content-Type'] = ct
+        content_type = 'application/{0}'.format(self.serialize_format)
+        accept = 'application/{0}'.format(self.deserialize_format)
+        self.default_headers['Content-Type'] = content_type
         self.default_headers['Accept'] = accept
         self.base_url = base_url
 
@@ -48,10 +48,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param params: Parameters to alter the returned list of images
         @type params: Dictionary
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -68,10 +68,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param image_id: Id of image to be returned
         @type params: UUID
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -124,14 +124,13 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param visibility: Visibility for the image being created
         @type visibility: String
         @param additional_properties: Additional properties for the image being
-                                      created
+        created
         @type additional_properties: Dictionary
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -160,10 +159,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param content_type: Content type of data to be stored to the image
         @type content_type: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -180,10 +179,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param image_id: Id of image to return image file data from
         @type image_id: UUID
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -200,18 +199,19 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param image_id: Id of image to update
         @type image_id: UUID
         @param replace: Image operation to replace an attribute of an image
-                        including the actual value to replace
+        including the actual value to replace
         @type replace: Dictionary
         @param add: Image operation to add an attribute to an image including
-                    the actual value to add
+        the actual value to add
         @type add: Dictionary
         @param remove: Image operation to remove an attribute from an image
-                       including the actual value to remove
+        including the actual value to remove
+        @type remove: Dictionary
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -219,7 +219,7 @@ class ImagesClient(AutoMarshallingHTTPClient):
         image_update = ImageUpdate(add, replace, remove)
         headers = self.default_headers
         headers['Content-Type'] = (
-            'application/openstack-images-v2.0-json-patch')
+            'application/openstack-images-v2.1-json-patch')
 
         return self.request('PATCH', url, headers=headers,
                             request_entity=image_update,
@@ -233,10 +233,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param image_id: Id of image to delete
         @type image_id: UUID
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -255,10 +255,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param params: Parameters to alter the returned list of images
         @type params: Dictionary
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -277,10 +277,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param member_id: Id of image member to return
         @type member_id: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -300,10 +300,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param member_id: Id of image member to add to the image
         @type member_id: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -324,10 +324,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param member_id: Id of image member to delete from the image
         @type member_id: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -348,10 +348,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param status: Status to which the image member should be set
         @type status: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -372,10 +372,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param tag: Image tag to add to the image
         @type tag: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -392,10 +392,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param tag: Image tag to delete from the image
         @type tag: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -409,10 +409,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: List subset of tasks
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -428,10 +428,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param task_id: Id of the task being returned
         @type task_id: UUID
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -446,15 +446,15 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Create a task to import an image
 
         @param input_: Container for import input parameters containing
-                       image properties and import from
+        image properties and import from
         @type input_: Dictionary
         @param type_: Type of task
         @type type_: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -471,15 +471,15 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Create a task to export an image
 
         @param input_: Container for export input parameters containing
-                       image uuid and receiving swift container
+        image uuid and receiving swift container
         @type input_: Dictionary
         @param type_: Type of task
         @type type_: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -497,10 +497,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param task_id: Id of the task being deleted
         @type task_id: UUID
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -514,10 +514,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Get images json schema
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -530,10 +530,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Get image json schema
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -546,10 +546,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Get image members schema
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -562,10 +562,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Get image member schema
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -578,10 +578,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Get tasks schema
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -594,10 +594,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @summary: Get task schema
 
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
@@ -612,10 +612,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param url_addition: Additional text to be added to the end of the url
         @type url_addition: String
         @param requestslib_kwargs: Keyword arguments to be passed on to
-                                   python requests
+        python requests
         @type requestslib_kwargs: Dictionary
 
-        @return: Response object
+        @return: Response
         @rtype: Object
         """
 
