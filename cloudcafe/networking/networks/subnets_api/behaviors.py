@@ -325,6 +325,36 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         ip = self.get_next_ip(cidr=cidr, num=num)
         return dict(subnet_id=subnet_id, ip_address=ip)
 
+    def get_fixed_ips(self, subnet, num=1, timeout=None):
+        """
+        @summary: generates multiple fixed ips within a subnet
+        @param subnet: subnet entity object
+        @type subnet: models.response.subnet.Subnet
+        @param num: number of fixed IPs to get
+        @type num: int
+        @param timeout: timeout for replacing duplicate IPs
+        @type timeout: int
+        @return: fixed IPs
+        @rtype: list
+        """
+        cidr = subnet.cidr
+        ips = self.get_ips(cidr=cidr, num=num)
+        ips_count = len(ips)
+
+        # Removing duplicate IPs in case of any and trying to replace
+        ips = list(set(ips))
+        if ips_count != len(ips):
+            duplicate_count = ips_count - len(ips)
+            timeout = timeout or self.config.resource_get_timeout
+            endtime = time.time() + int(timeout)
+            while duplicate_count > 0 and time.time() < endtime:
+                new_ip = self.get_random_ip(cidr)
+                if new_ip not in ips:
+                    ips.append(new_ip)
+                    duplicate_count -= 1
+        fixed_ips = [dict(subnet_id=subnet.id, ip_address=ip) for ip in ips]
+        return fixed_ips
+
     def get_allocation_pool(self, cidr, first_increment=1, last_decrement=1,
                             start_increment=None, end_increment=None):
         """
@@ -358,6 +388,35 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
             last_ip = str(netaddr.IPAddress(net.last - last_decrement))
 
         return dict(start=first_ip, end=last_ip)
+
+    def get_allocation_pools(self, cidr, start_increment, ip_range, interval,
+                             num):
+        """
+        @summary: Generates allocation pools subnet data
+        @param cidr: cidr for allocation pools
+        @type cidr: string
+        @param start_increment: increment from first cidr address to first
+            allocation pool IP address
+        @type start_increment: int
+        @param ip_range: ip addresses from start IP to end IP of allocation
+            pool
+        @type ip_range: int
+        @param interval: ip addresses from end of allocation pool to start IP
+            of the next allocation pool (if multiple)
+        @type interval: int
+        @param num: number of allocation pools to create within the cidr
+        @type num: int
+        @return: allocation pools
+        @rtype: list
+        """
+        allocation_pools = []
+        for _ in range(num):
+            end_increment = start_increment + ip_range
+            allocation_pool = self.get_allocation_pool(cidr=cidr,
+                start_increment=start_increment, end_increment=end_increment)
+            allocation_pools.append(allocation_pool)
+            start_increment = end_increment + interval
+        return allocation_pools
 
     def get_host_routes(self, cidr, ips):
         """
