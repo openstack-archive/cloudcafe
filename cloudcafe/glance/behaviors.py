@@ -31,14 +31,13 @@ from cloudcafe.glance.common.types import (
 
 
 class ImagesBehaviors(BaseBehavior):
-    """@summary: Behaviors class for Images"""
+    """@summary: Behaviors for Images"""
 
     def __init__(self, glance_client, glance_config):
         super(ImagesBehaviors, self).__init__()
         self.config = glance_config
         self.client = glance_client
         self.resources = ResourcePool()
-        self.id_regex = re.compile(ImageProperties.ID_REGEX)
 
     @staticmethod
     def read_data_file(file_path):
@@ -47,6 +46,7 @@ class ImagesBehaviors(BaseBehavior):
 
         @param file_path: Location of data file
         @type file_path: String
+
         @return: Test_data
         @rtype: String
         """
@@ -66,6 +66,7 @@ class ImagesBehaviors(BaseBehavior):
         @type image_properties: Dictionary
         @param import_from: Location of image
         @type import_from: String
+
         @return: Image
         @rtype: Object
         """
@@ -96,6 +97,7 @@ class ImagesBehaviors(BaseBehavior):
         @type import_from: String
         @param count: Number of images to create
         @type count: Integer
+
         @return: Image_list
         @rtype: List
         """
@@ -109,21 +111,65 @@ class ImagesBehaviors(BaseBehavior):
 
         return image_list
 
-    def register_new_image(self, container_format=None, disk_format=None,
-                           name=None, protected=None, tags=None):
+    def register_new_image(self, auto_disk_config=None, checksum=None,
+                           container_format=None, created_at=None,
+                           disk_format=None, file_=None, id_=None,
+                           image_type=None, min_disk=None, min_ram=None,
+                           name=None, os_type=None, owner=None, protected=None,
+                           schema=None, self_=None, size=None, status=None,
+                           tags=None, updated_at=None, user_id=None,
+                           visibility=None, additional_properties=None):
         """
         @summary: Register new image and add it for deletion
 
-        @param container_format: Format of source container
+        @param auto_disk_config: Auto disk config for the image being created
+        @type auto_disk_config: String
+        @param checksum: Checksum for the image being created
+        @type checksum: String
+        @param container_format: Container format for the image being created
         @type container_format: String
-        @param disk_format: Format of source disk
+        @param created_at: Created at for the image being created
+        @type created_at: Datetime
+        @param disk_format: Disk format for the image being created
         @type disk_format: String
-        @param name: Name of image
+        @param file_: File location for the image being created
+        @type file_: String
+        @param id_: Id for the image being created
+        @type id_: UUID
+        @param image_type: Image type for the image being created
+        @type image_type: String
+        @param min_disk: Minimum disk for the image being created
+        @type min_disk: String
+        @param min_ram: Minimum ram for the image being created
+        @type min_ram: String
+        @param name: Name for the image being created
         @type name: String
-        @param protected: Flag to determine if image is able to be deleted
+        @param os_type: OS type for the image being created
+        @type os_type: String
+        @param owner: Owner for the image being created
+        @type owner: String
+        @param protected: Protected flag for the image being created
         @type protected: Boolean
-        @param tags: Tags to be added to the image
+        @param schema: Schema for the image being created
+        @type schema: String
+        @param self_: Self location for the image being created
+        @type self_: String
+        @param size: Size for the image being created
+        @type size: String
+        @param status: Status for the image being created
+        @type status: String
+        @param tags: Tags for the image being created
         @type tags: Dictionary
+        @param updated_at: Updated at for the image being created
+        @type updated_at: Datetime
+        @param user_id: User id for the image being created
+        @type user_id: String
+        @param visibility: Visibility for the image being created
+        @type visibility: String
+        @param additional_properties: Additional properties for the image being
+        created
+        @type additional_properties: Dictionary
+
         @return: Image
         @rtype: Object
         """
@@ -133,8 +179,14 @@ class ImagesBehaviors(BaseBehavior):
         name = name or rand_name('image')
 
         response = self.client.register_image(
-            container_format=container_format, disk_format=disk_format,
-            name=name, protected=protected, tags=tags)
+            auto_disk_config=auto_disk_config, checksum=checksum,
+            container_format=container_format, created_at=created_at,
+            disk_format=disk_format, file_=file_, id_=id_,
+            image_type=image_type,  min_disk=min_disk, min_ram=min_ram,
+            name=name, os_type=os_type, owner=owner, protected=protected,
+            schema=schema, self_=self_, size=size, status=status,
+            tags=tags, updated_at=updated_at, user_id=user_id,
+            visibility=visibility, additional_properties=additional_properties)
         image = response.entity
 
         if image is not None:
@@ -142,23 +194,66 @@ class ImagesBehaviors(BaseBehavior):
 
         return image
 
-    def register_new_images(self, container_format=None, disk_format=None,
-                            name=None, protected=None, tags=None, count=2):
+    def register_new_images(self, auto_disk_config=None, checksum=None,
+                            container_format=None, created_at=None,
+                            disk_format=None, file_=None, id_=None,
+                            image_type=None, min_disk=None, min_ram=None,
+                            name=None, os_type=None, owner=None,
+                            protected=None, schema=None, self_=None, size=None,
+                            status=None, tags=None, updated_at=None,
+                            user_id=None, visibility=None,
+                            additional_properties=None, count=2):
         """
         @summary: Register new images and add them for deletion
 
-        @param container_format: Format of source container
+        @param auto_disk_config: Auto disk config for the image being created
+        @type auto_disk_config: String
+        @param checksum: Checksum for the image being created
+        @type checksum: String
+        @param container_format: Container format for the image being created
         @type container_format: String
-        @param disk_format: Format of source disk
+        @param created_at: Created at for the image being created
+        @type created_at: Datetime
+        @param disk_format: Disk format for the image being created
         @type disk_format: String
-        @param name: Name of image
+        @param file_: File location for the image being created
+        @type file_: String
+        @param id_: Id for the image being created
+        @type id_: UUID
+        @param image_type: Image type for the image being created
+        @type image_type: String
+        @param min_disk: Minimum disk for the image being created
+        @type min_disk: String
+        @param min_ram: Minimum ram for the image being created
+        @type min_ram: String
+        @param name: Name for the image being created
         @type name: String
-        @param protected: Flag to determine if image is able to be deleted
+        @param os_type: OS type for the image being created
+        @type os_type: String
+        @param owner: Owner for the image being created
+        @type owner: String
+        @param protected: Protected flag for the image being created
         @type protected: Boolean
-        @param tags: Tags to be added to the image
+        @param schema: Schema for the image being created
+        @type schema: String
+        @param self_: Self location for the image being created
+        @type self_: String
+        @param size: Size for the image being created
+        @type size: String
+        @param status: Status for the image being created
+        @type status: String
+        @param tags: Tags for the image being created
         @type tags: Dictionary
-        @param count: Number of images to register
-        @type count: Integer
+        @param updated_at: Updated at for the image being created
+        @type updated_at: Datetime
+        @param user_id: User id for the image being created
+        @type user_id: String
+        @param visibility: Visibility for the image being created
+        @type visibility: String
+        @param additional_properties: Additional properties for the image being
+        created
+        @type additional_properties: Dictionary
+
         @return: Image_list
         @rtype: List
         """
@@ -167,8 +262,15 @@ class ImagesBehaviors(BaseBehavior):
 
         for i in range(count):
             image = self.register_new_image(
-                container_format=container_format, disk_format=disk_format,
-                name=name, protected=protected, tags=tags)
+                auto_disk_config=auto_disk_config, checksum=checksum,
+                container_format=container_format, created_at=created_at,
+                disk_format=disk_format, file_=file_, id_=id_,
+                image_type=image_type,  min_disk=min_disk, min_ram=min_ram,
+                name=name, os_type=os_type, owner=owner, protected=protected,
+                schema=schema, self_=self_, size=size, status=status,
+                tags=tags, updated_at=updated_at, user_id=user_id,
+                visibility=visibility,
+                additional_properties=additional_properties)
             image_list.append(image)
 
         return image_list
@@ -180,6 +282,7 @@ class ImagesBehaviors(BaseBehavior):
 
         @param params: Parameters to alter the returned list of images
         @type params: Dictionary
+
         @return: Image_list
         @rtype: List
         """
@@ -207,6 +310,7 @@ class ImagesBehaviors(BaseBehavior):
 
         @param image_id: Image id to retrieve image members for
         @type image_id: UUID
+
         @return: members
         @rtype: List
         """
@@ -226,6 +330,7 @@ class ImagesBehaviors(BaseBehavior):
         @type time_in_sec: Integer
         @param time_property: Image property containing a time
         @type time_property: Datetime
+
         @return: Time_delta
         @rtype: Integer
         """
@@ -234,17 +339,20 @@ class ImagesBehaviors(BaseBehavior):
 
         return abs(time_property_in_sec - time_in_sec)
 
-    def validate_image(self, image):
+    @staticmethod
+    def validate_image(image):
         """
         @summary: Generically validate an image contains crucial expected
         data
 
         @param image: Image to be validated
         @type image: Object
+
         @return: Errors
         @rtype: List
         """
 
+        id_regex = re.compile(ImageProperties.ID_REGEX)
         errors = []
 
         # The following properties do not always have values:
@@ -259,9 +367,9 @@ class ImagesBehaviors(BaseBehavior):
         if image.file_ != '/v2/images/{0}/file'.format(image.id_):
             errors.append(Messages.PROPERTY_MSG.format(
                 'file_', '/v2/images/{0}/file'.format(image.id_), image.file_))
-        if self.id_regex.match(image.id_) is None:
+        if id_regex.match(image.id_) is None:
             errors.append(Messages.PROPERTY_MSG.format(
-                'id_', 'not None', self.id_regex))
+                'id_', 'not None', id_regex))
         if image.image_type is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'image_type', 'not None', image.image_type))
@@ -301,7 +409,8 @@ class ImagesBehaviors(BaseBehavior):
 
         return errors
 
-    def validate_image_member(self, image_id, image_member, member_id):
+    @staticmethod
+    def validate_image_member(image_id, image_member, member_id):
         """
         @summary: Generically validate an image member contains crucial
         expected data
@@ -312,6 +421,7 @@ class ImagesBehaviors(BaseBehavior):
         @type image_member: Object
         @param member_id: Image member id to compare against
         @type member_id: Integer
+
         @return: Errors
         @rtype: List
         """
@@ -352,6 +462,7 @@ class ImagesBehaviors(BaseBehavior):
         @type interval_time: Integer
         @param timeout: Amount of time in seconds to wait before aborting
         @type timeout: Integer
+
         @return: Resp
         @rtype: Object
         """
@@ -389,6 +500,7 @@ class ImagesBehaviors(BaseBehavior):
         @type input_: Dictionary
         @param type_: Type of task
         @type type_: String
+
         @return: Task
         @rtype: Object
         """
@@ -427,6 +539,7 @@ class ImagesBehaviors(BaseBehavior):
         @type type_: String
         @param count: Number of tasks to create
         @type count: Integer
+
         @return: Task_list
         @rtype: List
         """
@@ -455,6 +568,7 @@ class ImagesBehaviors(BaseBehavior):
         @type status: String
         @param type_: Type of tasks to return
         @type type_: String
+
         @return: Task_list
         @rtype: List
         """
@@ -479,25 +593,28 @@ class ImagesBehaviors(BaseBehavior):
 
         return task_list
 
-    def validate_task(self, task):
+    @staticmethod
+    def validate_task(task):
         """
         @summary: Generically validate a task contains crucial expected
         data
 
         @param task: Task to be validated
         @type task: UUID
+
         @return: Errors
         @rtype: List
         """
 
+        id_regex = re.compile(ImageProperties.ID_REGEX)
         errors = []
 
         if task.status is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'status', 'not None', task.status))
-        if self.id_regex.match(task.id_) is None:
+        if id_regex.match(task.id_) is None:
             errors.append(Messages.PROPERTY_MSG.format(
-                'id_', 'not None', self.id_regex.match(task.id_)))
+                'id_', 'not None', id_regex.match(task.id_)))
         if task.created_at is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', task.created_at))
@@ -506,10 +623,10 @@ class ImagesBehaviors(BaseBehavior):
                 errors.append(Messages.PROPERTY_MSG.format(
                     'import_from', 'not None', task.input_.import_from))
             if (task.result is not None and
-                    self.id_regex.match(task.result.image_id) is None):
+                    id_regex.match(task.result.image_id) is None):
                 errors.append(Messages.PROPERTY_MSG.format(
                     'image_id', 'not None',
-                    self.id_regex.match(task.result.image_id)))
+                    id_regex.match(task.result.image_id)))
         elif task.type_ == TaskTypes.EXPORT:
             if task.input_.image_uuid is None:
                 errors.append(Messages.PROPERTY_MSG.format(
@@ -543,7 +660,8 @@ class ImagesBehaviors(BaseBehavior):
 
         return errors
 
-    def validate_exported_files(self, expect_success, files, image_id):
+    @staticmethod
+    def validate_exported_files(expect_success, files, image_id):
         """
         @summary: Validate that a given storage location contains a
         given file or not
@@ -555,6 +673,7 @@ class ImagesBehaviors(BaseBehavior):
         @type files: List
         @param image_id: Image id to validate against
         @type image_id: UUID
+
         @return: Errors, file_names
         @rtype: List, list
         """
@@ -564,14 +683,12 @@ class ImagesBehaviors(BaseBehavior):
 
         if expect_success:
             if '{0}.vhd'.format(image_id) not in file_names:
-                errors.append(msg=('Unexpected file presence status.'
-                                   'Expected: {0}'
-                                   'Received: {1}').format('True', 'False'))
+                errors.append('Unexpected file presence status. Expected: True'
+                              'Received: False')
         else:
             if '{0}.vhd'.format(image_id) in file_names:
-                errors.append(msg=('Unexpected file presence status.'
-                                   'Expected: {0}'
-                                   'Received: {1}').format('False', 'True'))
+                errors.append('Unexpected file presence status.'
+                              'Expected: False Received: True')
 
         return errors, file_names
 
@@ -588,6 +705,7 @@ class ImagesBehaviors(BaseBehavior):
         @type interval_time: Integer
         @param timeout: Amount of time in seconds to wait before aborting
         @type timeout: Integer
+
         @return: Task
         @rtype: Object
         """
@@ -637,6 +755,7 @@ class ImagesBehaviors(BaseBehavior):
         @type outcome: Integer
         @param final_status: Flag to determine success or failure
         @type final_status: String
+
         @return: Task
         @rtype: Object
         """
@@ -678,5 +797,4 @@ class ImagesBehaviors(BaseBehavior):
 
         verifier.start()
 
-        response = self.client.get_task_details(task.id_)
-        return response.entity
+        return self.client.get_task_details(task.id_).entity
