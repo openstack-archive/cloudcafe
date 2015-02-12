@@ -28,11 +28,8 @@ from cloudcafe.networking.networks.common.exceptions \
 
 class NetworksBehaviors(NetworkingBaseBehaviors):
 
-    def __init__(self, networks_client, networks_config, subnets_client,
-                 subnets_config, ports_client, ports_config):
-        super(NetworksBehaviors, self).__init__(
-              networks_client, networks_config, subnets_client, subnets_config,
-              ports_client, ports_config)
+    def __init__(self, networks_client, networks_config):
+        super(NetworksBehaviors, self).__init__()
         self.config = networks_config
         self.client = networks_client
 

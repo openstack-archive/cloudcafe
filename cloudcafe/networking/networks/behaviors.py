@@ -14,22 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import time
+
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
+from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 from cloudcafe.networking.networks.common.constants \
     import NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
-    import NetworkGETException, SubnetGETException
+    import NetworkGETException, SubnetGETException, UnsupportedTypeException
+from cloudcafe.networking.networks.common.models.response.network \
+    import Network
+from cloudcafe.networking.networks.common.models.response.port \
+    import Port
 
 
 class NetworkingBehaviors(NetworkingBaseBehaviors):
     """All API behaviors for helper methods"""
 
     def __init__(self, networks_behaviors, subnets_behaviors, ports_behaviors):
-        super(NetworkingBehaviors, self).__init__(
-            networks_behaviors.client, networks_behaviors.config,
-            subnets_behaviors.client, subnets_behaviors.config,
-            ports_behaviors.client, ports_behaviors.config)
+        super(NetworkingBehaviors, self).__init__()
+
+        self.config = NetworkingBaseConfig()
+        self.networks_config = networks_behaviors.config
+        self.networks_client = networks_behaviors.client
+        self.subnets_client = subnets_behaviors.client
+        self.subnets_config = subnets_behaviors.config
+        self.ports_client = ports_behaviors.client
+        self.ports_config = ports_behaviors.config
         self.networks_behaviors = networks_behaviors
         self.subnets_behaviors = subnets_behaviors
         self.ports_behaviors = ports_behaviors
@@ -150,3 +162,50 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             raise SubnetGETException(resp_check)
         else:
             return (network, None, port)
+
+    def wait_for_status(self, resource_entity, new_status, timeout=None,
+                       poll_interval=None):
+        """
+        @summary: Check a new status is reached by an entity object
+        @param resource_entity: entity object like Network and Port
+        @type resource_entity: Network or Port entity object (may be extended
+            to other types with the status attribute)
+        @param new_status: expected new status, like ACTIVE for ex.
+        @type new_status: string
+        @param timeout: seconds to wait for the new status
+        @type timeout: int
+        @param poll_interval: seconds between API calls
+        @type poll_interval: int
+        @return: True or False depending if the new status was reached
+            within the expected timeout
+        @rtype: bool
+        """
+
+        resource_type = type(resource_entity)
+
+        # Subnets do NOT have a status attribute
+        if resource_type == Network:
+            client_call = self.networks_client.get_network
+        elif resource_type == Port:
+            client_call = self.ports_client.get_port
+        else:
+            msg = 'Entity type {0} NOT supported'.format(resource_type)
+            raise UnsupportedTypeException(msg)
+
+        entity_id = resource_entity.id
+        initial_status = resource_entity.status
+        timeout = timeout or self.config.resource_change_status_timeout
+        poll_interval = poll_interval or self.config.api_poll_interval
+        endtime = time.time() + int(timeout)
+
+        log_msg = ('Checking {0} entity type initial {1} status is updated '
+                   'to {2} status within a timeout of {3}').format(
+                    resource_type, initial_status, new_status, timeout)
+        self._log.info(log_msg)
+
+        while time.time() < endtime:
+            resp = client_call(entity_id)
+            if resp.ok and resp.entity and resp.entity.status == new_status:
+                return True
+            time.sleep(poll_interval)
+        return False

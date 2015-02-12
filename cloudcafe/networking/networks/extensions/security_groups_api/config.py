@@ -21,3 +21,8 @@ class SecurityGroupsConfig(NetworkingBaseConfig):
     """Security Groups and Rules configuration parameters"""
 
     SECTION_NAME = 'security_groups'
+
+    @property
+    def starts_with_name(self):
+        """Network start name label for test runs"""
+        return self.get("starts_with_name", "security_groups_test")

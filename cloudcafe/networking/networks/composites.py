@@ -97,37 +97,19 @@ class NetworkingComposite(object):
         self.common = NetworkingCommonComposite()
 
         # Parent behavior can be used directly with parent config values
-        self.common.behaviors = self.common.behavior_class(
-            networks_client=self.networks.client,
-            networks_config=self.networks.config,
-            subnets_client=self.subnets.client,
-            subnets_config=self.subnets.config,
-            ports_client=self.ports.client,
-            ports_config=self.ports.config)
+        self.common.behaviors = self.common.behavior_class()
 
         self.networks.behaviors = self.networks.behavior_class(
             networks_client=self.networks.client,
-            networks_config=self.networks.config,
-            subnets_client=self.subnets.client,
-            subnets_config=self.subnets.config,
-            ports_client=self.ports.client,
-            ports_config=self.ports.config)
+            networks_config=self.networks.config)
 
         self.subnets.behaviors = self.subnets.behavior_class(
             subnets_client=self.subnets.client,
-            subnets_config=self.subnets.config,
-            networks_client=self.networks.client,
-            networks_config=self.networks.config,
-            ports_client=self.ports.client,
-            ports_config=self.ports.config)
+            subnets_config=self.subnets.config)
 
         self.ports.behaviors = self.ports.behavior_class(
             ports_client=self.ports.client,
-            ports_config=self.ports.config,
-            networks_client=self.networks.client,
-            networks_config=self.networks.config,
-            subnets_client=self.subnets.client,
-            subnets_config=self.subnets.config)
+            ports_config=self.ports.config)
 
         # Integrates all behaviors for helper methods
         self.behaviors = NetworkingBehaviors(
