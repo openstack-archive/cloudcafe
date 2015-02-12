@@ -36,9 +36,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
 
     def __init__(self, subnets_client, subnets_config, networks_client,
                  networks_config, ports_client, ports_config):
-        super(SubnetsBehaviors, self).__init__(
-              networks_client, networks_config, subnets_client, subnets_config,
-              ports_client, ports_config)
+        super(SubnetsBehaviors, self).__init__()
         self.config = subnets_config
         self.client = subnets_client
 

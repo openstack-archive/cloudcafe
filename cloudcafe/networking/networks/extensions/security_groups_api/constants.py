@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from cloudcafe.networking.networks.common.constants \
+    import NeutronResponseCodes
 
-from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 
+class SecurityGroupsResponseCodes(NeutronResponseCodes):
+    """HTTP Security Groups API Response codes"""
 
-class SecurityGroupsConfig(NetworkingBaseConfig):
-    """Security Groups and Rules configuration parameters"""
-
-    SECTION_NAME = 'security_groups'
-
-    @property
-    def starts_with_name(self):
-        """Network start name label for test runs"""
-        return self.get("starts_with_name", "security_groups_test")
+    LIST_SECURITY_GROUPS = 200
+    GET_SECURITY_GROUP = 200
+    CREATE_SECURITY_GROUP = 201
+    DELETE_SECURITY_GROUP = 204
+    LIST_SECURITY_GROUP_RULES = 200
+    GET_SECURITY_GROUP_RULE = 200
+    CREATE_SECURITY_GROUP_RULE = 201
+    DELETE_SECURITY_GROUP_RULE = 204

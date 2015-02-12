@@ -97,13 +97,7 @@ class NetworkingComposite(object):
         self.common = NetworkingCommonComposite()
 
         # Parent behavior can be used directly with parent config values
-        self.common.behaviors = self.common.behavior_class(
-            networks_client=self.networks.client,
-            networks_config=self.networks.config,
-            subnets_client=self.subnets.client,
-            subnets_config=self.subnets.config,
-            ports_client=self.ports.client,
-            ports_config=self.ports.config)
+        self.common.behaviors = self.common.behavior_class()
 
         self.networks.behaviors = self.networks.behavior_class(
             networks_client=self.networks.client,

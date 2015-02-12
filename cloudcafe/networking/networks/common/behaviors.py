@@ -20,11 +20,7 @@ import time
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 from cloudcafe.networking.networks.common.exceptions \
-    import UnsupportedTypeException, UnhandledMethodCaseException
-from cloudcafe.networking.networks.common.models.response.network \
-    import Network
-from cloudcafe.networking.networks.common.models.response.port \
-    import Port
+    import UnhandledMethodCaseException
 
 
 class NetworkingBaseBehaviors(BaseBehavior):
@@ -42,16 +38,9 @@ class NetworkingBaseBehaviors(BaseBehavior):
     in the ports config
     """
 
-    def __init__(self, networks_client, networks_config, subnets_client,
-                 subnets_config, ports_client, ports_config):
+    def __init__(self):
         super(NetworkingBaseBehaviors, self).__init__()
         self.config = NetworkingBaseConfig()
-        self.networks_config = networks_config
-        self.networks_client = networks_client
-        self.subnets_client = subnets_client
-        self.subnets_config = subnets_config
-        self.ports_client = ports_client
-        self.ports_config = ports_config
 
     def check_response(self, resp, status_code, label, message,
                        network_id=None):
@@ -106,52 +95,65 @@ class NetworkingBaseBehaviors(BaseBehavior):
             raise UnhandledMethodCaseException(err_msg)
         return response_msg
 
-    def wait_for_status(self, resource_entity, new_status, timeout=None,
-                       poll_interval=None):
+    def filter_entity_list_by_name(self, entity_list, name):
         """
-        @summary: Check a new status is reached by an entity object
-        @param resource_entity: entity object like Network and Port
-        @type resource_entity: Network or Port entity object (may be extended
-            to other types with the status attribute)
-        @param new_status: expected new status, like ACTIVE for ex.
-        @type new_status: string
-        @param timeout: seconds to wait for the new status
-        @type timeout: int
-        @param poll_interval: seconds between API calls
-        @type poll_interval: int
-        @return: True or False depending if the new status was reached
-            within the expected timeout
-        @rtype: bool
+        @summary: Filters an entity list by name
+        @param entity_list: List of instances with the name attribute
+        @type entity_list: list(instances)
+        @param name: name or name_starts_with* to filter by
+        @type name: str
+        @return: filtered entity list by name
+        @rtype: list(instances)
         """
+        new_entity_list = []
+        starts_with_name = False
+        name = name.strip()
+        if name[-1] == '*':
+            name = name[:-1]
+            starts_with_name = True
+        for entity in entity_list:
+            if entity.name == name:
+                new_entity_list.append(entity)
+            elif starts_with_name and entity.name.startswith(name):
+                new_entity_list.append(entity)
+        return new_entity_list
 
-        resource_type = type(resource_entity)
+    def filter_entity_list_by_attr(self, entity_list, attr, value):
+        """
+        @summary: Filters an entity list by attribute
+        @param entity_list: List of instances
+        @type entity_list: list(instances)
+        @param attr: entity attribute to filter by
+        @type attr: str
+        @param value: entity attribute value to filter by
+        @type value: str
+        @return: filtered entity list by attribute
+        @rtype: list(instances)
+        """
+        new_entity_list = []
+        for entity in entity_list:
+            if hasattr(entity, attr):
+                attr_value = getattr(entity, attr)
+                if attr_value == value:
+                    new_entity_list.append(entity)
+        return new_entity_list
 
-        # Subnets do NOT have a status attribute
-        if resource_type == Network:
-            client_call = self.networks_client.get_network
-        elif resource_type == Port:
-            client_call = self.ports_client.get_port
-        else:
-            msg = 'Entity type {0} NOT supported'.format(resource_type)
-            raise UnsupportedTypeException(msg)
-
-        entity_id = resource_entity.id
-        initial_status = resource_entity.status
-        timeout = timeout or self.config.resource_change_status_timeout
-        poll_interval = poll_interval or self.config.api_poll_interval
-        endtime = time.time() + int(timeout)
-
-        log_msg = ('Checking {0} entity type initial {1} status is updated '
-                   'to {2} status within a timeout of {3}').format(
-                    resource_type, initial_status, new_status, timeout)
-        self._log.info(log_msg)
-
-        while time.time() < endtime:
-            resp = client_call(entity_id)
-            if resp.ok and resp.entity and resp.entity.status == new_status:
-                return True
-            time.sleep(poll_interval)
-        return False
+    def get_id_list_from_entity_list(self, entity_list, name=None):
+        """
+        @summary: Gets an id list from an entity list
+        @param entity_list: List of instances with the name and id attributes
+        @type entity_list: list(instances)
+        @param name: (optional) name or name_starts_with* to filter by
+        @type name: str
+        @return: ID list
+        @rtype: list
+        """
+        id_list = []
+        if name:
+            entity_list = self.filter_entity_list_by_name(entity_list, name)
+        for entity in entity_list:
+            id_list.append(entity.id)
+        return id_list
 
 
 class NetworkingResponse(object):
