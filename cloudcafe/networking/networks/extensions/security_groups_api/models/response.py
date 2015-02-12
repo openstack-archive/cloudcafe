@@ -68,7 +68,11 @@ class SecurityGroup(AutoMarshallingModel):
             if ret.security_group_rules:
                 security_group_rules = []
                 for rule in ret.security_group_rules:
-                    security_group_rules.append(SecurityGroupRule(**rule))
+                    # In case we have a list of uuids (strings)
+                    if type(rule) != dict:
+                        security_group_rules.append(rule)
+                    else:
+                        security_group_rules.append(SecurityGroupRule(**rule))
                 ret.security_group_rules = security_group_rules
         return ret
 
@@ -83,16 +87,13 @@ class SecurityGroups(AutoMarshallingListModel):
         Return a list of security group objects from a JSON
         serialized string
         """
-
         ret = cls()
         json_dict = json.loads(serialized_str)
-
         # Replacing attribute response names if they are Python reserved words
         # with a trailing underscore, for ex. id for id_ or if they have a
         # special character within the name replacing it for an underscore too
         json_dict = cls._replace_dict_key(
             json_dict, 'id', 'id_', recursion=True)
-
         if cls.SECURITY_GROUPS in json_dict:
             security_groups = json_dict.get(cls.SECURITY_GROUPS)
             for security_group in security_groups:
@@ -100,7 +101,12 @@ class SecurityGroups(AutoMarshallingListModel):
                 if result.security_group_rules:
                     security_group_rules = []
                     for rule in result.security_group_rules:
-                        security_group_rules.append(SecurityGroupRule(**rule))
+                        # In case we have a list of uuids (strings)
+                        if type(rule) != dict:
+                            security_group_rules.append(rule)
+                        else:
+                            security_group_rules.append(
+                                SecurityGroupRule(**rule))
                     result.security_group_rules = security_group_rules
                 ret.append(result)
         return ret
