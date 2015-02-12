@@ -29,11 +29,8 @@ from cloudcafe.networking.networks.common.exceptions \
 
 class PortsBehaviors(NetworkingBaseBehaviors):
 
-    def __init__(self, ports_client, ports_config, networks_client,
-                 networks_config, subnets_client, subnets_config):
-        super(PortsBehaviors, self).__init__(
-              networks_client, networks_config, subnets_client, subnets_config,
-              ports_client, ports_config)
+    def __init__(self, ports_client, ports_config):
+        super(PortsBehaviors, self).__init__()
         self.config = ports_config
         self.client = ports_client
 
