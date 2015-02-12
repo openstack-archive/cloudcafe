@@ -70,12 +70,12 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get_boolean('allow_get_image_file')
 
     @property
-    def allow_create_update_public_images(self):
+    def allow_public_images_crud(self):
         """
-        Toggle to determine if override_url allows creating and updating
-        public images
+        Toggle to determine if override_url allows CRUD operations on public
+        images
         """
-        return self.get_boolean('allow_create_update_public_images')
+        return self.get_boolean('allow_public_images_crud')
 
     @property
     def endpoint_name(self):
@@ -86,11 +86,6 @@ class ImagesConfig(ConfigSectionInterface):
     def region(self):
         """Region to identity endpoint in service catalog"""
         return self.get('region')
-
-    @property
-    def superuser(self):
-        """Toggle to determine if primary user has superuser privileges"""
-        return self.get_boolean('superuser')
 
     @property
     def primary_image(self):
