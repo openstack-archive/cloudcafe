@@ -23,26 +23,26 @@ from cloudcafe.glance.config import (
 
 class ImagesAuthComposite(MemoizedAuthServiceComposite):
     def __init__(self):
-        glance_config = ImagesConfig()
+        images_config = ImagesConfig()
         super(ImagesAuthComposite, self).__init__(
-            glance_config.endpoint_name, glance_config.region)
+            images_config.endpoint_name, images_config.region)
 
 
 class ImagesAuthCompositeAltOne(MemoizedAuthServiceComposite):
     def __init__(self):
-        glance_config = ImagesConfig()
+        images_config = ImagesConfig()
         user_config = AltOneUserConfig()
         super(ImagesAuthCompositeAltOne, self).__init__(
-            glance_config.endpoint_name, glance_config.region,
+            images_config.endpoint_name, images_config.region,
             user_config=user_config)
 
 
 class ImagesAuthCompositeAltTwo(MemoizedAuthServiceComposite):
     def __init__(self):
-        glance_config = ImagesConfig()
+        images_config = ImagesConfig()
         user_config = AltTwoUserConfig()
         super(ImagesAuthCompositeAltTwo, self).__init__(
-            glance_config.endpoint_name, glance_config.region,
+            images_config.endpoint_name, images_config.region,
             user_config=user_config)
 
 
@@ -60,4 +60,4 @@ class ImagesComposite(object):
             self.marshalling.deserializer)
 
         self.behaviors = ImagesBehaviors(
-            glance_client=self.client, glance_config=self.config)
+            images_client=self.client, images_config=self.config)
