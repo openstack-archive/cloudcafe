@@ -34,10 +34,10 @@ from cloudcafe.glance.common.types import (
 class ImagesBehaviors(BaseBehavior):
     """@summary: Behaviors for Images"""
 
-    def __init__(self, glance_client, glance_config):
+    def __init__(self, images_client, images_config):
         super(ImagesBehaviors, self).__init__()
-        self.config = glance_config
-        self.client = glance_client
+        self.config = images_config
+        self.client = images_client
         self.resources = ResourcePool()
 
     @staticmethod
@@ -191,7 +191,7 @@ class ImagesBehaviors(BaseBehavior):
         image = response.entity
 
         if image is not None:
-            self.resources.add(image.id_, self.images.client.delete_image)
+            self.resources.add(image.id_, self.client.delete_image)
 
         return image
 
@@ -739,7 +739,7 @@ class ImagesBehaviors(BaseBehavior):
         if (task is not None and task.type_ == TaskTypes.IMPORT and
                 task.status.lower() == TaskStatus.SUCCESS):
             self.resources.add(task.result.image_id,
-                               self.images.client.delete_image)
+                               self.client.delete_image)
 
         return task
 
