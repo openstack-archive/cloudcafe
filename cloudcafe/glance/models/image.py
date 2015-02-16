@@ -136,7 +136,7 @@ class Image(AutoMarshallingModel):
         obj_dict['os_type'] = self.os_type
         obj_dict['protected'] = self.protected
         obj_dict['schema'] = self.schema
-        obj_dict['self_'] = self.self_
+        obj_dict['self'] = self.self_
         obj_dict['size'] = self.size
         obj_dict['status'] = self.status
         obj_dict['tags'] = self.tags
@@ -144,6 +144,7 @@ class Image(AutoMarshallingModel):
         obj_dict['user_id'] = self.user_id
         obj_dict['visibility'] = self.visibility
         obj_dict['owner'] = self.owner
+        obj_dict.update(self.additional_properties)
         obj_dict = self._remove_empty_values(obj_dict)
         return json.dumps(obj_dict)
 
