@@ -23,7 +23,7 @@ from cloudcafe.compute.common.equality_tools import EqualityTools
 
 
 class Image(AutoMarshallingModel):
-    """@summary: Image v2 model"""
+    """@summary: Image model"""
 
     def __init__(self, auto_disk_config=None, checksum=None,
                  container_format=None, created_at=None, disk_format=None,
@@ -32,7 +32,6 @@ class Image(AutoMarshallingModel):
                  schema=None, self_=None, size=None, status=None, tags=None,
                  updated_at=None, user_id=None, visibility=None, owner=None,
                  additional_properties=None):
-        # TODO: 'direct_url' and 'locations' should be added at a later date
         self.auto_disk_config = auto_disk_config
         self.checksum = checksum
         self.container_format = container_format
@@ -82,13 +81,13 @@ class Image(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        additional_properties = {}
         """When adding user specified or "additional" properties to an image,
         they are added to the root of the image object as opposed to a
         separate metadata dicionary.  The following loop needed to be
         implemented in order to catch all of these additional properties
         and filter out the core properties so that they were not repeated.
         """
+        additional_properties = {}
         for key, value in json_dict.items():
             if key not in ['auto_disk_config', 'checksum', 'container_format',
                            'created_at', 'disk_format', 'file', 'id',
@@ -159,7 +158,7 @@ class Image(AutoMarshallingModel):
 
 
 class Images(AutoMarshallingListModel):
-    """@summary: Images v2 model"""
+    """@summary: Images model"""
 
     def __init__(self, images=None):
         super(Images, self).__init__()
@@ -179,7 +178,7 @@ class Images(AutoMarshallingListModel):
 
 
 class ImageUpdate(AutoMarshallingModel):
-    """@summary: ImageUpdate v2 model"""
+    """@summary: ImageUpdate model"""
 
     def __init__(self, add=None, replace=None, remove=None):
         self.add_dict = add
@@ -189,26 +188,26 @@ class ImageUpdate(AutoMarshallingModel):
     def _obj_to_json(self):
         replace_list = []
         if self.add_dict:
-            for key, val in self.add_dict.items():
+            for key, value in self.add_dict.items():
                 replace_list.append(
-                    {'add': '/{0}'.format(key),
-                     'value': val})
+                    {'op': 'add', 'path': '/{0}'.format(key),
+                     'value': value})
 
         if self.replace_dict:
-            for key, val in self.replace_dict.items():
+            for key, value in self.replace_dict.items():
                 replace_list.append(
-                    {'replace': '/{0}'.format(key),
-                     'value': val})
+                    {'op': 'replace', 'path': '/{0}'.format(key),
+                     'value': value})
 
         if self.remove_list:
             for prop in self.remove_list:
                 replace_list.append(
-                    {'remove': '/{0}'.format(prop)})
+                    {'op': 'remove', 'path': '/{0}'.format(prop)})
         return json.dumps(replace_list)
 
 
 class Member(AutoMarshallingModel):
-    """@summary: Member v2 model"""
+    """@summary: Member model"""
 
     def __init__(self, created_at=None, image_id=None, member_id=None,
                  schema=None, status=None, updated_at=None):
@@ -247,7 +246,7 @@ class Member(AutoMarshallingModel):
 
 
 class Members(AutoMarshallingListModel):
-    """@summary: Members v2 model"""
+    """@summary: Members model"""
 
     def __init__(self, members=None):
         super(Members, self).__init__()
