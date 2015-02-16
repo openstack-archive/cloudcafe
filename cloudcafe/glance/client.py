@@ -80,15 +80,19 @@ class ImagesClient(AutoMarshallingHTTPClient):
         return self.request('GET', url, response_entity_type=Image,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def register_image(self, checksum=None, container_format=None,
-                       created_at=None, disk_format=None, file_=None, id_=None,
-                       min_disk=None, min_ram=None, name=None, protected=None,
-                       schema=None, self_=None, size=None, status=None,
-                       tags=None, updated_at=None, visibility=None,
+    def register_image(self, auto_disk_config=None, checksum=None,
+                       container_format=None, created_at=None,
+                       disk_format=None, file_=None, id_=None, image_type=None,
+                       min_disk=None, min_ram=None, name=None, os_type=None,
+                       owner=None, protected=None, schema=None, self_=None,
+                       size=None, status=None, tags=None, updated_at=None,
+                       user_id=None, visibility=None,
                        additional_properties=None, requestslib_kwargs=None):
         """
         @summary:  Register an image - Not listed in the Images API docs
 
+        @param auto_disk_config: Auto disk config for the image being created
+        @type auto_disk_config: String
         @param checksum: Checksum for the image being created
         @type checksum: String
         @param container_format: Container format for the image being created
@@ -101,12 +105,18 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @type file_: String
         @param id_: Id for the image being created
         @type id_: UUID
+        @param image_type: Image type for the image being created
+        @type image_type: String
         @param min_disk: Minimum disk for the image being created
         @type min_disk: String
         @param min_ram: Minimum ram for the image being created
         @type min_ram: String
         @param name: Name for the image being created
         @type name: String
+        @param os_type: OS type for the image being created
+        @type os_type: String
+        @param owner: Owner for the image being created
+        @type owner: String
         @param protected: Protected flag for the image being created
         @type protected: Boolean
         @param schema: Schema for the image being created
@@ -121,6 +131,8 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @type tags: Dictionary
         @param updated_at: Updated at for the image being created
         @type updated_at: Datetime
+        @param user_id: User id for the image being created
+        @type user_id: String
         @param visibility: Visibility for the image being created
         @type visibility: String
         @param additional_properties: Additional properties for the image being
@@ -135,12 +147,15 @@ class ImagesClient(AutoMarshallingHTTPClient):
         """
 
         url = '{0}/images'.format(self.base_url)
-        image = Image(checksum=checksum, container_format=container_format,
-                      created_at=created_at, disk_format=disk_format,
-                      file_=file_, id_=id_, min_disk=min_disk, min_ram=min_ram,
-                      name=name, protected=protected, schema=schema,
-                      self_=self_, size=size, status=status, tags=tags,
-                      updated_at=updated_at, visibility=visibility,
+        image = Image(auto_disk_config=auto_disk_config, checksum=checksum,
+                      container_format=container_format, created_at=created_at,
+                      disk_format=disk_format, file_=file_, id_=id_,
+                      image_type=image_type, min_disk=min_disk,
+                      min_ram=min_ram, name=name, os_type=os_type, owner=owner,
+                      protected=protected, schema=schema, self_=self_,
+                      size=size, status=status, tags=tags,
+                      updated_at=updated_at, user_id=user_id,
+                      visibility=visibility,
                       additional_properties=additional_properties)
 
         return self.request('POST', url, request_entity=image,
@@ -170,7 +185,8 @@ class ImagesClient(AutoMarshallingHTTPClient):
         content_type = content_type or 'application/octet-stream'
         headers = {'Content-Type': content_type}
 
-        return self.request('PUT', url, headers=headers, data=file_data)
+        return self.request('PUT', url, headers=headers, data=file_data,
+                            requestslib_kwargs=requestslib_kwargs)
 
     def get_image_file(self, image_id, requestslib_kwargs=None):
         """
