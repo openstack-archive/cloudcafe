@@ -5,7 +5,7 @@ import os
 
 from cloudcafe.identity.common.client import BaseIdentityAPIClient
 from cloudcafe.identity.config import IdentityConfig
-from cloudcafe.identity.v3.config import (
+from cloudcafe.identity.config import (
     ServiceAdmin, UserAdmin, DefaultUser, Roles)
 
 
@@ -13,7 +13,7 @@ class IdentityVersionNotSet(Exception):
     pass
 
 
-class IdentityComposite(object):
+class IdentityBaseComposite(object):
     _user_config_class = UserAdmin
     _ident_config_class = IdentityConfig
 

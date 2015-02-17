@@ -1,9 +1,9 @@
 from cloudcafe.identity.v3.common.tokens.behavior import TokensBehavior
 from cloudcafe.identity.v3.common.tokens.client import TokensClient
-from cloudcafe.identity.composites import IdentityComposite
+from cloudcafe.identity.composites import IdentityBaseComposite
 
 
-class IdentityV3Composite(IdentityComposite):
+class IdentityV3Composite(IdentityBaseComposite):
 
     def __init__(self, user_config=None):
         super(IdentityV3Composite, self).__init__(user_config=user_config)
