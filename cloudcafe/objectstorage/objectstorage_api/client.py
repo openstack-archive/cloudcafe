@@ -241,7 +241,7 @@ class ObjectStorageAPIClient(HTTPClient):
 
     # Account----------------------------------------------------------------
 
-    def retrieve_account_metadata(self):
+    def get_account_metadata(self):
         response = self.head(self.storage_url)
 
         return response
