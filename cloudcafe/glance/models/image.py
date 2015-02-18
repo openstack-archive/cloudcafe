@@ -226,12 +226,13 @@ class Member(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        member = Member(created_at=json_dict.get('created_at'),
+        created_at = dateutil.parser.parse(json_dict.get('created_at'))
+        updated_at = dateutil.parser.parse(json_dict.get('updated_at'))
+        member = Member(created_at=created_at,
                         image_id=json_dict.get('image_id'),
                         member_id=json_dict.get('member_id'),
                         schema=json_dict.get('schema'),
-                        status=json_dict.get('status'),
-                        updated_at=json_dict.get('updated_at'))
+                        status=json_dict.get('status'), updated_at=updated_at)
         return member
 
     def _obj_to_json(self):
