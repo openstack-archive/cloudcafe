@@ -305,22 +305,6 @@ class ImagesBehaviors(BaseBehavior):
 
         return image_list
 
-    def list_all_image_member_ids(self, image_id):
-        """
-        @summary: Retrieve a complete list of image member ids
-
-        @param image_id: Image id to retrieve image members for
-        @type image_id: UUID
-
-        @return: members
-        @rtype: List
-        """
-
-        response = self.client.list_members(image_id)
-        members = response.entity
-
-        return [member.member_id for member in members]
-
     @staticmethod
     def get_time_delta(time_in_sec, time_property):
         """
@@ -411,17 +395,13 @@ class ImagesBehaviors(BaseBehavior):
         return errors
 
     @staticmethod
-    def validate_image_member(image_id, image_member, member_id):
+    def validate_image_member(image_member):
         """
         @summary: Generically validate an image member contains crucial
         expected data
 
-        @param image_id: Image containing image members
-        @type image_id: UUID
         @param image_member: Image member to be validated
         @type image_member: Object
-        @param member_id: Image member id to compare against
-        @type member_id: Integer
 
         @return: Errors
         @rtype: List
@@ -432,12 +412,12 @@ class ImagesBehaviors(BaseBehavior):
         if image_member.created_at is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', image_member.created_at))
-        if image_member.image_id != image_id:
+        if image_member.image_id is None:
             errors.append(Messages.PROPERTY_MSG.format(
-                'image_id', image_id, image_member.image_id))
-        if image_member.member_id != member_id:
+                'image_id', 'not None', image_member.image_id))
+        if image_member.member_id is None:
             errors.append(Messages.PROPERTY_MSG.format(
-                'member_id', member_id, image_member.member_id))
+                'member_id', 'not None', image_member.member_id))
         if image_member.schema != Schemas.IMAGE_MEMBER_SCHEMA:
             errors.append(Messages.PROPERTY_MSG.format(
                 'schema', Schemas.IMAGE_MEMBER_SCHEMA, image_member.schema))
