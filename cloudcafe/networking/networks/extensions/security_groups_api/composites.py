@@ -15,6 +15,8 @@ limitations under the License.
 """
 
 from cloudcafe.networking.networks.composites import _NetworkingAuthComposite
+from cloudcafe.networking.networks.extensions.security_groups_api.behaviors \
+    import SecurityGroupsBehaviors
 from cloudcafe.networking.networks.extensions.security_groups_api.client \
     import SecurityGroupsClient
 from cloudcafe.networking.networks.extensions.security_groups_api.config \
@@ -30,3 +32,7 @@ class SecurityGroupsComposite(object):
         self.user = auth_composite._auth_user_config
         self.config = SecurityGroupsConfig()
         self.client = SecurityGroupsClient(**auth_composite.client_args)
+
+        self.behaviors = SecurityGroupsBehaviors(
+            security_groups_client=self.client,
+            security_groups_config=self.config)

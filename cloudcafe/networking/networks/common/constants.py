@@ -40,6 +40,7 @@ class NeutronResponseCodes(object):
     NOT_FOUND = 404
     CONFLICT = 409
     REQUEST_ENTITY_TOO_LARGE = 413
+    INTERNAL_SERVER_ERROR = 500
     MAC_GENERATION_FAILURE = 503
 
 
@@ -49,6 +50,8 @@ class NeutronErrorTypes(object):
     ADDR_FORMAT_ERROR = 'AddrFormatError'
     GATEWAY_CONFLICT_WITH_ALLOCATION_POOLS = \
         'GatewayConflictWithAllocationPools'
+    HTTP_BAD_REQUEST = 'HTTPBadRequest'
+    HTTP_INTERNAL_SERVER_ERROR = 'HTTPInternalServerError'
     INVALID_ALLOCATION_POOL = 'InvalidAllocationPool'
     IP_ADDRESS_GENERATION_FAILURE = 'IpAddressGenerationFailure'
     NETWORK_IN_USE = 'NetworkInUse'
