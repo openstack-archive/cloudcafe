@@ -18,21 +18,20 @@ import os
 import re
 import time
 
-from IPy import IP
 from cafe.common.reporting import cclogging
-from cafe.engine.clients.remote_instance.exceptions \
-    import DirectoryNotFoundException
-from cafe.engine.clients.remote_instance.models.dir_details \
-    import DirectoryDetails
-from cafe.engine.clients.remote_instance.models.file_details \
-    import FileDetails
 from cafe.engine.ssh.client import SSHAuthStrategy, SSHClient
+from IPy import IP
+
 from cloudcafe.common.tools import datagen
 from cloudcafe.compute.common.clients.ping import PingClient
 from cloudcafe.compute.common.clients.remote_instance.base_client import \
     RemoteInstanceClient
 from cloudcafe.compute.common.exceptions import FileNotFoundException, \
-    SshConnectionException, InvalidAddressFormat
+    SshConnectionException, InvalidAddressFormat, DirectoryNotFoundException
+from cloudcafe.compute.common.models.dir_details \
+    import DirectoryDetails
+from cloudcafe.compute.common.models.file_details \
+    import FileDetails
 from cloudcafe.common.tools.md5hash import get_md5_hash
 
 

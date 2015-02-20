@@ -17,14 +17,17 @@ limitations under the License.
 from cloudcafe.compute.common.equality_tools import EqualityTools
 
 
-class FileDetails:
+class DirectoryDetails:
     """
-    @summary: Represents File details
+    @summary: Represents Directory details
     """
-    def __init__(self, absolute_permissions, content, name):
+    def __init__(self, absolute_permissions, size, name):
         self.absolute_permissions = absolute_permissions
-        self.content = content
+        self.size = size
         self.name = name
 
     def __eq__(self, other):
         return EqualityTools.are_objects_equal(self, other)
+
+    def __ne__(self, other):
+        return not self == other
