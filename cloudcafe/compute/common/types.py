@@ -181,6 +181,7 @@ class ComputeHypervisors(object):
     DOCKER = 'docker'
     IRONIC = 'ironic'
     LXC_LIBVIRT = 'lxc_libvirt'
+    ON_METAL = 'rackspace_onmetal'
 
 
 class InstanceAuthStrategies(object):
