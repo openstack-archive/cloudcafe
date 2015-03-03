@@ -17,7 +17,7 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.events.models.compute.instance_create import (
+from cloudcafe.compute.events.models.instance_create import (
     InstanceCreateStart, InstanceCreateError, InstanceCreateEnd)
 
 

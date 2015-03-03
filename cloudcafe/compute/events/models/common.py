@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel, EventBaseListModel
+from cloudcafe.compute.events.models.base import (
+    EventBaseModel, EventBaseListModel)
 
 
 class Bandwidth(EventBaseModel):

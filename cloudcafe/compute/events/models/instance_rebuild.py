@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel
-from cloudcafe.events.models.compute.common import ImageMeta
+from cloudcafe.compute.events.models.base import EventBaseModel
+from cloudcafe.compute.events.models.common import FixedIps, ImageMeta
+
 
 BASE_KWARG_MAP = {
     'access_ip_v4': 'access_ip_v4',
@@ -54,10 +55,10 @@ BASE_KWARG_MAP = {
     'vcpus': 'vcpus'}
 
 
-class InstanceDeleteStart(EventBaseModel):
-    """Compute Instance Delete Start Response Model
+class InstanceRebuildStart(EventBaseModel):
+    """Compute Instance Rebuild Start Response Model
 
-    @summary: Response model for a compute.instance.delete.start
+    @summary: Response model for a compute.instance.rebuild.start
         event notification
     @note: Represents a single event notification
 
@@ -76,6 +77,7 @@ class InstanceDeleteStart(EventBaseModel):
             "host": null,
             "hostname": "server123456",
             "image_meta": { <ImageMeta> },
+            "image_name": "Ubuntu 13.10 (Saucy Salamander)",
             "image_ref_url": "http://127.0.0.1/images/my_image",
             "instance_flavor_id": "instance_flavor_id",
             "instance_id": "performance1-1",
@@ -99,18 +101,18 @@ class InstanceDeleteStart(EventBaseModel):
             "vcpus": 1
         }
     """
-    kwarg_map = {}
+    kwarg_map = {'image_name': 'image_name'}
     kwarg_map.update(BASE_KWARG_MAP)
 
     def __init__(self, access_ip_v4, access_ip_v6, architecture,
                  availability_zone, cell_name, created_at, deleted_at,
                  disk_gb, display_name, ephemeral_gb, host, hostname,
-                 image_meta, image_ref_url, instance_flavor_id, instance_id,
-                 instance_type, instance_type_id, kernel_id, launched_at,
-                 memory_mb, metadata, node, os_type, progress, ramdisk_id,
-                 reservation_id, root_gb, state, state_description, tenant_id,
-                 terminated_at, user_id, vcpus):
-        super(InstanceDeleteStart, self).__init__(locals())
+                 image_meta, image_name, image_ref_url, instance_flavor_id,
+                 instance_id, instance_type, instance_type_id, kernel_id,
+                 launched_at, memory_mb, metadata, node, os_type, progress,
+                 ramdisk_id, reservation_id, root_gb, state, state_description,
+                 tenant_id, terminated_at, user_id, vcpus):
+        super(InstanceRebuildStart, self).__init__(locals())
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -121,10 +123,10 @@ class InstanceDeleteStart(EventBaseModel):
         return obj
 
 
-class InstanceDeleteEnd(EventBaseModel):
-    """Compute Instance Delete End Response Model
+class InstanceRebuildEnd(EventBaseModel):
+    """Compute Instance Rebuild End Response Model
 
-    @summary: Response model for a compute.instance.delete.end
+    @summary: Response model for a compute.instance.rebuild.end
         event notification
     @note: Represents a single event notification
 
@@ -140,9 +142,11 @@ class InstanceDeleteEnd(EventBaseModel):
             "disk_gb": 20,
             "display_name": "server123456",
             "ephemeral_gb": 0,
+            "fixed_ips": { <FixedIps> },
             "host": null,
             "hostname": "server123456",
             "image_meta": { <ImageMeta> },
+            "image_name": "Ubuntu 13.10 (Saucy Salamander)",
             "image_ref_url": "http://127.0.0.1/images/my_image",
             "instance_flavor_id": "instance_flavor_id",
             "instance_id": "performance1-1",
@@ -166,23 +170,26 @@ class InstanceDeleteEnd(EventBaseModel):
             "vcpus": 1
         }
     """
-    kwarg_map = {}
+    kwarg_map = {'fixed_ips': 'fixed_ips',
+                 'image_name': 'image_name'}
     kwarg_map.update(BASE_KWARG_MAP)
 
     def __init__(self, access_ip_v4, access_ip_v6, architecture,
                  availability_zone, cell_name, created_at, deleted_at,
-                 disk_gb, display_name, ephemeral_gb, host, hostname,
-                 image_meta, image_ref_url, instance_flavor_id, instance_id,
-                 instance_type, instance_type_id, kernel_id, launched_at,
-                 memory_mb, metadata, node, os_type, progress, ramdisk_id,
-                 reservation_id, root_gb, state, state_description, tenant_id,
-                 terminated_at, user_id, vcpus):
-        super(InstanceDeleteEnd, self).__init__(locals())
+                 disk_gb, display_name, ephemeral_gb, fixed_ips, host,
+                 hostname, image_meta, image_name, image_ref_url,
+                 instance_flavor_id, instance_id, instance_type,
+                 instance_type_id, kernel_id, launched_at, memory_mb,
+                 metadata, node, os_type, progress, ramdisk_id, reservation_id,
+                 root_gb, state, state_description, tenant_id, terminated_at,
+                 user_id, vcpus):
+        super(InstanceRebuildEnd, self).__init__(locals())
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
         """Override dict_to_obj implementation"""
         obj = cls._map_values_to_kwargs(json_dict)
+        obj.fixed_ips = FixedIps._list_to_obj(obj.fixed_ips)
         obj.image_meta = ImageMeta._dict_to_obj(obj.image_meta)
 
         return obj

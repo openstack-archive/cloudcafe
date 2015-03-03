@@ -17,7 +17,7 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.events.models.compute.common import (
+from cloudcafe.compute.events.models.common import (
     Bandwidth, BandwidthInterface, FixedIp, FixedIps, ImageMeta,
     InstanceException)
 

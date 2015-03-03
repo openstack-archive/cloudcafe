@@ -17,7 +17,8 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.events.models.compute.instance_update import InstanceUpdate
+from cloudcafe.compute.events.models.instance_update import (
+    InstanceUpdate)
 
 
 class BaseInstanceActionsTest(unittest.TestCase):

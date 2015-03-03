@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel
-from cloudcafe.events.models.compute.common import FixedIps
-
+from cloudcafe.compute.events.models.base import EventBaseModel
+from cloudcafe.compute.events.models.common import ImageMeta
 
 BASE_KWARG_MAP = {
     'access_ip_v4': 'access_ip_v4',
@@ -55,10 +54,10 @@ BASE_KWARG_MAP = {
     'vcpus': 'vcpus'}
 
 
-class InstanceResizeRevertStart(EventBaseModel):
-    """Compute Instance Resize Revert Start Response Model
+class InstanceResizePrepStart(EventBaseModel):
+    """Compute Instance Resize Prep Start Response Model
 
-    @summary: Response model for a compute.instance.resize.revert.start
+    @summary: Response model for a compute.instance.resize.prep.start
         event notification
     @note: Represents a single event notification
 
@@ -74,7 +73,6 @@ class InstanceResizeRevertStart(EventBaseModel):
             "disk_gb": 20,
             "display_name": "server123456",
             "ephemeral_gb": 0,
-            "fixed_ips": { <FixedIps> },
             "host": null,
             "hostname": "server123456",
             "image_meta": { <ImageMeta> },
@@ -112,13 +110,21 @@ class InstanceResizeRevertStart(EventBaseModel):
                  memory_mb, metadata, node, os_type, progress, ramdisk_id,
                  reservation_id, root_gb, state, state_description, tenant_id,
                  terminated_at, user_id, vcpus):
-        super(InstanceResizeRevertStart, self).__init__(locals())
+        super(InstanceResizePrepStart, self).__init__(locals())
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        """Override dict_to_obj implementation"""
+        obj = cls._map_values_to_kwargs(json_dict)
+        obj.image_meta = ImageMeta._dict_to_obj(obj.image_meta)
+
+        return obj
 
 
-class InstanceResizeRevertEnd(EventBaseModel):
-    """Compute Instance Resize Revert End Response Model
+class InstanceResizePrepEnd(EventBaseModel):
+    """Compute Instance Resize Prep End Response Model
 
-    @summary: Response model for a compute.instance.resize.revert.end
+    @summary: Response model for a compute.instance.resize.prep.end
         event notification
     @note: Represents a single event notification
 
@@ -134,7 +140,6 @@ class InstanceResizeRevertEnd(EventBaseModel):
             "disk_gb": 20,
             "display_name": "server123456",
             "ephemeral_gb": 0,
-            "fixed_ips": { <FixedIps> },
             "host": null,
             "hostname": "server123456",
             "image_meta": { <ImageMeta> },
@@ -147,6 +152,8 @@ class InstanceResizeRevertEnd(EventBaseModel):
             "launched_at": "",
             "memory_mb": 1024,
             "metadata": {},
+            "new_instance_type": "512MB Standard Instance",
+            "new_instance_type_id": "2",
             "node": null,
             "os_type": "linux",
             "progress": "",
@@ -161,7 +168,8 @@ class InstanceResizeRevertEnd(EventBaseModel):
             "vcpus": 1
         }
     """
-    kwarg_map = {}
+    kwarg_map = {'new_instance_type': 'new_instance_type',
+                 'new_instance_type_id': 'new_instance_type_id'}
     kwarg_map.update(BASE_KWARG_MAP)
 
     def __init__(self, access_ip_v4, access_ip_v6, architecture,
@@ -169,7 +177,16 @@ class InstanceResizeRevertEnd(EventBaseModel):
                  disk_gb, display_name, ephemeral_gb, host, hostname,
                  image_meta, image_ref_url, instance_flavor_id, instance_id,
                  instance_type, instance_type_id, kernel_id, launched_at,
-                 memory_mb, metadata, node, os_type, progress, ramdisk_id,
-                 reservation_id, root_gb, state, state_description, tenant_id,
-                 terminated_at, user_id, vcpus):
-        super(InstanceResizeRevertEnd, self).__init__(locals())
+                 memory_mb, metadata, new_instance_type, new_instance_type_id,
+                 node, os_type, progress, ramdisk_id, reservation_id, root_gb,
+                 state, state_description, tenant_id, terminated_at, user_id,
+                 vcpus):
+        super(InstanceResizePrepEnd, self).__init__(locals())
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        """Override dict_to_obj implementation"""
+        obj = cls._map_values_to_kwargs(json_dict)
+        obj.image_meta = ImageMeta._dict_to_obj(obj.image_meta)
+
+        return obj

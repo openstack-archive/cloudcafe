@@ -16,7 +16,7 @@ limitations under the License.
 
 import unittest
 
-from cloudcafe.events.pipeline_utilities import (
+from cloudcafe.compute.events.pipeline_utilities import (
     Result, box_data, bind, PipelineTask, combine_result_with_and,
     combine_result_with_or, Pipeline, PipelineRuntimeError)
 

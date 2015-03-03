@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel
-from cloudcafe.events.models.compute.common import Bandwidth, ImageMeta
+from cloudcafe.compute.events.models.base import EventBaseModel
+from cloudcafe.compute.events.models.common import Bandwidth, ImageMeta
 
 
 BASE_KWARG_MAP = {
@@ -55,10 +55,10 @@ BASE_KWARG_MAP = {
     'vcpus': 'vcpus'}
 
 
-class InstanceUpdate(EventBaseModel):
-    """Compute Instance Update Response Model
+class InstanceExists(EventBaseModel):
+    """Compute Instance Exists Response Model
 
-    @summary: Response model for a compute.instance.update
+    @summary: Response model for a compute.instance.exists
         event notification
     @note: Represents a single event notification
 
@@ -89,10 +89,7 @@ class InstanceUpdate(EventBaseModel):
             "launched_at": "",
             "memory_mb": 1024,
             "metadata": {},
-            "new_task_state": null,
             "node": null,
-            "old_state": "building",
-            "old_task_state": null,
             "os_type": "linux",
             "progress": "",
             "ramdisk_id": "",
@@ -108,10 +105,7 @@ class InstanceUpdate(EventBaseModel):
     """
     kwarg_map = {'audit_period_beginning': 'audit_period_beginning',
                  'audit_period_ending': 'audit_period_ending',
-                 'bandwidth': 'bandwidth',
-                 'new_task_state': 'new_task_state',
-                 'old_state': 'old_state',
-                 'old_task_state': 'old_task_state'}
+                 'bandwidth': 'bandwidth'}
     kwarg_map.update(BASE_KWARG_MAP)
 
     def __init__(self, access_ip_v4, access_ip_v6, architecture,
@@ -120,11 +114,10 @@ class InstanceUpdate(EventBaseModel):
                  deleted_at, disk_gb, display_name, ephemeral_gb, host,
                  hostname, image_meta, image_ref_url, instance_flavor_id,
                  instance_id, instance_type, instance_type_id, kernel_id,
-                 launched_at, memory_mb, metadata, new_task_state, node,
-                 old_state, old_task_state, os_type, progress, ramdisk_id,
-                 reservation_id, root_gb, state, state_description, tenant_id,
-                 terminated_at, user_id, vcpus):
-        super(InstanceUpdate, self).__init__(locals())
+                 launched_at, memory_mb, metadata, node, os_type, progress,
+                 ramdisk_id, reservation_id, root_gb, state, state_description,
+                 tenant_id, terminated_at, user_id, vcpus):
+        super(InstanceExists, self).__init__(locals())
 
     @classmethod
     def _dict_to_obj(cls, json_dict):

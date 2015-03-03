@@ -17,8 +17,8 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.events.models.compute.instance_resize_confirm import (
-    InstanceResizeConfirmStart, InstanceResizeConfirmEnd)
+from cloudcafe.compute.events.models.instance_exists import (
+    InstanceExists)
 
 
 class BaseInstanceActionsTest(unittest.TestCase):
@@ -26,14 +26,14 @@ class BaseInstanceActionsTest(unittest.TestCase):
     def setUpClass(cls):
         super(BaseInstanceActionsTest, cls).setUpClass()
 
-        cls.fixed_ip_dict = {
-            "address": "10.10.0.0",
-            "floating_ips": [],
-            "label": "public",
-            "meta": {},
-            "type": "fixed",
-            "version": 4,
-            "vif_mac": "FE:ED:FA:00:1C:D4"
+        cls.bandwidth_interface_dict = {
+            "bw_in": 123456,
+            "bw_out": 654321
+        }
+
+        cls.bandwidth_dict = {
+            "private": cls.bandwidth_interface_dict,
+            "public": cls.bandwidth_interface_dict
         }
 
         cls.image_meta_dict = {
@@ -50,7 +50,7 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "os_type": "linux"
         }
 
-        cls.base_resize_confirm_dict = {
+        cls.base_instance_exists_dict = {
             "access_ip_v4": "10.10.0.0",
             "access_ip_v6": None,
             "architecture": "x64",
@@ -87,80 +87,43 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "vcpus": 1
         }
 
-        cls.resize_confirm_end_dict = {
-            "fixed_ips": [cls.fixed_ip_dict]
+        cls.instance_exists_dict = {
+            "audit_period_beginning": "2015-01-16 00:00:00",
+            "audit_period_ending": "2015-01-16 19:08:45",
+            "bandwidth": cls.bandwidth_dict
         }
-        cls.resize_confirm_end_dict.update(cls.base_resize_confirm_dict)
+        cls.instance_exists_dict.update(cls.base_instance_exists_dict)
 
-        cls.resize_confirm_start_obj = InstanceResizeConfirmStart._dict_to_obj(
-            cls.base_resize_confirm_dict)
-        cls.resize_confirm_end_obj = InstanceResizeConfirmEnd._dict_to_obj(
-            cls.resize_confirm_end_dict)
+        cls.instance_exists_obj = InstanceExists._dict_to_obj(
+            cls.instance_exists_dict)
 
 
-class InstanceResizeConfirmStartTest(BaseInstanceActionsTest):
+class InstanceExistsTest(BaseInstanceActionsTest):
 
-    def test_instance_resize_confirm_start_valid_json(self):
+    def test_instance_exists_valid_json(self):
         """Verify that the valid event deserialized correctly"""
-        expected_obj = self.resize_confirm_start_obj
+        expected_obj = self.instance_exists_obj
 
-        actual_json = json.dumps(self.base_resize_confirm_dict)
-        actual_obj = InstanceResizeConfirmStart.deserialize(
-            actual_json, 'json')
+        actual_json = json.dumps(self.instance_exists_dict)
+        actual_obj = InstanceExists.deserialize(actual_json, 'json')
 
         self.assertEqual(expected_obj, actual_obj)
         self.assertFalse(actual_obj.is_empty())
 
-    def test_instance_resize_confirm_start_missing_attribute_json(self):
+    def test_instance_exists_missing_attribute_json(self):
         """Verify event missing expected attribute does not deserialize"""
-        modified_dict = self.base_resize_confirm_dict.copy()
+        modified_dict = self.instance_exists_dict.copy()
         modified_dict.popitem()
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmStart.deserialize(
-            actual_json, 'json')
+        actual_obj = InstanceExists.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)
 
-    def test_instance_resize_confirm_start_extra_attribute_json(self):
+    def test_instance_exists_extra_attribute_json(self):
         """Verify event with unexpected attribute does not deserialize"""
-        modified_dict = self.base_resize_confirm_dict.copy()
+        modified_dict = self.instance_exists_dict.copy()
         modified_dict['test_dummy'] = 'test_dummy'
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmStart.deserialize(
-            actual_json, 'json')
-        self.assertIsNone(actual_obj)
-
-
-class InstanceResizeConfirmEndTest(BaseInstanceActionsTest):
-
-    def test_instance_resize_confirm_end_valid_json(self):
-        """Verify that the valid event deserialized correctly"""
-        expected_obj = self.resize_confirm_end_obj
-
-        actual_json = json.dumps(self.resize_confirm_end_dict)
-        actual_obj = InstanceResizeConfirmEnd.deserialize(
-            actual_json, 'json')
-
-        self.assertEqual(expected_obj, actual_obj)
-        self.assertFalse(actual_obj.is_empty())
-
-    def test_instance_resize_confirm_end_missing_attribute_json(self):
-        """Verify event missing expected attribute does not deserialize"""
-        modified_dict = self.resize_confirm_end_dict.copy()
-        modified_dict.popitem()
-
-        actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmEnd.deserialize(
-            actual_json, 'json')
-        self.assertIsNone(actual_obj)
-
-    def test_instance_resize_confirm_end_extra_attribute_json(self):
-        """Verify event with unexpected attribute does not deserialize"""
-        modified_dict = self.resize_confirm_end_dict.copy()
-        modified_dict['test_dummy'] = 'test_dummy'
-
-        actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmEnd.deserialize(
-            actual_json, 'json')
+        actual_obj = InstanceExists.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)

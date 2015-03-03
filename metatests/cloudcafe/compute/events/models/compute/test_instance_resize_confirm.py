@@ -17,14 +17,24 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.events.models.compute.instance_delete import (
-    InstanceDeleteStart, InstanceDeleteEnd)
+from cloudcafe.compute.events.models.instance_resize_confirm import (
+    InstanceResizeConfirmStart, InstanceResizeConfirmEnd)
 
 
 class BaseInstanceActionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(BaseInstanceActionsTest, cls).setUpClass()
+
+        cls.fixed_ip_dict = {
+            "address": "10.10.0.0",
+            "floating_ips": [],
+            "label": "public",
+            "meta": {},
+            "type": "fixed",
+            "version": 4,
+            "vif_mac": "FE:ED:FA:00:1C:D4"
+        }
 
         cls.image_meta_dict = {
             "auto_disk_config": "disabled",
@@ -40,7 +50,7 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "os_type": "linux"
         }
 
-        cls.base_instance_delete_dict = {
+        cls.base_resize_confirm_dict = {
             "access_ip_v4": "10.10.0.0",
             "access_ip_v6": None,
             "architecture": "x64",
@@ -77,69 +87,80 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "vcpus": 1
         }
 
-        cls.instance_delete_start_obj = InstanceDeleteStart._dict_to_obj(
-            cls.base_instance_delete_dict)
-        cls.instance_delete_end_obj = InstanceDeleteEnd._dict_to_obj(
-            cls.base_instance_delete_dict)
+        cls.resize_confirm_end_dict = {
+            "fixed_ips": [cls.fixed_ip_dict]
+        }
+        cls.resize_confirm_end_dict.update(cls.base_resize_confirm_dict)
+
+        cls.resize_confirm_start_obj = InstanceResizeConfirmStart._dict_to_obj(
+            cls.base_resize_confirm_dict)
+        cls.resize_confirm_end_obj = InstanceResizeConfirmEnd._dict_to_obj(
+            cls.resize_confirm_end_dict)
 
 
-class InstanceDeleteStartTest(BaseInstanceActionsTest):
+class InstanceResizeConfirmStartTest(BaseInstanceActionsTest):
 
-    def test_instance_delete_start_valid_json(self):
+    def test_instance_resize_confirm_start_valid_json(self):
         """Verify that the valid event deserialized correctly"""
-        expected_obj = self.instance_delete_start_obj
+        expected_obj = self.resize_confirm_start_obj
 
-        actual_json = json.dumps(self.base_instance_delete_dict)
-        actual_obj = InstanceDeleteStart.deserialize(actual_json, 'json')
+        actual_json = json.dumps(self.base_resize_confirm_dict)
+        actual_obj = InstanceResizeConfirmStart.deserialize(
+            actual_json, 'json')
 
         self.assertEqual(expected_obj, actual_obj)
         self.assertFalse(actual_obj.is_empty())
 
-    def test_instance_delete_start_missing_attribute_json(self):
+    def test_instance_resize_confirm_start_missing_attribute_json(self):
         """Verify event missing expected attribute does not deserialize"""
-        modified_dict = self.base_instance_delete_dict.copy()
+        modified_dict = self.base_resize_confirm_dict.copy()
         modified_dict.popitem()
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceDeleteStart.deserialize(actual_json, 'json')
+        actual_obj = InstanceResizeConfirmStart.deserialize(
+            actual_json, 'json')
         self.assertIsNone(actual_obj)
 
-    def test_instance_delete_start_extra_attribute_json(self):
+    def test_instance_resize_confirm_start_extra_attribute_json(self):
         """Verify event with unexpected attribute does not deserialize"""
-        modified_dict = self.base_instance_delete_dict.copy()
+        modified_dict = self.base_resize_confirm_dict.copy()
         modified_dict['test_dummy'] = 'test_dummy'
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceDeleteStart.deserialize(actual_json, 'json')
+        actual_obj = InstanceResizeConfirmStart.deserialize(
+            actual_json, 'json')
         self.assertIsNone(actual_obj)
 
 
-class InstanceDeleteEndTest(BaseInstanceActionsTest):
+class InstanceResizeConfirmEndTest(BaseInstanceActionsTest):
 
-    def test_instance_delete_end_valid_json(self):
+    def test_instance_resize_confirm_end_valid_json(self):
         """Verify that the valid event deserialized correctly"""
-        expected_obj = self.instance_delete_end_obj
+        expected_obj = self.resize_confirm_end_obj
 
-        actual_json = json.dumps(self.base_instance_delete_dict)
-        actual_obj = InstanceDeleteEnd.deserialize(actual_json, 'json')
+        actual_json = json.dumps(self.resize_confirm_end_dict)
+        actual_obj = InstanceResizeConfirmEnd.deserialize(
+            actual_json, 'json')
 
         self.assertEqual(expected_obj, actual_obj)
         self.assertFalse(actual_obj.is_empty())
 
-    def test_instance_delete_end_missing_attribute_json(self):
+    def test_instance_resize_confirm_end_missing_attribute_json(self):
         """Verify event missing expected attribute does not deserialize"""
-        modified_dict = self.base_instance_delete_dict.copy()
+        modified_dict = self.resize_confirm_end_dict.copy()
         modified_dict.popitem()
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceDeleteEnd.deserialize(actual_json, 'json')
+        actual_obj = InstanceResizeConfirmEnd.deserialize(
+            actual_json, 'json')
         self.assertIsNone(actual_obj)
 
-    def test_instance_delete_end_extra_attribute_json(self):
+    def test_instance_resize_confirm_end_extra_attribute_json(self):
         """Verify event with unexpected attribute does not deserialize"""
-        modified_dict = self.base_instance_delete_dict.copy()
+        modified_dict = self.resize_confirm_end_dict.copy()
         modified_dict['test_dummy'] = 'test_dummy'
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceDeleteEnd.deserialize(actual_json, 'json')
+        actual_obj = InstanceResizeConfirmEnd.deserialize(
+            actual_json, 'json')
         self.assertIsNone(actual_obj)

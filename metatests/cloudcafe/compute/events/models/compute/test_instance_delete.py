@@ -17,23 +17,14 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.events.models.compute.instance_exists import InstanceExists
+from cloudcafe.compute.events.models.instance_delete import (
+    InstanceDeleteStart, InstanceDeleteEnd)
 
 
 class BaseInstanceActionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(BaseInstanceActionsTest, cls).setUpClass()
-
-        cls.bandwidth_interface_dict = {
-            "bw_in": 123456,
-            "bw_out": 654321
-        }
-
-        cls.bandwidth_dict = {
-            "private": cls.bandwidth_interface_dict,
-            "public": cls.bandwidth_interface_dict
-        }
 
         cls.image_meta_dict = {
             "auto_disk_config": "disabled",
@@ -49,7 +40,7 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "os_type": "linux"
         }
 
-        cls.base_instance_exists_dict = {
+        cls.base_instance_delete_dict = {
             "access_ip_v4": "10.10.0.0",
             "access_ip_v6": None,
             "architecture": "x64",
@@ -86,43 +77,69 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "vcpus": 1
         }
 
-        cls.instance_exists_dict = {
-            "audit_period_beginning": "2015-01-16 00:00:00",
-            "audit_period_ending": "2015-01-16 19:08:45",
-            "bandwidth": cls.bandwidth_dict
-        }
-        cls.instance_exists_dict.update(cls.base_instance_exists_dict)
-
-        cls.instance_exists_obj = InstanceExists._dict_to_obj(
-            cls.instance_exists_dict)
+        cls.instance_delete_start_obj = InstanceDeleteStart._dict_to_obj(
+            cls.base_instance_delete_dict)
+        cls.instance_delete_end_obj = InstanceDeleteEnd._dict_to_obj(
+            cls.base_instance_delete_dict)
 
 
-class InstanceExistsTest(BaseInstanceActionsTest):
+class InstanceDeleteStartTest(BaseInstanceActionsTest):
 
-    def test_instance_exists_valid_json(self):
+    def test_instance_delete_start_valid_json(self):
         """Verify that the valid event deserialized correctly"""
-        expected_obj = self.instance_exists_obj
+        expected_obj = self.instance_delete_start_obj
 
-        actual_json = json.dumps(self.instance_exists_dict)
-        actual_obj = InstanceExists.deserialize(actual_json, 'json')
+        actual_json = json.dumps(self.base_instance_delete_dict)
+        actual_obj = InstanceDeleteStart.deserialize(actual_json, 'json')
 
         self.assertEqual(expected_obj, actual_obj)
         self.assertFalse(actual_obj.is_empty())
 
-    def test_instance_exists_missing_attribute_json(self):
+    def test_instance_delete_start_missing_attribute_json(self):
         """Verify event missing expected attribute does not deserialize"""
-        modified_dict = self.instance_exists_dict.copy()
+        modified_dict = self.base_instance_delete_dict.copy()
         modified_dict.popitem()
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceExists.deserialize(actual_json, 'json')
+        actual_obj = InstanceDeleteStart.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)
 
-    def test_instance_exists_extra_attribute_json(self):
+    def test_instance_delete_start_extra_attribute_json(self):
         """Verify event with unexpected attribute does not deserialize"""
-        modified_dict = self.instance_exists_dict.copy()
+        modified_dict = self.base_instance_delete_dict.copy()
         modified_dict['test_dummy'] = 'test_dummy'
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceExists.deserialize(actual_json, 'json')
+        actual_obj = InstanceDeleteStart.deserialize(actual_json, 'json')
+        self.assertIsNone(actual_obj)
+
+
+class InstanceDeleteEndTest(BaseInstanceActionsTest):
+
+    def test_instance_delete_end_valid_json(self):
+        """Verify that the valid event deserialized correctly"""
+        expected_obj = self.instance_delete_end_obj
+
+        actual_json = json.dumps(self.base_instance_delete_dict)
+        actual_obj = InstanceDeleteEnd.deserialize(actual_json, 'json')
+
+        self.assertEqual(expected_obj, actual_obj)
+        self.assertFalse(actual_obj.is_empty())
+
+    def test_instance_delete_end_missing_attribute_json(self):
+        """Verify event missing expected attribute does not deserialize"""
+        modified_dict = self.base_instance_delete_dict.copy()
+        modified_dict.popitem()
+
+        actual_json = json.dumps(modified_dict)
+        actual_obj = InstanceDeleteEnd.deserialize(actual_json, 'json')
+        self.assertIsNone(actual_obj)
+
+    def test_instance_delete_end_extra_attribute_json(self):
+        """Verify event with unexpected attribute does not deserialize"""
+        modified_dict = self.base_instance_delete_dict.copy()
+        modified_dict['test_dummy'] = 'test_dummy'
+
+        actual_json = json.dumps(modified_dict)
+        actual_obj = InstanceDeleteEnd.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)
