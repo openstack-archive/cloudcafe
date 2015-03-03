@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel
-from cloudcafe.events.models.compute.common import (
+from cloudcafe.compute.events.models.base import EventBaseModel
+from cloudcafe.compute.events.models.compute.common import (
     FixedIps, ImageMeta, InstanceException)
 
 

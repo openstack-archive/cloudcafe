@@ -17,8 +17,8 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.events.models.compute.instance_resize_confirm import (
-    InstanceResizeConfirmStart, InstanceResizeConfirmEnd)
+from cloudcafe.compute.events.models.compute.instance_rebuild import (
+    InstanceRebuildStart, InstanceRebuildEnd)
 
 
 class BaseInstanceActionsTest(unittest.TestCase):
@@ -50,7 +50,7 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "os_type": "linux"
         }
 
-        cls.base_resize_confirm_dict = {
+        cls.base_instance_rebuild_dict = {
             "access_ip_v4": "10.10.0.0",
             "access_ip_v6": None,
             "architecture": "x64",
@@ -87,80 +87,80 @@ class BaseInstanceActionsTest(unittest.TestCase):
             "vcpus": 1
         }
 
-        cls.resize_confirm_end_dict = {
+        cls.instance_rebuild_start_dict = {
+            "image_name": "Ubuntu 13.10 (Saucy Salamander)"
+        }
+        cls.instance_rebuild_start_dict.update(cls.base_instance_rebuild_dict)
+
+        cls.instance_rebuild_end_dict = {
+            "image_name": "Ubuntu 13.10 (Saucy Salamander)",
             "fixed_ips": [cls.fixed_ip_dict]
         }
-        cls.resize_confirm_end_dict.update(cls.base_resize_confirm_dict)
+        cls.instance_rebuild_end_dict.update(cls.base_instance_rebuild_dict)
 
-        cls.resize_confirm_start_obj = InstanceResizeConfirmStart._dict_to_obj(
-            cls.base_resize_confirm_dict)
-        cls.resize_confirm_end_obj = InstanceResizeConfirmEnd._dict_to_obj(
-            cls.resize_confirm_end_dict)
+        cls.instance_rebuild_start_obj = InstanceRebuildStart._dict_to_obj(
+            cls.instance_rebuild_start_dict)
+        cls.instance_rebuild_end_obj = InstanceRebuildEnd._dict_to_obj(
+            cls.instance_rebuild_end_dict)
 
 
-class InstanceResizeConfirmStartTest(BaseInstanceActionsTest):
+class InstanceRebuildStartTest(BaseInstanceActionsTest):
 
-    def test_instance_resize_confirm_start_valid_json(self):
+    def test_instance_rebuild_start_valid_json(self):
         """Verify that the valid event deserialized correctly"""
-        expected_obj = self.resize_confirm_start_obj
+        expected_obj = self.instance_rebuild_start_obj
 
-        actual_json = json.dumps(self.base_resize_confirm_dict)
-        actual_obj = InstanceResizeConfirmStart.deserialize(
-            actual_json, 'json')
+        actual_json = json.dumps(self.instance_rebuild_start_dict)
+        actual_obj = InstanceRebuildStart.deserialize(actual_json, 'json')
 
         self.assertEqual(expected_obj, actual_obj)
         self.assertFalse(actual_obj.is_empty())
 
-    def test_instance_resize_confirm_start_missing_attribute_json(self):
+    def test_instance_rebuild_start_missing_attribute_json(self):
         """Verify event missing expected attribute does not deserialize"""
-        modified_dict = self.base_resize_confirm_dict.copy()
+        modified_dict = self.instance_rebuild_start_dict.copy()
         modified_dict.popitem()
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmStart.deserialize(
-            actual_json, 'json')
+        actual_obj = InstanceRebuildStart.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)
 
-    def test_instance_resize_confirm_start_extra_attribute_json(self):
+    def test_instance_rebuild_start_extra_attribute_json(self):
         """Verify event with unexpected attribute does not deserialize"""
-        modified_dict = self.base_resize_confirm_dict.copy()
+        modified_dict = self.instance_rebuild_start_dict.copy()
         modified_dict['test_dummy'] = 'test_dummy'
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmStart.deserialize(
-            actual_json, 'json')
+        actual_obj = InstanceRebuildStart.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)
 
 
-class InstanceResizeConfirmEndTest(BaseInstanceActionsTest):
+class InstanceRebuildEndTest(BaseInstanceActionsTest):
 
-    def test_instance_resize_confirm_end_valid_json(self):
+    def test_instance_rebuild_end_valid_json(self):
         """Verify that the valid event deserialized correctly"""
-        expected_obj = self.resize_confirm_end_obj
+        expected_obj = self.instance_rebuild_end_obj
 
-        actual_json = json.dumps(self.resize_confirm_end_dict)
-        actual_obj = InstanceResizeConfirmEnd.deserialize(
-            actual_json, 'json')
+        actual_json = json.dumps(self.instance_rebuild_end_dict)
+        actual_obj = InstanceRebuildEnd.deserialize(actual_json, 'json')
 
         self.assertEqual(expected_obj, actual_obj)
         self.assertFalse(actual_obj.is_empty())
 
-    def test_instance_resize_confirm_end_missing_attribute_json(self):
+    def test_instance_rebuild_end_missing_attribute_json(self):
         """Verify event missing expected attribute does not deserialize"""
-        modified_dict = self.resize_confirm_end_dict.copy()
+        modified_dict = self.instance_rebuild_end_dict.copy()
         modified_dict.popitem()
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmEnd.deserialize(
-            actual_json, 'json')
+        actual_obj = InstanceRebuildEnd.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)
 
-    def test_instance_resize_confirm_end_extra_attribute_json(self):
+    def test_instance_rebuild_end_extra_attribute_json(self):
         """Verify event with unexpected attribute does not deserialize"""
-        modified_dict = self.resize_confirm_end_dict.copy()
+        modified_dict = self.instance_rebuild_end_dict.copy()
         modified_dict['test_dummy'] = 'test_dummy'
 
         actual_json = json.dumps(modified_dict)
-        actual_obj = InstanceResizeConfirmEnd.deserialize(
-            actual_json, 'json')
+        actual_obj = InstanceRebuildEnd.deserialize(actual_json, 'json')
         self.assertIsNone(actual_obj)
