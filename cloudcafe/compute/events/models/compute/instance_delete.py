@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel
-from cloudcafe.events.models.compute.common import FixedIps
-
+from cloudcafe.compute.events.models.base import EventBaseModel
+from cloudcafe.compute.events.models.compute.common import ImageMeta
 
 BASE_KWARG_MAP = {
     'access_ip_v4': 'access_ip_v4',
@@ -55,10 +54,10 @@ BASE_KWARG_MAP = {
     'vcpus': 'vcpus'}
 
 
-class InstanceResizeRevertStart(EventBaseModel):
-    """Compute Instance Resize Revert Start Response Model
+class InstanceDeleteStart(EventBaseModel):
+    """Compute Instance Delete Start Response Model
 
-    @summary: Response model for a compute.instance.resize.revert.start
+    @summary: Response model for a compute.instance.delete.start
         event notification
     @note: Represents a single event notification
 
@@ -74,7 +73,6 @@ class InstanceResizeRevertStart(EventBaseModel):
             "disk_gb": 20,
             "display_name": "server123456",
             "ephemeral_gb": 0,
-            "fixed_ips": { <FixedIps> },
             "host": null,
             "hostname": "server123456",
             "image_meta": { <ImageMeta> },
@@ -112,13 +110,21 @@ class InstanceResizeRevertStart(EventBaseModel):
                  memory_mb, metadata, node, os_type, progress, ramdisk_id,
                  reservation_id, root_gb, state, state_description, tenant_id,
                  terminated_at, user_id, vcpus):
-        super(InstanceResizeRevertStart, self).__init__(locals())
+        super(InstanceDeleteStart, self).__init__(locals())
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        """Override dict_to_obj implementation"""
+        obj = cls._map_values_to_kwargs(json_dict)
+        obj.image_meta = ImageMeta._dict_to_obj(obj.image_meta)
+
+        return obj
 
 
-class InstanceResizeRevertEnd(EventBaseModel):
-    """Compute Instance Resize Revert End Response Model
+class InstanceDeleteEnd(EventBaseModel):
+    """Compute Instance Delete End Response Model
 
-    @summary: Response model for a compute.instance.resize.revert.end
+    @summary: Response model for a compute.instance.delete.end
         event notification
     @note: Represents a single event notification
 
@@ -134,7 +140,6 @@ class InstanceResizeRevertEnd(EventBaseModel):
             "disk_gb": 20,
             "display_name": "server123456",
             "ephemeral_gb": 0,
-            "fixed_ips": { <FixedIps> },
             "host": null,
             "hostname": "server123456",
             "image_meta": { <ImageMeta> },
@@ -172,4 +177,12 @@ class InstanceResizeRevertEnd(EventBaseModel):
                  memory_mb, metadata, node, os_type, progress, ramdisk_id,
                  reservation_id, root_gb, state, state_description, tenant_id,
                  terminated_at, user_id, vcpus):
-        super(InstanceResizeRevertEnd, self).__init__(locals())
+        super(InstanceDeleteEnd, self).__init__(locals())
+
+    @classmethod
+    def _dict_to_obj(cls, json_dict):
+        """Override dict_to_obj implementation"""
+        obj = cls._map_values_to_kwargs(json_dict)
+        obj.image_meta = ImageMeta._dict_to_obj(obj.image_meta)
+
+        return obj
