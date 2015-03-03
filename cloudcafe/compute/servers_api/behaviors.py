@@ -152,7 +152,16 @@ class ServerBehaviors(BaseComputeBehavior):
             expected_statuses=[ServerStates.ACTIVE],
             error_statuses=[ServerStates.ERROR],
             poll_rate=self.config.server_status_interval)
-        verifier.start()
+
+        try:
+            verifier.start()
+        except Exception as e:
+            if not e.args:
+                e.args=('',)
+            e.args = (
+                'Failed to create server with instance '
+                'id {id}'.format(id=server_id),) + e.args
+            raise
 
         response = self.servers_client.get_server(server_id)
         return self.verify_entity(response)
