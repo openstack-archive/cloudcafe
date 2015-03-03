@@ -17,7 +17,8 @@ limitations under the License.
 import base64
 import time
 
-from cloudcafe.common.behaviors import StatusProgressionVerifier
+from cloudcafe.common.behaviors import (
+    StatusProgressionVerifier, StatusProgressionError)
 from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
@@ -152,7 +153,23 @@ class ServerBehaviors(BaseComputeBehavior):
             expected_statuses=[ServerStates.ACTIVE],
             error_statuses=[ServerStates.ERROR],
             poll_rate=self.config.server_status_interval)
-        verifier.start()
+
+        try:
+            verifier.start()
+        except StatusProgressionError as e:
+            if not e.args:
+                e.args=('',)
+            e.args = (
+                'Failed to create server with instance '
+                'id {id}'.format(id=server_id),) + e.args
+            raise
+        except Exception as e:
+            if not e.args:
+                e.args=('',)
+            e.args = (
+                'Unexpected error occurred while waiting for server {id}'
+                'to be created.'.format(id=server_id),) + e.args
+            raise
 
         response = self.servers_client.get_server(server_id)
         return self.verify_entity(response)
