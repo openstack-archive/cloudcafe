@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel
-from cloudcafe.events.models.compute.common import ImageMeta
+from cloudcafe.compute.events.models.base import EventBaseModel
+from cloudcafe.compute.events.models.compute.common import Bandwidth, ImageMeta
+
 
 BASE_KWARG_MAP = {
     'access_ip_v4': 'access_ip_v4',
@@ -54,10 +55,10 @@ BASE_KWARG_MAP = {
     'vcpus': 'vcpus'}
 
 
-class InstanceResizePrepStart(EventBaseModel):
-    """Compute Instance Resize Prep Start Response Model
+class InstanceUpdate(EventBaseModel):
+    """Compute Instance Update Response Model
 
-    @summary: Response model for a compute.instance.resize.prep.start
+    @summary: Response model for a compute.instance.update
         event notification
     @note: Represents a single event notification
 
@@ -66,7 +67,10 @@ class InstanceResizePrepStart(EventBaseModel):
             "access_ip_v4": "10.10.0.0",
             "access_ip_v6": null,
             "architecture": "x64",
+            "audit_period_beginning": "2015-01-16 00:00:00",
+            "audit_period_ending": "2015-01-16 19:08:45",
             "availability_zone": null,
+            "bandwidth": { <Bandwidth> }
             "cell_name": "cell name",
             "created_at": "2015-01-15 18:59:29",
             "deleted_at": "",
@@ -85,7 +89,10 @@ class InstanceResizePrepStart(EventBaseModel):
             "launched_at": "",
             "memory_mb": 1024,
             "metadata": {},
+            "new_task_state": null,
             "node": null,
+            "old_state": "building",
+            "old_task_state": null,
             "os_type": "linux",
             "progress": "",
             "ramdisk_id": "",
@@ -99,94 +106,31 @@ class InstanceResizePrepStart(EventBaseModel):
             "vcpus": 1
         }
     """
-    kwarg_map = {}
+    kwarg_map = {'audit_period_beginning': 'audit_period_beginning',
+                 'audit_period_ending': 'audit_period_ending',
+                 'bandwidth': 'bandwidth',
+                 'new_task_state': 'new_task_state',
+                 'old_state': 'old_state',
+                 'old_task_state': 'old_task_state'}
     kwarg_map.update(BASE_KWARG_MAP)
 
     def __init__(self, access_ip_v4, access_ip_v6, architecture,
-                 availability_zone, cell_name, created_at, deleted_at,
-                 disk_gb, display_name, ephemeral_gb, host, hostname,
-                 image_meta, image_ref_url, instance_flavor_id, instance_id,
-                 instance_type, instance_type_id, kernel_id, launched_at,
-                 memory_mb, metadata, node, os_type, progress, ramdisk_id,
+                 audit_period_beginning, audit_period_ending,
+                 availability_zone, bandwidth, cell_name, created_at,
+                 deleted_at, disk_gb, display_name, ephemeral_gb, host,
+                 hostname, image_meta, image_ref_url, instance_flavor_id,
+                 instance_id, instance_type, instance_type_id, kernel_id,
+                 launched_at, memory_mb, metadata, new_task_state, node,
+                 old_state, old_task_state, os_type, progress, ramdisk_id,
                  reservation_id, root_gb, state, state_description, tenant_id,
                  terminated_at, user_id, vcpus):
-        super(InstanceResizePrepStart, self).__init__(locals())
+        super(InstanceUpdate, self).__init__(locals())
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
         """Override dict_to_obj implementation"""
         obj = cls._map_values_to_kwargs(json_dict)
-        obj.image_meta = ImageMeta._dict_to_obj(obj.image_meta)
-
-        return obj
-
-
-class InstanceResizePrepEnd(EventBaseModel):
-    """Compute Instance Resize Prep End Response Model
-
-    @summary: Response model for a compute.instance.resize.prep.end
-        event notification
-    @note: Represents a single event notification
-
-    JSON Example:
-        {
-            "access_ip_v4": "10.10.0.0",
-            "access_ip_v6": null,
-            "architecture": "x64",
-            "availability_zone": null,
-            "cell_name": "cell name",
-            "created_at": "2015-01-15 18:59:29",
-            "deleted_at": "",
-            "disk_gb": 20,
-            "display_name": "server123456",
-            "ephemeral_gb": 0,
-            "host": null,
-            "hostname": "server123456",
-            "image_meta": { <ImageMeta> },
-            "image_ref_url": "http://127.0.0.1/images/my_image",
-            "instance_flavor_id": "instance_flavor_id",
-            "instance_id": "performance1-1",
-            "instance_type": "1 GB Performance",
-            "instance_type_id": "9",
-            "kernel_id": "",
-            "launched_at": "",
-            "memory_mb": 1024,
-            "metadata": {},
-            "new_instance_type": "512MB Standard Instance",
-            "new_instance_type_id": "2",
-            "node": null,
-            "os_type": "linux",
-            "progress": "",
-            "ramdisk_id": "",
-            "reservation_id": "r-abcdefg",
-            "root_gb": 20,
-            "state": "building",
-            "state_description": "",
-            "tenant_id": "123456",
-            "terminated_at": "",
-            "user_id": "123456789",
-            "vcpus": 1
-        }
-    """
-    kwarg_map = {'new_instance_type': 'new_instance_type',
-                 'new_instance_type_id': 'new_instance_type_id'}
-    kwarg_map.update(BASE_KWARG_MAP)
-
-    def __init__(self, access_ip_v4, access_ip_v6, architecture,
-                 availability_zone, cell_name, created_at, deleted_at,
-                 disk_gb, display_name, ephemeral_gb, host, hostname,
-                 image_meta, image_ref_url, instance_flavor_id, instance_id,
-                 instance_type, instance_type_id, kernel_id, launched_at,
-                 memory_mb, metadata, new_instance_type, new_instance_type_id,
-                 node, os_type, progress, ramdisk_id, reservation_id, root_gb,
-                 state, state_description, tenant_id, terminated_at, user_id,
-                 vcpus):
-        super(InstanceResizePrepEnd, self).__init__(locals())
-
-    @classmethod
-    def _dict_to_obj(cls, json_dict):
-        """Override dict_to_obj implementation"""
-        obj = cls._map_values_to_kwargs(json_dict)
+        obj.bandwidth = Bandwidth._dict_to_obj(obj.bandwidth)
         obj.image_meta = ImageMeta._dict_to_obj(obj.image_meta)
 
         return obj

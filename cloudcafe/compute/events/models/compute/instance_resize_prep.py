@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.events.models.base import EventBaseModel
-from cloudcafe.events.models.compute.common import ImageMeta
+from cloudcafe.compute.events.models.base import EventBaseModel
+from cloudcafe.compute.events.models.compute.common import ImageMeta
 
 BASE_KWARG_MAP = {
     'access_ip_v4': 'access_ip_v4',
@@ -54,10 +54,10 @@ BASE_KWARG_MAP = {
     'vcpus': 'vcpus'}
 
 
-class InstanceDeleteStart(EventBaseModel):
-    """Compute Instance Delete Start Response Model
+class InstanceResizePrepStart(EventBaseModel):
+    """Compute Instance Resize Prep Start Response Model
 
-    @summary: Response model for a compute.instance.delete.start
+    @summary: Response model for a compute.instance.resize.prep.start
         event notification
     @note: Represents a single event notification
 
@@ -110,7 +110,7 @@ class InstanceDeleteStart(EventBaseModel):
                  memory_mb, metadata, node, os_type, progress, ramdisk_id,
                  reservation_id, root_gb, state, state_description, tenant_id,
                  terminated_at, user_id, vcpus):
-        super(InstanceDeleteStart, self).__init__(locals())
+        super(InstanceResizePrepStart, self).__init__(locals())
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
@@ -121,10 +121,10 @@ class InstanceDeleteStart(EventBaseModel):
         return obj
 
 
-class InstanceDeleteEnd(EventBaseModel):
-    """Compute Instance Delete End Response Model
+class InstanceResizePrepEnd(EventBaseModel):
+    """Compute Instance Resize Prep End Response Model
 
-    @summary: Response model for a compute.instance.delete.end
+    @summary: Response model for a compute.instance.resize.prep.end
         event notification
     @note: Represents a single event notification
 
@@ -152,6 +152,8 @@ class InstanceDeleteEnd(EventBaseModel):
             "launched_at": "",
             "memory_mb": 1024,
             "metadata": {},
+            "new_instance_type": "512MB Standard Instance",
+            "new_instance_type_id": "2",
             "node": null,
             "os_type": "linux",
             "progress": "",
@@ -166,7 +168,8 @@ class InstanceDeleteEnd(EventBaseModel):
             "vcpus": 1
         }
     """
-    kwarg_map = {}
+    kwarg_map = {'new_instance_type': 'new_instance_type',
+                 'new_instance_type_id': 'new_instance_type_id'}
     kwarg_map.update(BASE_KWARG_MAP)
 
     def __init__(self, access_ip_v4, access_ip_v6, architecture,
@@ -174,10 +177,11 @@ class InstanceDeleteEnd(EventBaseModel):
                  disk_gb, display_name, ephemeral_gb, host, hostname,
                  image_meta, image_ref_url, instance_flavor_id, instance_id,
                  instance_type, instance_type_id, kernel_id, launched_at,
-                 memory_mb, metadata, node, os_type, progress, ramdisk_id,
-                 reservation_id, root_gb, state, state_description, tenant_id,
-                 terminated_at, user_id, vcpus):
-        super(InstanceDeleteEnd, self).__init__(locals())
+                 memory_mb, metadata, new_instance_type, new_instance_type_id,
+                 node, os_type, progress, ramdisk_id, reservation_id, root_gb,
+                 state, state_description, tenant_id, terminated_at, user_id,
+                 vcpus):
+        super(InstanceResizePrepEnd, self).__init__(locals())
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
