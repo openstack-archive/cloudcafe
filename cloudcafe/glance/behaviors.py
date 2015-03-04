@@ -297,7 +297,7 @@ class ImagesBehaviors(BaseBehavior):
         while len(images) == results_limit:
             image_list += images
             marker = images[results_limit - 1].id_
-            params.update({"marker": marker})
+            params.update({'marker': marker})
             response = self.client.list_images(params)
             images = response.entity
 
@@ -495,8 +495,12 @@ class ImagesBehaviors(BaseBehavior):
 
         for attempt in range(attempts):
             try:
-                resp = self.client.task_to_import_image(input_=input_,
-                                                        type_=type_)
+                if type_ == TaskTypes.IMPORT:
+                    resp = self.client.task_to_import_image(input_=input_,
+                                                            type_=type_)
+                elif type_ == TaskTypes.EXPORT:
+                    resp = self.client.task_to_export_image(input_=input_,
+                                                            type_=type_)
                 task_id = resp.entity.id_
                 task = self.wait_for_task_status(task_id, TaskStatus.SUCCESS)
                 return task
@@ -533,41 +537,29 @@ class ImagesBehaviors(BaseBehavior):
 
         return task_list
 
-    def list_all_tasks(self, limit=None, marker=None, sort_dir=None,
-                       status=None, type_=None):
+    def list_all_tasks(self, **params):
         """
         @summary: Retrieve a complete list of tasks accounting for query
         parameters
 
-        @param limit: Number of tasks to return
-        @type limit: Integer
-        @param marker: Task to start from
-        @type marker: UUID
-        @param sort_dir: Direction in which tasks will be returned
-        @type sort_dir: String
-        @param status: Status of tasks to return
-        @type status: String
-        @param type_: Type of tasks to return
-        @type type_: String
+        @param params: Parameters to alter the returned list of images
+        @type params: Dictionary
 
         @return: Task_list
         @rtype: List
         """
 
         task_list = []
-        results_limit = limit or self.config.results_limit
+        results_limit = self.config.results_limit
 
-        response = self.client.list_tasks(
-            limit=limit, marker=marker, sort_dir=sort_dir, status=status,
-            type_=type_)
+        response = self.client.list_tasks(params)
         tasks = response.entity
 
         while len(tasks) == results_limit:
             task_list += tasks
             marker = tasks[results_limit - 1].id_
-            response = self.client.list_tasks(
-                limit=limit, marker=marker, sort_dir=sort_dir, status=status,
-                type_=type_)
+            params.update({'marker': marker})
+            response = self.client.list_tasks(params)
             tasks = response.entity
 
         task_list += tasks
