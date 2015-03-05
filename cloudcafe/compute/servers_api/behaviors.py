@@ -207,7 +207,13 @@ class ServerBehaviors(BaseComputeBehavior):
             security_groups=security_groups)
         server = create_response.entity
 
-        built_server = self.wait_for_server_creation(server.id)
+        try:
+            built_server = self.wait_for_server_creation(server.id)
+        except Exception:
+            if not self.config.keep_resources_on_failure:
+                self.servers_client.delete_server(server.id)
+            raise
+
         built_server.admin_pass = server.admin_pass
         create_response.entity = built_server
         return create_response
