@@ -48,3 +48,17 @@ class SecurityGroupsConfig(NetworkingBaseConfig):
         Maximum number of rules that can be assigned to a security group
         """
         return int(self.get("max_rules_per_secgroup", 20))
+
+    @property
+    def max_rules_per_tenant(self):
+        """
+        Maximum number of rules per tenant
+        """
+        return int(self.get("max_rules_per_tenant", 100))
+
+    @property
+    def max_secgroups_per_tenant(self):
+        """
+        Maximum number of security groups per tenant
+        """
+        return int(self.get("max_secgroups_per_tenant", 10))
