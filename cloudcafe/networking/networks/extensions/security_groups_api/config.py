@@ -26,3 +26,23 @@ class SecurityGroupsConfig(NetworkingBaseConfig):
     def starts_with_name(self):
         """Network start name label for test runs"""
         return self.get("starts_with_name", "security_groups_test")
+
+    @property
+    def rules_per_group(self):
+        """Security Group Rules per group quota"""
+        return int(self.get("rules_per_group", 20))
+
+    @property
+    def rules_per_tenant(self):
+        """Security Group Rules per tenant quota"""
+        return int(self.get("rules_per_tenant", 100))
+
+    @property
+    def groups_per_tenant(self):
+        """Security Groups per tenant quota"""
+        return int(self.get("groups_per_tenant", 10))
+
+    @property
+    def groups_per_port(self):
+        """Security Groups per port quota"""
+        return int(self.get("groups_per_port", 5))
