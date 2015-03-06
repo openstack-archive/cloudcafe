@@ -668,7 +668,9 @@ class ImagesBehaviors(BaseBehavior):
     def wait_for_task_status(self, task_id, desired_status, interval_time=10,
                              timeout=1200):
         """
-        @summary: Waits for a task to reach a desired status
+        @summary: Waits for a task to reach a desired status and if the import
+        task is successful, adds the created image to the resource pool for
+        tear down
 
         @param task_id: Task id to evaluate
         @type task_id: UUID
