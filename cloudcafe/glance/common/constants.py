@@ -30,7 +30,7 @@ class Messages(object):
     EXTRA_IMAGE_PROPERTIES_MSG = ('Unsupported element in image_properties, '
                                   'please consult the documentation.')
     NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
-    OBJECT_NOT_FOUND = 'Error: Swift could not find object {0}.'
+    IMAGE_NOT_FOUND = 'Image not found for import. Possible invalid location'
     OK_RESP_MSG = 'Unexpected response received.  Expected: OK, Received: {0}'
     PROPERTY_MSG = ('Unexpected value for {0} received. Expected: {1}, '
                     'Received: {2}')
