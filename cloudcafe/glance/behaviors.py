@@ -626,7 +626,7 @@ class ImagesBehaviors(BaseBehavior):
                 'owner', 'not None', task.owner))
         if task.message != '':
             errors.append(Messages.PROPERTY_MSG.format(
-                'message', '', task.message))
+                'message', 'Empty message', task.message))
         if task.schema != '/v2/schemas/task':
             errors.append(Messages.PROPERTY_MSG.format(
                 'schema', '/v2/schemas/task', task.schema))
@@ -715,7 +715,22 @@ class ImagesBehaviors(BaseBehavior):
 
         return task
 
-    def create_task_with_transitions(self, input_, task_type, outcome,
+    def get_task_status(self, task_id):
+        """
+        @summary: Retrieve task status for the status progression verifier in
+        the create_task_with_transitions method
+
+        @param task_id: Task id
+        @type task_id: UUID
+
+        @return: Status
+        @rtype: String
+        """
+
+        resp = self.client.get_task_details(task_id)
+        return resp.entity.status.lower()
+
+    def create_task_with_transitions(self, input_, task_type,
                                      final_status=None):
         """
         @summary: Create a task and verify that it transitions through the
@@ -725,8 +740,6 @@ class ImagesBehaviors(BaseBehavior):
         @type input_: Dictionary
         @param task_type: Type of task
         @type task_type: String
-        @param outcome: Expected final status
-        @type outcome: Integer
         @param final_status: Flag to determine success or failure
         @type final_status: String
 
@@ -734,27 +747,38 @@ class ImagesBehaviors(BaseBehavior):
         @rtype: Object
         """
 
-        response = self.client.create_task(
-            input_=input_, type_=task_type)
-        task = response.entity
+        if task_type == TaskTypes.IMPORT:
+            resp = self.client.task_to_import_image(input_, TaskTypes.IMPORT)
+            task = resp.entity
+        else:
+            resp = self.client.task_to_export_image(input_, TaskTypes.EXPORT)
+            task = resp.entity
 
-        response = self.client.get_task_details(task.id_)
-        task_status = response.entity.status.lower()
+        # resp = self.client.get_task_details(task.id_)
+        # task_status = resp.entity.status.lower()
 
         # Verify task progresses as expected
         verifier = StatusProgressionVerifier(
-            'task', task.id_, task_status, task.id_)
+            'task', task.id_, self.get_task_status, task.id_)
 
+        if final_status == TaskStatus.SUCCESS:
+            error_statuses = [TaskStatus.FAILURE]
+        else:
+            error_statuses = [TaskStatus.SUCCESS]
         verifier.add_state(
             expected_statuses=[TaskStatus.PENDING],
-            acceptable_statuses=[TaskStatus.PROCESSING, outcome],
-            error_statuses=[TaskStatus.SUCCESS],
+            acceptable_statuses=[TaskStatus.PROCESSING, final_status],
+            error_statuses=error_statuses,
             timeout=self.config.task_timeout, poll_rate=1)
 
+        if final_status == TaskStatus.SUCCESS:
+            error_statuses = [TaskStatus.PENDING, TaskStatus.FAILURE]
+        else:
+            error_statuses = [TaskStatus.PENDING, TaskStatus.SUCCESS]
         verifier.add_state(
             expected_statuses=[TaskStatus.PROCESSING],
-            acceptable_statuses=[outcome],
-            error_statuses=[TaskStatus.PENDING, TaskStatus.SUCCESS],
+            acceptable_statuses=[final_status],
+            error_statuses=error_statuses,
             timeout=self.config.task_timeout, poll_rate=1)
 
         if final_status == TaskStatus.SUCCESS:
@@ -762,8 +786,7 @@ class ImagesBehaviors(BaseBehavior):
                 expected_statuses=[TaskStatus.SUCCESS],
                 error_statuses=[TaskStatus.PENDING, TaskStatus.FAILURE],
                 timeout=self.config.task_timeout, poll_rate=1)
-
-        if final_status == TaskStatus.FAILURE:
+        else:
             verifier.add_state(
                 expected_statuses=[TaskStatus.FAILURE],
                 error_statuses=[TaskStatus.PENDING, TaskStatus.SUCCESS],
