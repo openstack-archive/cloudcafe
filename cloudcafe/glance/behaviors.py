@@ -51,6 +51,7 @@ class ImagesBehaviors(BaseBehavior):
         @return: Test_data
         @rtype: String
         """
+
         try:
             with open(file_path, "r") as DATA:
                 test_data = DATA.read().rstrip()
@@ -58,6 +59,47 @@ class ImagesBehaviors(BaseBehavior):
             raise file_error
 
         return test_data
+
+    @staticmethod
+    def get_comparison_data(data_file):
+        """
+        @summary: Create comparison dictionary based on a given set of data
+
+        @param data_file: File containing data to compare
+        @param data_file: String
+
+        @return: Comparison_dict
+        @rtype: Dictionary
+        """
+
+        comparison_dict = dict()
+
+        try:
+            with open(data_file, "r") as DATA:
+                all_data = DATA.readlines()
+        except IOError as file_error:
+            raise file_error
+
+        for line in all_data:
+            # Skip any comments or short lines
+            if line.startswith('#') or len(line) < 5:
+                continue
+
+            # Get the defined data
+            if line.startswith('+'):
+                line = line.replace('+', '')
+                data_columns = [x.strip().lower() for x in line.split('|')]
+                continue
+
+            # Process the data
+            each_data = dict()
+            data = [x.strip() for x in line.split("|")]
+            for x, y in zip(data_columns[1:], data[1:]):
+                each_data[x] = y
+
+            comparison_dict[data[0]] = each_data
+
+        return comparison_dict
 
     def create_image_via_task(self, image_properties=None, import_from=None):
         """
