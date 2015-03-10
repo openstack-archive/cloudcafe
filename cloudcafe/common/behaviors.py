@@ -2,16 +2,18 @@ from time import time, sleep
 from math import ceil
 from cafe.engine.behaviors import BaseBehavior
 
+class StatusProgressionVerifierError(Exception):
+    pass
 
-class StatusProgressionClassUsageError(Exception):
+class StatusProgressionClassUsageError(StatusProgressionVerifierError):
     pass
 
 
-class StatusProgressionError(Exception):
+class StatusProgressionError(StatusProgressionVerifierError):
     pass
 
 
-class StatusPollError(Exception):
+class StatusPollError(StatusProgressionVerifierError):
     pass
 
 
@@ -75,18 +77,6 @@ class StatusProgressionVerifier(BaseBehavior):
         for expected_statuses, acceptable_statuses, error_statuses, timeout, \
                 poll_rate, poll_failure_retry_limit in self._state_list:
 
-            self._log.debug(
-                "\nCurrently watching {model_type} {model_id}\n"
-                "Continuing if status in : {expected}\n"
-                "Bypassing if status in  : {acceptable}\n"
-                "Error if status in      : {error}\n"
-                "Polling every {poll_rate} seconds for "
-                "{timeout} seconds.\n".format(
-                    model_type=self.model_type, model_id=self.model_id,
-                    expected=expected_statuses, acceptable=acceptable_statuses,
-                    error=error_statuses, poll_rate=poll_rate,
-                    timeout=timeout))
-
             current_status = None
             poll_failure_retries = 0
 
@@ -111,7 +101,20 @@ class StatusProgressionVerifier(BaseBehavior):
             state_timeout = ceil(state_timeout)
             state_endtime = ceil(state_endtime)
 
+            self._log.debug(
+                "\nCurrently watching {model_type} {model_id}\n"
+                "Continuing if status in : {expected}\n"
+                "Bypassing if status in  : {acceptable}\n"
+                "Error if status in      : {error}\n"
+                "Polling every {poll_rate} seconds for "
+                "{timeout} seconds.\n".format(
+                    model_type=self.model_type, model_id=self.model_id,
+                    expected=expected_statuses, acceptable=acceptable_statuses,
+                    error=error_statuses, poll_rate=poll_rate,
+                    timeout=state_timeout))
+
             # State watch loop
+            current_status = None
             while time() < state_endtime:
 
                 # Attempt to get the latest status, retry status_call() up to
@@ -122,28 +125,37 @@ class StatusProgressionVerifier(BaseBehavior):
                 except Exception as exception:
                     if poll_failure_retries >= poll_failure_retry_limit:
                         msg = (
-                            "status_call() failed after {retries} retries."
-                            " Unable to retrieve status.".format(
+                            "status_call() for {model_type} '{model_id}' "
+                            "failed after {retries} retries.  "
+                            "Unable to retrieve status.".format(
+                                model_type=self.model_type,
+                                model_id=self.model_id,
                                 retries=poll_failure_retries))
+
                         if poll_failure_retry_limit > 0:
                             msg = (
-                                "status_call() failed and was not allowed "
-                                "any retries")
-                        self._log.error(exception)
+                                "status_call() for {model_type} '{model_id}' "
+                                "failed and was not allowed any "
+                                "retries".format(
+                                    model_type=self.model_type,
+                                    model_id=self.model_id))
+                        self._log.exception('')
                         self._log.error(msg)
                         raise StatusPollError(msg)
                     else:
                         poll_failure_retries += 1
                         msg = (
                             "status_call() for {model_type} '{model_id}' "
-                            "failed.  Retrying".format(
+                            "failed.  Retry {retry} or {max_retries}".format(
                                 model_type=self.model_type,
-                                model_id=self.model_id))
+                                model_id=self.model_id,
+                                retry=poll_failure_retries,
+                                max_retries=poll_failure_retry_limit))
                         self._log.warning(msg)
 
                 # Log current status
                 self._log.debug(
-                    "Current {model_type} {model_id} status: "
+                    "Current {model_type} '{model_id}' status: "
                     "'{current_status}'".format(
                         model_type=self.model_type, model_id=self.model_id,
                         current_status=current_status))
@@ -151,8 +163,10 @@ class StatusProgressionVerifier(BaseBehavior):
                 # Fast fail if status is in the state's error_statuses list
                 if current_status in error_statuses:
                     msg = (
-                        "status_call() returned a status in the state's "
-                        "error_statuses list: '{current_status}'".format(
+                        "status_call() for {model_type} '{model_id}' returned "
+                        "a status in the state's error_statuses list: "
+                        "'{current_status}'".format(
+                            model_type=self.model_type, model_id=self.model_id,
                             current_status=current_status))
                     self._log.error(msg)
                     raise StatusProgressionError(msg)
@@ -161,7 +175,7 @@ class StatusProgressionVerifier(BaseBehavior):
                 if current_status in expected_statuses:
                     self._log.debug(
                         "Current status '{current_status}' is an expected "
-                        "status. Continuing to next state.".format(
+                        "status.".format(
                             current_status=current_status))
                     break
 
@@ -169,7 +183,6 @@ class StatusProgressionVerifier(BaseBehavior):
                     self._log.debug(
                         "An acceptable status '{current_status}' was observed "
                         "before any expected statuses '{expected_statuses}'. "
-                        "Bypassing this state and continuing to next state."
                         .format(
                             current_status=current_status,
                             expected_statuses=expected_statuses))
@@ -180,11 +193,14 @@ class StatusProgressionVerifier(BaseBehavior):
             # Timeout reached
             else:
                 msg = (
-                    "\nNo expected statuses or acceptable statuses where "
-                    "observed withing the alloted {timeout} second timeout.\n"
+                    "\nNo expected statuses or acceptable statuses for "
+                    "{model_type} '{model_id}' where observed withing the "
+                    "alloted {timeout} second timeout.\n"
                     "Last observed status: {current_status}\n"
                     "expected statuses: {expected_statuses}\n"
                     "acceptable statuses: {acceptable_statuses}\n".format(
+                        model_type=self.model_type,
+                        model_id=self.model_id,
                         timeout=state_timeout,
                         current_status=current_status,
                         expected_statuses=expected_statuses,
@@ -192,3 +208,5 @@ class StatusProgressionVerifier(BaseBehavior):
 
                 self._log.error(msg)
                 raise StatusProgressionError(msg)
+
+        self._log.debug("Status progression verifier complete.")
