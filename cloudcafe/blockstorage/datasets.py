@@ -19,8 +19,19 @@ from cafe.drivers.unittest.decorators import memoized
 
 from cloudcafe.common.datasets import ModelBasedDatasetToolkit
 from cloudcafe.blockstorage.composites import VolumesAutoComposite
-from cloudcafe.compute.datasets import ComputeDatasets
 
+# Prevent non-integration consumers from breaking when compute
+# service is unavailable.
+try:
+    from cloudcafe.compute.datasets import ComputeDatasets
+except Exception as ex:
+    import warnings
+    msg = "Compute integration datasets are unavailable"
+    warnings.warn(msg)
+    # Dummy class to prevent errors when non-integrating consumers import
+    # this class while compute services are unavailable
+    class ComputeDatasets(object):
+        pass
 
 class BlockstorageDatasets(ModelBasedDatasetToolkit):
     """Collection of dataset generators for blockstorage data driven tests"""
@@ -34,10 +45,8 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
         return cls._get_model_list(
             cls._volumes.client.list_all_volume_types, 'volume_types')
 
-
     @classmethod
     def default_volume_type_model(cls):
-        default_volume_type = None
         for vtype in cls._get_volume_types():
             if (vtype.id_ == cls._volumes.config.default_volume_type
                     or vtype.name == cls._volumes.config.default_volume_type):
@@ -57,11 +66,9 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
         dataset_list.append(dataset)
         return dataset_list
 
-
     @classmethod
-    @memoized
     def volume_types(
-            cls, max_datasets=None, randomize=False, model_filter=None,
+            cls, max_datasets=None, randomize=None, model_filter=None,
             filter_mode=ModelBasedDatasetToolkit.INCLUSION_MODE):
         """Returns a DatasetList of all VolumeTypes
         Filters should be dictionaries with model attributes as keys and
@@ -84,7 +91,7 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
             dataset_list, max_datasets=max_datasets, randomize=randomize)
 
     @classmethod
-    def configured_volume_types(cls, max_datasets=None, randomize=None):
+    def configured_volume_types(cls, max_datasets=None, randomize=False):
         """Returns a DatasetList of permuations of Volume Types and Images.
         Requests all available images and volume types from API, and applies
         pre-configured image and volume_type filters.
@@ -93,7 +100,8 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
         volume_type_filter = cls._volumes.config.volume_type_filter
         volume_type_filter_mode = cls._volumes.config.volume_type_filter_mode
         return cls.volume_types(
-            max_datasets=max_datasets, randomize=randomize,
+            max_datasets=max_datasets,
+            randomize=randomize,
             model_filter=volume_type_filter,
             filter_mode=volume_type_filter_mode)
 
@@ -132,6 +140,52 @@ class ComputeIntegrationDatasets(ComputeDatasets, BlockstorageDatasets):
                         str(vtype.name).replace(" ", "_"),
                         str(image.name).replace(" ", "_"))
                 dataset_list.append_new_dataset(testname, data)
+
+        # Apply modifiers
+        return cls._modify_dataset_list(
+            dataset_list, max_datasets=max_datasets, randomize=randomize)
+
+    @classmethod
+    def flavors_by_images_by_volume_type(
+            cls, max_datasets=None, randomize=None,
+            flavor_filter=None, volume_type_filter=None, image_filter=None,
+            flavor_filter_mode=ModelBasedDatasetToolkit.INCLUSION_MODE,
+            volume_type_filter_mode=ModelBasedDatasetToolkit.INCLUSION_MODE,
+            image_filter_mode=ModelBasedDatasetToolkit.INCLUSION_MODE,):
+        """Returns a DatasetList of all combinations of Flavors and
+        Volume Types.
+        Filters should be dictionaries with model attributes as keys and
+        lists of attributes as key values
+        """
+        image_list = cls._get_images()
+        image_list = cls._filter_model_list(
+            image_list, model_filter=image_filter,
+            filter_mode=image_filter_mode)
+
+        flavor_list = cls._get_flavors()
+        flavor_list = cls._filter_model_list(
+            flavor_list, model_filter=flavor_filter,
+            filter_mode=flavor_filter_mode)
+
+        volume_type_list = cls._get_volume_types()
+        volume_type_list = cls._filter_model_list(
+            volume_type_list, model_filter=volume_type_filter,
+            filter_mode=volume_type_filter_mode)
+
+        # Create dataset from all combinations of all images and volume types
+        dataset_list = DatasetList()
+        for vtype in volume_type_list:
+            for flavor in flavor_list:
+                for image in image_list:
+                    data = {'volume_type': vtype,
+                            'flavor': flavor,
+                            'image': image}
+                    testname = \
+                        "{flavor}_{image}_on_{vtype}".format(
+                            flavor=str(flavor.name), image=str(image.name),
+                            vtype=str(vtype.name)).replace(' ', '_').replace(
+                            '.', '_').replace('(', '').replace(')', '')
+                    dataset_list.append_new_dataset(testname, data)
 
         # Apply modifiers
         return cls._modify_dataset_list(
