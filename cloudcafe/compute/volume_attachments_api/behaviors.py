@@ -1,5 +1,6 @@
 from time import sleep, time
-from cloudcafe.common.behaviors import StatusProgressionVerifier
+from cloudcafe.common.behaviors import (
+    StatusProgressionVerifier, StatusProgressionVerifierError)
 from cloudcafe.compute.common.behaviors import BaseComputeBehavior
 from cloudcafe.compute.volume_attachments_api.config import \
     VolumeAttachmentsAPIConfig
@@ -14,6 +15,7 @@ class VolumeAttachmentsAPI_Behaviors(BaseComputeBehavior):
     def __init__(
             self, volume_attachments_client=None,
             volume_attachments_config=None, volumes_client=None):
+        super(VolumeAttachmentsAPI_Behaviors, self).__init__()
 
         self.client = volume_attachments_client
         self.config = volume_attachments_config or VolumeAttachmentsAPIConfig()
@@ -34,52 +36,94 @@ class VolumeAttachmentsAPI_Behaviors(BaseComputeBehavior):
         else:
             return False
 
+    def _get_volume_status(self, volume_id):
+        resp = self.volumes_client.get_volume_info(volume_id=volume_id)
+        if not resp.ok:
+            msg = (
+                "get_volume_status() failure:  get_volume_info() call"
+                " failed with a {0} status code".format(resp.status_code))
+            self._log.error(msg)
+            raise Exception(msg)
+
+        if resp.entity is None:
+            msg = (
+                "get_volume_status() failure:  unable to deserialize"
+                " response from get_volume_info() call")
+            self._log.error(msg)
+            raise Exception(msg)
+
+        return resp.entity.status
+
     def verify_volume_status_progression_during_attachment(
             self, volume_id, state_list=None):
 
-        def _get_volume_status(self, volume_id):
-            resp = self.volumes_client.get_volume_info(volume_id=volume_id)
-            if not resp.ok:
-                msg = (
-                    "get_volume_status() failure:  get_volume_info() call"
-                    " failed with a {0} status code".format(resp.status_code))
-                self._log.error(msg)
-                raise Exception(msg)
-
-            if resp.entity is None:
-                msg = (
-                    "get_volume_status() failure:  unable to deserialize"
-                    " response from get_volume_info() call")
-                self._log.error(msg)
-                raise Exception(msg)
-
-            return resp.entity.status
-
         verifier = StatusProgressionVerifier(
-            'volume', volume_id, _get_volume_status, *[self, volume_id])
+            'volume', volume_id, self._get_volume_status, volume_id)
+        verifier.set_global_state_properties(
+            timeout=self.config.attachment_timeout)
 
         verifier.add_state(
             expected_statuses=['available'],
             acceptable_statuses=['attaching', 'in-use'],
             error_statuses=['error', 'creating'],
-            timeout=10, poll_rate=1, poll_failure_retry_limit=3)
+            poll_rate=self.config.api_poll_rate,
+            poll_failure_retry_limit=3)
 
         verifier.add_state(
             expected_statuses=['attaching'],
             acceptable_statuses=['in-use'],
             error_statuses=['error', 'creating'],
-            timeout=self.config.attachment_timeout,
             poll_rate=self.config.api_poll_rate,
             poll_failure_retry_limit=3)
 
         verifier.add_state(
             expected_statuses=['in-use'],
             error_statuses=['available', 'error', 'creating'],
-            timeout=self.config.attachment_timeout,
             poll_rate=self.config.api_poll_rate,
             poll_failure_retry_limit=3)
 
         verifier.start()
+
+    def verify_volume_status_progression_during_detachment(
+            self, volume_id, raise_on_error=True):
+        """
+        Track the status progression of volume volume_id being detached.
+
+        Optionally fails silently if rais_on_error is set to False.
+        :param volume_id: the uuid of the volume being tracked
+        :returns: None
+        """
+
+        verifier = StatusProgressionVerifier(
+            'volume', volume_id, self._get_volume_status, volume_id)
+        verifier.set_global_state_properties(
+            timeout=self.config.attachment_timeout)
+
+        verifier.add_state(
+            expected_statuses=['in-use'],
+            acceptable_statuses=['detaching', 'available'],
+            error_statuses=['error', 'attaching', 'creating', 'deleting'],
+            poll_rate=self.config.api_poll_rate,
+            poll_failure_retry_limit=3)
+
+        verifier.add_state(
+            expected_statuses=['detaching'],
+            acceptable_statuses=['available'],
+            error_statuses=['error', 'attaching', 'creating', 'deleting'],
+            poll_rate=self.config.api_poll_rate,
+            poll_failure_retry_limit=3)
+
+        verifier.add_state(
+            expected_statuses=['available'],
+            error_statuses=['error', 'attaching', 'creating', 'deleting'],
+            poll_rate=self.config.api_poll_rate,
+            poll_failure_retry_limit=3)
+
+        try:
+            verifier.start()
+        except Exception as exception:
+            if raise_on_error:
+                raise exception
 
     def delete_volume_attachment(
             self, attachment_id, server_id, timeout=None, poll_rate=None):
