@@ -144,7 +144,8 @@ class Image(AutoMarshallingModel):
         obj_dict['user_id'] = self.user_id
         obj_dict['visibility'] = self.visibility
         obj_dict['owner'] = self.owner
-        obj_dict.update(self.additional_properties)
+        if self.additional_properties:
+            obj_dict.update(self.additional_properties)
         obj_dict = self._remove_empty_values(obj_dict)
         return json.dumps(obj_dict)
 
