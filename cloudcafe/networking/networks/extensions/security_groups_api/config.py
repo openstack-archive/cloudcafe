@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,3 +26,25 @@ class SecurityGroupsConfig(NetworkingBaseConfig):
     def starts_with_name(self):
         """Network start name label for test runs"""
         return self.get("starts_with_name", "security_groups_test")
+
+    def data_plane_delay(self):
+        """
+        Expected time in seconds for the data plane to apply a security
+        group to a port
+        """
+        return int(self.get("data_plane_delay", 60))
+
+    @property
+    def max_secgroups_per_port(self):
+        """
+        Maximum number of security groups that can be assigned to a neutron
+        port
+        """
+        return int(self.get("max_secgroups_per_port", 5))
+
+    @property
+    def max_rules_per_secgroup(self):
+        """
+        Maximum number of rules that can be assigned to a security group
+        """
+        return int(self.get("max_rules_per_secgroup", 20))
