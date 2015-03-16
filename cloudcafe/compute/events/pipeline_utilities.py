@@ -311,13 +311,17 @@ class Pipeline(object):
     add_parallel_tasks methods. The configured pipeline
     is run using run_pipeline. A summary of the pipeline
     results may be retrieved using get_summary.
+
+    Attributes:
+        name (str): Display name of the pipeline.
     """
 
     def __init__(self, name):
+        self.name = name
         self._happy_path = True
         self._inputs = []
         self._pipeline = []
-        self._summary = _ResultSummary(name)
+        self._results = Summary(name)
 
     def add_task(self, task):
         """Add a task to the pipeline
@@ -377,11 +381,11 @@ class Pipeline(object):
         pipeline after processing data with run_pipeline.
 
         Returns:
-            str: Result summary
+            list(SummaryResult): Printable list of summary results
         """
-        return str(self._summary)
+        return self._results
 
-    def run_pipeline(self, data, print_summary=True):
+    def run_pipeline(self, data, print_summary=False):
         """Process data with pipeline
 
         Run all configured pipeline tasks to process the
@@ -453,13 +457,17 @@ class Pipeline(object):
     def _update_summary(self, result, name):
         """Update result summary"""
 
+        step = len(self._results) + 1
+
         if result.success:
-            self._summary[name] = 'Success'
+            value = 'Success'
         elif result.failure and self._happy_path:
-            self._summary[name] = 'Failure'
+            value = 'Failure'
             self._happy_path = False
         else:
-            self._summary[name] = 'Skipped'
+            value = 'Skipped'
+
+        self._results.append(SummaryResult(name, value, step))
 
 
 def _box_task(task):
@@ -489,45 +497,64 @@ def _process_parallel(tasks, data, reduce_method=combine_result_with_and):
     return reduce(reduce_method, [task(data) for task in tasks])
 
 
-class _ResultSummary(OrderedDict):
-    """Summary of pipeline task results
+class SummaryResult(object):
+    """Result of an individual pipeline task
 
-    Results are stored as an OrderedDict to preserve
-    task order. Keys are the task name and values are
-    strings representing the result of the task. The class
-    can be printed directly to produce a nicely-formatted table
-    of results.
+    Container class for result data from a pipeline task. Task
+    name will be automatically converted to a format suitable
+    for printing in the summary table.
 
-    Note:
-        This class is used internally by Pipeline, and is not
-        intended to be used elsewhere.
+    Attributes:
+        name (str): Name of the pipeline task.
+        result (str): Result of the task. Success/Failure/Skipped
+        step (int): Step number in the pipeline.
     """
-    def __init__(self, name):
-        super(_ResultSummary, self).__init__()
-        self.name = name
+
+    def __init__(self, name, result, step):
+        self.name = SummaryResult._pretty_format_name(name)
+        self.result = result
+        self.step = step
 
     def __repr__(self):
-        step = 1
-        summary = '\nPipeline Results ({name}):'.format(name=self.name)
-
-        if self.__len__() == 0:
-            msg = 'No results -- pipeline has not run'
-            return '{0}\n{1}'.format(summary, msg)
-
-        for task_name, result in self.iteritems():
-            task_name = _ResultSummary._pretty_format_name(task_name)
-            result = '{step}: ({result}) {method_name}'.format(
-                step=step, method_name=task_name, result=result)
-            summary = '{0}\n{1}'.format(summary, result)
-            step += 1
-
-        return summary
+        return '{step}: ({result}) {name}'.format(
+            step=self.step, name=self.name, result=self.result)
 
     @staticmethod
     def _pretty_format_name(name):
         formatted = name.replace('/', ' -> ')
-        formatted = re.sub(r'([a-z]+)([A-Z])',r'\1 \2', formatted)
+        formatted = re.sub(r'([a-z]+)([A-Z])', r'\1 \2', formatted)
         formatted = ' '.join(word[0].upper() + word[1:]
                              for word in formatted.split())
 
         return formatted
+
+
+class Summary(list):
+    """Summary of pipeline task results
+
+    Results are stored chronologically in a list. The class
+    can be printed directly to produce a nicely-formatted table
+    of results.
+
+    Attributes:
+        name (str): Display name of the pipeline.
+    """
+
+    def __init__(self, name):
+        super(Summary, self).__init__()
+        self.name = name
+
+    def __str__(self):
+        title = '\nPipeline Results ({name}):'.format(name=self.name)
+
+        if self.__len__() == 0:
+            msg = 'No results -- pipeline has not run'
+            return '{0}\n{1}'.format(title, msg)
+
+        detail = repr(self)
+        summary = '{title}\n{detail}'.format(title=title, detail=detail)
+        return summary
+
+    def __repr__(self):
+        detail = '\n'.join([str(item) for item in self])
+        return detail
