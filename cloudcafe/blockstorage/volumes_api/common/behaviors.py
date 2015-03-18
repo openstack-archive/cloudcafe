@@ -276,7 +276,6 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
                 "defaulting to normal volume create timeout of {0} "
                 "seconds".format(timeout))
 
-        self._log.info("create_available_volume() is creating a volume")
         start_time = time()
         resp = self.create_volume(
             size, volume_type, name=name, description=description,
@@ -284,30 +283,39 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             bootable=bootable, image_ref=image_ref, snapshot_id=snapshot_id,
             source_volid=source_volid)
         timeout = timeout - (time() - start_time)
-
         volume = self._verify_entity(resp)
 
         # Verify volume progression from 'creating' to 'available'
+        self.verify_volume_create_status_progresion(volume.id_, timeout)
+
+        resp = self.client.get_volume_info(volume.id_)
+        volume = self._verify_entity(resp)
+        return volume
+
+    def verify_volume_create_status_progresion(self, volume_id, timeout):
+        """Raises an exception if the volume doesn't pass through
+        the normal expected series of states for a volume create.
+        """
         verifier = StatusProgressionVerifier(
-            'volume', volume.id_, self.get_volume_status, volume.id_)
+            'volume', volume_id, self.get_volume_status, volume_id)
 
         verifier.set_global_state_properties(timeout)
         verifier.add_state(
             expected_statuses=[self.statuses.Volume.CREATING],
             acceptable_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
-            poll_rate=self.config.volume_status_poll_frequency)
+            poll_rate=self.config.volume_status_poll_frequency,
+            poll_failure_retry_limit=
+                self.config.volume_status_poll_failure_max_retries)
 
         verifier.add_state(
             expected_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
-            poll_rate=self.config.volume_status_poll_frequency)
+            poll_rate=self.config.volume_status_poll_frequency,
+            poll_failure_retry_limit=
+                self.config.volume_status_poll_failure_max_retries)
 
         verifier.start()
-        # Return volume model
-        resp = self.client.get_volume_info(volume.id_)
-        volume = self._verify_entity(resp)
-        return volume
 
     def create_available_snapshot(
             self, volume_id, name=None, description=None, force_create=True,

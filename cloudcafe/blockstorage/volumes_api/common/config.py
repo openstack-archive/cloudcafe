@@ -54,6 +54,22 @@ class VolumesAPIConfig(ConfigSectionInterface):
         """
         return int(self.get("snapshot_status_poll_frequency", default=10))
 
+    @property
+    def volume_status_poll_failure_max_retries(self):
+        """Controls the number of times the status progression verifier will
+        allow calls to the Volumes API for status updates to fail
+        """
+        return int(
+            self.get("volume_status_poll_failure_max_retries", default=3))
+
+    @property
+    def snapshot_status_poll_failure_max_retries(self):
+        """Controls the number of times the status progression verifier will
+        allow calls to the Volume Snapshots API for status updates to fail
+        """
+        return int(
+            self.get("snapshot_status_poll_failure_max_retries", default=3))
+
 # Volume Type configuration
     @property
     def volume_type_properties(self):
