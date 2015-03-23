@@ -527,7 +527,7 @@ class ObjectStorageAPIClient(HTTPClient):
 
         return response
 
-    def set_object_metadata(self, container_name, object_name, headers=None,
+    def set_object_metadata(self, container_name, object_name, headers,
                             requestslib_kwargs=None):
         url = '{0}/{1}/{2}'.format(
             self.storage_url,
