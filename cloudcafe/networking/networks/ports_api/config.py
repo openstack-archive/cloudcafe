@@ -33,19 +33,19 @@ class PortsConfig(NetworkingBaseConfig):
         return int(self.get("multiple_ports", 10))
 
     @property
+    def test_ports_per_network(self):
+        """Flag for running the ports per network quotas tests"""
+        return self.get_boolean("test_ports_per_network", False)
+
+    @property
     def ports_per_network(self):
         """Ports per network quota"""
         return int(self.get("ports_per_network", 250))
 
     @property
-    def test_quotas(self):
-        """Flag for running the ports quotas tests"""
-        return self.get_boolean("test_quotas", False)
-
-    @property
     def fixed_ips_per_port(self):
         """Ports fixed IPs quota"""
-        return int(self.get("fixed_ips_per_port", 4))
+        return int(self.get("fixed_ips_per_port", 5))
 
     @property
     def use_over_limit_retry(self):

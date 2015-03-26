@@ -21,7 +21,7 @@ from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors, NetworkingResponse
 from cloudcafe.networking.networks.common.exceptions \
     import ResourceBuildException, ResourceDeleteException, \
-    ResourceGetException, ResourceListException
+    ResourceGetException, ResourceListException, ResourceUpdateException
 from cloudcafe.networking.networks.extensions.security_groups_api.constants \
     import SecurityGroupsResponseCodes
 
@@ -96,6 +96,70 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             self._log.error(err_msg)
             if raise_exception:
                 raise ResourceBuildException(err_msg)
+            return result
+
+    def update_security_group(self, security_group_id, name=None,
+                              description=None, tenant_id=None,
+                              resource_update_attempts=None,
+                              raise_exception=False, poll_interval=None):
+        """
+        @summary: Updates a security group
+        @param security_group_id: The UUID for the security group
+        @type security_group_id: string
+        @param name: A symbolic name for the security group. Not required to
+            be unique.
+        @type name: string
+        @param description: (optional) Description of a security group.
+        @type description: string
+        @param tenant_id: (admin use only) Owner of the security group.
+        @type tenant_id: string
+        @param resource_update_attempts: number of API retries
+        @type resource_update_attempts: int
+        @param raise_exception: flag to raise an exception if the
+            Security Group was not updated or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_update_attempts = (resource_update_attempts or
+            self.config.api_retries)
+
+        result = NetworkingResponse()
+        err_msg = 'Security Group Update failure'
+        for attempt in range(resource_update_attempts):
+            self._log.debug('Attempt {0} of {1} updating security group '
+                            '{2}'.format(attempt + 1, resource_update_attempts,
+                                         security_group_id))
+
+            resp = self.client.update_security_group(
+                security_group_id=security_group_id, name=name,
+                description=description, tenant_id=tenant_id)
+
+            resp_check = self.check_response(
+                resp=resp,
+                status_code=SecurityGroupsResponseCodes.UPDATE_SECURITY_GROUP,
+                label=security_group_id, message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the update was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to update {0} security group after {1} attempts: '
+                '{2}').format(security_group_id, resource_update_attempts,
+                              result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceUpdateException(err_msg)
             return result
 
     def get_security_group(self, security_group_id, resource_get_attempts=None,

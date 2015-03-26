@@ -23,6 +23,7 @@ class SecurityGroupsResponseCodes(NeutronResponseCodes):
     LIST_SECURITY_GROUPS = 200
     GET_SECURITY_GROUP = 200
     CREATE_SECURITY_GROUP = 201
+    UPDATE_SECURITY_GROUP = 200
     DELETE_SECURITY_GROUP = 204
     LIST_SECURITY_GROUP_RULES = 200
     GET_SECURITY_GROUP_RULE = 200
@@ -32,4 +33,11 @@ class SecurityGroupsResponseCodes(NeutronResponseCodes):
 
 class SecurityGroupsErrorTypes(NeutronErrorTypes):
     """Security Groups Error Types"""
-    pass
+    INVALID_INPUT = 'InvalidInput'
+    SECURITY_GROUP_INVALID_ICMP_VALUE = 'SecurityGroupInvalidIcmpValue'
+    SECURITY_GROUP_INVALID_PORT_VALUE = 'SecurityGroupInvalidPortValue'
+    SECURITY_GROUP_NOT_FOUND = 'SecurityGroupNotFound'
+    SECURITY_GROUP_PROTOCOL_REQUIRED_WITH_PORTS = (
+        'SecurityGroupProtocolRequiredWithPorts')
+    SECURITY_GROUP_RULE_INVALID_PROTOCOL = 'SecurityGroupRuleInvalidProtocol'
+    SECURITY_GROUP_RULE_NOT_FOUND = 'SecurityGroupRuleNotFound'

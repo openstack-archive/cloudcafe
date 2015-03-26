@@ -81,6 +81,32 @@ class SecurityGroupsClient(AutoMarshallingHTTPClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
+    def update_security_group(self, security_group_id, name=None,
+                              description=None, tenant_id=None,
+                              requestslib_kwargs=None):
+        """
+        @summary: Updates a security group
+        @param name: A symbolic name for the security group. Not required to
+            be unique.
+        @type name: string
+        @param description: (optional) Description of a security group.
+        @type description: string
+        @param tenant_id: (admin use only) Owner of the security group.
+        @type tenant_id: string
+        @return: security group update response
+        @rtype: Requests.response
+        """
+        url = '{base_url}/{security_group_id}'.format(
+            base_url=self.security_groups_url,
+            security_group_id=security_group_id)
+        request = SecurityGroupRequest(name=name, description=description,
+                                       tenant_id=tenant_id)
+        resp = self.request('PUT', url,
+                            response_entity_type=SecurityGroup,
+                            request_entity=request,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
     def get_security_group(self, security_group_id, requestslib_kwargs=None):
         """
         @summary: Shows information for a specified security group
