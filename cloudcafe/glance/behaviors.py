@@ -41,23 +41,6 @@ class ImagesBehaviors(BaseBehavior):
         self.resources = ResourcePool()
 
     @staticmethod
-    def read_data_file(file_path):
-        """
-        @summary: Retrieve data file for a given file path
-
-        @param file_path: Location of data file
-        @type file_path: String
-
-        @return: Test_data
-        @rtype: String
-        """
-
-        with open(file_path, 'r') as DATA:
-            test_data = DATA.read().rstrip()
-
-        return test_data
-
-    @staticmethod
     def get_comparison_data(data_file):
         """
         @summary: Create comparison dictionary based on a given set of data
