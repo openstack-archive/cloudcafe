@@ -52,11 +52,8 @@ class ImagesBehaviors(BaseBehavior):
         @rtype: String
         """
 
-        try:
-            with open(file_path, "r") as DATA:
-                test_data = DATA.read().rstrip()
-        except IOError as file_error:
-            raise file_error
+        with open(file_path, 'r') as DATA:
+            test_data = DATA.read().rstrip()
 
         return test_data
 
@@ -73,12 +70,10 @@ class ImagesBehaviors(BaseBehavior):
         """
 
         comparison_dict = dict()
+        data_columns = []
 
-        try:
-            with open(data_file, "r") as DATA:
+        with open(data_file, 'r') as DATA:
                 all_data = DATA.readlines()
-        except IOError as file_error:
-            raise file_error
 
         for line in all_data:
             # Skip any comments or short lines
@@ -93,7 +88,7 @@ class ImagesBehaviors(BaseBehavior):
 
             # Process the data
             each_data = dict()
-            data = [x.strip() for x in line.split("|")]
+            data = [x.strip() for x in line.split('|')]
             for x, y in zip(data_columns[1:], data[1:]):
                 each_data[x] = y
 
@@ -124,8 +119,8 @@ class ImagesBehaviors(BaseBehavior):
 
         self.client.add_image_tag(image_id=image_id, tag=rand_name('tag'))
 
-        response = self.client.get_image_details(image_id=image_id)
-        image = response.entity
+        resp = self.client.get_image_details(image_id=image_id)
+        image = self.verify_resp(resp, 'get image details', image_id)
 
         return image
 
@@ -221,7 +216,7 @@ class ImagesBehaviors(BaseBehavior):
         disk_format = disk_format or ImageDiskFormat.RAW
         name = name or rand_name('image')
 
-        response = self.client.register_image(
+        resp = self.client.register_image(
             auto_disk_config=auto_disk_config, checksum=checksum,
             container_format=container_format, created_at=created_at,
             disk_format=disk_format, file_=file_, id_=id_,
@@ -230,10 +225,9 @@ class ImagesBehaviors(BaseBehavior):
             schema=schema, self_=self_, size=size, status=status,
             tags=tags, updated_at=updated_at, user_id=user_id,
             visibility=visibility, additional_properties=additional_properties)
-        image = response.entity
+        image = self.verify_resp(resp, 'register image')
 
-        if image is not None:
-            self.resources.add(image.id_, self.client.delete_image)
+        self.resources.add(image.id_, self.client.delete_image)
 
         return image
 
@@ -333,15 +327,17 @@ class ImagesBehaviors(BaseBehavior):
         image_list = []
         results_limit = self.config.results_limit
 
-        response = self.client.list_images(params)
-        images = response.entity
+        resp = self.client.list_images(params)
+        images = self.verify_resp(resp, 'list images')
 
         while len(images) == results_limit:
             image_list += images
+
             marker = images[results_limit - 1].id_
             params.update({'marker': marker})
-            response = self.client.list_images(params)
-            images = response.entity
+
+            resp = self.client.list_images(params)
+            images = self.verify_resp(resp, 'list images')
 
         image_list += images
 
@@ -496,12 +492,12 @@ class ImagesBehaviors(BaseBehavior):
 
         while time.time() < end_time:
             resp = self.client.get_image_details(image_id)
-            image = resp.entity
+            image = self.verify_resp(resp, 'get image details', image_id)
 
             if image.status.lower() == ImageStatus.ERROR.lower():
                 raise BuildErrorException(
-                    "Build failed. Image with uuid {0} "
-                    "entered ERROR status.".format(image.id))
+                    'Image with the uuid {0} entered ERROR '
+                    'status.'.format(image_id))
 
             if image.status == desired_status:
                 break
@@ -509,9 +505,8 @@ class ImagesBehaviors(BaseBehavior):
             time.sleep(interval_time)
         else:
             raise TimeoutException(
-                "wait_for_image_status ran for {0} seconds and did not "
-                "observe image {1} reach the {2} status.".format(
-                    timeout, image_id, desired_status))
+                'Image with the uuid {0} did not reach the {1} status within '
+                '{2} seconds.'.format(image_id, desired_status, timeout))
 
         return resp
 
@@ -543,15 +538,18 @@ class ImagesBehaviors(BaseBehavior):
                 elif type_ == TaskTypes.EXPORT:
                     resp = self.client.task_to_export_image(input_=input_,
                                                             type_=type_)
-                task_id = resp.entity.id_
-                task = self.wait_for_task_status(task_id, TaskStatus.SUCCESS)
+                task = resp.entity
+
+                task = self.wait_for_task_status(task.id_, TaskStatus.SUCCESS)
+
                 return task
+
             except (BuildErrorException, TimeoutException) as ex:
                 failure = ('Attempt {0}: Failed to create task with '
-                           'the message '
-                           '{1}'.format(attempt + 1, ex.message))
+                           'the message {1}'.format(attempt + 1, ex.message))
                 self._log.error(failure)
                 failures.append(failure)
+
         raise RequiredResourceException(
             'Failed to successfully create a task after {0} attempts: '
             '{1}'.format(attempts, failures))
@@ -594,15 +592,17 @@ class ImagesBehaviors(BaseBehavior):
         task_list = []
         results_limit = self.config.results_limit
 
-        response = self.client.list_tasks(params)
-        tasks = response.entity
+        resp = self.client.list_tasks(params)
+        tasks = self.verify_resp(resp, 'list tasks')
 
         while len(tasks) == results_limit:
             task_list += tasks
+
             marker = tasks[results_limit - 1].id_
             params.update({'marker': marker})
-            response = self.client.list_tasks(params)
-            tasks = response.entity
+
+            resp = self.client.list_tasks(params)
+            tasks = self.verify_resp(resp, 'list tasks')
 
         task_list += tasks
 
@@ -681,8 +681,7 @@ class ImagesBehaviors(BaseBehavior):
         @summary: Validate that a given storage location contains a
         given file or not
 
-        @param expect_success: Flag to determine if tasks completed
-        successfully
+        @param expect_success: Flag to determine if task completed successfully
         @type expect_success: Boolean
         @param files: File objects to be validated
         @type files: List
@@ -698,12 +697,14 @@ class ImagesBehaviors(BaseBehavior):
 
         if expect_success:
             if '{0}.vhd'.format(image_id) not in file_names:
-                errors.append('Unexpected file presence status.'
-                              'Expected: True Received: False')
+                errors.append('Expected VHD file not listed. Expected: '
+                              '{0}.vhd to be listed Received: File was not '
+                              'listed'.format(image_id))
         else:
             if '{0}.vhd'.format(image_id) in file_names:
-                errors.append('Unexpected file presence status. '
-                              'Expected: False Received: True')
+                errors.append('Unexpected VHD file listed. Expected: {0}.vhd '
+                              'to not be listed Received: File was '
+                              'listed'.format(image_id))
 
         return errors, file_names
 
@@ -733,15 +734,15 @@ class ImagesBehaviors(BaseBehavior):
 
         while time.time() < end_time:
             resp = self.client.get_task_details(task_id)
-            task = resp.entity
+            task = self.verify_resp(resp, 'get task details', task_id)
 
             if ((task.status.lower() == TaskStatus.FAILURE and
                     desired_status != TaskStatus.FAILURE) or
                     (task.status.lower() == TaskStatus.SUCCESS and
                      desired_status != TaskStatus.SUCCESS)):
                 raise BuildErrorException(
-                    'Task with uuid {0} entered {1} status. Task responded '
-                    'with the message {2}'.format(
+                    'Task with the uuid {0} entered the {1} status. Task '
+                    'responded with the message {2}'.format(
                         task.id_, task.status, task.message.replace('\\', '')))
 
             if task.status == desired_status:
@@ -749,8 +750,8 @@ class ImagesBehaviors(BaseBehavior):
             time.sleep(interval_time)
         else:
             raise TimeoutException(
-                'Failed to reach the {0} status after {1} seconds for task '
-                'with uuid {2}'.format(desired_status, timeout, task_id))
+                'Task with the uuid {0} did not reach the {1} status within '
+                '{2} seconds.'.format(task_id, desired_status, timeout))
 
         if (task is not None and task.type_ == TaskTypes.IMPORT and
                 task.status.lower() == TaskStatus.SUCCESS):
@@ -758,28 +759,6 @@ class ImagesBehaviors(BaseBehavior):
                                self.client.delete_image)
 
         return task
-
-    def get_task_status(self, task_id):
-        """
-        @summary: Retrieve task status for the status progression verifier in
-        the create_task_with_transitions method
-
-        @param task_id: Task id
-        @type task_id: UUID
-
-        @return: Status
-        @rtype: String
-        """
-
-        resp = self.client.get_task_details(task_id)
-        task = resp.entity
-
-        if task.status.lower() is None:
-            raise RequiredResourceException(
-                'Failed to return a valid task status for task '
-                '{0}'.format(task.id_))
-
-        return task.status.lower()
 
     def create_task_with_transitions(self, input_, task_type,
                                      final_status=None):
@@ -800,10 +779,10 @@ class ImagesBehaviors(BaseBehavior):
 
         if task_type == TaskTypes.IMPORT:
             resp = self.client.task_to_import_image(input_, TaskTypes.IMPORT)
-            task = resp.entity
         else:
             resp = self.client.task_to_export_image(input_, TaskTypes.EXPORT)
-            task = resp.entity
+
+        task = self.verify_resp(resp, 'create task')
 
         # Verify task progresses as expected
         verifier = StatusProgressionVerifier(
@@ -832,16 +811,60 @@ class ImagesBehaviors(BaseBehavior):
         if final_status == TaskStatus.SUCCESS:
             verifier.add_state(
                 expected_statuses=[TaskStatus.SUCCESS],
-                error_statuses=[TaskStatus.PENDING, TaskStatus.PROCESSING,
-                                TaskStatus.FAILURE],
+                error_statuses=[TaskStatus.PENDING, TaskStatus.FAILURE],
                 timeout=self.config.task_timeout, poll_rate=1)
         else:
             verifier.add_state(
                 expected_statuses=[TaskStatus.FAILURE],
-                error_statuses=[TaskStatus.PENDING, TaskStatus.PROCESSING,
-                                TaskStatus.SUCCESS],
+                error_statuses=[TaskStatus.PENDING, TaskStatus.SUCCESS],
                 timeout=self.config.task_timeout, poll_rate=1)
 
         verifier.start()
 
         return self.client.get_task_details(task.id_).entity
+
+    def get_task_status(self, task_id):
+        """
+        @summary: Retrieve task status for the status progression verifier in
+        the create_task_with_transitions method
+
+        @param task_id: Task id
+        @type task_id: UUID
+
+        @return: Status
+        @rtype: String
+        """
+
+        resp = self.client.get_task_details(task_id)
+        task = self.verify_resp(resp, 'get task details', task_id)
+
+        return task.status.lower()
+
+    @staticmethod
+    def verify_resp(resp, req, obj_id=None):
+        """
+        @summary: Verify that a request was successful and that an entity was
+        properly deserialized
+
+        @param resp: Response object to verify
+        @type resp: Object
+
+        @return: Resp.entity
+        @rtype: Object
+        """
+
+        if not resp.ok:
+            msg = ('Request for {0} failed with the status code '
+                   '{1}.'.format(req, resp.status_code))
+            raise Exception(msg)
+
+        if resp.entity is None:
+            if obj_id is None:
+                msg = ('Response body for {0} did not deserialize as '
+                       'expected.'.format(req))
+            else:
+                msg = ('Response body for {0} with the uuid {1} did not '
+                       'deserialize as expected.'.format(req, obj_id))
+            raise Exception(msg)
+
+        return resp.entity
