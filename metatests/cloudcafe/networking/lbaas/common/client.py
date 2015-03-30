@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
+import unittest
 
 from lbaascafe.lbaas.lbaas_api.clients.base_load_balancers_client \
     import BaseLoadBalancersClient

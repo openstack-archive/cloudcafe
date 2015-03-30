@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
+import unittest
 import xml.etree.ElementTree as ET
 
 from cloudcafe.compute.servers_api.models.requests import CreateServer
