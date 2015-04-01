@@ -527,7 +527,7 @@ class ServerBehaviors(BaseComputeBehavior):
                 linux_client import LinuxClient
             client = LinuxClient
 
-        user = self.images_config.primary_image_default_user
+        user = username or self.images_config.primary_image_default_user
         strategy = auth_strategy or self.config.instance_auth_strategy.lower()
 
         try:
