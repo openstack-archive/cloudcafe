@@ -584,7 +584,7 @@ class LinuxClient(RemoteInstanceClient):
                 result = self.ssh_client.execute_command('cat /etc/*-release |'
                                                          ' head -1')
                 if result:
-                    return result
+                    return result.stdout.split(':')[1]
                 else:
                     return ''
 
