@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
+import unittest
 
 from cloudcafe.compute.extensions.console_output_api.models.requests\
     import GetConsoleOutput

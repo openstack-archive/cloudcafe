@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
+import unittest
 
 from cloudcafe.compute.flavors_api.models.flavor_access \
     import FlavorAccess, FlavorAccessList

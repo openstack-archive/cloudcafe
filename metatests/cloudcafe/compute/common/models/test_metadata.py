@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import json
-import unittest2 as unittest
+import unittest
 
 from cloudcafe.compute.common.models.metadata import Metadata, MetadataItem
 

@@ -18,7 +18,7 @@ from copy import deepcopy
 import dateutil.parser
 import json
 import os
-import unittest2 as unittest
+import unittest
 
 from cloudcafe.images.common.types import (
     ImageContainerFormat, ImageDiskFormat, ImageStatus, ImageVisibility)

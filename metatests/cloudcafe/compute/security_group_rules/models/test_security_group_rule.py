@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import unittest2 as unittest
+import unittest
 
 from cloudcafe.compute.extensions.security_groups_api.models.\
     security_group_rule import SecurityGroupRule

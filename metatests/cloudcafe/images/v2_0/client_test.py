@@ -18,7 +18,7 @@ from copy import deepcopy
 from httpretty import HTTPretty
 import os
 import re
-import unittest2 as unittest
+import unittest
 
 from cloudcafe.images.v2.client import ImagesClient
 from cloudcafe.images.v2.models.image import Image
