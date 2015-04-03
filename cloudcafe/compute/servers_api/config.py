@@ -73,7 +73,7 @@ class ServersConfig(ConfigSectionInterface):
     @property
     def server_status_interval(self):
         """Number of seconds to wait between polling the status of a server"""
-        return int(self.get("server_status_interval"))
+        return int(self.get("server_status_interval", 15))
 
     @property
     def server_build_timeout(self):
@@ -81,7 +81,7 @@ class ServersConfig(ConfigSectionInterface):
         Length of time to wait before timing out on a server reaching
         the ACTIVE state
         """
-        return int(self.get("server_build_timeout"))
+        return int(self.get("server_build_timeout", 600))
 
     @property
     def server_boot_timeout(self):
