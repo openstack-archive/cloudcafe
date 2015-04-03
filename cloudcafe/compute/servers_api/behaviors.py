@@ -21,6 +21,7 @@ import re
 from cloudcafe.common.behaviors import (
     StatusProgressionVerifier, StatusProgressionError, StatusPollError)
 from cloudcafe.compute.common.behaviors import BaseComputeBehavior
+from cloudcafe.compute.common.constants import HTTPResponseCodes
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
@@ -394,16 +395,14 @@ class ServerBehaviors(BaseComputeBehavior):
                 result=metadata_result))
 
     def wait_for_server_to_be_deleted(self, server_id, interval_time=None,
-                                      timeout=None):
+                                      timeout=None, raise_exception=True):
         """
         @summary: Waits for a server to be deleted
         @param server_id: The uuid of the server
         @type server_id: String
-        @param interval_time: The amount of time in seconds to wait
-                              between polling
+        @param interval_time: Seconds to wait between polling
         @type interval_time: Integer
-        @param timeout: The amount of time in seconds to wait
-                              before aborting
+        @param timeout: The amount of time in seconds to wait before aborting
         @type timeout: Integer
         """
 
@@ -413,15 +412,61 @@ class ServerBehaviors(BaseComputeBehavior):
 
         while time.time() < end_time:
             try:
-                self.servers_client.get_server(server_id)
+                self.servers_client.delete_server(server_id)
+                resp = self.servers_client.get_server(server_id)
+                if resp.status_code == HTTPResponseCodes.NOT_FOUND:
+                    break
             except ItemNotFound:
                 break
             time.sleep(interval_time)
         else:
-            raise TimeoutException(
-                "wait_for_server_status ran for {0} seconds and did not "
-                "observe the server achieving the {1} status.".format(
-                    timeout, 'DELETED'))
+            msg = ('wait_for_server_to_be_deleted {0} seconds timeout waiting'
+                   'for the expected get server HTTP {1} status code').format(
+                       timeout, HTTPResponseCodes.NOT_FOUND)
+            self._log.info(msg)
+            if raise_exception:
+                raise TimeoutException(msg)
+
+    def wait_for_servers_to_be_deleted(self, server_id_list,
+                                       interval_time=None, timeout=None,
+                                       raise_exception=True):
+        """
+        @summary: Waits for multiple servers to be deleted
+        @param server_id_list: The uuids of the servers to be deleted
+        @type server_id_list: List
+        @param interval_time: Seconds to wait between polling
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait before aborting
+        @type timeout: Integer
+        """
+
+        interval_time = interval_time or self.config.server_status_interval
+        timeout = timeout or self.config.server_build_timeout
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            for server_id in server_id_list:
+                self.servers_client.delete_server(server_id)
+            for server_id in server_id_list:
+                try:
+                    resp = self.servers_client.get_server(server_id)
+                    if (server_id in server_id_list and
+                        resp.status_code == HTTPResponseCodes.NOT_FOUND):
+                            server_id_list.remove(server_id)
+                except ItemNotFound:
+                    if server_id in server_id_list:
+                        server_id_list.remove(server_id)
+            if not server_id_list:
+                break
+            time.sleep(interval_time)
+        else:
+            msg = ('wait_for_servers_to_be_deleted {0} seconds timeout waiting'
+                   'for the expected get server HTTP {1} status code for '
+                   'servers: {2}').format(timeout, HTTPResponseCodes.NOT_FOUND,
+                                          server_id_list)
+            self._log.info(msg)
+            if raise_exception:
+                raise TimeoutException(msg)
 
     def confirm_server_deletion(self, server_id, response_code,
                                 interval_time=None, timeout=None):
@@ -443,14 +488,15 @@ class ServerBehaviors(BaseComputeBehavior):
         end_time = time.time() + timeout
 
         while time.time() < end_time:
+            self.servers_client.delete_server(server_id)
             resp = self.servers_client.get_server(server_id)
-            if resp.status_code == response_code:
+            if resp.status_code == int(response_code):
                 return
             time.sleep(interval_time)
         raise TimeoutException(
             "wait_for_server_status ran for {0} seconds and did not "
-            "observe the server achieving the {1} status based on "
-            "response code.".format(timeout, 'DELETED'))
+            "observe the server achieving the {1} status code based on the "
+            "get server response code.".format(timeout, response_code))
 
     def get_default_injected_files(self):
         """
