@@ -21,6 +21,7 @@ import re
 from cloudcafe.common.behaviors import (
     StatusProgressionVerifier, StatusProgressionError, StatusPollError)
 from cloudcafe.compute.common.behaviors import BaseComputeBehavior
+from cloudcafe.compute.common.constants import HTTPResponseCodes
 from cloudcafe.compute.common.types import InstanceAuthStrategies
 from cloudcafe.compute.common.types import NovaServerStatusTypes \
     as ServerStates
@@ -413,15 +414,18 @@ class ServerBehaviors(BaseComputeBehavior):
 
         while time.time() < end_time:
             try:
-                self.servers_client.get_server(server_id)
+                resp = self.servers_client.get_server(server_id)
+                if resp.status_code == HTTPResponseCodes.NOT_FOUND:
+                    break
             except ItemNotFound:
                 break
             time.sleep(interval_time)
         else:
-            raise TimeoutException(
-                "wait_for_server_status ran for {0} seconds and did not "
-                "observe the server achieving the {1} status.".format(
-                    timeout, 'DELETED'))
+            msg = ('wait_for_server_to_be_deleted {0} seconds timeout waiting'
+                   'for the expected get server HTTP {1} status code').format(
+                       timeout, HTTPResponseCodes.NOT_FOUND)
+            self._log.info(msg)
+            raise TimeoutException(msg)
 
     def confirm_server_deletion(self, server_id, response_code,
                                 interval_time=None, timeout=None):
@@ -449,8 +453,8 @@ class ServerBehaviors(BaseComputeBehavior):
             time.sleep(interval_time)
         raise TimeoutException(
             "wait_for_server_status ran for {0} seconds and did not "
-            "observe the server achieving the {1} status based on "
-            "response code.".format(timeout, 'DELETED'))
+            "observe the server achieving the {1} status code based on the "
+            "get server response code.".format(timeout, response_code))
 
     def get_default_injected_files(self):
         """
