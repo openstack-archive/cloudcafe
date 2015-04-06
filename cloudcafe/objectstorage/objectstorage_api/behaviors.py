@@ -640,12 +640,12 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
     def _purge_container(self, container_name,
                          requestslib_kwargs=None):
         """
-        @summary: deletes all the objects in a container and then deletes
-                  the container
+        @summary: Deletes all the objects in a container.
+
         @param container_name: name of a container
         @type container_name: string
-        @rtype: delete container response
         """
+
         params = {'format': 'json'}
         response = self.client.list_objects(
             container_name,
@@ -653,25 +653,39 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             requestslib_kwargs=requestslib_kwargs)
 
         for storage_object in response.entity:
-            self.client.delete_object(
-                container_name,
-                storage_object.name)
+            self.client.delete_object(container_name, storage_object.name)
 
-        return self.client.delete_container(container_name)
+    @behavior(ObjectStorageAPIClient)
+    def force_delete_container(self, container_name,
+                               requestslib_kwargs=None):
+        """
+        @summary: Calls purge container to delete all the objects in a
+        container, then deletes the container.
 
+        @param container_name: Name of container to purge and delete
+        @type container_name: string
+        """
+
+        self._purge_container(
+            container_name, requestslib_kwargs=requestslib_kwargs)
+
+        delete_response = self.client.delete_container(container_name)
+
+        if not delete_response.ok:
+            raise Exception('Failed to force delete container {0} '
+                            'with error code {1}'.format(
+                                container_name,
+                                delete_response.status_code))
+
+    @behavior(ObjectStorageAPIClient)
     def force_delete_containers(self, container_list,
                                 requestslib_kwargs=None):
         """
-        @summary: Calls purge container on a list of containers
+        @summary: Calls force_delete_container on a list of containers
+
         @param container_list: a list of containers
         @type container_list: list
         """
         for container_name in container_list:
-            resp = self._purge_container(
-                container_name,
-                requestslib_kwargs=requestslib_kwargs)
-
-            if not resp.ok:
-                self._log.debug("force delete failure {0} status {1}".format(
-                    container_name,
-                    resp.status_code))
+            self.force_delete_container(
+                container_name, requestslib_kwargs=requestslib_kwargs)
