@@ -44,7 +44,7 @@ class ServerBehaviors(BaseComputeBehavior):
         self.security_groups_config = security_groups_config
 
     def create_server_with_defaults(
-            self, name=None, image_ref=None, flavor_ref=None,
+            self, name=None, name_prefix=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
@@ -52,7 +52,10 @@ class ServerBehaviors(BaseComputeBehavior):
             min_count=None, block_device_mapping=None, security_groups=None):
         """
         @summary:Creates a server using any configured default values
+        @param name: The name of the server.
         @type name: String
+        @param name_prefix: The prefix to be used for the randomized server name.
+        @type name_prefix: String
         @param image_ref: The reference to the image used to build the server.
         @type image_ref: String
         @param flavor_ref: The flavor used to build the server.
@@ -82,7 +85,7 @@ class ServerBehaviors(BaseComputeBehavior):
         """
 
         if name is None:
-            name = rand_name('testserver')
+            name = rand_name(name_prefix or 'testserver')
         if image_ref is None and block_device_mapping is None:
             image_ref = self.images_config.primary_image
         if flavor_ref is None:
@@ -190,7 +193,7 @@ class ServerBehaviors(BaseComputeBehavior):
         return self.verify_entity(response)
 
     def create_active_server(
-            self, name=None, image_ref=None, flavor_ref=None,
+            self, name=None, name_prefix=None, image_ref=None, flavor_ref=None,
             personality=None, user_data=None, metadata=None,
             accessIPv4=None, accessIPv6=None, disk_config=None,
             networks=None, key_name=None, config_drive=None,
@@ -200,6 +203,8 @@ class ServerBehaviors(BaseComputeBehavior):
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
         @type name: String
+        @param name_prefix: The prefix to be used for the randomized server name.
+        @type name_prefix: String
         @param image_ref: The reference to the image used to build the server.
         @type image_ref: String
         @param flavor_ref: The flavor used to build the server.
@@ -229,7 +234,8 @@ class ServerBehaviors(BaseComputeBehavior):
         """
 
         create_response = self.create_server_with_defaults(
-            name, image_ref, flavor_ref, personality=personality,
+            name=name, name_prefix=name_prefix, image_ref=image_ref,
+            flavor_ref=flavor_ref, personality=personality,
             config_drive=config_drive, metadata=metadata,
             accessIPv4=accessIPv4, accessIPv6=accessIPv6,
             disk_config=disk_config, networks=networks,
