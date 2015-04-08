@@ -13,20 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from cafe.configurator.managers import _NamespaceDict
 
+_CommonStatus = _NamespaceDict(**dict(
+    AVAILABLE="available",
+    DELETING="deleting",
+    CREATING="creating",
+    ERROR="error",
+    ERROR_DELETING="error_deleting"))
 
-class _CommonStatus(object):
-    AVAILABLE = "available"
-    DELETING = "deleting"
-    CREATING = "creating"
-    ERROR = "error"
-    ERROR_DELETING = "error_deleting"
+Volume = _NamespaceDict(**dict(
+    ATTACHING="attaching",
+    IN_USE="in-use"))
+Volume.update(_CommonStatus)
 
-
-class Volume(_CommonStatus):
-    ATTACHING = "attaching"
-    IN_USE = "in-use"
-
-
-class Snapshot(_CommonStatus):
-    pass
+Snapshot = _NamespaceDict()
+Snapshot.update(_CommonStatus)
