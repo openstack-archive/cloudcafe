@@ -193,18 +193,16 @@ class ServerBehaviors(BaseComputeBehavior):
         return self.verify_entity(response)
 
     def create_active_server(
-            self, name=None, name_prefix=None, image_ref=None, flavor_ref=None,
-            personality=None, user_data=None, metadata=None,
-            accessIPv4=None, accessIPv6=None, disk_config=None,
-            networks=None, key_name=None, config_drive=None,
+            self, name=None, image_ref=None, flavor_ref=None, personality=None,
+            user_data=None, metadata=None, accessIPv4=None, accessIPv6=None,
+            disk_config=None, networks=None, key_name=None, config_drive=None,
             scheduler_hints=None, admin_pass=None, max_count=None,
-            min_count=None, block_device_mapping=None, security_groups=None):
+            min_count=None, block_device_mapping=None, security_groups=None,
+            name_prefix=None):
         """
         @summary:Creates a server and waits for server to reach active status
         @param name: The name of the server.
         @type name: String
-        @param name_prefix: The prefix to be used for the randomized server name.
-        @type name_prefix: String
         @param image_ref: The reference to the image used to build the server.
         @type image_ref: String
         @param flavor_ref: The flavor used to build the server.
@@ -231,6 +229,8 @@ class ServerBehaviors(BaseComputeBehavior):
         @return: Response Object containing response code and
                  the server domain object
         @rtype: Request Response Object
+        @param name_prefix: The prefix to be used for the randomized server name.
+        @type name_prefix: String
         """
 
         create_response = self.create_server_with_defaults(
