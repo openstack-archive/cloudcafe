@@ -27,6 +27,7 @@ class SecurityGroupsConfig(NetworkingBaseConfig):
         """Network start name label for test runs"""
         return self.get("starts_with_name", "security_groups_test")
 
+    @property
     def data_plane_delay(self):
         """
         Expected time in seconds for the data plane to apply a security
