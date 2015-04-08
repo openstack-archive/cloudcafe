@@ -87,8 +87,8 @@ class _ComputeAdminAuthComposite(_ComputeAuthComposite):
 class ComputeComposite(object):
     _auth_composite = _ComputeAuthComposite
 
-    def __init__(self):
-        auth_composite = self._auth_composite()
+    def __init__(self, auth_composite=None):
+        auth_composite = auth_composite or self._auth_composite()
         self.user = auth_composite._auth_user_config
         self.servers = ServersComposite(auth_composite)
         self.flavors = FlavorsComposite(auth_composite)
@@ -141,9 +141,9 @@ class ComputeAdminComposite(ComputeComposite):
 
 class ComputeIntegrationComposite(ComputeComposite):
 
-    def __init__(self):
+    def __init__(self, auth_composite=None):
         super(ComputeIntegrationComposite, self).__init__()
-        self.volumes = VolumesAutoComposite()
+        self.volumes = VolumesAutoComposite(auth_composite=auth_composite)
         self.volume_attachments.behaviors = \
             self.volume_attachments.behavior_class(
                 self.volume_attachments.client,

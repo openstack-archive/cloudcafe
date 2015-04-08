@@ -55,8 +55,8 @@ class MemoizedAuthServiceComposite(object):
 
     @classmethod
     @memoized
-    def get_rackspace_mfa_access_data(cls, username, password, tenant_id,
-                                      auth_endpoint, passcode):
+    def get_rackspace_mfa_access_data(
+            cls, username, password, tenant_id, auth_endpoint, passcode):
         if passcode is None:
             # TODO: This is a place holder for adding the functionality to
             # use an external service (e.g. - SMS) to provide the passcode
