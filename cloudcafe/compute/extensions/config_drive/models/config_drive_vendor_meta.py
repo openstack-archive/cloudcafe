@@ -38,7 +38,7 @@ class VendorMetadata(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, json_dict):
-        vendor_meta = VendorMeta(
+        vendor_meta = VendorMetadata(
             region=json_dict.get('region'),
             provider=json_dict.get('provider'),
             ip_whitelist=json_dict.get('ip_whitelist'),
