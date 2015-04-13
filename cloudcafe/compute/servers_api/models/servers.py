@@ -520,3 +520,22 @@ class InstanceActions(AutoMarshallingModel):
         for action in actions_list:
             ret.append(InstanceAction(**action))
         return ret
+
+
+class Pass(AutoMarshallingModel):
+
+    def __init__(
+            self, admin_pass=None):
+        self.admin_pass = admin_pass
+
+    @classmethod
+    def _json_to_obj(cls, serialized_str):
+        json_dict = json.loads(serialized_str)
+        password = cls._dict_to_obj(json_dict)
+        return password
+
+    @classmethod
+    def _dict_to_obj(cls, pass_dict):
+        password = Pass(
+            admin_pass=pass_dict.get('adminPass'))
+        return password
