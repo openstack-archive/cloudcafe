@@ -54,6 +54,7 @@ class NeutronErrorTypes(object):
     HTTP_INTERNAL_SERVER_ERROR = 'HTTPInternalServerError'
     INVALID_ALLOCATION_POOL = 'InvalidAllocationPool'
     IP_ADDRESS_GENERATION_FAILURE = 'IpAddressGenerationFailure'
+    IP_ADDRESS_IN_USE = 'IpAddressInUse'
     NETWORK_IN_USE = 'NetworkInUse'
     NETWORK_NOT_FOUND = 'NetworkNotFound'
     OUT_OF_BOUNDS_ALLOCATION_POOL = 'OutOfBoundsAllocationPool'
@@ -63,3 +64,9 @@ class NeutronErrorTypes(object):
     PORT_NOT_FOUND = 'PortNotFound'
     SECURITY_GROUPS_NOT_IMPLEMENTED = 'SecurityGroupsNotImplemented'
     SUBNET_NOT_FOUND = 'SubnetNotFound'
+
+
+class ComputeResponseCodes(object):
+    """HTTP Compute API Response codes"""
+
+    NOT_FOUND = 404

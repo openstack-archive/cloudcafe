@@ -25,6 +25,12 @@ class BaseNetworkingException(Exception):
         return repr(self.message)
 
 
+class UnavailableComputeInteractionException(BaseNetworkingException):
+    MSG = ('Missing the config file use_compute_api=True param in the '
+           'networking section. This requires the region and '
+           'compute_endpoint_name at the compute_endpoint section')
+
+
 class NetworkIDMissingException(BaseNetworkingException):
     MSG = 'Network ID is required'
 
