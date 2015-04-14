@@ -16,13 +16,16 @@ limitations under the License.
 
 import time
 
+from cloudcafe.compute.common.exceptions import ItemNotFound, TimeoutException
+from cloudcafe.compute.composites import ComputeComposite
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
 from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 from cloudcafe.networking.networks.common.constants \
-    import NeutronResponseCodes
+    import ComputeResponseCodes, NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
-    import NetworkGETException, SubnetGETException, UnsupportedTypeException
+    import NetworkGETException, SubnetGETException, UnsupportedTypeException, \
+        UnavailableComputeInteractionException
 from cloudcafe.networking.networks.common.models.response.network \
     import Network
 from cloudcafe.networking.networks.common.models.response.port \
@@ -45,6 +48,11 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         self.networks_behaviors = networks_behaviors
         self.subnets_behaviors = subnets_behaviors
         self.ports_behaviors = ports_behaviors
+
+        if self.config.use_compute_api:
+            self.compute = ComputeComposite()
+        else:
+            self.compute = None
 
     def get_port_fixed_ips(self, port):
         """Get the port fixed ips"""
@@ -211,3 +219,150 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
                 return True
             time.sleep(poll_interval)
         return False
+
+    def get_networks_format(self, network_ids=None, port_ids=None):
+        """
+        @summary: Formats network and port Ids in a list of dicts, for ex.
+            [{"port": "1db5a0f3-54c4-4231-a10a-8abf48faf81b"},
+            {"uuid": "00000000-0000-0000-0000-000000000000"},
+            {"uuid": "11111111-1111-1111-1111-111111111111"}]
+        @param network_ids: Network uuids
+        @type network_ids: list(str)
+        @param port_ids: Port uuids
+        @type port_ids: list(str)
+        @return: networks format for create server method calls
+        @rtype: list(dict)
+        """
+        networks = []
+        if network_ids:
+            nets = [{'uuid': network_id} for network_id in network_ids]
+            networks.extend(nets)
+        if port_ids:
+            ports = [{'port': port_id} for port_id in port_ids]
+            networks.extend(ports)
+        return networks
+
+    # Compute related methods require the networking use_compute_api config
+    # file param set to True and the compute_endpoint params
+    def create_networking_server(
+            self, name=None, image_ref=None, flavor_ref=None,
+            personality=None, user_data=None, metadata=None, accessIPv4=None,
+            accessIPv6=None, disk_config=None, networks=None, key_name=None,
+            config_drive=None, scheduler_hints=None, admin_pass=None,
+            block_device_mapping=None, security_groups=None,
+            active_server=True, network_ids=None, port_ids=None):
+        """
+        @summary: Creates a server calling the servers_api behavior methods
+            create_server_with_defaults or create_active_server based on the
+            active_server flag. Also, can take as input network and/or port
+            uuids instead of the networks list(dict)
+        @param name: Name of the server
+        @type name: str
+        @param image_ref: Image uuid to build the server.
+        @type image_ref: str
+        @param flavor_ref: The flavor used to build the server.
+        @type flavor_ref: str
+        @param personality: Files to be injected into the server.
+        @type personality: list(dict)
+        @param user_data: Configuration info or scripts to use upon launch.
+        @type user_data: str  (Must be Base64 encoded)
+        @param metadata: key/values to be used as metadata (limit is 5).
+        @type metadata: dict
+        @param accessIPv4: IPv4 address for the server.
+        @type accessIPv4: str
+        @param accessIPv6: IPv6 address for the server.
+        @type accessIPv6: str
+        @param disk_config: MANUAL/AUTO/None
+        @type disk_config: str
+        @param networks: Server NICs specified by network and/or port uuids.
+        @type networks: list(dict)
+        @param key_name: Key name of keypair that created earlier (keypair-add)
+        @type key_name: str
+        @param config_drive: Config Drive flag
+        @type config_drive: str
+        @param scheduler_hints: nova scheduler hints.
+        @type scheduler_hints: dict
+        @param admin_pass: admn password for server.
+        @type admin_pass: str
+        @param block_device_mapping: fields to boot from a volume.
+        @type block_device_mapping: dict
+        @param security_groups: security groups names
+        @type security_groups: list(dict) for ex. [{"name": secgroup.name}]
+        @param active_server: Flag for making the create_active_server call.
+        @type active_server: bool
+        @param network_ids: Server network ids (replaces the networks param).
+        @type network_ids: list
+        @param port_ids: Server network port ids (replaces the networks param).
+        @type port_ids: list
+        @return: Response object with server entity object
+        @rtype: requests.models.Response
+        """
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        if active_server:
+            create_server = (
+                self.compute.servers.behaviors.create_active_server)
+        else:
+            create_server = (
+                self.compute.servers.behaviors.create_server_with_defaults)
+
+        if network_ids or port_ids:
+            networks = self.get_networks_format(network_ids=network_ids,
+                                                port_ids=port_ids)
+
+        resp = create_server(
+            name=name, image_ref=image_ref, flavor_ref=flavor_ref,
+            personality=personality, config_drive=config_drive,
+            metadata=metadata, accessIPv4=accessIPv4, accessIPv6=accessIPv6,
+            disk_config=disk_config, networks=networks,
+            scheduler_hints=scheduler_hints, user_data=user_data,
+            admin_pass=admin_pass, key_name=key_name,
+            block_device_mapping=block_device_mapping,
+            security_groups=security_groups)
+
+        # The compute behavior verifies the response, no need to check
+        return resp
+
+    def wait_for_servers_to_be_deleted(self, server_id_list,
+                                       interval_time=None, timeout=None,
+                                       raise_exception=False):
+        """
+        @summary: Waits for multiple servers to be deleted
+        @param server_id_list: The uuids of the servers to be deleted
+        @type server_id_list: List
+        @param interval_time: Seconds to wait between polling
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait before aborting
+        @type timeout: Integer
+        """
+
+        interval_time = (interval_time or
+                         self.compute.servers.config.server_status_interval)
+        timeout = timeout or self.compute.servers.config.server_build_timeout
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            for server_id in server_id_list:
+                self.compute.servers.client.delete_server(server_id)
+            for server_id in server_id_list:
+                try:
+                    resp = self.compute.servers.client.get_server(server_id)
+                    if (server_id in server_id_list and
+                        resp.status_code == ComputeResponseCodes.NOT_FOUND):
+                            server_id_list.remove(server_id)
+                except ItemNotFound:
+                    if server_id in server_id_list:
+                        server_id_list.remove(server_id)
+            if not server_id_list:
+                break
+            time.sleep(interval_time)
+        else:
+            msg = ('wait_for_servers_to_be_deleted {0} seconds timeout waiting'
+                   'for the expected get_server HTTP {1} status code for '
+                   'servers: {2}').format(timeout,
+                                          ComputeResponseCodes.NOT_FOUND,
+                                          server_id_list)
+            self._log.info(msg)
+            if raise_exception:
+                raise TimeoutException(msg)
