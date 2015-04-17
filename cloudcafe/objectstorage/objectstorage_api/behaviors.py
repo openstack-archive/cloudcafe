@@ -689,3 +689,52 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         for container_name in container_list:
             self.force_delete_container(
                 container_name, requestslib_kwargs=requestslib_kwargs)
+
+    @behavior(ObjectStorageAPIClient)
+    def check_account_tempurl_keys(self):
+        """
+        Check the current account tempurl keys to ensure that they exist.
+        If they don't exist, call set_default_account_tempurl_keys() to set
+        the account keys to default values. Then recursively check the keys
+        again to make sure they are properly set.
+
+        @return: True
+        @rtype:  Boolean
+        """
+        metadata_response = self.client.get_account_metadata()
+
+        current_key_one = metadata_response.headers.get(
+            'x-account-meta-temp-url-key')
+        current_key_two = metadata_response.headers.get(
+            'x-account-meta-temp-url-key-2')
+
+        if current_key_one and current_key_two:
+            return True
+        else:
+            self.set_default_account_tempurl_keys()
+            self.check_account_tempurl_keys()
+
+    @behavior(ObjectStorageAPIClient)
+    def set_default_account_tempurl_keys(self):
+        """
+        Set the account tempurl keys to default values based on the constant
+        VALID_TEMPURL_KEY. This function will throw exceptions if either key
+        fails to be set.
+        """
+        # Set tempurl key one to default value
+        key_one = '{0}_one'.format(self.VALID_TEMPURL_KEY)
+        key_one_headers = {'X-Account-Meta-Temp-URL-Key': key_one}
+        key_one_response = self.client.set_temp_url_key(
+            headers=key_one_headers)
+
+        if not key_one_response.ok:
+            raise Exception('Could not set TempURL key one.')
+
+        # Set tempurl key two to default value
+        key_two = '{0}_two'.format(self.VALID_TEMPURL_KEY)
+        key_two_headers = {'X-Account-Meta-Temp-URL-Key': key_two}
+        key_two_response = self.client.set_temp_url_key(
+            headers=key_two_headers)
+
+        if not key_two_response.ok:
+            raise Exception('Could not set TempURL key two.')
