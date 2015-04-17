@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.auth.config import UserConfig as BaseUserConfig
+from cloudcafe.auth.config import UserAuthConfig, UserConfig as BaseUserConfig
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -40,13 +40,42 @@ class AltTwoUserConfig(BaseUserConfig):
     SECTION_NAME = 'alt_two_user'
 
 
-class ImagesConfig(ConfigSectionInterface):
-    SECTION_NAME = 'images'
+class AdminUserConfig(BaseUserConfig):
+    SECTION_NAME = 'admin_user'
+
+
+class AdminAuthConfig(UserAuthConfig):
+
+    SECTION_NAME = 'admin_auth_config'
+
+
+class ImagesEndpointConfig(ConfigSectionInterface):
+
+    SECTION_NAME = 'images_endpoint'
+
+    @property
+    def endpoint_name(self):
+        """Name to identify endpoint in service catalog"""
+        return self.get('endpoint_name')
+
+    @property
+    def region(self):
+        """Region to identity endpoint in service catalog"""
+        return self.get('region')
 
     @property
     def override_url(self):
         """Url used to override service catalog endpoint"""
         return self.get('override_url')
+
+
+class ImagesAdminEndpointConfig(ImagesEndpointConfig):
+
+    SECTION_NAME = 'images_admin_endpoint'
+
+
+class ImagesConfig(ConfigSectionInterface):
+    SECTION_NAME = 'images'
 
     @property
     def allow_post_images(self):
@@ -76,16 +105,6 @@ class ImagesConfig(ConfigSectionInterface):
         images
         """
         return self.get_boolean('allow_public_images_crud')
-
-    @property
-    def endpoint_name(self):
-        """Name to identify endpoint in service catalog"""
-        return self.get('endpoint_name')
-
-    @property
-    def region(self):
-        """Region to identity endpoint in service catalog"""
-        return self.get('region')
 
     @property
     def primary_image(self):
