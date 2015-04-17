@@ -18,31 +18,48 @@ from cloudcafe.auth.provider import MemoizedAuthServiceComposite
 from cloudcafe.glance.behaviors import ImagesBehaviors
 from cloudcafe.glance.client import ImagesClient
 from cloudcafe.glance.config import (
-    AltOneUserConfig, ImagesConfig, MarshallingConfig, AltTwoUserConfig)
+    AdminAuthConfig, AdminUserConfig, AltOneUserConfig, AltTwoUserConfig,
+    ImagesAdminEndpointConfig, ImagesConfig, ImagesEndpointConfig,
+    MarshallingConfig)
 
 
 class ImagesAuthComposite(MemoizedAuthServiceComposite):
     def __init__(self):
-        images_config = ImagesConfig()
+        self.images_endpoint_config = ImagesEndpointConfig()
         super(ImagesAuthComposite, self).__init__(
-            images_config.endpoint_name, images_config.region)
+            region=self.images_endpoint_config.region,
+            service_name=self.images_endpoint_config.endpoint_name)
 
 
 class ImagesAuthCompositeAltOne(MemoizedAuthServiceComposite):
     def __init__(self):
-        images_config = ImagesConfig()
+        self.images_endpoint_config = ImagesEndpointConfig()
         user_config = AltOneUserConfig()
         super(ImagesAuthCompositeAltOne, self).__init__(
-            images_config.endpoint_name, images_config.region,
+            region=self.images_endpoint_config.region,
+            service_name=self.images_endpoint_config.endpoint_name,
             user_config=user_config)
 
 
 class ImagesAuthCompositeAltTwo(MemoizedAuthServiceComposite):
     def __init__(self):
-        images_config = ImagesConfig()
+        self.images_endpoint_config = ImagesEndpointConfig()
         user_config = AltTwoUserConfig()
         super(ImagesAuthCompositeAltTwo, self).__init__(
-            images_config.endpoint_name, images_config.region,
+            region=self.images_endpoint_config.region,
+            service_name=self.images_endpoint_config.endpoint_name,
+            user_config=user_config)
+
+
+class ImagesAuthCompositeAdmin(MemoizedAuthServiceComposite):
+    def __init__(self):
+        self.images_endpoint_config = ImagesAdminEndpointConfig()
+        user_config = AdminUserConfig()
+        endpoint_config = AdminAuthConfig()
+        super(ImagesAuthCompositeAdmin, self).__init__(
+            endpoint_config=endpoint_config,
+            region=self.images_endpoint_config.region,
+            service_name=self.images_endpoint_config.endpoint_name,
             user_config=user_config)
 
 
@@ -51,10 +68,12 @@ class ImagesComposite(object):
         self.auth = auth_composite
         self.config = ImagesConfig()
         self.marshalling = MarshallingConfig()
-        url = self.auth.public_url
+        # url = self.auth.public_url
         # If an override_url was provided, use it instead
-        if self.config.override_url:
-            url = self.config.override_url
+        if self.auth.images_endpoint_config.override_url:
+            url = self.auth.images_endpoint_config.override_url
+        else:
+            url = self.auth.public_url
         self.client = ImagesClient(
             url, self.auth.token_id, self.marshalling.serializer,
             self.marshalling.deserializer)

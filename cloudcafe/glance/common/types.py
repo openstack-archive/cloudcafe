@@ -18,25 +18,25 @@ limitations under the License.
 class ImageContainerFormat(object):
     """@summary: Types denoting an Image's container format"""
 
-    BARE = "bare"
-    OVF = "ovf"
-    AKI = "aki"
-    ARI = "ari"
-    AMI = "ami"
+    BARE = 'bare'
+    OVF = 'ovf'
+    AKI = 'aki'
+    ARI = 'ari'
+    AMI = 'ami'
 
 
 class ImageDiskFormat(object):
     """@summary: Types denoting an Image's disk format"""
 
-    RAW = "raw"
-    VHD = "vhd"
-    VMDK = "vmdk"
-    VDI = "vdi"
-    ISO = "iso"
-    QCOW2 = "qcow2"
-    AKI = "aki"
-    AMI = "ami"
-    ARI = "ari"
+    RAW = 'raw'
+    VHD = 'vhd'
+    VMDK = 'vmdk'
+    VDI = 'vdi'
+    ISO = 'iso'
+    QCOW2 = 'qcow2'
+    AKI = 'aki'
+    AMI = 'ami'
+    ARI = 'ari'
 
 
 class ImageMemberStatus(object):
@@ -58,13 +58,14 @@ class ImageOSType(object):
 class ImageStatus(object):
     """@summary: Types denoting an Image's status"""
 
-    QUEUED = "queued"
-    SAVING = "saving"
-    ACTIVE = "active"
-    KILLED = "killed"
-    PENDING_DELETE = "pending_delete"
-    DELETED = "deleted"
-    ERROR = "error"
+    QUEUED = 'queued'
+    SAVING = 'saving'
+    ACTIVE = 'active'
+    KILLED = 'killed'
+    PENDING_DELETE = 'pending_delete'
+    DELETED = 'deleted'
+    ERROR = 'error'
+    DEACTIVATED = 'deactivated'
 
 
 class ImageType(object):

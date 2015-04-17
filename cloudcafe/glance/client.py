@@ -83,10 +83,10 @@ class ImagesClient(AutoMarshallingHTTPClient):
     def register_image(self, auto_disk_config=None, checksum=None,
                        container_format=None, created_at=None,
                        disk_format=None, file_=None, id_=None, image_type=None,
-                       min_disk=None, min_ram=None, name=None, os_type=None,
-                       owner=None, protected=None, schema=None, self_=None,
-                       size=None, status=None, tags=None, updated_at=None,
-                       user_id=None, visibility=None,
+                       location=None, min_disk=None, min_ram=None, name=None,
+                       os_type=None, owner=None, protected=None, schema=None,
+                       self_=None, size=None, status=None, tags=None,
+                       updated_at=None, user_id=None, visibility=None,
                        additional_properties=None, requestslib_kwargs=None):
         """
         @summary:  Register an image - Not listed in the Images API docs
@@ -107,6 +107,8 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @type id_: UUID
         @param image_type: Image type for the image being created
         @type image_type: String
+        @param location: Location for the image being created
+        @type location: String
         @param min_disk: Minimum disk for the image being created
         @type min_disk: String
         @param min_ram: Minimum ram for the image being created
@@ -150,11 +152,11 @@ class ImagesClient(AutoMarshallingHTTPClient):
         image = Image(auto_disk_config=auto_disk_config, checksum=checksum,
                       container_format=container_format, created_at=created_at,
                       disk_format=disk_format, file_=file_, id_=id_,
-                      image_type=image_type, min_disk=min_disk,
-                      min_ram=min_ram, name=name, os_type=os_type, owner=owner,
-                      protected=protected, schema=schema, self_=self_,
-                      size=size, status=status, tags=tags,
-                      updated_at=updated_at, user_id=user_id,
+                      image_type=image_type, location=location,
+                      min_disk=min_disk, min_ram=min_ram, name=name,
+                      os_type=os_type, owner=owner, protected=protected,
+                      schema=schema, self_=self_, size=size, status=status,
+                      tags=tags, updated_at=updated_at, user_id=user_id,
                       visibility=visibility,
                       additional_properties=additional_properties)
 
@@ -259,6 +261,46 @@ class ImagesClient(AutoMarshallingHTTPClient):
         url = '{0}/images/{1}'.format(self.base_url, image_id)
 
         return self.request('DELETE', url,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def deactivate_image(self, image_id, requestslib_kwargs=None):
+        """
+        @summary: Deactivate an image
+
+        @param image_id: Id of image to deactivate
+        @type image_id: UUID
+        @param requestslib_kwargs: Keyword arguments to be passed on to
+        python requests
+        @type requestslib_kwargs: Dictionary
+
+        @return: Response
+        @rtype: Object
+        """
+
+        url = '{0}/images/{1}/actions/deactivate'.format(
+            self.base_url, image_id)
+
+        return self.request('POST', url,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def reactivate_image(self, image_id, requestslib_kwargs=None):
+        """
+        @summary: Reactivate an image
+
+        @param image_id: Id of image to reactivate
+        @type image_id: UUID
+        @param requestslib_kwargs: Keyword arguments to be passed on to
+        python requests
+        @type requestslib_kwargs: Dictionary
+
+        @return: Response
+        @rtype: Object
+        """
+
+        url = '{0}/images/{1}/actions/reactivate'.format(
+            self.base_url, image_id)
+
+        return self.request('POST', url,
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_image_members(self, image_id, params=None,
