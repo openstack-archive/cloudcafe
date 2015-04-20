@@ -21,7 +21,7 @@ from cloudcafe.compute.common.models.metadata import MetadataItem
 from cloudcafe.compute.extensions.security_groups_api.models.security_group \
     import SecurityGroups, SecurityGroup
 from cloudcafe.compute.servers_api.models.servers import Server, Servers, \
-    ServerMins
+    ServerMins, Password
 from cloudcafe.compute.servers_api.models.servers import Addresses
 from cloudcafe.compute.servers_api.models.servers import InstanceActions
 from cloudcafe.compute.servers_api.models.requests import CreateServer, \
@@ -30,7 +30,7 @@ from cloudcafe.compute.servers_api.models.requests import UpdateServer
 from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
     Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
-    Rebuild, ResetState, CreateBackup, LiveMigrateServer
+    Rebuild, ResetState, CreateBackup, LiveMigrateServer, Evacuate
 
 
 class ServersClient(AutoMarshallingHTTPClient):
@@ -826,5 +826,35 @@ class ServersClient(AutoMarshallingHTTPClient):
         resp = self.request('POST', url,
                             request_entity=add_security_group_request_object,
                             response_entity_type=SecurityGroup,
+                            requestslib_kwargs=requestslib_kwargs)
+        return resp
+
+    def evacuate(self, server_id, host, on_shared_storage=None,
+                 admin_pass=None, metadata=None, requestslib_kwargs=None):
+        """
+        @summary: Evacuates server from failed host.
+        @param server_id: The id of an existing server.
+        @type server_id: String
+        @param host: The name or ID of host where to server is evacuated to.
+        @type host: String
+        @param on_shared_storage: Required if server is on shared storage.
+        @type on_shared_storage: Boolean
+        @param admin_pass: Not Specified with onSharedStorage;
+            New password for the evacuated instance.
+        @type admin_pass: String
+        @param metadata: Set the metadata on evacuate.
+        @type metadata: String
+        @return: Base Response object
+        @rtype: Requests.response
+        """
+        request = Evacuate(host=host,
+                           on_shared_storage=on_shared_storage,
+                           admin_pass=admin_pass,
+                           metadata=metadata)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        resp = self.request('POST', url,
+                            request_entity=request,
+                            response_entity_type=Password,
                             requestslib_kwargs=requestslib_kwargs)
         return resp

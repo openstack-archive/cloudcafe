@@ -785,3 +785,41 @@ class AddSecurityGroup(AutoMarshallingModel):
         element.append(name_ele)
         xml = ET.tostring(element)
         return xml
+
+
+class Evacuate(AutoMarshallingModel):
+    """
+    @summary: Evacuate Request Object for Server
+    """
+
+    def __init__(self, host, on_shared_storage=None, admin_pass=None,
+                 metadata=None):
+        super(Evacuate, self).__init__()
+        self.host = host
+        self.on_shared_storage = on_shared_storage
+        self.admin_pass = admin_pass
+        self.metadata = metadata
+
+    def _obj_to_json(self):
+        body = {
+            'host': self.host,
+            'onSharedStorage': self.on_shared_storage,
+            'adminPass': self.admin_pass,
+            'metadata': self.metadata
+        }
+        body = self._remove_empty_values(body)
+        return json.dumps({'evacuate': body})
+
+    def _obj_to_xml(self):
+        xml = Constants.XML_HEADER
+        element = ET.Element('evacuate')
+        element.set('xmlns', Constants.XML_API_NAMESPACE)
+        element.set('host', self.host)
+        if self.admin_pass is not None:
+            element.set('adminPass', self.admin_pass)
+        if self.metadata is not None:
+            element.set('metadata', self.metadata)
+        if self.on_shared_storage is not None:
+            element.set('onSharedStorage', self.on_shared_storage)
+        xml += ET.tostring(element)
+        return xml
