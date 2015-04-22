@@ -25,13 +25,30 @@ class NetworkingBaseConfig(ConfigSectionInterface):
 
     @property
     def keep_resources(self):
-        """Flag for not deleting resources on tearDown"""
+        """Flag for not deleting networking resources on tearDown"""
         return self.get_boolean("keep_resources", False)
 
     @property
     def keep_resources_on_failure(self):
-        """Flag for not deleting resources w failures on tearDown"""
+        """Flag for not deleting networking resources w failures on tearDown"""
         return self.get_boolean("keep_resources_on_failure", False)
+
+    @property
+    def use_compute_api(self):
+        """
+        Flag for instantiating the compute composite in NetworkingBehaviors
+        """
+        return self.get_boolean("use_compute_api", False)
+
+    @property
+    def keep_servers(self):
+        """Flag for not deleting servers on tearDown"""
+        return self.get_boolean("keep_servers", False)
+
+    @property
+    def keep_servers_on_failure(self):
+        """Flag for not deleting servers w failures on tearDown"""
+        return self.get_boolean("keep_servers_on_failure", False)
 
     @property
     def api_poll_interval(self):
