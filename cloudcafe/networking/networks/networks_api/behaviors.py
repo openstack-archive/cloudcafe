@@ -346,6 +346,51 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
                 raise ResourceDeleteException(err_msg)
             return result
 
+    def delete_networks(self, network_list=None, name=None, tenant_id=None):
+        """
+        @summary: deletes multiple networks
+        @param network_list: list of network UUIDs
+        @type network_list: list(str)
+        @param name: network name to filter by, asterisk can be used at the end
+            of the name to filter by name starts with, for ex. network_name*
+            (name will be ignored if network_list given)
+        @type name: string
+        @param tenant_id: network tenant ID to filter by
+        @type tenant_id: string (ignored if network_list given)
+        @return: failed deletes list with network IDs and failures
+        @rtype: list(dict)
+        """
+        if network_list is None:
+            resp = self.list_networks(tenant_id=tenant_id)
+            if (resp.response.status_code !=
+                    NeutronResponseCodes.LIST_NETWORKS):
+                get_msg = 'Unable to get networks for delete_networks call'
+                self._log.info(get_msg)
+                return None
+            networks = resp.response.entity
+
+            # In case the filtering on the GET call did NOT work as expected
+            if tenant_id:
+                networks = self.filter_entity_list_by_attr(
+                    entity_list=networks, attr='tenant_id', value=tenant_id)
+
+            network_list = self.get_id_list_from_entity_list(
+                entity_list=networks, name=name)
+
+        log_msg = 'Deleting networks: {0}'.format(network_list)
+        self._log.info(log_msg)
+        failed_deletes = []
+        for network_id in network_list:
+
+            # Avoiding removing public and service networks
+            if (network_id != self.config.public_network_id and
+                    network_id != self.config.service_network_id):
+                result = self.delete_network(network_id=network_id)
+                if result.failures:
+                    failed_deletes.append(result.failures)
+
+        return failed_deletes
+
     def clean_network(self, network_id, timeout=None, poll_interval=None):
         """
         @summary: deletes a network within a time out
