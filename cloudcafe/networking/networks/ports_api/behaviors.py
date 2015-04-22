@@ -527,6 +527,43 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                 raise ResourceDeleteException(err_msg)
             return result
 
+    def delete_ports(self, port_list=None, name=None, tenant_id=None):
+        """
+        @summary: deletes multiple ports
+        @param port_list: list of port UUIDs
+        @type port_list: list(str)
+        @param name: port name to filter by (ignored if port_list given)
+        @type name: string (* can be used for name_starts_with*)
+        @param tenant_id: port tenant ID to filter by
+        @type tenant_id: string (ignored if port_list given)
+        @return: failed deletes list with port IDs and failures
+        @rtype: list(dict)
+        """
+        if port_list is None:
+            resp = self.list_ports(tenant_id=tenant_id)
+            if (resp.response.status_code != NeutronResponseCodes.LIST_PORTS):
+                get_msg = 'Unable to get port list for delete_ports call'
+                self._log.info(get_msg)
+                return None
+            ports = resp.response.entity
+
+            # In case the filtering on the GET call did NOT worked as expected
+            if tenant_id:
+                ports = self.filter_entity_list_by_attr(
+                    entity_list=ports, attr='tenant_id', value=tenant_id)
+
+            port_list = self.get_id_list_from_entity_list(
+                entity_list=ports, name=name)
+
+        log_msg = 'Deleting ports: {0}'.format(port_list)
+        self._log.info(log_msg)
+        failed_deletes = []
+        for port_id in port_list:
+            result = self.delete_port(port_id=port_id)
+            if result.failures:
+                failed_deletes.append(result.failures)
+        return failed_deletes
+
     def clean_port(self, port_id, timeout=None, poll_interval=None):
         """
         @summary: deletes a port within a time out

@@ -817,6 +817,44 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
                 raise ResourceDeleteException(err_msg)
             return result
 
+    def delete_subnets(self, subnet_list=None, name=None, tenant_id=None):
+        """
+        @summary: deletes multiple subnets
+        @param subnet_list: list of subnet UUIDs
+        @type subnet_list: list(str)
+        @param name: subnet name to filter by (ignored if subnet_list given)
+        @type name: string (* can be used for name_starts_with*)
+        @param tenant_id: subnet tenant ID to filter by
+        @type tenant_id: string (ignored if subnet_list given)
+        @return: failed deletes list with subnet IDs and failures
+        @rtype: list(dict)
+        """
+        if subnet_list is None:
+            resp = self.list_subnets(tenant_id=tenant_id)
+            if (resp.response.status_code !=
+                    NeutronResponseCodes.LIST_SUBNETS):
+                get_msg = 'Unable to get subnets for delete_subnets call'
+                self._log.info(get_msg)
+                return None
+            subnets = resp.response.entity
+
+            # In case the filtering on the GET call did NOT worked as expected
+            if tenant_id:
+                subnets = self.filter_entity_list_by_attr(
+                    entity_list=subnets, attr='tenant_id', value=tenant_id)
+
+            subnet_list = self.get_id_list_from_entity_list(
+                entity_list=subnets, name=name)
+
+        log_msg = 'Deleting subnets: {0}'.format(subnet_list)
+        self._log.info(log_msg)
+        failed_deletes = []
+        for subnet_id in subnet_list:
+            result = self.delete_subnet(subnet_id=subnet_id)
+            if result.failures:
+                failed_deletes.append(result.failures)
+        return failed_deletes
+
     def clean_subnet(self, subnet_id, timeout=None, poll_interval=None):
         """
         @summary: deletes a subnet within a time out
