@@ -15,6 +15,14 @@ limitations under the License.
 """
 
 
+class NeutronResourceTypes(object):
+    """Neutron resource types"""
+
+    NETWORKS = 'networks'
+    SUBNETS = 'subnets'
+    PORTS = 'ports'
+
+
 class NeutronResponseCodes(object):
     """HTTP Neutron API Response codes"""
 
@@ -55,6 +63,7 @@ class NeutronErrorTypes(object):
     INVALID_ALLOCATION_POOL = 'InvalidAllocationPool'
     IP_ADDRESS_GENERATION_FAILURE = 'IpAddressGenerationFailure'
     IP_ADDRESS_IN_USE = 'IpAddressInUse'
+    INVALID_INPUT = 'InvalidInput'
     NETWORK_IN_USE = 'NetworkInUse'
     NETWORK_NOT_FOUND = 'NetworkNotFound'
     OUT_OF_BOUNDS_ALLOCATION_POOL = 'OutOfBoundsAllocationPool'
