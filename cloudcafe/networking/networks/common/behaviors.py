@@ -19,6 +19,8 @@ import time
 
 from cafe.engine.behaviors import BaseBehavior
 from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
+from cloudcafe.networking.networks.common.constants \
+    import NeutronResourceTypes, NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
     import UnhandledMethodCaseException
 
@@ -152,6 +154,74 @@ class NetworkingBaseBehaviors(BaseBehavior):
             entity_list = self.filter_entity_list_by_name(entity_list, name)
         id_list = [entity.id for entity in entity_list]
         return id_list
+
+    def _delete_resources(self, resource_list=None, name=None, tenant_id=None,
+                          skip_delete=None, resource_type=None):
+        """
+        @summary: deletes multiple resources (for ex. networks)
+        @param resource_list: list of resource UUIDs
+        @type resource_list: list(str)
+        @param name: resource name to filter by, asterisk can be used at the
+            end of the name to filter by name starts with, for ex. name*
+            (name will be ignored if resource_list given)
+        @type name: string
+        @param tenant_id: resource tenant ID to filter by
+        @type tenant_id: string (ignored if resource_list given)
+        @param skip_delete: list of resource UUIDs that should skip deletion
+        @type skip_delete: list
+        @return: failed delete list with resource UUIDs and failures
+        @rtype: list(dict)
+        """
+        # Getting the resource list based on the resource type (if not given)
+        if resource_list is None:
+            list_fn_name = 'list_{0}'.format(resource_type)
+            resp = getattr(self, list_fn_name)(tenant_id=tenant_id)
+
+            # Getting the Neutron expected response based on the fn name
+            response_code = list_fn_name.upper()
+            status_code = getattr(NeutronResponseCodes, response_code)
+
+            if resp.response.status_code != status_code:
+                get_msg = 'Unable to get {0} for delete_{0} call'.format(
+                    resource_type)
+                self._log.info(get_msg)
+                return None
+            resources = resp.response.entity
+
+            # In case the filtering on the GET call did NOT work as expected
+            if tenant_id:
+                resources = self.filter_entity_list_by_attr(
+                    entity_list=resources, attr='tenant_id', value=tenant_id)
+
+            resource_list = self.get_id_list_from_entity_list(
+                entity_list=resources, name=name)
+
+        # Getting resources that should Not be deleted
+        do_not_delete = []
+        false_values = [None, '']
+        if skip_delete is not None:
+            do_not_delete.extend(skip_delete)
+        if resource_type == NeutronResourceTypes.NETWORKS:
+            property_list = ['public_network_id', 'service_network_id']
+            for prop in property_list:
+                if (hasattr(self.config, prop) and
+                        getattr(self.config, prop) not in false_values):
+                    do_not_delete.append(getattr(self.config, prop))
+
+        # Removing the resources that should NOT be deleted if any
+        for resource_to_skip in do_not_delete:
+            if resource_to_skip in resource_list:
+                resource_list.remove(resource_to_skip)
+
+        log_msg = 'Deleting {0}: {1}'.format(resource_type, resource_list)
+        self._log.info(log_msg)
+        failed_deletes = []
+        delete_fn_name = 'delete_{0}'.format(resource_type[:-1])
+        for resource_id in resource_list:
+            result = getattr(self, delete_fn_name)(resource_id)
+            if result.failures:
+                failed_deletes.append(result.failures)
+        return failed_deletes
 
 
 class NetworkingResponse(object):

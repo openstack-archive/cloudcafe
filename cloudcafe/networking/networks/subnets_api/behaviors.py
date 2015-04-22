@@ -25,7 +25,7 @@ from cloudcafe.common.tools.datagen import rand_name, random_cidr
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors, NetworkingResponse
 from cloudcafe.networking.networks.common.constants \
-    import NeutronResponseCodes
+    import NeutronResponseCodes, NeutronResourceTypes
 from cloudcafe.networking.networks.common.exceptions \
     import InvalidIPException, NetworkIDMissingException,\
     ResourceBuildException, ResourceDeleteException, ResourceGetException,\
@@ -816,6 +816,29 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
             if raise_exception:
                 raise ResourceDeleteException(err_msg)
             return result
+
+    def delete_subnets(self, subnet_list=None, name=None, tenant_id=None,
+                       skip_delete=None):
+        """
+        @summary: deletes multiple subnets
+        @param subnet_list: list of subnet UUIDs
+        @type subnet_list: list(str)
+        @param name: subnet name to filter by, asterisk can be used at the end
+            of the name to filter by name starts with, for ex. subnet_name*
+            (name will be ignored if subnet_list given)
+        @type name: string
+        @param tenant_id: subnet tenant ID to filter by
+        @type tenant_id: string (ignored if subnet_list given)
+        @param skip_delete: list of network UUIDs that should skip deletion
+        @type skip_delete: list
+        @return: failed deletes list with subnet IDs and failures
+        @rtype: list(dict)
+        """
+        result = self._delete_resources(
+            resource_list=subnet_list, name=name,
+            tenant_id=tenant_id, skip_delete=skip_delete,
+            resource_type=NeutronResourceTypes.SUBNETS)
+        return result
 
     def clean_subnet(self, subnet_id, timeout=None, poll_interval=None):
         """
