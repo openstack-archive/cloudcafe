@@ -1,5 +1,5 @@
 """
-Copyright 2013 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from cafe.engine.http.client import AutoMarshallingHTTPClient
-from cloudcafe.compute.limits_api.models.limit import Limits
+from cloudcafe.compute.limits_api.models.limit import TenantLimits
 
 
 class LimitsClient(AutoMarshallingHTTPClient):
@@ -50,11 +50,11 @@ class LimitsClient(AutoMarshallingHTTPClient):
         the framework
         @type requestslib_kwargs:dict
         @return: limit_response
-        @rtype: Limits Response Domain Object
+        @rtype: TenantLimits Response Domain Object
         """
         url = '{base_url}/limits'.format(base_url=self.url)
         limit_response = self.request('GET', url,
-                                      response_entity_type=Limits,
+                                      response_entity_type=TenantLimits,
                                       requestslib_kwargs=requestslib_kwargs)
         return limit_response
 
