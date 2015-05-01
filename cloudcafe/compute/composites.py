@@ -52,11 +52,12 @@ class _ComputeAuthComposite(MemoizedAuthServiceComposite):
     _auth_endpoint_config = UserAuthConfig
     _auth_user_config = UserConfig
 
-    def __init__(self):
+    def __init__(self, endpoint_config=None, user_config=None):
         self.compute_endpoint_config = self._compute_endpoint_config()
         self.marshalling_config = MarshallingConfig()
-        self._auth_endpoint_config = self._auth_endpoint_config()
-        self._auth_user_config = self._auth_user_config()
+        self._auth_endpoint_config = \
+            endpoint_config or self._auth_endpoint_config()
+        self._auth_user_config = user_config or self._auth_user_config()
 
         super(_ComputeAuthComposite, self).__init__(
             service_name=self.compute_endpoint_config.compute_endpoint_name,
@@ -141,9 +142,16 @@ class ComputeAdminComposite(ComputeComposite):
 
 class ComputeIntegrationComposite(ComputeComposite):
 
-    def __init__(self, auth_composite=None):
-        super(ComputeIntegrationComposite, self).__init__()
-        self.volumes = VolumesAutoComposite(auth_composite=auth_composite)
+    def __init__(
+            self, compute_auth_composite=None,
+            blockstorage_auth_composite=None):
+
+        super(ComputeIntegrationComposite, self).__init__(
+            auth_composite=compute_auth_composite)
+
+        self.volumes = VolumesAutoComposite(
+            auth_composite=blockstorage_auth_composite)
+
         self.volume_attachments.behaviors = \
             self.volume_attachments.behavior_class(
                 self.volume_attachments.client,
