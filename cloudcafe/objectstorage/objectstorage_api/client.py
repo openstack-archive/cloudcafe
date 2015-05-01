@@ -26,6 +26,7 @@ from time import time, mktime
 from cafe.common.reporting import cclogging
 from cafe.engine.config import EngineConfig
 from cafe.engine.http.client import HTTPClient
+from cafe.engine.http.client import timer
 from cloudcafe.common.tools import randomstring as randstring
 from cloudcafe.common.tools.md5hash import get_md5_hash
 from cloudcafe.objectstorage.objectstorage_api.models.responses \
@@ -68,11 +69,9 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
 
             # Make the request and time it's execution
             response = None
-            elapsed = None
+
             try:
-                start = time()
                 response = func(*args, **kwargs)
-                elapsed = time() - start
             except Exception as exception:
                 log.critical('Call to Requests failed due to exception')
                 log.exception(exception)
@@ -125,7 +124,7 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             logline = ''.join([
                 '\n{0}\nRESPONSE RECEIVED\n{0}\n'.format('-' * 17),
                 'response status..: {0}\n'.format(response),
-                'response time....: {0}\n'.format(elapsed),
+                'response time....: {0}\n'.format(response.cafe_elapsed),
                 'response headers.: {0}\n'.format(response.headers),
                 'response body....: {0}\n'.format(response_content),
                 '-' * 79])
@@ -157,6 +156,7 @@ class ObjectStorageAPIClient(HTTPClient):
         self._swift_features = None
 
     @_log_transaction(log=_log)
+    @timer
     def request(
             self, method, url, headers=None, params=None, data=None,
             requestslib_kwargs=None):
