@@ -239,6 +239,28 @@ class ObjectStorageAPIClient(HTTPClient):
                         params=params,
                         requestslib_kwargs=requestslib_kwargs)
 
+    def health_check(self, headers=None, params=None,
+                     requestslib_kwargs=None):
+        """
+        Returns Health Check.
+
+        @param headers: headers to be added to the HTTP request.
+        @type  headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type  params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+
+        @return: response object
+        @rtype: object
+        """
+        health_url = "{0}healthcheck".format(self.storage_url.split('v1')[0])
+        return self.get(health_url,
+                        headers=headers,
+                        params=params,
+                        requestslib_kwargs=requestslib_kwargs)
+
     # Account----------------------------------------------------------------
 
     def get_account_metadata(self):
