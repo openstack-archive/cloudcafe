@@ -27,10 +27,11 @@ class Image(AutoMarshallingModel):
 
     def __init__(self, auto_disk_config=None, checksum=None,
                  container_format=None, created_at=None, disk_format=None,
-                 file_=None, id_=None, image_type=None, min_disk=None,
-                 min_ram=None, name=None, os_type=None, protected=None,
-                 schema=None, self_=None, size=None, status=None, tags=None,
-                 updated_at=None, user_id=None, visibility=None, owner=None,
+                 file_=None, id_=None, image_type=None, location=None,
+                 min_disk=None, min_ram=None, name=None, os_type=None,
+                 protected=None, schema=None, self_=None, size=None,
+                 status=None, tags=None, updated_at=None, user_id=None,
+                 virtual_size=None, visibility=None, owner=None,
                  additional_properties=None):
         self.auto_disk_config = auto_disk_config
         self.checksum = checksum
@@ -40,6 +41,7 @@ class Image(AutoMarshallingModel):
         self.file_ = file_
         self.id_ = id_
         self.image_type = image_type
+        self.location = location
         self.min_disk = min_disk
         self.min_ram = min_ram
         self.name = name
@@ -52,6 +54,7 @@ class Image(AutoMarshallingModel):
         self.tags = tags
         self.updated_at = updated_at
         self.user_id = user_id
+        self.virtual_size = virtual_size
         self.visibility = visibility
         self.owner = owner
         self.additional_properties = additional_properties
@@ -91,10 +94,10 @@ class Image(AutoMarshallingModel):
         for key, value in json_dict.items():
             if key not in ['auto_disk_config', 'checksum', 'container_format',
                            'created_at', 'disk_format', 'file', 'id',
-                           'image_type', 'min_disk', 'min_ram', 'name',
-                           'os_type', 'protected', 'schema', 'self', 'size',
-                           'status', 'tags', 'updated_at', 'user_id',
-                           'visibility', 'owner']:
+                           'image_type', 'location', 'min_disk', 'min_ram',
+                           'name', 'os_type', 'protected', 'schema', 'self',
+                           'size', 'status', 'tags', 'updated_at', 'user_id',
+                           'virtual_size', 'visibility', 'owner']:
                 additional_properties.update({key: value})
         created_at = dateutil.parser.parse(json_dict.get('created_at'))
         updated_at = dateutil.parser.parse(json_dict.get('updated_at'))
@@ -105,6 +108,7 @@ class Image(AutoMarshallingModel):
                       disk_format=json_dict.get('disk_format'),
                       file_=json_dict.get('file'), id_=json_dict.get('id'),
                       image_type=json_dict.get('image_type'),
+                      location=json_dict.get('location'),
                       min_disk=json_dict.get('min_disk'),
                       min_ram=json_dict.get('min_ram'),
                       name=json_dict.get('name'),
@@ -115,6 +119,7 @@ class Image(AutoMarshallingModel):
                       status=json_dict.get('status'),
                       tags=json_dict.get('tags'), updated_at=updated_at,
                       user_id=json_dict.get('user_id'),
+                      virtual_size=json_dict.get('virtual_size'),
                       visibility=json_dict.get('visibility'),
                       owner=json_dict.get('owner'),
                       additional_properties=additional_properties)
@@ -130,6 +135,7 @@ class Image(AutoMarshallingModel):
         obj_dict['file'] = self.file_
         obj_dict['id'] = self.id_
         obj_dict['image_type'] = self.image_type
+        obj_dict['location'] = self.location
         obj_dict['min_disk'] = self.min_disk
         obj_dict['min_ram'] = self.min_ram
         obj_dict['name'] = self.name
@@ -142,6 +148,7 @@ class Image(AutoMarshallingModel):
         obj_dict['tags'] = self.tags
         obj_dict['updated_at'] = self.updated_at
         obj_dict['user_id'] = self.user_id
+        obj_dict['virtual_size'] = self.virtual_size
         obj_dict['visibility'] = self.visibility
         obj_dict['owner'] = self.owner
         if self.additional_properties:
