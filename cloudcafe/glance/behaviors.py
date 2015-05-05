@@ -41,23 +41,6 @@ class ImagesBehaviors(BaseBehavior):
         self.resources = ResourcePool()
 
     @staticmethod
-    def read_data_file(file_path):
-        """
-        @summary: Retrieve data file for a given file path
-
-        @param file_path: Location of data file
-        @type file_path: String
-
-        @return: Test_data
-        @rtype: String
-        """
-
-        with open(file_path, 'r') as DATA:
-            test_data = DATA.read().rstrip()
-
-        return test_data
-
-    @staticmethod
     def get_comparison_data(data_file):
         """
         @summary: Create comparison dictionary based on a given set of data
@@ -312,7 +295,7 @@ class ImagesBehaviors(BaseBehavior):
 
         return image_list
 
-    def list_all_images(self, **params):
+    def list_all_images(self, url_addition=None, **params):
         """
         @summary: Retrieve a complete list of images accounting for any
         query parameters
@@ -326,8 +309,9 @@ class ImagesBehaviors(BaseBehavior):
 
         image_list = []
         results_limit = self.config.results_limit
+        params.update({'limit': results_limit})
 
-        resp = self.client.list_images(params)
+        resp = self.client.list_images(params, url_addition)
         images = self.verify_resp(resp, 'list images')
 
         while len(images) == results_limit:
@@ -336,7 +320,7 @@ class ImagesBehaviors(BaseBehavior):
             marker = images[results_limit - 1].id_
             params.update({'marker': marker})
 
-            resp = self.client.list_images(params)
+            resp = self.client.list_images(params, url_addition)
             images = self.verify_resp(resp, 'list images')
 
         image_list += images
@@ -426,6 +410,9 @@ class ImagesBehaviors(BaseBehavior):
         if image.user_id is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'user_id', 'not None', image.user_id))
+        if image.virtual_size is not None:
+            errors.append(Messages.PROPERTY_MSG.format(
+                'virtual_size', 'None', image.virtual_size))
         if image.visibility is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'visibility', 'not None', image.visibility))
@@ -535,7 +522,7 @@ class ImagesBehaviors(BaseBehavior):
                 if type_ == TaskTypes.IMPORT:
                     resp = self.client.task_to_import_image(input_=input_,
                                                             type_=type_)
-                elif type_ == TaskTypes.EXPORT:
+                else:
                     resp = self.client.task_to_export_image(input_=input_,
                                                             type_=type_)
                 task = resp.entity
@@ -591,6 +578,7 @@ class ImagesBehaviors(BaseBehavior):
 
         task_list = []
         results_limit = self.config.results_limit
+        params.update({'limit': results_limit})
 
         resp = self.client.list_tasks(params)
         tasks = self.verify_resp(resp, 'list tasks')
@@ -792,6 +780,7 @@ class ImagesBehaviors(BaseBehavior):
             error_statuses = [TaskStatus.FAILURE]
         else:
             error_statuses = [TaskStatus.SUCCESS]
+
         verifier.add_state(
             expected_statuses=[TaskStatus.PENDING],
             acceptable_statuses=[TaskStatus.PROCESSING, final_status],
@@ -802,6 +791,7 @@ class ImagesBehaviors(BaseBehavior):
             error_statuses = [TaskStatus.PENDING, TaskStatus.FAILURE]
         else:
             error_statuses = [TaskStatus.PENDING, TaskStatus.SUCCESS]
+
         verifier.add_state(
             expected_statuses=[TaskStatus.PROCESSING],
             acceptable_statuses=[final_status],
