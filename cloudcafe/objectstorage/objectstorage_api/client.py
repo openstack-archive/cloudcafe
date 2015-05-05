@@ -22,6 +22,7 @@ from datetime import datetime
 from hashlib import sha1
 from os.path import expanduser
 from time import time, mktime
+from urlparse import urlparse
 
 from cafe.common.reporting import cclogging
 from cafe.engine.config import EngineConfig
@@ -235,6 +236,32 @@ class ObjectStorageAPIClient(HTTPClient):
         """
         info_url = '{0}/info'.format(self.swift_endpoint)
         return self.get(info_url,
+                        headers=headers,
+                        params=params,
+                        requestslib_kwargs=requestslib_kwargs)
+
+    def health_check(self, headers=None, params=None,
+                     requestslib_kwargs=None):
+        """
+        Returns Health Check.
+
+        @param headers: headers to be added to the HTTP request.
+        @type  headers: dictionary
+        @param params: query string parameters to be added to the HTTP request.
+        @type  params: dictionary
+        @param requestslib_kwargs: keyword arguments to be passed on to
+                                   python requests.
+        @type requestslib_kwargs: dictionary
+
+        @return: response object
+        @rtype: object
+        """
+        parsed_url = urlparse(self.storage_url)
+        health_url = "{0}://{1}/healthcheck".format(
+            parsed_url.scheme,
+            parsed_url.netloc)
+
+        return self.get(health_url,
                         headers=headers,
                         params=params,
                         requestslib_kwargs=requestslib_kwargs)
