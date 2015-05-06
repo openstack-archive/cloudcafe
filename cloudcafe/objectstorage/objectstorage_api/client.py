@@ -68,11 +68,9 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
 
             # Make the request and time it's execution
             response = None
-            elapsed = None
+
             try:
-                start = time()
                 response = func(*args, **kwargs)
-                elapsed = time() - start
             except Exception as exception:
                 log.critical('Call to Requests failed due to exception')
                 log.exception(exception)
@@ -125,7 +123,7 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             logline = ''.join([
                 '\n{0}\nRESPONSE RECEIVED\n{0}\n'.format('-' * 17),
                 'response status..: {0}\n'.format(response),
-                'response time....: {0}\n'.format(elapsed),
+                'response time....: {0}\n'.format(response.elapsed),
                 'response headers.: {0}\n'.format(response.headers),
                 'response body....: {0}\n'.format(response_content),
                 '-' * 79])
