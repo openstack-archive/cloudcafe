@@ -36,5 +36,6 @@ class Messages(object):
                     'Received: {2}')
     STATUS_CODE_MSG = ('Unexpected status code received. Expected: {0}, '
                        'Received: {1}')
+    EXPORT_UNKNOWN_ERROR_MSG = 'Unknown error occurred during image export'
     UPDATE_IMAGE_MEMBER_STATUS = ('You are not permitted to modify \'status\' '
                                   'on this image.')
