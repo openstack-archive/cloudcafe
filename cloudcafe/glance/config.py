@@ -268,11 +268,6 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('versions_data')
 
     @property
-    def versions_list(self):
-        """List of versions"""
-        return [x.strip() for x in self.get('versions_list', "").split(',')]
-
-    @property
     def account_list(self):
         """List of accounts"""
         return [x.strip() for x in self.get('account_list', "").split(',')]
