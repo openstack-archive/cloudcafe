@@ -187,9 +187,8 @@ class Input(AutoMarshallingModel):
 class Result(AutoMarshallingModel):
     """@summary: Result for Task v2 model"""
 
-    def __init__(self, export_location=None, image_id=None):
+    def __init__(self, image_id=None):
         super(Result, self).__init__()
-        self.export_location = export_location
         self.image_id = image_id
 
     def __eq__(self, other):
@@ -208,8 +207,7 @@ class Result(AutoMarshallingModel):
         result = None
         result_dict = json_dict.get('result')
         if result_dict:
-            result = Result(image_id=result_dict.get('image_id'),
-                            export_location=result_dict.get('export_location'))
+            result = Result(image_id=result_dict.get('image_id'))
         return result
 
     @classmethod
