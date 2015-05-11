@@ -44,6 +44,15 @@ class Constants:
     XML_HEADER = "<?xml version='1.0' encoding='UTF-8'?>"
     SERVICE_TYPE = 'cloudServersOpenStack'
 
+    @classmethod
+    def xml_namespaces(cls):
+        """
+        Get a list containing the XML namespace constant values.
+
+        Return a list of any Constants class value that starts with XML. These
+        should represent the potential namespace values in an XML doc.
+        """
+        return [v for k, v in cls.__dict__.items() if k.startswith('XML')]
 
 class HTTPResponseCodes(object):
     NOT_FOUND = 404
