@@ -522,12 +522,8 @@ class ImagesBehaviors(BaseBehavior):
 
         for attempt in range(attempts):
             try:
-                if type_ == TaskTypes.IMPORT:
-                    resp = self.client.task_to_import_image(input_=input_,
-                                                            type_=type_)
-                else:
-                    resp = self.client.task_to_export_image(input_=input_,
-                                                            type_=type_)
+                resp = self.client.task_to_import_image(input_=input_,
+                                                        type_=type_)
                 task = resp.entity
 
                 task = self.wait_for_task_status(task.id_, TaskStatus.SUCCESS)
@@ -624,27 +620,14 @@ class ImagesBehaviors(BaseBehavior):
         if task.created_at is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', task.created_at))
-        if task.type_ == TaskTypes.IMPORT:
-            if task.input_.import_from is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'import_from', 'not None', task.input_.import_from))
-            if (task.result is not None and
-                    id_regex.match(task.result.image_id) is None):
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'image_id', 'not None',
-                    id_regex.match(task.result.image_id)))
-        elif task.type_ == TaskTypes.EXPORT:
-            if task.input_.image_uuid is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'image_uuid', 'not None', task.input_.image_uuid))
-            if task.input_.receiving_swift_container is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'receiving_swift_container', 'not None',
-                    task.input_.receiving_swift_container))
-            if task.result is not None and task.result.export_location is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'export_location', 'not None',
-                    task.result.export_location))
+        if task.input_.import_from is None:
+            errors.append(Messages.PROPERTY_MSG.format(
+                'import_from', 'not None', task.input_.import_from))
+        if (task.result is not None and
+                id_regex.match(task.result.image_id) is None):
+            errors.append(Messages.PROPERTY_MSG.format(
+                'image_id', 'not None',
+                id_regex.match(task.result.image_id)))
         elif task.type_ is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'type_', 'not None', task.type_))
@@ -665,39 +648,6 @@ class ImagesBehaviors(BaseBehavior):
                 'schema', '/v2/schemas/task', task.schema))
 
         return errors
-
-    @staticmethod
-    def validate_exported_files(expect_success, files, image_id):
-        """
-        @summary: Validate that a given storage location contains a
-        given file or not
-
-        @param expect_success: Flag to determine if task completed successfully
-        @type expect_success: Boolean
-        @param files: File objects to be validated
-        @type files: List
-        @param image_id: Image id to validate against
-        @type image_id: UUID
-
-        @return: Errors, file_names
-        @rtype: List, list
-        """
-
-        errors = []
-        file_names = [file_.name for file_ in files]
-
-        if expect_success:
-            if '{0}.vhd'.format(image_id) not in file_names:
-                errors.append('Expected VHD file not listed. Expected: '
-                              '{0}.vhd to be listed Received: File was not '
-                              'listed'.format(image_id))
-        else:
-            if '{0}.vhd'.format(image_id) in file_names:
-                errors.append('Unexpected VHD file listed. Expected: {0}.vhd '
-                              'to not be listed Received: File was '
-                              'listed'.format(image_id))
-
-        return errors, file_names
 
     def wait_for_task_status(self, task_id, desired_status, interval_time=10,
                              timeout=1200):
@@ -770,8 +720,6 @@ class ImagesBehaviors(BaseBehavior):
 
         if task_type == TaskTypes.IMPORT:
             resp = self.client.task_to_import_image(input_, TaskTypes.IMPORT)
-        else:
-            resp = self.client.task_to_export_image(input_, TaskTypes.EXPORT)
 
         task = self.verify_resp(resp, 'create task')
 
