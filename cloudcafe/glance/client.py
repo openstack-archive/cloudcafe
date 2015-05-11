@@ -532,31 +532,6 @@ class ImagesClient(AutoMarshallingHTTPClient):
                             response_entity_type=Task,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def task_to_export_image(self, input_=None, type_=None,
-                             requestslib_kwargs=None):
-        """
-        @summary: Create a task to export an image
-
-        @param input_: Container for export input parameters containing
-        image uuid and receiving swift container
-        @type input_: Dictionary
-        @param type_: Type of task
-        @type type_: String
-        @param requestslib_kwargs: Keyword arguments to be passed on to
-        python requests
-        @type requestslib_kwargs: Dictionary
-
-        @return: Response
-        @rtype: Object
-        """
-
-        url = '{0}/tasks'.format(self.base_url)
-        task = Task(input_=input_, type_=type_)
-
-        return self.request('POST', url, request_entity=task,
-                            response_entity_type=Task,
-                            requestslib_kwargs=requestslib_kwargs)
-
     def delete_task(self, task_id, requestslib_kwargs=None):
         """
         @summary: Delete a task - Not listed in the Images API docs
