@@ -110,13 +110,7 @@ class Flavor(AutoMarshallingModel):
     @classmethod
     def _xml_to_obj(cls, serialized_str):
         element = ET.fromstring(serialized_str)
-        cls._remove_xml_etree_namespace(element, Constants.XML_API_NAMESPACE)
-        cls._remove_xml_etree_namespace(element,
-                                        Constants.XML_API_ATOM_NAMESPACE)
-        cls._remove_xml_etree_namespace(element,
-                                        Constants.XML_FLAVOR_EXTRA_SPECS)
-        cls._remove_xml_etree_namespace(element,
-                                        Constants.XML_FLAVOR_EXTRA_DATA)
+        cls._remove_xml_etree_namespace(element, *Constants.xml_namespaces())
         flavor = cls._xml_ele_to_obj(element)
         return flavor
 
@@ -218,6 +212,7 @@ class Flavors(AutoMarshallingListModel):
     @classmethod
     def _xml_to_obj(cls, serialized_str):
         element = ET.fromstring(serialized_str)
+        cls._remove_xml_etree_namespace(element, *Constants.xml_namespaces())
         if element.tag != 'flavors':
             return None
         return cls._xml_list_to_obj(element.findall('flavor'))
