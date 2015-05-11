@@ -29,6 +29,7 @@ from cloudcafe.glance.common.constants import ImageProperties, Messages
 from cloudcafe.glance.common.types import (
     ImageContainerFormat, ImageDiskFormat, ImageStatus, Schemas, TaskStatus,
     TaskTypes)
+from cloudcafe.glance.models.task import Task
 
 
 class ImagesBehaviors(BaseBehavior):
@@ -522,12 +523,8 @@ class ImagesBehaviors(BaseBehavior):
 
         for attempt in range(attempts):
             try:
-                if type_ == TaskTypes.IMPORT:
-                    resp = self.client.task_to_import_image(input_=input_,
-                                                            type_=type_)
-                else:
-                    resp = self.client.task_to_export_image(input_=input_,
-                                                            type_=type_)
+                resp = self.client.task_to_import_image(input_=input_,
+                                                        type_=type_)
                 task = resp.entity
 
                 task = self.wait_for_task_status(task.id_, TaskStatus.SUCCESS)
@@ -624,27 +621,14 @@ class ImagesBehaviors(BaseBehavior):
         if task.created_at is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', task.created_at))
-        if task.type_ == TaskTypes.IMPORT:
-            if task.input_.import_from is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'import_from', 'not None', task.input_.import_from))
-            if (task.result is not None and
-                    id_regex.match(task.result.image_id) is None):
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'image_id', 'not None',
-                    id_regex.match(task.result.image_id)))
-        elif task.type_ == TaskTypes.EXPORT:
-            if task.input_.image_uuid is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'image_uuid', 'not None', task.input_.image_uuid))
-            if task.input_.receiving_swift_container is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'receiving_swift_container', 'not None',
-                    task.input_.receiving_swift_container))
-            if task.result is not None and task.result.export_location is None:
-                errors.append(Messages.PROPERTY_MSG.format(
-                    'export_location', 'not None',
-                    task.result.export_location))
+        if task.input_.import_from is None:
+            errors.append(Messages.PROPERTY_MSG.format(
+                'import_from', 'not None', task.input_.import_from))
+        if (task.result is not None and
+                id_regex.match(task.result.image_id) is None):
+            errors.append(Messages.PROPERTY_MSG.format(
+                'image_id', 'not None',
+                id_regex.match(task.result.image_id)))
         elif task.type_ is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'type_', 'not None', task.type_))
@@ -666,41 +650,8 @@ class ImagesBehaviors(BaseBehavior):
 
         return errors
 
-    @staticmethod
-    def validate_exported_files(expect_success, files, image_id):
-        """
-        @summary: Validate that a given storage location contains a
-        given file or not
-
-        @param expect_success: Flag to determine if task completed successfully
-        @type expect_success: Boolean
-        @param files: File objects to be validated
-        @type files: List
-        @param image_id: Image id to validate against
-        @type image_id: UUID
-
-        @return: Errors, file_names
-        @rtype: List, list
-        """
-
-        errors = []
-        file_names = [file_.name for file_ in files]
-
-        if expect_success:
-            if '{0}.vhd'.format(image_id) not in file_names:
-                errors.append('Expected VHD file not listed. Expected: '
-                              '{0}.vhd to be listed Received: File was not '
-                              'listed'.format(image_id))
-        else:
-            if '{0}.vhd'.format(image_id) in file_names:
-                errors.append('Unexpected VHD file listed. Expected: {0}.vhd '
-                              'to not be listed Received: File was '
-                              'listed'.format(image_id))
-
-        return errors, file_names
-
     def wait_for_task_status(self, task_id, desired_status, interval_time=10,
-                             timeout=1200):
+                             timeout=1200, response_entity_type=None):
         """
         @summary: Waits for a task to reach a desired status and if the import
         task is successful, adds the created image to the resource pool for
@@ -714,6 +665,9 @@ class ImagesBehaviors(BaseBehavior):
         @type interval_time: Integer
         @param timeout: Amount of time in seconds to wait before aborting
         @type timeout: Integer
+        @param response_entity_type: Response entity type to be passed on to
+        python requests
+        @type response_entity_type: Type
 
         @return: Task
         @rtype: Object
@@ -722,9 +676,12 @@ class ImagesBehaviors(BaseBehavior):
         interval_time = interval_time or self.config.task_status_interval
         timeout = timeout or self.config.task_timeout
         end_time = time.time() + timeout
+        if not response_entity_type:
+            response_entity_type = Task
 
         while time.time() < end_time:
-            resp = self.client.get_task_details(task_id)
+            resp = self.client.get_task_details(
+                task_id, response_entity_type=response_entity_type)
             task = self.verify_resp(resp, 'get task details', task_id)
 
             if ((task.status.lower() == TaskStatus.FAILURE and
@@ -751,33 +708,33 @@ class ImagesBehaviors(BaseBehavior):
 
         return task
 
-    def create_task_with_transitions(self, input_, task_type,
-                                     final_status=None):
+    def create_task_with_transitions(self, create_task_resp, final_status=None,
+                                     response_entity_type=None):
         """
         @summary: Create a task and verify that it transitions through the
         expected statuses
 
-        @param input_: Image properties and location data
-        @type input_: Dictionary
-        @param task_type: Type of task
-        @type task_type: String
+        @param create_task_resp: Create task api response
+        @type create_task_resp: Object
         @param final_status: Flag to determine success or failure
         @type final_status: String
+        @param response_entity_type: Response entity type to be passed on to
+        python requests
+        @type response_entity_type: Type
 
         @return: Task
         @rtype: Object
         """
 
-        if task_type == TaskTypes.IMPORT:
-            resp = self.client.task_to_import_image(input_, TaskTypes.IMPORT)
-        else:
-            resp = self.client.task_to_export_image(input_, TaskTypes.EXPORT)
+        if not response_entity_type:
+            response_entity_type = Task
 
-        task = self.verify_resp(resp, 'create task')
+        task = self.verify_resp(create_task_resp, 'create task')
 
         # Verify task progresses as expected
         verifier = StatusProgressionVerifier(
-            'task', task.id_, self.get_task_status, task.id_)
+            'task', task.id_, self.get_task_status, task.id_,
+            response_entity_type=response_entity_type)
 
         if final_status == TaskStatus.SUCCESS:
             error_statuses = [TaskStatus.FAILURE]
@@ -814,21 +771,29 @@ class ImagesBehaviors(BaseBehavior):
 
         verifier.start()
 
-        return self.client.get_task_details(task.id_).entity
+        return self.client.get_task_details(
+            task.id_, response_entity_type=response_entity_type).entity
 
-    def get_task_status(self, task_id):
+    def get_task_status(self, task_id, response_entity_type=None):
         """
         @summary: Retrieve task status for the status progression verifier in
         the create_task_with_transitions method
 
         @param task_id: Task id
         @type task_id: UUID
+        @param response_entity_type: Response entity type to be passed on to
+        python requests
+        @type response_entity_type: Type
 
         @return: Status
         @rtype: String
         """
 
-        resp = self.client.get_task_details(task_id)
+        if not response_entity_type:
+            response_entity_type = Task
+
+        resp = self.client.get_task_details(
+            task_id, response_entity_type=response_entity_type)
         task = self.verify_resp(resp, 'get task details', task_id)
 
         return task.status.lower()

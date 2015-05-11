@@ -25,18 +25,13 @@ class Messages(object):
     CONTAINER_DNE = 'Container not found. Container: {0}'
     DUPLICATE_FILE_MSG = ('Object already exists in user\'s container. '
                           'Container/Object: {0}/{1}.vhd')
-    EXPORT_WINDOWS_MSG = ('Image cannot be exported due to licensing or '
-                          'billing restrictions (com.rackspace__1__options: '
-                          '\'{0}\')')
     EXTRA_IMAGE_PROPERTIES_MSG = ('Unsupported element in image_properties, '
                                   'please consult the documentation.')
-    NOT_OWNER_MSG = 'An image may only be exported by the image owner.'
     IMAGE_NOT_FOUND = 'Image not found for import. Possible invalid location'
     OK_RESP_MSG = 'Unexpected response received.  Expected: OK, Received: {0}'
     PROPERTY_MSG = ('Unexpected value for {0} received. Expected: {1}, '
                     'Received: {2}')
     STATUS_CODE_MSG = ('Unexpected status code received. Expected: {0}, '
                        'Received: {1}')
-    EXPORT_UNKNOWN_ERROR_MSG = 'Unknown error occurred during image export'
     UPDATE_IMAGE_MEMBER_STATUS = ('You are not permitted to modify \'status\' '
                                   'on this image.')

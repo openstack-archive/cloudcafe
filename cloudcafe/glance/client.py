@@ -488,7 +488,8 @@ class ImagesClient(AutoMarshallingHTTPClient):
                             response_entity_type=Tasks,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def get_task_details(self, task_id, requestslib_kwargs=None):
+    def get_task_details(self, task_id, requestslib_kwargs=None,
+                         response_entity_type=None):
         """
         @summary: Get the details of a task
 
@@ -497,6 +498,9 @@ class ImagesClient(AutoMarshallingHTTPClient):
         @param requestslib_kwargs: Keyword arguments to be passed on to
         python requests
         @type requestslib_kwargs: Dictionary
+        @param response_entity_type: Response entity type to be passed on to
+        python requests
+        @type response_entity_type: Type
 
         @return: Response
         @rtype: Object
@@ -504,7 +508,11 @@ class ImagesClient(AutoMarshallingHTTPClient):
 
         url = '{0}/tasks/{1}'.format(self.base_url, task_id)
 
-        return self.request('GET', url, response_entity_type=Task,
+        if not response_entity_type:
+            response_entity_type = Task
+
+        return self.request('GET', url,
+                            response_entity_type=response_entity_type,
                             requestslib_kwargs=requestslib_kwargs)
 
     def task_to_import_image(self, input_=None, type_=None,
@@ -514,31 +522,6 @@ class ImagesClient(AutoMarshallingHTTPClient):
 
         @param input_: Container for import input parameters containing
         image properties and import from
-        @type input_: Dictionary
-        @param type_: Type of task
-        @type type_: String
-        @param requestslib_kwargs: Keyword arguments to be passed on to
-        python requests
-        @type requestslib_kwargs: Dictionary
-
-        @return: Response
-        @rtype: Object
-        """
-
-        url = '{0}/tasks'.format(self.base_url)
-        task = Task(input_=input_, type_=type_)
-
-        return self.request('POST', url, request_entity=task,
-                            response_entity_type=Task,
-                            requestslib_kwargs=requestslib_kwargs)
-
-    def task_to_export_image(self, input_=None, type_=None,
-                             requestslib_kwargs=None):
-        """
-        @summary: Create a task to export an image
-
-        @param input_: Container for export input parameters containing
-        image uuid and receiving swift container
         @type input_: Dictionary
         @param type_: Type of task
         @type type_: String
