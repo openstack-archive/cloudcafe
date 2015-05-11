@@ -70,11 +70,11 @@ class ImagesComposite(object):
         self.marshalling = MarshallingConfig()
         # If an override_url was provided, use it instead
         if self.auth.images_endpoint_config.override_url:
-            url = self.auth.images_endpoint_config.override_url
+            self.url = self.auth.images_endpoint_config.override_url
         else:
-            url = self.auth.public_url
+            self.url = self.auth.public_url
         self.client = ImagesClient(
-            url, self.auth.token_id, self.marshalling.serializer,
+            self.url, self.auth.token_id, self.marshalling.serializer,
             self.marshalling.deserializer)
 
         self.behaviors = ImagesBehaviors(

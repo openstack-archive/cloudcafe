@@ -245,16 +245,6 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get('import_from_bootable')
 
     @property
-    def export_to(self):
-        """Location to export a given file"""
-        return self.get('export_to')
-
-    @property
-    def alt_export_to(self):
-        """Location to export a given file"""
-        return self.get('alt_export_to')
-
-    @property
     def task_status_interval(self):
         """Amount of time to wait between polling the status of a task"""
         return int(self.get("task_status_interval"))

@@ -72,7 +72,6 @@ class ImageType(object):
     """@summary: Types denoting an Image's type"""
 
     BASE = 'base'
-    EXPORT = 'export'
     IMPORT = 'import'
     SNAPSHOT = 'snapshot'
 
@@ -116,5 +115,3 @@ class TaskTypes(object):
     """@summary: Types denoting a Task's types"""
 
     IMPORT = 'import'
-    EXPORT = 'export'
-    CLONE = 'clone'
