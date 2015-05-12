@@ -110,7 +110,7 @@ class ExceptionHandler:
         try:
             element = ET.fromstring(resp_body)
             # Handle the case where the API returns the exception in HTML
-            AutoMarshallingModel._remove_namespace(element, ns)
+            AutoMarshallingModel._remove_xml_etree_namespace(element, ns)
             type = 'xml'
             return ({element.tag: {'message': element.find('message').text}},
                     type)
@@ -118,7 +118,6 @@ class ExceptionHandler:
             pass
 
         # Parse as HTML
-        finally:
-            split_resp = resp_body.split("\n\n")
-            type = 'html'
-            return {split_resp[0]: {'message': split_resp[1]}}, type
+        split_resp = resp_body.split("\n\n")
+        type = 'html'
+        return {split_resp[0]: {'message': split_resp[1]}}, type
