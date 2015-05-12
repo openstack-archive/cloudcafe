@@ -16,12 +16,11 @@ limitations under the License.
 
 import platform
 import re
-import subprocess
 import time
 
 from IPy import IP
 from cafe.common.reporting import cclogging
-
+from cafe.engine.clients.commandline import BaseCommandLineClient
 from cloudcafe.compute.common.exceptions import TimeoutException
 
 
@@ -47,7 +46,6 @@ class PingClient(object):
         @return: True if the server was reachable, False otherwise
         @rtype: bool
         """
-
         address = IP(ip)
         ip_address_version = address.version()
         os_type = platform.system().lower()
@@ -59,15 +57,15 @@ class PingClient(object):
         command = '{command} {address}'.format(
             command=ping_command, address=ip)
         cls._log.debug("Executing command '{command}'".format(command=command))
-        process = subprocess.Popen(command, shell=True,
-                                   stdout=subprocess.PIPE)
-        process.wait()
+        cmd_client = BaseCommandLineClient()
+        results = cmd_client.run_command(command)
+        result = " ".join(results.standard_out)
         try:
             packet_loss_percent = re.search(
                 cls.PING_PACKET_LOSS_REGEX,
-                process.stdout.read()).group(1)
+                result).group(1)
         except Exception:
-            # If there is no match, fail
+            cls._log.debug("Unable to ping {ip}.".format(ip=ip))
             return False
         cls._log.debug("Pinged {ip} with {packet_loss}% packet loss.".format(
             ip=ip, packet_loss=packet_loss_percent))
