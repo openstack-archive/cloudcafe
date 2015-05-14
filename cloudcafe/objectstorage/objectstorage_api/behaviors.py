@@ -1,5 +1,5 @@
 """
-Copyright 2013 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -660,16 +660,29 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                                requestslib_kwargs=None):
         """
         @summary: Calls purge container to delete all the objects in a
-        container, then deletes the container.
+        container. Then it will attempt to delete the container with a retry
+        until success function. This will handle cases where object deletion
+        is slow and caused conflicts.
 
         @param container_name: Name of container to purge and delete
         @type container_name: string
         """
 
+        def success_func(response):
+            if response.status_code == 204:
+                return True
+            return False
+
         self._purge_container(
             container_name, requestslib_kwargs=requestslib_kwargs)
 
-        delete_response = self.client.delete_container(container_name)
+        delete_response = self.retry_until_success(
+            self.client.delete_container,
+            func_args=[container_name],
+            func_kwargs={'requestslib_kwargs': requestslib_kwargs},
+            success_func=success_func,
+            max_retries=self.config.max_retry_count,
+            sleep_time=self.config.retry_sleep_time)
 
         if not delete_response.ok:
             raise Exception('Failed to force delete container {0} '
