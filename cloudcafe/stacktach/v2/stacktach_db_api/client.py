@@ -16,7 +16,7 @@ limitations under the License.
 
 from cafe.engine.http.client import AutoMarshallingHTTPClient
 
-from cloudcafe.stacktach.stacktach_db_api.models.stacktach_db_api import \
+from cloudcafe.stacktach.v2.stacktach_db_api.models.stacktach_db_api import \
     (ServerLaunch, ServerLaunches, ServerDelete, ServerDeletes,
      ServerExist, ServerExists, ImageUsages, ImageDeletes, ImageExists)
 

@@ -16,7 +16,7 @@ limitations under the License.
 
 from cafe.engine.http.client import AutoMarshallingHTTPClient
 
-from cloudcafe.stacktach.stacky_api.models.stacky_api import \
+from cloudcafe.stacktach.v2.stacky_api.models.stacky_api import \
     (Deployments, EventNames, HostNames, TimingsSummaries,
      UuidTimingsSummaries, EventNameTimings, EventDetails, ImageEventDetails,
      KpiDetails, WatchEvents, Reports, EventIdDetails)
