@@ -20,9 +20,9 @@ import re
 from IPy import IP
 from cafe.engine.winrm.client import WinRMClient
 from cafe.common.reporting import cclogging
-from cafe.engine.clients.remote_instance.models.dir_details \
+from cloudcafe.compute.common.models.dir_details \
     import DirectoryDetails
-from cafe.engine.clients.remote_instance.models.file_details \
+from cloudcafe.compute.common.models.file_details \
     import FileDetails
 
 from cloudcafe.compute.common.clients.ping import PingClient
