@@ -128,3 +128,50 @@ class VolumeSnapshotRequest(CommonModelProperties, AutoMarshallingModel):
             "display_description": self.description,
             "force": str(self.force)}
         return self._set_xml_etree_element(element, snapshot_attrs)
+
+
+class VolumeTypeCreateRequest(AutoMarshallingModel):
+
+    def __init__(self, name, extra_specs=None):
+        super(VolumeTypeCreateRequest, self).__init__()
+        self.name = name
+        self.extra_specs = extra_specs
+
+    def _obj_to_json(self):
+        return json.dumps(self._obj_to_json_dict())
+
+    def _obj_to_json_dict(self):
+        attrs = {
+            "name": self.name,
+            "extra_specs": self.extra_specs}
+        return dict(volume_type=self._remove_empty_values(attrs))
+
+    def _obj_to_xml(self):
+        return ElementTree.tostring(self._obj_to_xml_ele())
+
+    def _obj_to_xml_ele(self):
+        element = ElementTree.Element('volume_type')
+        attrs = {"name": self.name}
+
+        if len(self.extra_specs.keys()) > 0:
+            extra_specs = ElementTree.Element('extra_specs')
+            for key in self.extra_specs.keys():
+                spec = ElementTree.Element('extra_spec')
+                spec.set('key', key)
+                spec.text = self.extra_specs[key]
+                extra_specs.append(spec)
+            element.append(extra_specs)
+
+        return self._set_xml_etree_element(element, attrs)
+
+
+class VolumeTypeExtraSpecsUpdateRequest(AutoMarshallingModel):
+    def __init__(self, extra_specs=None):
+        super(VolumeTypeExtraSpecsUpdateRequest, self).__init__()
+        self.extra_specs = extra_specs
+
+    def _obj_to_json(self):
+        return json.dumps(self._obj_to_json_dict())
+
+    def _obj_to_json_dict(self):
+        return dict(extra_specs=self._remove_empty_values(self.extra_specs))
