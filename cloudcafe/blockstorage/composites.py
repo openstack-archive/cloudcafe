@@ -22,11 +22,14 @@ from cloudcafe.blockstorage.volumes_api.v2.behaviors import \
 class _BlockstorageAuthComposite(MemoizedAuthServiceComposite):
     _blockstorage_config = BlockStorageConfig
 
-    def __init__(self):
+    def __init__(self, endpoint_config=None, user_config=None):
+        self._endpoint_config = endpoint_config
+        self._user_config = user_config
         self.config = self._blockstorage_config()
         self.availability_zone = self.config.availability_zone
         super(_BlockstorageAuthComposite, self).__init__(
-            self.config.identity_service_name, self.config.region)
+            self.config.identity_service_name, self.config.region,
+            endpoint_config=endpoint_config, user_config=user_config)
 
 
 class _BaseVolumesComposite(object):
@@ -45,7 +48,7 @@ class _BaseVolumesComposite(object):
             deserialize_format=self.config.deserialize_format)
         self.behaviors = self._behaviors(self.client)
 
-        # For backwards compatability (deprecated - see property below)
+        # For backwards compatibility (deprecated - see property below)
         self._blockstorage_auth = self.auth
 
     @property
@@ -54,7 +57,6 @@ class _BaseVolumesComposite(object):
             "the 'blockstorage_auth' attribute of the VolumesComposite is "
             "deprecated.  Please use the 'auth' attribute instead",
             DeprecationWarning)
-
         return self._blockstorage_auth
 
 
