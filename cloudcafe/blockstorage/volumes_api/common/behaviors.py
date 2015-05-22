@@ -150,7 +150,7 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         property_names = ["name", "id"]
         for entry in configured_data:
             for pname in property_names:
-                if hasattr(entry, pname):
+                if `hasattr(entry, pname):
                     if entry.get(pname) is None:
                         raise Exception(
                             "Ambiguous volume type properties: 'null' value "
@@ -172,37 +172,17 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
     def wait_for_volume_status(
             self, volume_id, expected_status, timeout, poll_rate=None):
-        """ Waits for a specific status.  Raises VolumesAPIBehaviorException
-        if status is not observed within timeout seconds.
-        Note:  Unreliable for transient statuses like 'deleting'.
-        """
 
-        poll_rate = poll_rate or self.config.volume_status_poll_frequency
-        timeout = timeout
-        end_time = time() + timeout
+        verifier = StatusProgressionVerifier(
+            'volume', volume_id, self.get_volume_status, volume_id)
 
-        while time() < end_time:
-            current_status = self.get_volume_status(volume_id)
-            if current_status == expected_status:
-                self._log.info(
-                    "Expected Volume status '{0}' observed as expected in {1}"
-                    " seconds.".format(expected_status, int(end_time-time())))
-                break
-            self._log.info(
-                "Waiting {time_left} more seconds for volume '{volid}' "
-                "status to become '{expected_status}'. Current status is "
-                "'{current_status}'".format(
-                    time_left=end_time - time(), volid=volume_id,
-                    expected_status=expected_status,
-                    current_status=current_status))
-            sleep(poll_rate)
-        else:
-            msg = (
-                "wait_for_volume_status() ran for {0} seconds and did not "
-                "observe the volume attain the {1} status.".format(
-                    timeout, expected_status))
-            self._log.info(msg)
-            raise VolumesAPIBehaviorException(msg)
+        verifier.set_global_state_properties(timeout)
+        verifier.add_state(
+            expected_statuses=[expected_status],
+            poll_rate=self.config.volume_status_poll_frequency,
+            poll_failure_retry_limit=
+                self.config.volume_status_poll_failure_max_retries)
+        verifier.start()
 
     def get_snapshot_info(self, snapshot_id):
         resp = self.client.get_snapshot_info(snapshot_id=snapshot_id)
@@ -214,32 +194,17 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
     def wait_for_snapshot_status(
             self, snapshot_id, expected_status, timeout, poll_rate=None):
-        """ Waits for a specific status and returns None when that status is
-        observed.
-        Note:  Unreliable for transient statuses like 'deleting'.
-        """
 
-        poll_rate = poll_rate or self.config.snapshot_status_poll_frequency
-        end_time = time() + timeout
+        verifier = StatusProgressionVerifier(
+            'snapshot', snapshot_id, self.get_snapshot_status, snapshot_id)
 
-        while time() < end_time:
-            resp = self.client.get_snapshot_info(snapshot_id=snapshot_id)
-            self._verify_entity(resp)
-
-            if resp.entity.status == expected_status:
-                self._log.info(
-                    'Expected Snapshot status "{0}" observed'.format(
-                        expected_status))
-                break
-            sleep(poll_rate)
-
-        else:
-            msg = (
-                "wait_for_snapshot_status() ran for {0} seconds and did not "
-                "observe the snapshot achieving the '{1}' status.".format(
-                    timeout, expected_status))
-            self._log.error(msg)
-            raise VolumesAPIBehaviorException(msg)
+        verifier.set_global_state_properties(timeout)
+        verifier.add_state(
+            expected_statuses=[expected_status],
+            poll_rate=self.config.snapshot_status_poll_frequency,
+            poll_failure_retry_limit=
+                self.config.snapshot_status_poll_failure_max_retries)
+        verifier.start()
 
     def create_available_volume(
             self, size, volume_type, name=None, description=None,
@@ -282,10 +247,12 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             availability_zone=availability_zone, metadata=metadata,
             bootable=bootable, image_ref=image_ref, snapshot_id=snapshot_id,
             source_volid=source_volid)
+
+        # Remove the time it took to create the volume from the total timeout
         timeout = timeout - (time() - start_time)
-        volume = self._verify_entity(resp)
 
         # Verify volume progression from 'creating' to 'available'
+        volume = self._verify_entity(resp)
         self.verify_volume_create_status_progresion(volume.id_, timeout)
 
         resp = self.client.get_volume_info(volume.id_)
@@ -336,17 +303,24 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         self._log.debug(
             "create_available_snapshot() timeout set to {0}".format(timeout))
 
-        # Create the snaphsot
+        # Create the snapshot
         self._log.info("create_available_snapshot is creating a snapshot")
         resp = self.create_snapshot(
             volume_id, force_create=force_create, name=name,
             description=description)
-        self._verify_entity(resp)
+        snapshot = self._verify_entity(resp)
 
         # Verify snapshot status progression
-        snapshot = resp.entity
+        self.verify_snapshot_create_status_progression(snapshot.id_, timeout)
+
+        # Return snapshot model
+        resp = self.client.get_snapshot_info(snapshot.id_)
+        snapshot = self._verify_entity(resp)
+        return snapshot
+
+    def verify_snapshot_create_status_progression(self, snapshot_id, timeout):
         verifier = StatusProgressionVerifier(
-            'snapshot', snapshot.id_, self.get_snapshot_status, snapshot.id_)
+            'snapshot', snapshot_id, self.get_snapshot_status, snapshot_id)
 
         verifier.add_state(
             expected_statuses=[self.statuses.Snapshot.CREATING],
@@ -359,11 +333,6 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             timeout=timeout,
             poll_rate=self.config.snapshot_status_poll_frequency)
         verifier.start()
-
-        # Return snapshot model
-        resp = self.client.get_snapshot_info(snapshot.id_)
-        snapshot = self._verify_entity(resp)
-        return snapshot
 
     def list_volume_snapshots(self, volume_id):
 
