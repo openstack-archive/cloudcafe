@@ -18,11 +18,14 @@ import requests
 import time
 
 from cafe.engine.behaviors import BaseBehavior
+from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 from cloudcafe.networking.networks.common.constants \
     import NeutronResourceTypes, NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
-    import UnhandledMethodCaseException
+    import ResourceBuildException, ResourceDeleteException, \
+        ResourceGetException, ResourceListException, ResourceUpdateException, \
+        UnhandledMethodCaseException
 
 
 class NetworkingBaseBehaviors(BaseBehavior):
@@ -155,6 +158,466 @@ class NetworkingBaseBehaviors(BaseBehavior):
         id_list = [entity.id for entity in entity_list]
         return id_list
 
+    def _create_resource(self, resource_type, resource_build_attempts=None,
+                         raise_exception=True, poll_interval=None,
+                         has_name=True, use_exact_name=False,
+                         attrs_kwargs=None, timeout=None,
+                         use_over_limit_retry=False):
+        """
+        @summary: Creates and verifies a resource is created as expected
+        @param resource_build_attempts: number of API retries
+        @type resource_build_attempts: int
+        @param raise_exception: flag to raise an exception if the
+            resource was not created or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @param has_name: if the resource has a name attribute
+        @type has_name: bool
+        @param use_exact_name: flag if the exact name given should be used
+        @type use_exact_name: bool
+        @param attrs_kwargs: resource attributes to create with, for ex. name
+        @type attrs_kwargs: dict
+        @param timeout: resource create timeout for over limit retries
+        @type timeout: int
+        @param use_over_limit_retry: flag to enable/disable the create
+            over limits retries
+        @type use_over_limit_retry: bool
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+
+        # If has_name is False name can be used as a reference for log messages
+        name = attrs_kwargs.get('name')
+        if has_name == True:
+            if name is None:
+                name = rand_name(self.config.starts_with_name)
+            elif not use_exact_name:
+                name = rand_name(name)
+            attrs_kwargs['name'] = name
+
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_build_attempts = (resource_build_attempts or
+            self.config.api_retries)
+        use_over_limit_retry = (use_over_limit_retry or
+                                self.config.use_over_limit_retry)
+        timeout = timeout or self.config.resource_create_timeout
+
+        result = NetworkingResponse()
+        err_msg = '{0} Create failure'.format(resource_type)
+        for attempt in range(resource_build_attempts):
+            self._log.debug(
+                'Attempt {attempt_n} of {attempts} creating '
+                '{resource_type}'.format(attempt_n=attempt + 1,
+                                       attempts=resource_build_attempts,
+                                       resource_type=resource_type))
+
+            # Method uses resource type in singular form (slicing the ending s)
+            create_fn_name = 'create_{0}'.format(resource_type[:-1])
+            resp = getattr(self.client, create_fn_name)(**attrs_kwargs)
+
+            if use_over_limit_retry:
+                endtime = time.time() + int(timeout)
+                retry_msg = ('OverLimit retry with a {timeout}s timeout '
+                             'creating {resource_type}').format(
+                                 timeout=timeout, resource_type=resource_type)
+                self._log.info(retry_msg)
+                request_entity_too_large_response_code = (
+                    getattr(self.response_codes, 'REQUEST_ENTITY_TOO_LARGE'))
+                while (resp.status_code ==
+                       request_entity_too_large_response_code and
+                       time.time() < endtime):
+                    resp = getattr(self.client, create_fn_name)(**attrs_kwargs)
+                    time.sleep(poll_interval)
+
+            response_code = create_fn_name.upper()
+            status_code = getattr(self.response_codes, response_code)
+            resp_check = self.check_response(
+                resp=resp, status_code=status_code, label=name,
+                message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the create was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to CREATE {name} {resource_type} after '
+                '{attempts} attempts: {failures}').format(
+                    name=name, resource_type=resource_type,
+                    attempts=resource_build_attempts,
+                    failures=result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceBuildException(err_msg)
+            return result
+
+    def _update_resource(self, resource_type, resource_id,
+                         resource_update_attempts=None, raise_exception=False,
+                         poll_interval=None, attrs_kwargs=None,
+                         timeout=None, use_over_limit_retry=None):
+        """
+        @summary: Updates and verifies a specified resource
+        @param resource_type: type of resource for ex. networks, subnets, etc.
+            See NeutronResourceTypes in the networks constants
+        @type resource_type: str
+        @param resource_id: The UUID for the resource
+        @type resource_id: str
+        @param resource_update_attempts: number of API retries
+        @type resource_update_attempts: int
+        @param raise_exception: flag to raise an exception if the
+            resource was not updated or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @param attrs_kwargs: resource attributes to update
+        @type attrs_kwargs: dict
+        @param timeout: resource update timeout for over limit retries
+        @type timeout: int
+        @param use_over_limit_retry: flag to enable/disable the update
+            over limits retries
+        @type use_over_limit_retry: bool
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_update_attempts = (resource_update_attempts or
+            self.config.api_retries)
+        use_over_limit_retry = (use_over_limit_retry or
+                                self.config.use_over_limit_retry)
+        timeout = timeout or self.config.resource_update_timeout
+
+        result = NetworkingResponse()
+        err_msg = '{0} Update failure'.format(resource_type)
+        for attempt in range(resource_update_attempts):
+            self._log.debug(
+                'Attempt {attempt_n} of {attempts} updating {resource_type} '
+                '{resource_id}'.format(attempt_n=attempt + 1,
+                                       attempts=resource_update_attempts,
+                                       resource_type=resource_type,
+                                       resource_id=resource_id))
+
+            # Method uses resource type in singular form (slicing the ending s)
+            update_fn_name = 'update_{0}'.format(resource_type[:-1])
+
+            # Resource ID is expected to be the first client method parameter
+            resp = getattr(self.client, update_fn_name)(resource_id,
+                                                        **attrs_kwargs)
+
+            if use_over_limit_retry:
+                endtime = time.time() + int(timeout)
+                retry_msg = ('OverLimit retry with a {timeout}s timeout '
+                             'updating {resource_type}').format(
+                                 timeout=timeout, resource_type=resource_type)
+                self._log.info(retry_msg)
+                request_entity_too_large_response_code = (
+                    getattr(self.response_codes, 'REQUEST_ENTITY_TOO_LARGE'))
+                while (resp.status_code ==
+                       request_entity_too_large_response_code and
+                       time.time() < endtime):
+                    resp = getattr(self.client, update_fn_name)(resource_id,
+                                                                **attrs_kwargs)
+                    time.sleep(poll_interval)
+
+            response_code = update_fn_name.upper()
+            status_code = getattr(self.response_codes, response_code)
+            resp_check = self.check_response(
+                resp=resp, status_code=status_code, label=resource_id,
+                message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the update was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to UPDATE {resource_id} {resource_type} after '
+                '{attempts} attempts: {failures}').format(
+                    resource_id=resource_id, resource_type=resource_type,
+                    attempts=resource_update_attempts,
+                    failures=result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceUpdateException(err_msg)
+            return result
+
+    def _get_resource(self, resource_type, resource_id,
+                      resource_get_attempts=None, raise_exception=False,
+                      poll_interval=None, timeout=None,
+                      use_over_limit_retry=False):
+        """
+        @summary: Shows and verifies a specified resource
+        @param resource_type: type of resource for ex. networks, subnets, etc.
+            See NeutronResourceTypes in the networks constants
+        @type resource_type: str
+        @param resource_id: The UUID for the resource
+        @type resource_id: str
+        @param resource_get_attempts: number of API retries
+        @type resource_get_attempts: int
+        @param raise_exception: flag to raise an exception if the get
+            resource was not as expected or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @param timeout: resource get timeout for over limit retries
+        @type timeout: int
+        @param use_over_limit_retry: flag to enable/disable the get
+            over limits retries
+        @type use_over_limit_retry: bool
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_get_attempts = (resource_get_attempts or
+            self.config.api_retries)
+        use_over_limit_retry = (use_over_limit_retry or
+                                self.config.use_over_limit_retry)
+        timeout = timeout or self.config.resource_get_timeout
+
+        result = NetworkingResponse()
+        err_msg = '{0} Get failure'.format(resource_type)
+        for attempt in range(resource_get_attempts):
+            self._log.debug(
+                'Attempt {attempt_n} of {attempts} getting {resource_type} '
+                '{resource_id}'.format(attempt_n=attempt + 1,
+                                       attempts=resource_get_attempts,
+                                       resource_type=resource_type,
+                                       resource_id=resource_id))
+
+            # Method uses resource type in singular form (slicing the ending s)
+            get_fn_name = 'get_{0}'.format(resource_type[:-1])
+            resp = getattr(self.client, get_fn_name)(resource_id)
+
+            if use_over_limit_retry:
+                endtime = time.time() + int(timeout)
+                retry_msg = ('OverLimit retry with a {timeout}s timeout '
+                             'getting {resource_type}. Resource ID: '
+                             '{resource_id}').format(
+                                 timeout=timeout, resource_type=resource_type,
+                                 resource_id=resource_id)
+                self._log.info(retry_msg)
+                request_entity_too_large_response_code = (
+                    getattr(self.response_codes, 'REQUEST_ENTITY_TOO_LARGE'))
+                while (resp.status_code ==
+                       request_entity_too_large_response_code and
+                       time.time() < endtime):
+                    resp = getattr(self.client, get_fn_name)(resource_id)
+                    time.sleep(poll_interval)
+
+            response_code = get_fn_name.upper()
+            status_code = getattr(self.response_codes, response_code)
+            resp_check = self.check_response(resp=resp,
+                status_code=status_code,
+                label=resource_id, message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the get was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to GET {resource_id} {resource_type} after {attempts} '
+                'attempts: {failures}').format(resource_id=resource_id,
+                                               resource_type=resource_type,
+                                               attempts=resource_get_attempts,
+                                               failures=result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceGetException(err_msg)
+            return result
+
+    def _list_resources(self, resource_type, resource_list_attempts=None,
+                        raise_exception=False, poll_interval=None,
+                        params_kwargs=None, timeout=None,
+                        use_over_limit_retry=False):
+        """
+        @summary: Lists resources and verifies the response is the expected
+        @param resource_type: type of resource for ex. networks, subnets, etc.
+            See NeutronResourceTypes in the networks constants
+        @type resource_type: str
+        @param resource_list_attempts: number of API retries
+        @type resource_list_attempts: int
+        @param raise_exception: flag to raise an exception if the resource list
+            was not as expected or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @param params_kwargs: key value params to filter by the list results
+        @type params_kwargs: dict
+        @param timeout: resource list timeout for over limit retries
+        @type timeout: int
+        @param use_over_limit_retry: flag to enable/disable the list
+            over limits retries
+        @type use_over_limit_retry: bool
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_list_attempts = (resource_list_attempts or
+            self.config.api_retries)
+        use_over_limit_retry = (use_over_limit_retry or
+                                self.config.use_over_limit_retry)
+        timeout = timeout or self.config.resource_get_timeout
+
+        result = NetworkingResponse()
+        err_msg = '{0} list failure'.format(resource_type)
+        for attempt in range(resource_list_attempts):
+            self._log.debug(
+                'Attempt {attempt_n} of {attempts} with {resource_type} '
+                'list'.format(attempt_n=attempt + 1,
+                              attempts=resource_list_attempts,
+                              resource_type=resource_type))
+
+            list_fn_name = 'list_{0}'.format(resource_type)
+            resp = getattr(self.client, list_fn_name)(**params_kwargs)
+
+            if use_over_limit_retry:
+                endtime = time.time() + int(timeout)
+                retry_msg = ('OverLimit retry with a {timeout}s timeout '
+                             'listing {resource_type}').format(
+                                 timeout=timeout, resource_type=resource_type)
+                self._log.info(retry_msg)
+                request_entity_too_large_response_code = (
+                    getattr(self.response_codes, 'REQUEST_ENTITY_TOO_LARGE'))
+                while (resp.status_code ==
+                       request_entity_too_large_response_code and
+                       time.time() < endtime):
+                    resp = getattr(self.client, list_fn_name)(**params_kwargs)
+                    time.sleep(poll_interval)
+
+            response_code = list_fn_name.upper()
+            status_code = getattr(self.response_codes, response_code)
+            resp_check = self.check_response(
+                resp=resp, status_code=status_code, label='', message=err_msg)
+
+            result.response = resp
+            if not resp_check:
+                return result
+
+            # Failures will be an empty list if the list was successful the
+            # first time
+            result.failures.append(resp_check)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to LIST {resource_type} after {attempts} attempts: '
+                '{failures}').format(resource_type=resource_type,
+                                     attempts=resource_list_attempts,
+                                     failures=result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceListException(err_msg)
+            return result
+
+    def _delete_resource(self, resource_type, resource_id,
+                         resource_delete_attempts=None, raise_exception=False,
+                         poll_interval=None, timeout=None,
+                         use_over_limit_retry=False):
+        """
+        @summary: Deletes and verifies a specified resource is deleted
+        @param resource_type: type of resource for ex. networks, subnets, etc.
+            See NeutronResourceTypes in the networks constants
+        @type resource_type: str
+        @param resource_id: The UUID for the resource
+        @type resource_id: string
+        @param resource_delete_attempts: number of API retries
+        @type resource_delete_attempts: int
+        @param raise_exception: flag to raise an exception if the deleted
+            resource was not as expected or to return None
+        @type raise_exception: bool
+        @param poll_interval: sleep time interval between API retries
+        @type poll_interval: int
+        @param timeout: resource delete timeout for over limit retries
+        @type timeout: int
+        @param use_over_limit_retry: flag to enable/disable the delete
+            over limits retries
+        @type use_over_limit_retry: bool
+        @return: NetworkingResponse object with api response and failure list
+        @rtype: common.behaviors.NetworkingResponse
+        """
+        poll_interval = poll_interval or self.config.api_poll_interval
+        resource_delete_attempts = (resource_delete_attempts or
+            self.config.api_retries)
+        use_over_limit_retry = (use_over_limit_retry or
+                                self.config.use_over_limit_retry)
+        timeout = timeout or self.config.resource_get_timeout
+
+        result = NetworkingResponse()
+        for attempt in range(resource_delete_attempts):
+            self._log.debug(
+                'Attempt {attempt_n} of {attempts} deleting {resource_type} '
+                '{resource_id}'.format(attempt_n=attempt + 1,
+                                       attempts=resource_delete_attempts,
+                                       resource_type=resource_type,
+                                       resource_id=resource_id))
+
+            # Method uses resource type in singular form (slicing the ending s)
+            delete_fn_name = 'delete_{0}'.format(resource_type[:-1])
+            resp = getattr(self.client, delete_fn_name)(resource_id)
+
+            if use_over_limit_retry:
+                endtime = time.time() + int(timeout)
+                retry_msg = ('OverLimit retry with a {timeout}s timeout '
+                             'deleting {resource_type}').format(
+                                 timeout=timeout, resource_type=resource_type)
+                self._log.info(retry_msg)
+                request_entity_too_large_response_code = (
+                    getattr(self.response_codes, 'REQUEST_ENTITY_TOO_LARGE'))
+                while (resp.status_code ==
+                       request_entity_too_large_response_code and
+                       time.time() < endtime):
+                    resp = getattr(self.client, delete_fn_name)(resource_id)
+                    time.sleep(poll_interval)
+
+            result.response = resp
+
+            # Delete response is without entity so resp_check can not be used
+            response_code = delete_fn_name.upper()
+            status_code = getattr(self.response_codes, response_code)
+            if resp.ok and resp.status_code == status_code:
+                return result
+
+            err_msg = ('{resource_id} {resource_type} Delete failure, expected'
+                       'status code: {expected_status}. Response: {status} '
+                       '{reason} {content}').format(
+                           resource_id=resource_id,
+                           resource_type=resource_type,
+                           expected_status=status_code,
+                           status=resp.status_code,
+                           reason=resp.reason,
+                           content=resp.content)
+            self._log.error(err_msg)
+            result.failures.append(err_msg)
+            time.sleep(poll_interval)
+
+        else:
+            err_msg = (
+                'Unable to DELETE {resource_id} {resource_type} after '
+                '{attempts} attempts: {failures}').format(
+                    resource_id=resource_id, resource_type=resource_type,
+                    attempts=resource_delete_attempts,
+                    failures=result.failures)
+            self._log.error(err_msg)
+            if raise_exception:
+                raise ResourceDeleteException(err_msg)
+            return result
+
     def _delete_resources(self, resource_type, resource_list=None, name=None,
                           tenant_id=None, skip_delete=None):
         """
@@ -182,7 +645,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
             # Getting the Neutron expected response based on the fn name
             response_code = list_fn_name.upper()
-            status_code = getattr(NeutronResponseCodes, response_code)
+            status_code = getattr(self.response_codes, response_code)
 
             if resp.response.status_code != status_code:
                 get_msg = 'Unable to get {0} for delete_{0} call'.format(
@@ -226,6 +689,92 @@ class NetworkingBaseBehaviors(BaseBehavior):
             if result.failures:
                 failed_deletes.append(result.failures)
         return failed_deletes
+
+    def _clean_resource(self, resource_type, resource_id, timeout=None,
+                        poll_interval=None):
+        """
+        @summary: deletes a resource within a time out
+        @param resource_type: type of resource for ex. networks, subnets, etc.
+            See NeutronResourceTypes in the networks constants
+        @type resource_type: str
+        @param resource_id: The UUID for the for the resource
+        @type resource_id: str
+        @param timeout: seconds to wait for the resource to be deleted
+        @type timeout: int
+        @param poll_interval: sleep time interval between API delete/get calls
+        @type poll_interval: int
+        @return: None if delete was successful or the undeleted resource_id
+        @rtype: None or string
+        """
+        timeout = timeout or self.config.resource_delete_timeout
+        poll_interval = poll_interval or self.config.api_poll_interval
+        endtime = time.time() + int(timeout)
+        log_msg = ('Deleting {resource_id} {resource_type} within a {timeout}s'
+                   ' timeout').format(resource_id=resource_id,
+                                      resource_type=resource_type,
+                                      timeout=timeout)
+        self._log.info(log_msg)
+
+        # Method uses resource type in singular form (slicing the ending s)
+        delete_fn_name = 'delete_{0}'.format(resource_type[:-1])
+        get_fn_name = 'get_{0}'.format(resource_type[:-1])
+        resp = None
+        while time.time() < endtime:
+            try:
+                getattr(self.client, delete_fn_name)(resource_id)
+                resp = getattr(self.client, get_fn_name)(resource_id)
+            except Exception as err:
+                err_msg = ('Encountered an exception deleting a '
+                           '{resource_type} within the _clean_resource method.'
+                           ' Exception: {error}').format(
+                               resource_type=resource_type, error=err)
+                self._log.error(err_msg)
+
+            if (resp is not None and
+                    resp.status_code == NeutronResponseCodes.NOT_FOUND):
+                return None
+            time.sleep(poll_interval)
+
+        err_msg = ('Unable to delete {resource_id} {resource_type} within a '
+            '{timeout}s timeout').format(resource_id=resource_id,
+                                         resource_type=resource_type,
+                                         timeout=timeout)
+        self._log.error(err_msg)
+        return resource_id
+
+    def _clean_resources(self, resource_type, resource_list, timeout=None,
+                         poll_interval=None):
+        """
+        @summary: deletes each resource from a list calling _clean_resource
+        @param resource_type: type of resource for ex. networks, subnets, etc.
+            See NeutronResourceTypes in the networks constants
+        @param resource_list: list of resource UUIDs to delete
+        @type resource_list: list(str)
+        @param timeout: seconds to wait for the resource to be deleted
+        @type timeout: int
+        @param poll_interval: sleep time interval between API delete/get calls
+        @type poll_interval: int
+        @return: list of undeleted resource UUIDs
+        @rtype: list(str)
+        """
+        log_msg = 'Deleting {resource_type}: {resource_list}'.format(
+            resource_type=resource_type, resource_list=resource_list)
+        self._log.info(log_msg)
+        undeleted_resources = []
+        for resource_id in resource_list:
+            result = self._clean_resource(resource_type=resource_type,
+                                          resource_id=resource_id,
+                                          timeout=timeout,
+                                          poll_interval=poll_interval)
+            if result:
+                undeleted_resources.append(result)
+        if undeleted_resources:
+            err_msg = ('Unable to delete {resource_type}: '
+                       '{undeleted_resources}').format(
+                       resource_type=resource_type,
+                       undeleted_resources=undeleted_resources)
+            self._log.error(err_msg)
+        return undeleted_resources
 
 
 class NetworkingResponse(object):

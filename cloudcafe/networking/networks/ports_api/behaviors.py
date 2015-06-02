@@ -16,15 +16,12 @@ limitations under the License.
 import netaddr
 import time
 
-from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.networking.networks.common.behaviors \
-    import NetworkingBaseBehaviors, NetworkingResponse
+    import NetworkingBaseBehaviors
 from cloudcafe.networking.networks.common.constants \
     import NeutronResponseCodes, NeutronResourceTypes
 from cloudcafe.networking.networks.common.exceptions \
-    import NetworkIDMissingException, ResourceBuildException,\
-    ResourceDeleteException, ResourceGetException, ResourceListException,\
-    ResourceUpdateException
+    import NetworkIDMissingException
 
 
 class PortsBehaviors(NetworkingBaseBehaviors):
@@ -33,6 +30,7 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         super(PortsBehaviors, self).__init__()
         self.config = ports_config
         self.client = ports_client
+        self.response_codes = NeutronResponseCodes
 
     def get_subnet_ids_from_fixed_ips(self, fixed_ips):
         """
@@ -104,9 +102,9 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type use_exact_name: bool
         @param poll_interval: sleep time interval between API retries
         @type poll_interval: int
-        @param timeout: port update timeout for over limit retries
+        @param timeout: port create timeout for over limit retries
         @type timeout: int
-        @param use_over_limit_retry: flag to enable/disable the port update
+        @param use_over_limit_retry: flag to enable/disable the port create
             over limits retries
         @type use_over_limit_retry: bool
         @return: NetworkingResponse object with api response and failure list
@@ -115,68 +113,21 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         if not network_id:
             raise NetworkIDMissingException
 
-        if name is None:
-            name = rand_name(self.config.starts_with_name)
-        elif not use_exact_name:
-            name = rand_name(name)
+        attrs_kwargs = dict(
+            network_id=network_id, name=name,
+            admin_state_up=admin_state_up, mac_address=mac_address,
+            fixed_ips=fixed_ips, device_id=device_id,
+            device_owner=device_owner, tenant_id=tenant_id,
+            security_groups=security_groups)
 
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_build_attempts = (resource_build_attempts or
-            self.config.api_retries)
-        use_over_limit_retry = (use_over_limit_retry or
-                                self.config.use_over_limit_retry)
-        timeout = timeout or self.config.resource_create_timeout
+        result = self._create_resource(
+            resource_type=NeutronResourceTypes.PORTS,
+            resource_build_attempts=resource_build_attempts,
+            raise_exception=raise_exception, use_exact_name=use_exact_name,
+            poll_interval=poll_interval, attrs_kwargs=attrs_kwargs,
+            timeout=timeout, use_over_limit_retry=use_over_limit_retry)
 
-        result = NetworkingResponse()
-        err_msg = 'Port Create failure'
-        for attempt in range(resource_build_attempts):
-            self._log.debug('Attempt {0} of {1} building port {2}'.format(
-                attempt + 1, resource_build_attempts, name))
-
-            resp = self.client.create_port(
-                network_id=network_id, name=name,
-                admin_state_up=admin_state_up, mac_address=mac_address,
-                fixed_ips=fixed_ips, device_id=device_id,
-                device_owner=device_owner, tenant_id=tenant_id,
-                security_groups=security_groups)
-
-            if use_over_limit_retry:
-                endtime = time.time() + int(timeout)
-                retry_msg = ('OverLimit retry with a {0}s timeout creating a '
-                             'port on network {1}').format(timeout, network_id)
-                self._log.info(retry_msg)
-                while (resp.status_code ==
-                       NeutronResponseCodes.REQUEST_ENTITY_TOO_LARGE and
-                       time.time() < endtime):
-                    resp = self.client.create_port(
-                        network_id=network_id, name=name,
-                        admin_state_up=admin_state_up, mac_address=mac_address,
-                        fixed_ips=fixed_ips, device_id=device_id,
-                        device_owner=device_owner, tenant_id=tenant_id,
-                        security_groups=security_groups)
-                    time.sleep(poll_interval)
-
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.CREATE_PORT, label=name,
-                message=err_msg, network_id=network_id)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the create was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to create {0} port after {1} attempts: '
-                '{2}').format(name, resource_build_attempts, result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceBuildException(err_msg)
-            return result
+        return result
 
     def update_port(self, port_id, name=None, admin_state_up=None,
                     fixed_ips=None, device_id=None, device_owner=None,
@@ -219,62 +170,20 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_update_attempts = (resource_update_attempts or
-            self.config.api_retries)
-        use_over_limit_retry = (use_over_limit_retry or
-                                self.config.use_over_limit_retry)
-        timeout = timeout or self.config.resource_update_timeout
-
-        result = NetworkingResponse()
-        err_msg = 'Port Update failure'
-        for attempt in range(resource_update_attempts):
-            self._log.debug('Attempt {0} of {1} updating port {2}'.format(
-                attempt + 1, resource_update_attempts, port_id))
-
-            resp = self.client.update_port(
-                port_id=port_id, name=name, admin_state_up=admin_state_up,
+        attrs_kwargs = dict(
+                name=name, admin_state_up=admin_state_up,
                 fixed_ips=fixed_ips, device_id=device_id,
                 device_owner=device_owner, security_groups=security_groups)
 
-            if use_over_limit_retry:
-                endtime = time.time() + int(timeout)
-                retry_msg = ('OverLimit retry with a {0}s timeout updating '
-                             'port {1}').format(timeout, port_id)
-                self._log.info(retry_msg)
-                while (resp.status_code ==
-                       NeutronResponseCodes.REQUEST_ENTITY_TOO_LARGE and
-                       time.time() < endtime):
-                    resp = self.client.update_port(
-                        port_id=port_id, name=name,
-                        admin_state_up=admin_state_up,
-                        fixed_ips=fixed_ips, device_id=device_id,
-                        device_owner=device_owner,
-                        security_groups=security_groups)
-                    time.sleep(poll_interval)
+        result = self._update_resource(
+            resource_type=NeutronResourceTypes.PORTS,
+            resource_id=port_id,
+            resource_update_attempts=resource_update_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval,
+            attrs_kwargs=attrs_kwargs, timeout=timeout,
+            use_over_limit_retry=use_over_limit_retry)
 
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.UPDATE_PORT,
-                label=port_id, message=err_msg)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the update was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to update {0} port after {1} attempts: '
-                '{2}').format(port_id, resource_update_attempts,
-                              result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceUpdateException(err_msg)
-            return result
+        return result
 
     def get_port(self, port_id, resource_get_attempts=None,
                  raise_exception=False, poll_interval=None,
@@ -292,60 +201,20 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @type poll_interval: int
         @param timeout: port get timeout for over limit retries
         @type timeout: int
-        @param use_over_limit_retry: flag to enable/disable the port update
+        @param use_over_limit_retry: flag to enable/disable the port get
             over limits retries
         @type use_over_limit_retry: bool
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_get_attempts = (resource_get_attempts or
-            self.config.api_retries)
-        poll_interval = poll_interval or self.config.api_poll_interval
-        use_over_limit_retry = (use_over_limit_retry or
-                                self.config.use_over_limit_retry)
-        timeout = timeout or self.config.resource_get_timeout
+        result = self._get_resource(
+            resource_type=NeutronResourceTypes.PORTS,
+            resource_id=port_id,
+            resource_get_attempts=resource_get_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval,
+            timeout=timeout, use_over_limit_retry=use_over_limit_retry)
 
-        result = NetworkingResponse()
-        err_msg = 'Port Get failure'
-        for attempt in range(resource_get_attempts):
-            self._log.debug('Attempt {0} of {1} getting network {2}'.format(
-                attempt + 1, resource_get_attempts, port_id))
-
-            resp = self.client.get_port(port_id=port_id)
-
-            if use_over_limit_retry:
-                endtime = time.time() + int(timeout)
-                retry_msg = ('OverLimit retry with a {0}s timeout getting '
-                             'port {1}').format(timeout, port_id)
-                self._log.info(retry_msg)
-                while (resp.status_code ==
-                       NeutronResponseCodes.REQUEST_ENTITY_TOO_LARGE and
-                       time.time() < endtime):
-                    resp = self.client.get_port(port_id=port_id)
-                    time.sleep(poll_interval)
-
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.GET_PORT,
-                label=port_id, message=err_msg)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the get was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to GET {0} port after {1} attempts: '
-                '{2}').format(port_id, resource_get_attempts, result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceGetException(err_msg)
-            return result
+        return result
 
     def list_ports(self, port_id=None, network_id=None, name=None, status=None,
                    admin_state_up=None, device_id=None, tenant_id=None,
@@ -394,63 +263,21 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_list_attempts = (resource_list_attempts or
-            self.config.api_retries)
-        use_over_limit_retry = (use_over_limit_retry or
-                                self.config.use_over_limit_retry)
-        timeout = timeout or self.config.resource_get_timeout
+        params_kwargs = dict(
+            port_id=port_id, network_id=network_id, name=name,
+            status=status, admin_state_up=admin_state_up,
+            device_id=device_id, tenant_id=tenant_id,
+            device_owner=device_owner, mac_address=mac_address,
+            limit=limit, marker=marker, page_reverse=page_reverse)
 
-        result = NetworkingResponse()
-        err_msg = 'Port List failure'
-        for attempt in range(resource_list_attempts):
-            self._log.debug('Attempt {0} of {1} with port list'.format(
-                attempt + 1, resource_list_attempts))
+        result = self._list_resources(
+            resource_type=NeutronResourceTypes.PORTS,
+            resource_list_attempts=resource_list_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval,
+            params_kwargs=params_kwargs, timeout=timeout,
+            use_over_limit_retry=use_over_limit_retry)
 
-            resp = self.client.list_ports(
-                port_id=port_id, network_id=network_id, name=name,
-                status=status, admin_state_up=admin_state_up,
-                device_id=device_id, tenant_id=tenant_id,
-                device_owner=device_owner, mac_address=mac_address,
-                limit=limit, marker=marker, page_reverse=page_reverse)
-
-            if use_over_limit_retry:
-                endtime = time.time() + int(timeout)
-                retry_msg = ('OverLimit retry with a {0}s timeout listing '
-                             'ports').format(timeout, port_id)
-                self._log.info(retry_msg)
-                while (resp.status_code ==
-                       NeutronResponseCodes.REQUEST_ENTITY_TOO_LARGE and
-                       time.time() < endtime):
-                    resp = self.client.list_ports(
-                        port_id=port_id, network_id=network_id, name=name,
-                        status=status, admin_state_up=admin_state_up,
-                        device_id=device_id, tenant_id=tenant_id,
-                        device_owner=device_owner, mac_address=mac_address,
-                        limit=limit, marker=marker, page_reverse=page_reverse)
-                    time.sleep(poll_interval)
-
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.LIST_PORTS,
-                label='', message=err_msg)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the list was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to LIST ports after {0} attempts: '
-                '{1}').format(resource_list_attempts, result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceListException(err_msg)
-            return result
+        return result
 
     def delete_port(self, port_id, resource_delete_attempts=None,
                     raise_exception=False, poll_interval=None,
@@ -474,58 +301,14 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_delete_attempts = (resource_delete_attempts or
-            self.config.api_retries)
-        use_over_limit_retry = (use_over_limit_retry or
-                                self.config.use_over_limit_retry)
-        timeout = timeout or self.config.resource_delete_timeout
+        result = self._delete_resource(
+            resource_type=NeutronResourceTypes.PORTS,
+            resource_id=port_id,
+            resource_delete_attempts=resource_delete_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval,
+            timeout=timeout, use_over_limit_retry=use_over_limit_retry)
 
-        result = NetworkingResponse()
-        for attempt in range(resource_delete_attempts):
-            self._log.debug('Attempt {0} of {1} deleting port {2}'.format(
-                attempt + 1, resource_delete_attempts, port_id))
-
-            resp = self.client.delete_port(port_id=port_id)
-
-            if use_over_limit_retry:
-                endtime = time.time() + int(timeout)
-                retry_msg = ('OverLimit retry with a {0}s timeout deleting '
-                             'port {1}').format(timeout, port_id)
-                self._log.info(retry_msg)
-                while (resp.status_code ==
-                       NeutronResponseCodes.REQUEST_ENTITY_TOO_LARGE and
-                       time.time() < endtime):
-                    resp = self.client.delete_port(port_id=port_id)
-                    time.sleep(poll_interval)
-
-            result.response = resp
-
-            # Delete response is without entity so resp_check can not be used
-            if (resp.ok and
-                resp.status_code == NeutronResponseCodes.DELETE_PORT):
-                return result
-
-            err_msg = ('{port} Port Delete failure, expected status '
-                'code: {expected_status}. Response: {status} {reason} '
-                '{content}').format(
-                port=port_id,
-                expected_status=NeutronResponseCodes.DELETE_PORT,
-                status=resp.status_code, reason=resp.reason,
-                content=resp.content)
-            self._log.error(err_msg)
-            result.failures.append(err_msg)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to DELETE {0} port after {1} attempts: '
-                '{2}').format(port_id, resource_delete_attempts,
-                              result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceDeleteException(err_msg)
-            return result
+        return result
 
     def delete_ports(self, port_list=None, name=None, tenant_id=None,
                      skip_delete=None):

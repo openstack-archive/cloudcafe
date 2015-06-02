@@ -14,16 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import time
-
-from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.networking.networks.common.behaviors \
-    import NetworkingBaseBehaviors, NetworkingResponse
+    import NetworkingBaseBehaviors
 from cloudcafe.networking.networks.common.constants \
     import NeutronResourceTypes, NeutronResponseCodes
-from cloudcafe.networking.networks.common.exceptions \
-    import ResourceBuildException, ResourceDeleteException,\
-    ResourceGetException, ResourceListException, ResourceUpdateException
 
 
 class NetworksBehaviors(NetworkingBaseBehaviors):
@@ -32,6 +26,7 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         super(NetworksBehaviors, self).__init__()
         self.config = networks_config
         self.client = networks_client
+        self.response_codes = NeutronResponseCodes
 
     def create_network(self, name=None, admin_state_up=None, shared=None,
                        tenant_id=None, resource_build_attempts=None,
@@ -59,46 +54,16 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        if name is None:
-            name = rand_name(self.config.starts_with_name)
-        elif not use_exact_name:
-            name = rand_name(name)
+        attrs_kwargs = dict(name=name, admin_state_up=admin_state_up,
+                            shared=shared, tenant_id=tenant_id)
 
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_build_attempts = (resource_build_attempts or
-            self.config.api_retries)
+        result = self._create_resource(
+            resource_type=NeutronResourceTypes.NETWORKS,
+            resource_build_attempts=resource_build_attempts,
+            raise_exception=raise_exception, use_exact_name=use_exact_name,
+            poll_interval=poll_interval, attrs_kwargs=attrs_kwargs)
 
-        result = NetworkingResponse()
-        err_msg = 'Network Create failure'
-        for attempt in range(resource_build_attempts):
-            self._log.debug('Attempt {0} of {1} building network {2}'.format(
-                attempt + 1, resource_build_attempts, name))
-
-            resp = self.client.create_network(
-                name=name, admin_state_up=admin_state_up, shared=shared,
-                tenant_id=tenant_id)
-
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.CREATE_NETWORK, label=name,
-                message=err_msg)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the create was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to create {0} network after {1} attempts: '
-                '{2}').format(name, resource_build_attempts, result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceBuildException(err_msg)
-            return result
+        return result
 
     def update_network(self, network_id, name=None, admin_state_up=None,
                        shared=None, tenant_id=None,
@@ -130,43 +95,17 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_update_attempts = (resource_update_attempts or
-            self.config.api_retries)
+        attrs_kwargs = dict(name=name, admin_state_up=admin_state_up,
+                            shared=shared, tenant_id=tenant_id)
 
-        result = NetworkingResponse()
-        err_msg = 'Network Update failure'
-        for attempt in range(resource_update_attempts):
-            self._log.debug('Attempt {0} of {1} updating network {2}'.format(
-                attempt + 1, resource_update_attempts, network_id))
+        result = self._update_resource(
+            resource_type=NeutronResourceTypes.NETWORKS,
+            resource_id=network_id,
+            resource_update_attempts=resource_update_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval,
+            attrs_kwargs=attrs_kwargs)
 
-            resp = self.client.update_network(
-                network_id=network_id, name=name,
-                admin_state_up=admin_state_up, shared=shared,
-                tenant_id=tenant_id)
-
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.UPDATE_NETWORK,
-                label=network_id, message=err_msg)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the update was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to update {0} network after {1} attempts: '
-                '{2}').format(network_id, resource_update_attempts,
-                              result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceUpdateException(err_msg)
-            return result
+        return result
 
     def get_network(self, network_id, resource_get_attempts=None,
                     raise_exception=False, poll_interval=None):
@@ -184,40 +123,13 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_get_attempts = (resource_get_attempts or
-            self.config.api_retries)
+        result = self._get_resource(
+            resource_type=NeutronResourceTypes.NETWORKS,
+            resource_id=network_id,
+            resource_get_attempts=resource_get_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval)
 
-        result = NetworkingResponse()
-        err_msg = 'Network Get failure'
-        for attempt in range(resource_get_attempts):
-            self._log.debug('Attempt {0} of {1} getting network {2}'.format(
-                attempt + 1, resource_get_attempts, network_id))
-
-            resp = self.client.get_network(network_id=network_id)
-
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.GET_NETWORK,
-                label=network_id, message=err_msg)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the get was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to GET {0} network after {1} attempts: '
-                '{2}').format(network_id, resource_get_attempts,
-                              result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceGetException(err_msg)
-            return result
+        return result
 
     def list_networks(self, network_id=None, name=None, status=None,
                       admin_state_up=None, shared=None, tenant_id=None,
@@ -254,43 +166,18 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_list_attempts = (resource_list_attempts or
-            self.config.api_retries)
+        params_kwargs = dict(network_id=network_id, name=name, status=status,
+                             admin_state_up=admin_state_up, shared=shared,
+                             tenant_id=tenant_id, limit=limit, marker=marker,
+                             page_reverse=page_reverse)
 
-        result = NetworkingResponse()
-        err_msg = 'Network List failure'
-        for attempt in range(resource_list_attempts):
-            self._log.debug('Attempt {0} of {1} with network list'.format(
-                attempt + 1, resource_list_attempts))
+        result = self._list_resources(
+            resource_type=NeutronResourceTypes.NETWORKS,
+            resource_list_attempts=resource_list_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval,
+            params_kwargs=params_kwargs)
 
-            resp = self.client.list_networks(
-                network_id=network_id, name=name, status=status,
-                admin_state_up=admin_state_up, shared=shared,
-                tenant_id=tenant_id, limit=limit, marker=marker,
-                page_reverse=page_reverse)
-
-            resp_check = self.check_response(resp=resp,
-                status_code=NeutronResponseCodes.LIST_NETWORKS,
-                label='', message=err_msg)
-
-            result.response = resp
-            if not resp_check:
-                return result
-
-            # Failures will be an empty list if the list was successful the
-            # first time
-            result.failures.append(resp_check)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to LIST networks after {0} attempts: '
-                '{1}').format(resource_list_attempts, result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceListException(err_msg)
-            return result
+        return result
 
     def delete_network(self, network_id, resource_delete_attempts=None,
                        raise_exception=False, poll_interval=None):
@@ -308,43 +195,13 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         @return: NetworkingResponse object with api response and failure list
         @rtype: common.behaviors.NetworkingResponse
         """
-        poll_interval = poll_interval or self.config.api_poll_interval
-        resource_delete_attempts = (resource_delete_attempts or
-            self.config.api_retries)
+        result = self._delete_resource(
+            resource_type=NeutronResourceTypes.NETWORKS,
+            resource_id=network_id,
+            resource_delete_attempts=resource_delete_attempts,
+            raise_exception=raise_exception, poll_interval=poll_interval)
 
-        result = NetworkingResponse()
-        for attempt in range(resource_delete_attempts):
-            self._log.debug('Attempt {0} of {1} deleting network {2}'.format(
-                attempt + 1, resource_delete_attempts, network_id))
-
-            resp = self.client.delete_network(network_id=network_id)
-            result.response = resp
-
-            # Delete response is without entity so resp_check can not be used
-            if (resp.ok and
-                resp.status_code == NeutronResponseCodes.DELETE_NETWORK):
-                return result
-
-            err_msg = ('{network} Network Delete failure, expected status '
-                'code: {expected_status}. Response: {status} {reason} '
-                '{content}').format(
-                network=network_id,
-                expected_status=NeutronResponseCodes.DELETE_NETWORK,
-                status=resp.status_code, reason=resp.reason,
-                content=resp.content)
-            self._log.error(err_msg)
-            result.failures.append(err_msg)
-            time.sleep(poll_interval)
-
-        else:
-            err_msg = (
-                'Unable to DELETE {0} network after {1} attempts: '
-                '{2}').format(network_id, resource_delete_attempts,
-                              result.failures)
-            self._log.error(err_msg)
-            if raise_exception:
-                raise ResourceDeleteException(err_msg)
-            return result
+        return result
 
     def delete_networks(self, network_list=None, name=None, tenant_id=None,
                         skip_delete=None):
@@ -367,6 +224,7 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
             resource_list=network_list, name=name,
             tenant_id=tenant_id, skip_delete=skip_delete,
             resource_type=NeutronResourceTypes.NETWORKS)
+
         return result
 
     def clean_network(self, network_id, timeout=None, poll_interval=None):
@@ -381,31 +239,12 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         @return: None if delete was successful or the undeleted network_id
         @rtype: None or string
         """
-        timeout = timeout or self.config.resource_delete_timeout
-        poll_interval = poll_interval or self.config.api_poll_interval
-        endtime = time.time() + int(timeout)
-        log_msg = 'Deleting {0} network within a {1}s timeout '.format(
-                    network_id, timeout)
-        self._log.info(log_msg)
-        resp = None
-        while time.time() < endtime:
-            try:
-                self.client.delete_network(network_id=network_id)
-                resp = self.client.get_network(network_id=network_id)
-            except Exception as err:
-                err_msg = ('Encountered an exception deleting a network with'
-                    'the clean_network method. Exception: {0}').format(err)
-                self._log.error(err_msg)
+        result = self._clean_resource(
+            resource_type=NeutronResourceTypes.NETWORKS,
+            resource_id=network_id,
+            timeout=timeout, poll_interval=poll_interval)
 
-            if (resp is not None and
-                resp.status_code == NeutronResponseCodes.NOT_FOUND):
-                return None
-            time.sleep(poll_interval)
-
-        err_msg = 'Unable to delete {0} network within a {1}s timeout'.format(
-            network_id, timeout)
-        self._log.error(err_msg)
-        return network_id
+        return result
 
     def clean_networks(self, networks_list, timeout=None, poll_interval=None):
         """
@@ -419,16 +258,9 @@ class NetworksBehaviors(NetworkingBaseBehaviors):
         @return: list of undeleted networks UUIDs
         @rtype: list(str)
         """
-        log_msg = 'Deleting networks: {0}'.format(networks_list)
-        self._log.info(log_msg)
-        undeleted_networks = []
-        for network in networks_list:
-            result = self.clean_network(network_id=network, timeout=timeout,
-                                        poll_interval=poll_interval)
-            if result:
-                undeleted_networks.append(result)
-        if undeleted_networks:
-            err_msg = 'Unable to delete networks: {0}'.format(
-                undeleted_networks)
-            self._log.error(err_msg)
-        return undeleted_networks
+        result = self._clean_resources(
+            resource_type=NeutronResourceTypes.NETWORKS,
+            resource_list=networks_list,
+            timeout=timeout, poll_interval=poll_interval)
+
+        return result
