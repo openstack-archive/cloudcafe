@@ -61,6 +61,11 @@ class NetworkingBaseConfig(ConfigSectionInterface):
         return int(self.get("api_retries", 1))
 
     @property
+    def use_over_limit_retry(self):
+        """Flag to enable/disable retries due to over limits responses"""
+        return self.get_boolean("use_over_limit_retry", False)
+
+    @property
     def resource_create_timeout(self):
         """Seconds to wait for creating a resource"""
         return int(self.get("resource_create_timeout", 7))
