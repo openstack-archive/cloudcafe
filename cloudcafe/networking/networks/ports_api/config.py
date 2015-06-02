@@ -48,11 +48,6 @@ class PortsConfig(NetworkingBaseConfig):
         return int(self.get("fixed_ips_per_port", 5))
 
     @property
-    def use_over_limit_retry(self):
-        """Flag to enable/disable retries due to over limits responses"""
-        return self.get_boolean("use_over_limit_retry", False)
-
-    @property
     def api_poll_interval(self):
         """Time interval for api calls on retry loops"""
         return int(self.get("api_poll_interval", 7))

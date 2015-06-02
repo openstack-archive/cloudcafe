@@ -15,12 +15,24 @@ limitations under the License.
 """
 
 
-class NeutronResourceTypes(object):
+class NeutronResource(object):
     """Neutron resource types"""
 
+    NETWORK = 'network'
     NETWORKS = 'networks'
+    SUBNET = 'subnet'
     SUBNETS = 'subnets'
+    PORT = 'port'
     PORTS = 'ports'
+
+    PLURALS = {NETWORK: NETWORKS, SUBNET: SUBNETS, PORT: PORTS}
+
+    def __init__(self, singular_type):
+        self.singular = singular_type
+
+    @property
+    def plural(self):
+        return self.PLURALS.get(self.singular, self.singular)
 
 
 class NeutronResponseCodes(object):
