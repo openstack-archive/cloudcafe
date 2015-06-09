@@ -398,10 +398,9 @@ class NetworkingBaseBehaviors(BaseBehavior):
                 raise ResourceUpdateException(err_msg)
             return result
 
-    def _get_resource(self, resource, resource_id,
-                      resource_get_attempts=None, raise_exception=False,
-                      poll_interval=None, timeout=None,
-                      use_over_limit_retry=False):
+    def _get_resource(self, resource, resource_id, resource_get_attempts=None,
+                      raise_exception=False, poll_interval=None, timeout=None,
+                      use_over_limit_retry=False, fn_kwargs=None):
         """
         @summary: Shows and verifies a specified resource
         @param resource: type of resource for ex. network, subnet, port, etc.
@@ -409,6 +408,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
         @type resource: resource instance with singular and plural forms
         @param resource_id: The UUID for the resource
         @type resource_id: str
+        @param fn_kwargs: function client call params besides the ID
+        @type fn_kwargs: dict
         @param resource_get_attempts: number of API retries
         @type resource_get_attempts: int
         @param raise_exception: flag to raise an exception if the get
@@ -445,20 +446,20 @@ class NetworkingBaseBehaviors(BaseBehavior):
                                        resource_type=resource_type,
                                        resource_id=resource_id))
 
+            fn_kwargs = fn_kwargs or {}
+
+            # Adding the resource id to the function kwargs
+            resource_id_name = '{0}_id'.format(resource_type)
+            fn_kwargs[resource_id_name] = resource_id
+
             # Method uses resource type in singular form (slicing the ending s)
             get_fn_name = 'get_{0}'.format(resource_type)
-            resp = getattr(self.client, get_fn_name)(resource_id)
+            resp = getattr(self.client, get_fn_name)(**fn_kwargs)
 
             if use_over_limit_retry:
                 entity_too_large_status_code = (getattr(self.response_codes,
                                                 'REQUEST_ENTITY_TOO_LARGE'))
                 if resp.status_code == entity_too_large_status_code:
-                    fn_kwargs = {}
-
-                    # Adding the resource id to the function kwargs
-                    resource_id_name = '{0}_id'.format(resource_type)
-                    fn_kwargs[resource_id_name] = resource_id
-
                     resp = self.__over_limit_retry(
                         resource_type=resource_type, timeout=timeout,
                         poll_interval=poll_interval,
