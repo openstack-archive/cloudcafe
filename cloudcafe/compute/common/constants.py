@@ -54,6 +54,12 @@ class Constants:
         """
         return [v for k, v in cls.__dict__.items() if k.startswith('XML')]
 
+
 class HTTPResponseCodes(object):
     NOT_FOUND = 404
     SERVER_ERROR = 500
+    BAD_REQUEST = 400
+    UNAUTHORIZED = 401
+    FORBIDDEN = 403
+    CONFLICT = 409
+    REQUEST_ENTITY_TOO_LARGE = 413
