@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.auth.config import UserAuthConfig, UserConfig
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 

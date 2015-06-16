@@ -16,7 +16,7 @@ limitations under the License.
 
 import time
 
-from cloudcafe.compute.common.exceptions import ItemNotFound, TimeoutException
+from cloudcafe.compute.common.exceptions import TimeoutException
 from cloudcafe.compute.composites import ComputeComposite
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
@@ -25,7 +25,7 @@ from cloudcafe.networking.networks.common.constants \
     import ComputeResponseCodes, NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
     import NetworkGETException, SubnetGETException, UnsupportedTypeException, \
-        UnavailableComputeInteractionException
+    UnavailableComputeInteractionException
 from cloudcafe.networking.networks.common.models.response.network \
     import Network
 from cloudcafe.networking.networks.common.models.response.port \
@@ -54,7 +54,8 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         else:
             self.compute = None
 
-    def get_port_fixed_ips(self, port):
+    @classmethod
+    def get_port_fixed_ips(cls, port):
         """Get the port fixed ips"""
         if hasattr(port, 'fixed_ips') and port.fixed_ips:
             fixed_ips = port.fixed_ips
@@ -159,9 +160,9 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             subnet_id=subnet_id)
 
         err_msg = 'Subnet Get failure'
-        resp_check = self.check_response(resp=resp,
-            status_code=NeutronResponseCodes.GET_SUBNET, label=subnet_id,
-            message=err_msg, network_id=network_id)
+        resp_check = self.check_response(
+            resp=resp, message=err_msg, network_id=network_id,
+            status_code=NeutronResponseCodes.GET_SUBNET, label=subnet_id)
 
         if not resp_check:
             subnet = resp.entity
@@ -209,8 +210,9 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         log_msg = ('Checking {resource} entity type initial {init_status} '
                    'status is updated to {updated_status} status within a '
                    'timeout of {timeout}').format(resource=resource_type,
-                       init_status=initial_status, updated_status=new_status,
-                       timeout=timeout)
+                                                  init_status=initial_status,
+                                                  updated_status=new_status,
+                                                  timeout=timeout)
         self._log.info(log_msg)
 
         while time.time() < endtime:
@@ -220,7 +222,8 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             time.sleep(poll_interval)
         return False
 
-    def get_networks_format(self, network_ids=None, port_ids=None):
+    @classmethod
+    def get_networks_format(cls, network_ids=None, port_ids=None):
         """
         @summary: Formats network and port Ids in a list of dicts, for ex.
             [{"port": "1db5a0f3-54c4-4231-a10a-8abf48faf81b"},

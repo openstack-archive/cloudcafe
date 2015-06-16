@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import netaddr
-import time
 
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
@@ -33,7 +32,8 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         self.response_codes = NeutronResponseCodes
         self.ports_resource = NeutronResource(NeutronResource.PORT)
 
-    def get_subnet_ids_from_fixed_ips(self, fixed_ips):
+    @classmethod
+    def get_subnet_ids_from_fixed_ips(cls, fixed_ips):
         """
         @summary: gets the subnet ids from the port fixed IPs attribute
         @param fixed_ips: list of fixed_ips
@@ -50,13 +50,14 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                 results['subnet_ids'].append(fixed_ip['subnet_id'])
         return results
 
-    def format_fixed_ips(self, fixed_ips):
+    @classmethod
+    def format_fixed_ips(cls, fixed_ips):
         """
         @summary: formats fixed ips for assertions removing zeros on
             IPv6 addresses
         @param fixed_ips: list of fixed_ips
         @type fixed_ips: list(dict)
-        @return: formated fixed_ips
+        @return: formatted fixed_ips
         @rtype: list(dict)
         """
         result = [dict(subnet_id=fixed_ip['subnet_id'], ip_address=str(
@@ -172,9 +173,9 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @rtype: common.behaviors.NetworkingResponse
         """
         attrs_kwargs = dict(
-                name=name, admin_state_up=admin_state_up,
-                fixed_ips=fixed_ips, device_id=device_id,
-                device_owner=device_owner, security_groups=security_groups)
+            name=name, admin_state_up=admin_state_up,
+            fixed_ips=fixed_ips, device_id=device_id,
+            device_owner=device_owner, security_groups=security_groups)
 
         result = self._update_resource(
             resource=self.ports_resource,

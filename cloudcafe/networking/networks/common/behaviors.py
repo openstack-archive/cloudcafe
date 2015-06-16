@@ -24,8 +24,8 @@ from cloudcafe.networking.networks.common.constants \
     import NeutronResponseCodes, NeutronResource
 from cloudcafe.networking.networks.common.exceptions \
     import ResourceBuildException, ResourceDeleteException, \
-        ResourceGetException, ResourceListException, ResourceUpdateException, \
-        UnhandledMethodCaseException
+    ResourceGetException, ResourceListException, ResourceUpdateException, \
+    UnhandledMethodCaseException
 
 
 class NetworkingBaseBehaviors(BaseBehavior):
@@ -64,7 +64,6 @@ class NetworkingBaseBehaviors(BaseBehavior):
         @return: None if the response is the expected or the error message
         @rtype: None or string
         """
-        response_msg = None
         if network_id:
             label = '{label} at network {network}'.format(
                 label=label, network=network_id)
@@ -81,8 +80,9 @@ class NetworkingBaseBehaviors(BaseBehavior):
             response_msg = None
 
         elif not resp.ok or resp.status_code != status_code:
-            err_msg = ('{label} {message}: {status} {reason} '
-                '{content}. Expected status code {expected_status}').format(
+            err_msg = (
+                '{label} {message}: {status} {reason} {content}. Expected '
+                'status code {expected_status}.').format(
                 label=label, message=message, status=resp.status_code,
                 reason=resp.reason, content=resp.content,
                 expected_status=status_code)
@@ -100,7 +100,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
             raise UnhandledMethodCaseException(err_msg)
         return response_msg
 
-    def filter_entity_list_by_name(self, entity_list, name):
+    @classmethod
+    def filter_entity_list_by_name(cls, entity_list, name):
         """
         @summary: Filters an entity list by name
         @param entity_list: List of instances with the name attribute
@@ -135,13 +136,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
         @return: filtered entity list by attribute
         @rtype: list(instances)
         """
-        new_entity_list = []
-        for entity in entity_list:
-            if hasattr(entity, attr):
-                attr_value = getattr(entity, attr)
-                if attr_value == value:
-                    new_entity_list.append(entity)
-        return new_entity_list
+        return [entity for entity in entity_list if
+                getattr(entity, attr, None) == value]
 
     def get_id_list_from_entity_list(self, entity_list, name=None):
         """
@@ -158,8 +154,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
         id_list = [entity.id for entity in entity_list]
         return id_list
 
-    def __over_limit_retry(self, resource_type, timeout, poll_interval,
-                           status_code, resp, fn_name, fn_kwargs):
+    def _over_limit_retry(self, resource_type, timeout, poll_interval,
+                          status_code, resp, fn_name, fn_kwargs):
         """
         @summary: Retry mechanism for API rate limited calls
         @param resource_type: type of resource for ex. networks, subnets, etc.
@@ -240,7 +236,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_build_attempts = (resource_build_attempts or
-            self.config.api_retries)
+                                   self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_create_timeout
@@ -251,8 +247,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
             self._log.debug(
                 'Attempt {attempt_n} of {attempts} creating '
                 '{resource_type}'.format(attempt_n=attempt + 1,
-                                       attempts=resource_build_attempts,
-                                       resource_type=resource_type))
+                                         attempts=resource_build_attempts,
+                                         resource_type=resource_type))
 
             # Method uses resource type in singular form (slicing the ending s)
             create_fn_name = 'create_{0}'.format(resource_type)
@@ -264,7 +260,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
                 if resp.status_code == entity_too_large_status_code:
                     fn_kwargs = attrs_kwargs
 
-                    resp = self.__over_limit_retry(
+                    resp = self._over_limit_retry(
                         resource_type=resource_type, timeout=timeout,
                         poll_interval=poll_interval,
                         status_code=entity_too_large_status_code,
@@ -332,7 +328,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_update_attempts = (resource_update_attempts or
-            self.config.api_retries)
+                                    self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_update_timeout
@@ -364,7 +360,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
                     resource_id_name = '{0}_id'.format(resource_type)
                     fn_kwargs[resource_id_name] = resource_id
 
-                    resp = self.__over_limit_retry(
+                    resp = self._over_limit_retry(
                         resource_type=resource_type, timeout=timeout,
                         poll_interval=poll_interval,
                         status_code=entity_too_large_status_code,
@@ -430,7 +426,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_get_attempts = (resource_get_attempts or
-            self.config.api_retries)
+                                 self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_get_timeout
@@ -459,7 +455,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
                     resource_id_name = '{0}_id'.format(resource_type)
                     fn_kwargs[resource_id_name] = resource_id
 
-                    resp = self.__over_limit_retry(
+                    resp = self._over_limit_retry(
                         resource_type=resource_type, timeout=timeout,
                         poll_interval=poll_interval,
                         status_code=entity_too_large_status_code,
@@ -468,9 +464,9 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
             response_code = get_fn_name.upper()
             status_code = getattr(self.response_codes, response_code)
-            resp_check = self.check_response(resp=resp,
-                status_code=status_code,
-                label=resource_id, message=err_msg)
+            resp_check = self.check_response(
+                resp=resp, status_code=status_code, label=resource_id,
+                message=err_msg)
 
             result.response = resp
             if not resp_check:
@@ -525,7 +521,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_list_attempts = (resource_list_attempts or
-            self.config.api_retries)
+                                  self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_get_timeout
@@ -548,7 +544,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
                 if resp.status_code == entity_too_large_status_code:
                     fn_kwargs = params_kwargs
 
-                    resp = self.__over_limit_retry(
+                    resp = self._over_limit_retry(
                         resource_type=resource_type, timeout=timeout,
                         poll_interval=poll_interval,
                         status_code=entity_too_large_status_code,
@@ -612,7 +608,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_delete_attempts = (resource_delete_attempts or
-            self.config.api_retries)
+                                    self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_get_timeout
@@ -640,7 +636,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
                     resource_id_name = '{0}_id'.format(resource_type)
                     fn_kwargs[resource_id_name] = resource_id
 
-                    resp = self.__over_limit_retry(
+                    resp = self._over_limit_retry(
                         resource_type=resource_type, timeout=timeout,
                         poll_interval=poll_interval,
                         status_code=entity_too_large_status_code,
@@ -808,9 +804,9 @@ class NetworkingBaseBehaviors(BaseBehavior):
             time.sleep(poll_interval)
 
         err_msg = ('Unable to delete {resource_id} {resource_type} within a '
-            '{timeout}s timeout').format(resource_id=resource_id,
-                                         resource_type=resource_type,
-                                         timeout=timeout)
+                   '{timeout}s timeout').format(resource_id=resource_id,
+                                                resource_type=resource_type,
+                                                timeout=timeout)
         self._log.error(err_msg)
         return resource_id
 
@@ -848,10 +844,10 @@ class NetworkingBaseBehaviors(BaseBehavior):
             if result:
                 undeleted_resources.append(result)
         if undeleted_resources:
-            err_msg = ('Unable to delete {resource_type}: '
-                       '{undeleted_resources}').format(
-                       resource_type=resource_type_plural,
-                       undeleted_resources=undeleted_resources)
+            err_msg = (
+                'Unable to delete {resource_type}: {undeleted_resources}'
+                '').format(resource_type=resource_type_plural,
+                           undeleted_resources=undeleted_resources)
             self._log.error(err_msg)
         return undeleted_resources
 

@@ -18,8 +18,8 @@ from cloudcafe.auth.provider import MemoizedAuthServiceComposite
 from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 from cloudcafe.networking.networks.config import MarshallingConfig,\
     NetworkingEndpointConfig, NetworkingAdminEndpointConfig,\
-    NetworkingAdminAuthConfig, NetworkingSecondUserConfig, \
-    NetworkingAdminUserConfig, UserAuthConfig, UserConfig
+    NetworkingAdminAuthConfig, NetworkingAdminUserConfig, UserAuthConfig, \
+    UserConfig
 from cloudcafe.networking.networks.behaviors import NetworkingBehaviors
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
@@ -48,9 +48,9 @@ class _NetworkingAuthComposite(MemoizedAuthServiceComposite):
         self._auth_endpoint_config = self._auth_endpoint_config()
         self._auth_user_config = self._auth_user_config()
 
+        service_name = self.networking_endpoint_config.networking_endpoint_name
         super(_NetworkingAuthComposite, self).__init__(
-            service_name=self.networking_endpoint_config.\
-                networking_endpoint_name,
+            service_name=service_name,
             region=self.networking_endpoint_config.region,
             endpoint_config=self._auth_endpoint_config,
             user_config=self._auth_user_config)

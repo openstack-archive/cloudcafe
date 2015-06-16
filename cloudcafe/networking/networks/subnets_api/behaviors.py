@@ -20,7 +20,6 @@ import time
 import IPy
 import netaddr
 
-
 from cloudcafe.common.tools.datagen import random_cidr
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
@@ -255,7 +254,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
 
         net = netaddr.IPNetwork(cidr)
 
-        if num < net.size and num >= 0:
+        if 0 <= num < net.size:
             ip = str(netaddr.IPAddress(net.first + int(num)))
         else:
             msg = ('Invalid next value. Expected value greater than 0 and less'
@@ -282,7 +281,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
 
         net = netaddr.IPNetwork(cidr)
 
-        if num < net.size and num >= 0:
+        if 0 <= num < net.size:
             ip = str(netaddr.IPAddress(net.last - int(num)))
         else:
             msg = ('Invalid next value. Expected value greater than 0 and less'
@@ -302,7 +301,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @return: IP list
         @rtype: list
         """
-        ips = [self.get_random_ip(cidr) for x in range(num)]
+        ips = [self.get_random_ip(cidr) for _ in range(num)]
         return ips
 
     def get_fixed_ip(self, subnet_id, cidr, num=1):
@@ -409,13 +408,15 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         allocation_pools = []
         for _ in range(num):
             end_increment = start_increment + ip_range
-            allocation_pool = self.get_allocation_pool(cidr=cidr,
-                start_increment=start_increment, end_increment=end_increment)
+            allocation_pool = self.get_allocation_pool(
+                cidr=cidr, start_increment=start_increment,
+                end_increment=end_increment)
             allocation_pools.append(allocation_pool)
             start_increment = end_increment + interval
         return allocation_pools
 
-    def get_host_routes(self, cidr, ips):
+    @classmethod
+    def get_host_routes(cls, cidr, ips):
         """
         @summary: create 1 or more host routes
         @param cidr: host_route destination CIDR
@@ -426,33 +427,35 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         host_routes = [dict(destination=cidr, nexthop=ip) for ip in ips]
         return host_routes
 
-    def format_dns_nameservers(self, dns_nameservers):
+    @classmethod
+    def format_dns_nameservers(cls, dns_nameservers):
         """
         @summary: formats dns_nameservers for assertions removing zeros on
             IPv6 addresses
         @param dns_nameservers: list of dns_nameservers
         @type dns_nameservers: list(str)
-        @return: formated dns_nameservers
+        @return: formatted dns_nameservers
         @rtype: list(str)
         """
         dns_ns = [str(netaddr.IPAddress(svr)) for svr in dns_nameservers]
         return dns_ns
 
-    def format_allocation_pools(self, allocation_pools):
+    @classmethod
+    def format_allocation_pools(cls, allocation_pools):
         """
         @summary: formats allocation pools for assertions removing zeros on
             IPv6 addresses
         @param allocation_pools: list of allocation pools
         @type allocation_pools: list(dict)
-        @return: formated allocation pools
+        @return: formatted allocation pools
         @rtype: list(dict)
         """
-        formated_allocation_pools = []
+        formatted_allocation_pools = []
         for pool in allocation_pools:
             result = dict(start=str(netaddr.IPAddress(pool['start'])),
                           end=str(netaddr.IPAddress(pool['end'])))
-            formated_allocation_pools.append(result)
-        return formated_allocation_pools
+            formatted_allocation_pools.append(result)
+        return formatted_allocation_pools
 
     def create_subnet(self, network_id, ip_version=None, cidr=None, name=None,
                       tenant_id=None, gateway_ip=None, dns_nameservers=None,
@@ -583,7 +586,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         return result
 
     def get_subnet(self, subnet_id, resource_get_attempts=None,
-                    raise_exception=False, poll_interval=None):
+                   raise_exception=False, poll_interval=None):
         """
         @summary: Shows and verifies a specified subnet
         @param subnet_id: The UUID for the subnet

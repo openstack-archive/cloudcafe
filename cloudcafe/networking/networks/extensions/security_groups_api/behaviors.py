@@ -64,7 +64,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             name = rand_name(name)
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_build_attempts = (resource_build_attempts or
-            self.config.api_retries)
+                                   self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Security Group Create failure'
@@ -76,9 +76,9 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             resp = self.client.create_security_group(
                 name=name, description=description, tenant_id=tenant_id)
 
-            resp_check = self.check_response(resp=resp,
-                status_code=SecurityGroupsResponseCodes.CREATE_SECURITY_GROUP,
-                label=name, message=err_msg)
+            resp_check = self.check_response(
+                resp=resp, label=name, message=err_msg,
+                status_code=SecurityGroupsResponseCodes.CREATE_SECURITY_GROUP)
 
             result.response = resp
             if not resp_check:
@@ -125,7 +125,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_update_attempts = (resource_update_attempts or
-            self.config.api_retries)
+                                    self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Security Group Update failure'
@@ -180,20 +180,21 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_get_attempts = (resource_get_attempts or
-            self.config.api_retries)
+                                 self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Security Group Get failure'
         for attempt in range(resource_get_attempts):
-            self._log.debug('Attempt {0} of {1} getting security group {2}'.
-                format(attempt + 1, resource_get_attempts, security_group_id))
+            self._log.debug(
+                'Attempt {0} of {1} getting security group {2}'.format(
+                    attempt + 1, resource_get_attempts, security_group_id))
 
             resp = self.client.get_security_group(
                 security_group_id=security_group_id)
 
-            resp_check = self.check_response(resp=resp,
-                status_code=SecurityGroupsResponseCodes.GET_SECURITY_GROUP,
-                label=security_group_id, message=err_msg)
+            resp_check = self.check_response(
+                resp=resp, label=security_group_id, message=err_msg,
+                status_code=SecurityGroupsResponseCodes.GET_SECURITY_GROUP)
 
             result.response = resp
             if not resp_check:
@@ -247,22 +248,23 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_list_attempts = (resource_list_attempts or
-            self.config.api_retries)
+                                  self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Security Group List failure'
         for attempt in range(resource_list_attempts):
-            self._log.debug('Attempt {0} of {1} with security groups list'.
-                format(attempt + 1, resource_list_attempts))
+            self._log.debug(
+                'Attempt {0} of {1} with security groups list'.format(
+                    attempt + 1, resource_list_attempts))
 
             resp = self.client.list_security_groups(
                 security_group_id=security_group_id, name=name,
                 description=description, tenant_id=tenant_id, limit=limit,
                 marker=marker, page_reverse=page_reverse)
 
-            resp_check = self.check_response(resp=resp,
-                status_code=SecurityGroupsResponseCodes.LIST_SECURITY_GROUPS,
-                label='', message=err_msg)
+            resp_check = self.check_response(
+                resp=resp, label='', message=err_msg,
+                status_code=SecurityGroupsResponseCodes.LIST_SECURITY_GROUPS)
 
             result.response = resp
             if not resp_check:
@@ -302,31 +304,32 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_delete_attempts = (resource_delete_attempts or
-            self.config.api_retries)
+                                    self.config.api_retries)
 
         result = NetworkingResponse()
         for attempt in range(resource_delete_attempts):
-            self._log.debug('Attempt {0} of {1} deleting security group {2}'.
-                format(attempt + 1, resource_delete_attempts,
-                       security_group_id))
+            self._log.debug(
+                'Attempt {0} of {1} deleting security group {2}'.format(
+                    attempt + 1, resource_delete_attempts, security_group_id))
 
             resp = self.client.delete_security_group(
                 security_group_id=security_group_id)
             result.response = resp
 
             # Delete response is without entity so resp_check can not be used
-            if (resp.ok and resp.status_code ==
+            if (resp.ok and
+                resp.status_code ==
                     SecurityGroupsResponseCodes.DELETE_SECURITY_GROUP):
                 return result
 
             del_status_code = SecurityGroupsResponseCodes.DELETE_SECURITY_GROUP
-            err_msg = ('{security_group} Security Group Delete failure, '
-                'expected status code: {expected_status}. Response: {status} '
-                '{reason} {content}').format(
-                    security_group=security_group_id,
-                    expected_status=del_status_code,
-                    status=resp.status_code, reason=resp.reason,
-                    content=resp.content)
+            err_msg = (
+                '{security_group} Security Group Delete failure, expected '
+                'status code: {expected_status}. Response: {status} {reason} '
+                '{content}').format(security_group=security_group_id,
+                                    expected_status=del_status_code,
+                                    status=resp.status_code,
+                                    reason=resp.reason, content=resp.content)
             self._log.error(err_msg)
             result.failures.append(err_msg)
             time.sleep(poll_interval)
@@ -360,7 +363,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             if (resp.response.status_code !=
                     SecurityGroupsResponseCodes.LIST_SECURITY_GROUPS):
                 get_msg = ('Unable to get security groups list for '
-                    'delete_security_groups call')
+                           'delete_security_groups call')
                 self._log.info(get_msg)
                 return None
             security_groups = resp.response.entity
@@ -417,7 +420,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
                 self._log.error(err_msg)
 
             if (resp is not None and
-                resp.status_code == SecurityGroupsResponseCodes.NOT_FOUND):
+                    resp.status_code == SecurityGroupsResponseCodes.NOT_FOUND):
                 return None
             time.sleep(poll_interval)
 
@@ -497,14 +500,16 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_build_attempts = (resource_build_attempts or
-            self.config.api_retries)
+                                   self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Security Group Rule Create failure'
         for attempt in range(resource_build_attempts):
-            self._log.debug(('Attempt {0} of {1} building security group rule '
-                'at security group {2}').format(attempt + 1,
-                    resource_build_attempts, security_group_id))
+            self._log.debug(
+                'Attempt {0} of {1} building security group rule at security '
+                'group {2}'.format(attempt + 1,
+                                   resource_build_attempts,
+                                   security_group_id))
 
             resp = self.client.create_security_group_rule(
                 security_group_id=security_group_id, direction=direction,
@@ -528,9 +533,11 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             time.sleep(poll_interval)
 
         else:
-            err_msg = ('Unable to create at security group {0} security group '
-                'rule after {1} attempts: {2}').format(security_group_id,
-                    resource_build_attempts, result.failures)
+            err_msg = (
+                'Unable to create at security group {0} security group rule '
+                'after {1} attempts: {2}').format(security_group_id,
+                                                  resource_build_attempts,
+                                                  result.failures)
             self._log.error(err_msg)
             if raise_exception:
                 raise ResourceBuildException(err_msg)
@@ -555,7 +562,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_get_attempts = (resource_get_attempts or
-            self.config.api_retries)
+                                 self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Security Group Rule Get failure'
@@ -568,10 +575,10 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             resp = self.client.get_security_group_rule(
                 security_group_rule_id=security_group_rule_id)
 
+            resp_code = SecurityGroupsResponseCodes.GET_SECURITY_GROUP_RULE
             resp_check = self.check_response(
-                resp=resp,
-                status_code=SecurityGroupsResponseCodes.GET_SECURITY_GROUP_RULE,
-                label=security_group_rule_id, message=err_msg)
+                resp=resp, status_code=resp_code, label=security_group_rule_id,
+                message=err_msg)
 
             result.response = resp
             if not resp_check:
@@ -641,7 +648,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_list_attempts = (resource_list_attempts or
-            self.config.api_retries)
+                                  self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Security Group Rules List failure'
@@ -659,10 +666,9 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
                 remote_ip_prefix=remote_ip_prefix, tenant_id=tenant_id,
                 limit=limit, marker=marker, page_reverse=page_reverse)
 
+            resp_code = SecurityGroupsResponseCodes.LIST_SECURITY_GROUP_RULES
             resp_check = self.check_response(
-                resp=resp,
-                status_code=SecurityGroupsResponseCodes.LIST_SECURITY_GROUP_RULES,
-                label='', message=err_msg)
+                resp=resp, status_code=resp_code, label='', message=err_msg)
 
             result.response = resp
             if not resp_check:
@@ -701,7 +707,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_delete_attempts = (resource_delete_attempts or
-            self.config.api_retries)
+                                    self.config.api_retries)
 
         result = NetworkingResponse()
         for attempt in range(resource_delete_attempts):
@@ -719,7 +725,8 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
                     SecurityGroupsResponseCodes.DELETE_SECURITY_GROUP_RULE):
                 return result
 
-            del_status_code = SecurityGroupsResponseCodes.DELETE_SECURITY_GROUP_RULE
+            del_status_code = \
+                SecurityGroupsResponseCodes.DELETE_SECURITY_GROUP_RULE
             err_msg = (
                 '{security_group_rule} Security Group Rule Delete failure, '
                 'expected status code: {expected_status}. Response: {status} '
@@ -761,7 +768,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             if (resp.response.status_code !=
                     SecurityGroupsResponseCodes.LIST_SECURITY_GROUP_RULES):
                 get_msg = ('Unable to get security groups rules list for '
-                    'delete_security_group_rules call')
+                           'delete_security_group_rules call')
                 self._log.info(get_msg)
                 return None
             security_group_rules = resp.response.entity
@@ -794,7 +801,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
         """
         @summary: deletes a security group rule within a time out
         @param security_group_rule_id: The UUID for the security group rule
-        @type security_group_id: string
+        @type security_group_rule_id: string
         @param timeout: seconds to wait for the security group rule delete
         @type timeout: int
         @param poll_interval: sleep time interval between API delete/get calls
@@ -823,7 +830,7 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
                 self._log.error(err_msg)
 
             if (resp is not None and
-                resp.status_code == SecurityGroupsResponseCodes.NOT_FOUND):
+                    resp.status_code == SecurityGroupsResponseCodes.NOT_FOUND):
                 return None
             time.sleep(poll_interval)
 
