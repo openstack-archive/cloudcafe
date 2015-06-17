@@ -637,23 +637,46 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         return response.headers['x-account-meta-temp-url-key']
 
     @behavior(ObjectStorageAPIClient)
-    def _purge_container(self, container_name,
+    def _purge_container(self, container_name, max_recursion, call_count=1,
                          requestslib_kwargs=None):
         """
-        @summary: Deletes all the objects in a container.
+        @summary: List all the objects in a container and then attempt to
+        delete them all. List the objects again and recursively call
+        _purge_container if the container listing returns a 200 (indicating
+        that there are still objects left).
 
         @param container_name: name of a container
         @type container_name: string
+        @param max_recursion:  the maximum number of times for this method
+                               to recursively call itself.
+        @type max_recursion:   int
+        @param call_count: the number of iterations that have been recursively
+                           called, defaults to 1.
+        @type call_count:  int
         """
 
         params = {'format': 'json'}
-        response = self.client.list_objects(
+        list_response = self.client.list_objects(
             container_name,
             params=params,
             requestslib_kwargs=requestslib_kwargs)
 
-        for storage_object in response.entity:
+        for storage_object in list_response.entity:
             self.client.delete_object(container_name, storage_object.name)
+
+        list_response = self.client.list_objects(container_name)
+
+        # If the list response returns objects, purge again
+        if list_response.status_code == 200:
+            if call_count > max_recursion:
+                raise Exception('Failed to purge objects from {0} '
+                                'after {1} tries.'.format(container_name,
+                                                          call_count))
+            else:
+                self._purge_container(container_name,
+                                      max_recursion=max_recursion,
+                                      call_count=call_count + 1,
+                                      requestslib_kwargs=requestslib_kwargs)
 
     @behavior(ObjectStorageAPIClient)
     def force_delete_container(self, container_name,
@@ -669,10 +692,11 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         """
 
         def success_func(response):
-            return response.status_code == 204
+            return response.status_code == 204 or response.status_code == 404
 
-        self._purge_container(
-            container_name, requestslib_kwargs=requestslib_kwargs)
+        self._purge_container(container_name,
+                              max_recursion=20,
+                              requestslib_kwargs=requestslib_kwargs)
 
         delete_response = self.retry_until_success(
             self.client.delete_container,
@@ -682,7 +706,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             max_retries=self.config.max_retry_count,
             sleep_time=self.config.retry_sleep_time)
 
-        if not delete_response.ok:
+        if delete_response.status_code == 409:
             raise Exception('Failed to force delete container {0} '
                             'with error code {1}'.format(
                                 container_name,
