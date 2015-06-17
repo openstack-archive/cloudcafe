@@ -55,6 +55,7 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
     def create_snapshot(self):
         pass
 
+    # Volumes
     def list_all_volumes(self, requestslib_kwargs=None):
 
         """GET /volumes"""
@@ -94,6 +95,16 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
             'DELETE', url,
             response_entity_type=self.response_models.VolumeResponse,
             requestslib_kwargs=requestslib_kwargs)
+
+    def set_volume_status(self, volume_id, status, requestslib_kwargs=None):
+        url = '{0}/volumes/{1}/action'.format(self.url, volume_id)
+
+        request_entity = self.request_models.StatusResetRequest(
+            status=status)
+
+        return self.request(
+            'POST', url, request_entity=request_entity,
+            requestslib_kwargs=None)
 
     # Volume Types
     def list_all_volume_types(self, requestslib_kwargs=None):
@@ -165,6 +176,7 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
         return self.request(
             'DELETE', url, requestslib_kwargs=requestslib_kwargs)
 
+    # Snapshots
     def list_all_snapshots(self, requestslib_kwargs=None):
 
         """GET /snapshots"""
@@ -172,8 +184,7 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
         url = '{0}/snapshots'.format(self.url)
 
         return self.request(
-            'GET', url,
-            response_entity_type=
+            'GET', url, response_entity_type=
             self.response_models.VolumeSnapshotListResponse,
             requestslib_kwargs=requestslib_kwargs)
 
@@ -183,8 +194,7 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
 
         url = '{0}/snapshots/detail'.format(self.url)
         return self.request(
-            'GET', url,
-            response_entity_type=
+            'GET', url, response_entity_type=
             self.response_models.VolumeSnapshotListResponse,
             requestslib_kwargs=requestslib_kwargs)
 
@@ -208,3 +218,39 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
             'DELETE', url,
             response_entity_type=self.response_models.VolumeSnapshotResponse,
             requestslib_kwargs=requestslib_kwargs)
+
+    def set_snapshot_status(
+            self, snapshot_id, status, requestslib_kwargs=None):
+        url = '{0}/snapshots/{1}/action'.format(self.url, snapshot_id)
+
+        request_entity = self.request_models.StatusResetRequest(
+            status=status)
+
+        return self.request(
+            'POST', url, request_entity=request_entity,
+            requestslib_kwargs=None)
+
+    # Quotas
+    def list_quotas(self, target_tenant_id, requestslib_kwargs=None):
+        """GET /{admin_tenant_id}/os-quota-sets/{target_tenant_id}"""
+
+        url = '{url}/os-quota-sets/{target_tenant_id}'.format(
+            url=self.url, target_tenant_id=target_tenant_id)
+
+        return self.request(
+            'GET', url,
+            response_entity_type=self.response_models.QuotaListResponse,
+            requestslib_kwargs=requestslib_kwargs)
+
+    def list_quotas_usage(self, target_tenant_id, requestslib_kwargs=None):
+        """GET /{admin_tenant_id}/os-quota-sets/{target_tenant_id}"""
+
+        url = '{url}/os-quota-sets/{target_tenant_id}'.format(
+            url=self.url, target_tenant_id=target_tenant_id)
+
+        params = {'usage': True}
+
+        return self.request(
+            'GET', url,
+            response_entity_type=self.response_models.QuotaUsageResponse,
+            params=params, requestslib_kwargs=requestslib_kwargs)
