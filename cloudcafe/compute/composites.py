@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -134,6 +134,8 @@ class ComputeComposite(object):
             servers_client=self.servers.client,
             servers_config=self.servers.config,
             server_behaviors=self.servers.behaviors)
+
+        self.vnc_console.behaviors = self.vnc_console.behavior_class()
 
 
 class ComputeAdminComposite(ComputeComposite):

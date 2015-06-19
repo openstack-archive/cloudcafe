@@ -1,11 +1,11 @@
 """
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,15 @@ limitations under the License.
 from cloudcafe.compute.common.composites import BaseComputeComposite
 from cloudcafe.compute.extensions.vnc_console_api.client import \
     VncConsoleClient
+from cloudcafe.compute.extensions.vnc_console_api.behaviors import \
+    VncConsoleBehaviors
 
 
 class VncConsoleComposite(BaseComputeComposite):
+    behavior_class = VncConsoleBehaviors
 
     def __init__(self, auth_composite):
         super(VncConsoleComposite, self).__init__(auth_composite)
         self.client = VncConsoleClient(
             **self.compute_auth_composite.client_args)
+        self.behaviors = None
