@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Carlos Martinez <carlos.martinez@rackspace.com>
+Workflow+1: Carlos Martinez <carlos.martinez@rackspace.com>
+Code-Review+2: Christopher Hunt <chris.hunt@RACKSPACE.COM>
+Submitted-by: Jenkins
+Submitted-at: Wed, 24 Jun 2015 22:00:02 +0000
+Reviewed-on: https://review.openstack.org/189949
+Project: stackforge/cloudcafe
+Branch: refs/heads/master
