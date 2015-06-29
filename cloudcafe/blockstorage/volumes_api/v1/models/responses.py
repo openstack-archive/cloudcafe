@@ -19,6 +19,10 @@ from cloudcafe.blockstorage.volumes_api.common.models.automarshalling import \
 from cloudcafe.blockstorage.volumes_api.common.models.automarshalling import \
     CommonModelProperties
 
+# Import common responses
+from cloudcafe.blockstorage.volumes_api.common.models.responses import \
+    QuotaUsageResponse, QuotaListResponse
+
 
 class VolumeResponse(CommonModelProperties, _VolumesAPIBaseModel):
     obj_model_key = 'volume'

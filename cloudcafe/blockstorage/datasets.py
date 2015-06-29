@@ -30,8 +30,10 @@ except Exception as ex:
     warnings.warn(msg)
     # Dummy class to prevent errors when non-integrating consumers import
     # this class while compute services are unavailable
+
     class ComputeDatasets(object):
         pass
+
 
 class BlockstorageDatasets(ModelBasedDatasetToolkit):
     """Collection of dataset generators for blockstorage data driven tests"""
@@ -52,7 +54,7 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
                     or vtype.name == cls._volumes.config.default_volume_type):
                 return vtype
 
-            raise Exception("Unable to get configured default volume type")
+        raise Exception("Unable to get configured default volume type")
 
     @classmethod
     def default_volume_type(cls):
@@ -69,7 +71,7 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
     @classmethod
     def volume_types(
             cls, max_datasets=None, randomize=None, model_filter=None,
-            filter_mode=ModelBasedDatasetToolkit.INCLUSION_MODE):
+            filter_mode=ModelBasedDatasetToolkit.INCLUSION_MODE, tags=None):
         """Returns a DatasetList of all VolumeTypes
         Filters should be dictionaries with model attributes as keys and
         lists of attributes as key values
@@ -87,11 +89,18 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
             dataset_list.append_new_dataset(vol_type.name, data)
 
         # Apply modifiers
-        return cls._modify_dataset_list(
+        dataset_list = cls._modify_dataset_list(
             dataset_list, max_datasets=max_datasets, randomize=randomize)
 
+        # Apply Tags
+        if tags:
+            dataset_list.apply_test_tags(*tags)
+
+        return dataset_list
+
     @classmethod
-    def configured_volume_types(cls, max_datasets=None, randomize=False):
+    def configured_volume_types(
+            cls, max_datasets=None, randomize=False, tags=None):
         """Returns a DatasetList of permuations of Volume Types and Images.
         Requests all available images and volume types from API, and applies
         pre-configured image and volume_type filters.
@@ -103,7 +112,8 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
             max_datasets=max_datasets,
             randomize=randomize,
             model_filter=volume_type_filter,
-            filter_mode=volume_type_filter_mode)
+            filter_mode=volume_type_filter_mode,
+            tags=tags)
 
 
 class ComputeIntegrationDatasets(ComputeDatasets, BlockstorageDatasets):
@@ -172,7 +182,8 @@ class ComputeIntegrationDatasets(ComputeDatasets, BlockstorageDatasets):
             volume_type_list, model_filter=volume_type_filter,
             filter_mode=volume_type_filter_mode)
 
-        # Create dataset from all combinations of all images and volume types
+        # Create dataset from all combinations of all images, flavors, and
+        # volume types
         dataset_list = DatasetList()
         for vtype in volume_type_list:
             for flavor in flavor_list:

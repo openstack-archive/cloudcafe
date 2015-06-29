@@ -21,6 +21,10 @@ from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.blockstorage.volumes_api.common.models.automarshalling import \
     CommonModelProperties
 
+# Import common requests
+from cloudcafe.blockstorage.volumes_api.common.models.requests import \
+    StatusResetRequest
+
 
 class VolumeRequest(CommonModelProperties, AutoMarshallingModel):
 
