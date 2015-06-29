@@ -55,7 +55,7 @@ class ServerBehaviors(BaseComputeBehavior):
         @summary:Creates a server using any configured default values
         @param name: The name of the server.
         @type name: String
-        @param name_prefix: The prefix to be used for the randomized server name.
+        @param name_prefix: The prefix used for the randomized server name.
         @type name_prefix: String
         @param image_ref: The reference to the image used to build the server.
         @type image_ref: String
@@ -158,18 +158,21 @@ class ServerBehaviors(BaseComputeBehavior):
                 self.servers_client.get_server(id_)).status,
             server_id)
 
+        retry_limit = self.config.server_status_poll_failure_max_retries
         verifier.set_global_state_properties(
             timeout=self.config.server_build_timeout)
         verifier.add_state(
             expected_statuses=[ServerStates.BUILD],
             acceptable_statuses=[ServerStates.ACTIVE],
             error_statuses=[ServerStates.ERROR],
-            poll_rate=self.config.server_status_interval)
+            poll_rate=self.config.server_status_interval,
+            poll_failure_retry_limit=retry_limit)
 
         verifier.add_state(
             expected_statuses=[ServerStates.ACTIVE],
             error_statuses=[ServerStates.ERROR],
-            poll_rate=self.config.server_status_interval)
+            poll_rate=self.config.server_status_interval,
+            poll_failure_retry_limit=retry_limit)
 
         try:
             verifier.start()
