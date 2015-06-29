@@ -24,8 +24,8 @@ class IPAddressesResource(NeutronResource):
     IP_ADDRESS = 'ip_address'
     IP_ADDRESSES = 'ip_addresses'
 
-    PLURALS = NeutronResource.PLURALS.update(
-        {IP_ADDRESS: IP_ADDRESSES})
+    PLURALS = NeutronResource.PLURALS
+    PLURALS.update({IP_ADDRESS: IP_ADDRESSES})
 
 
 class IPAddressesResponseCodes(NeutronResponseCodes):
