@@ -2,8 +2,10 @@ from time import time, sleep
 from math import ceil
 from cafe.engine.behaviors import BaseBehavior
 
+
 class StatusProgressionVerifierError(Exception):
     pass
+
 
 class StatusProgressionClassUsageError(StatusProgressionVerifierError):
     pass
@@ -122,7 +124,7 @@ class StatusProgressionVerifier(BaseBehavior):
                 try:
                     current_status = self.status_call(
                         *self.status_call_args, **self.status_call_kwargs)
-                except Exception as exception:
+                except:
                     if poll_failure_retries >= poll_failure_retry_limit:
                         msg = (
                             "status_call() for {model_type} '{model_id}' "
@@ -132,13 +134,14 @@ class StatusProgressionVerifier(BaseBehavior):
                                 model_id=self.model_id,
                                 retries=poll_failure_retries))
 
-                        if poll_failure_retry_limit > 0:
+                        if poll_failure_retry_limit == 0:
                             msg = (
                                 "status_call() for {model_type} '{model_id}' "
                                 "failed and was not allowed any "
                                 "retries".format(
                                     model_type=self.model_type,
                                     model_id=self.model_id))
+
                         self._log.exception('')
                         self._log.error(msg)
                         raise StatusPollError(msg)
@@ -146,7 +149,7 @@ class StatusProgressionVerifier(BaseBehavior):
                         poll_failure_retries += 1
                         msg = (
                             "status_call() for {model_type} '{model_id}' "
-                            "failed.  Retry {retry} or {max_retries}".format(
+                            "failed.  Retry {retry} of {max_retries}".format(
                                 model_type=self.model_type,
                                 model_id=self.model_id,
                                 retry=poll_failure_retries,
