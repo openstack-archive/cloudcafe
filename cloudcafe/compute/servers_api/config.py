@@ -38,6 +38,13 @@ class ServersConfig(ConfigSectionInterface):
         return int(self.get("resource_build_attempts", 1))
 
     @property
+    def server_status_poll_failure_max_retries(self):
+        """Controls the number of times the status progression verifier will
+        allow calls to the Servers API for status updates to fail.
+        """
+        return int(self.get("server_status_poll_failure_max_retries", 0))
+
+    @property
     def instance_auth_strategy(self):
         """Strategy to use for authenticating to an instance (password|key)"""
         return self.get("instance_auth_strategy")
