@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cloudcafe.compute.common.composites import BaseComputeComposite
+from cloudcafe.compute.composites import _ComputeAuthComposite
 from cloudcafe.compute.extensions.ip_associations_api.client import \
     IPAssociationsClient
 
 
-class IPAssociationsComposite(BaseComputeComposite):
+class IPAssociationsComposite(object):
+    _auth_composite = _ComputeAuthComposite
 
-    def __init__(self, auth_composite):
-        super(IPAssociationsComposite, self).__init__(auth_composite)
-        self.client = IPAssociationsClient(
-            **self.compute_auth_composite.client_args)
+    def __init__(self, auth_composite=None):
+        self.auth_composite = auth_composite or self._auth_composite()
+        self.client = IPAssociationsClient(**self.auth_composite.client_args)
         self.config = None
         self.behaviors = None
