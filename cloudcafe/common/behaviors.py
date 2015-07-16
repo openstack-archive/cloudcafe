@@ -155,6 +155,8 @@ class StatusProgressionVerifier(BaseBehavior):
                                 retry=poll_failure_retries,
                                 max_retries=poll_failure_retry_limit))
                         self._log.warning(msg)
+                        sleep(poll_rate)
+                        continue
 
                 # Log current status
                 self._log.debug(
