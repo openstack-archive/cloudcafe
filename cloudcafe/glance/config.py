@@ -107,6 +107,14 @@ class ImagesConfig(ConfigSectionInterface):
         return self.get_boolean('allow_public_images_crud')
 
     @property
+    def allow_deactivate_reactivate(self):
+        """
+        Toggle to determine if endpoint allows deactivating and reactivating
+        images
+        """
+        return self.get_boolean('allow_deactivate_reactivate', 'False')
+
+    @property
     def primary_image(self):
         """Primary image to be used during tests"""
         return self.get("primary_image")
