@@ -254,3 +254,13 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
             'GET', url,
             response_entity_type=self.response_models.QuotaUsageResponse,
             params=params, requestslib_kwargs=requestslib_kwargs)
+
+    def get_default_quotas(self, target_tenant_id):
+        """GET {admin_tenant_id}/os-quota-sets/defaults"""
+
+        url = '{url}/os-quota-sets/{target_tenant_id}/defaults'.format(
+            url=self.url, target_tenant_id=target_tenant_id)
+
+        return self.request(
+            'GET', url,
+            response_entity_type=self.response_models.QuotaUsageResponse)
