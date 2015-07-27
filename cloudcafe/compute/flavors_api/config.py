@@ -32,6 +32,11 @@ class FlavorsConfig(ConfigSectionInterface):
         return self.get("secondary_flavor")
 
     @property
-    def resize_enabled(self):
-        """Determines if resize is enabled for this flavor class"""
-        return self.get_boolean("resize_enabled")
+    def resize_up_enabled(self):
+        """Determines if resize up is enabled for this flavor class"""
+        return self.get_boolean("resize_up_enabled")
+
+    @property
+    def resize_down_enabled(self):
+        """Determines if resize down is enabled for this flavor class"""
+        return self.get_boolean("resize_down_enabled")
