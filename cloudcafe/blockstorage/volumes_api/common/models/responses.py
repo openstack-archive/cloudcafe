@@ -1,5 +1,6 @@
-from cafe.engine.models.base import AutoMarshallingDictModel
 import json
+from cafe.engine.models.base import \
+    AutoMarshallingDictModel, AutoMarshallingModel
 
 
 class QuotaUsageResponse(AutoMarshallingDictModel):
@@ -38,3 +39,21 @@ class QuotaListResponse(AutoMarshallingDictModel):
     @classmethod
     def _json_to_obj(cls, json_dict):
         return QuotaListResponse(**json.loads(json_dict).get('quota_set'))
+
+
+class QuotaSet(AutoMarshallingModel):
+    """ This model represents the content of a dictionary of dictionaries.
+    The key-names are arbitrary, and so no conversion to a namespace is
+    attempted
+    """
+
+    @classmethod
+    def _json_to_obj(cls, json_dict):
+
+        data = json.loads(json_dict).get('quota_set')
+        theid = data.get('id')
+        quotaset = cls()
+        setattr(quotaset, 'id', theid)
+        for k, v in data.items():
+            setattr(quotaset, k, v)
+        return quotaset

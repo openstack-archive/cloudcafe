@@ -263,4 +263,5 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
 
         return self.request(
             'GET', url,
-            response_entity_type=self.response_models.QuotaUsageResponse)
+            response_entity_type=self.response_models.QuotaSet,
+            requestslib_kwargs=requestslib_kwargs)

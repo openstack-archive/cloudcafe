@@ -21,7 +21,7 @@ from cloudcafe.blockstorage.volumes_api.common.models.automarshalling import \
 
 # Import common responses
 from cloudcafe.blockstorage.volumes_api.common.models.responses import \
-    QuotaUsageResponse, QuotaListResponse
+    QuotaUsageResponse, QuotaListResponse, QuotaSet
 
 
 class VolumeResponse(CommonModelProperties, _VolumesAPIBaseModel):

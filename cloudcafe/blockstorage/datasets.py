@@ -48,6 +48,15 @@ class BlockstorageDatasets(ModelBasedDatasetToolkit):
             cls._volumes.client.list_all_volume_types, 'volume_types')
 
     @classmethod
+    def _get_volume_type_names(cls):
+        """Gets list of all Volume Type Names in the environment, and caches it
+        for future calls"""
+        vtype_names = []
+        for vtype in cls._get_volume_types():
+            vtype_names.append(vtype.name)
+        return vtype_names
+
+    @classmethod
     def default_volume_type_model(cls):
         for vtype in cls._get_volume_types():
             if (vtype.id_ == cls._volumes.config.default_volume_type
