@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2014-2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,11 +28,9 @@ LoadBalancers Response Model
 """
 
 import json
-import xml.etree.ElementTree as ET
 
 from cafe.engine.models.base import \
     AutoMarshallingModel, AutoMarshallingListModel
-from cloudcafe.networking.lbaas.common.constants import Constants
 
 
 class LoadBalancers(AutoMarshallingListModel):
@@ -55,20 +53,6 @@ class LoadBalancers(AutoMarshallingListModel):
                 }
             ]
         }
-
-    xml ex:
-        <loadbalancers xmlns="">
-            <loadbalancer xmlns=""
-                id="8992a43f-83af-4b49-9afd-c2bfbd82d7d7"
-                name="a-new-loadbalancer"
-                description="A very simple example load balancer."
-                vip_subnet="SUBNET_ID"
-                vip_address="1.2.3.4"
-                tenant_id="7725fe12-1c14-4f45-ba8e-44bf01763578"
-                admin_state_up="True"
-                status="ACTIVE"
-            />
-        </loadbalancers>
     """
     ROOT_TAG = 'loadbalancers'
 
@@ -82,21 +66,6 @@ class LoadBalancers(AutoMarshallingListModel):
         load_balancers = LoadBalancers()
         load_balancers.extend([LoadBalancer._dict_to_obj(load_balancer)
                                for load_balancer in load_balancers_dict_list])
-        return load_balancers
-
-    @classmethod
-    def _xml_to_obj(cls, serialized_string):
-        element = ET.fromstring(serialized_string)
-        if element.tag != cls.ROOT_TAG:
-            return None
-        return cls._xml_list_to_obj(element.findall(LoadBalancer.ROOT_TAG))
-
-    @classmethod
-    def _xml_list_to_obj(cls, xml_list):
-        load_balancers = LoadBalancers()
-        load_balancers.extend(
-            [LoadBalancer._xml_ele_to_obj(load_balancers_ele)
-             for load_balancers_ele in xml_list])
         return load_balancers
 
 
@@ -118,18 +87,6 @@ class LoadBalancer(AutoMarshallingModel):
                 "status": "ACTIVE"
             }
         }
-
-    xml ex:
-        <loadbalancer xmlns=""
-            id="8992a43f-83af-4b49-9afd-c2bfbd82d7d7"
-            name="a-new-loadbalancer"
-            description="A very simple example load balancer."
-            vip_subnet="SUBNET_ID"
-            vip_address="1.2.3.4"
-            tenant_id="7725fe12-1c14-4f45-ba8e-44bf01763578"
-            admin_state_up="True"
-            status="ACTIVE"
-        />
     """
 
     ROOT_TAG = 'loadbalancer'
@@ -154,33 +111,6 @@ class LoadBalancer(AutoMarshallingModel):
 
     @classmethod
     def _dict_to_obj(cls, load_balancer_dict):
-        load_balancer = LoadBalancer(
-            id_=load_balancer_dict.get('id'),
-            name=load_balancer_dict.get('name'),
-            description=load_balancer_dict.get('description'),
-            vip_subnet=load_balancer_dict.get('vip_subnet'),
-            vip_address=load_balancer_dict.get('vip_address'),
-            tenant_id=load_balancer_dict.get('tenant_id'),
-            admin_state_up=load_balancer_dict.get('admin_state_up'),
-            status=load_balancer_dict.get('status'))
-        return load_balancer
-
-    @classmethod
-    def _xml_to_obj(cls, serialized_string):
-        element = ET.fromstring(serialized_string)
-        if element.tag != cls.ROOT_TAG:
-            return None
-        cls._remove_xml_etree_namespace(element, Constants.XML_API_NAMESPACE)
-        load_balancer = cls._xml_ele_to_obj(element)
-        return load_balancer
-
-    @classmethod
-    def _xml_ele_to_obj(cls, element):
-        load_balancer_dict = element.attrib
-        # Cast boolean
-        if 'admin_state_up' in load_balancer_dict:
-            load_balancer_dict['admin_state_up'] = cls._string_to_bool(
-                load_balancer_dict.get('admin_state_up'))
         load_balancer = LoadBalancer(
             id_=load_balancer_dict.get('id'),
             name=load_balancer_dict.get('name'),

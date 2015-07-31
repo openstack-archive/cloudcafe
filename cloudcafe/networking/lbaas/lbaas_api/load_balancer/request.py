@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2014-2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,13 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+@summary: Load balancer request models.
+
+CreateLoadBalancer
+UpdateLoadBalancer
 """
 
 import json
-import xml.etree.ElementTree as ET
 
 from cafe.engine.models.base import AutoMarshallingModel
-from cloudcafe.networking.lbaas.common.constants import Constants
 
 
 class CreateLoadBalancer(AutoMarshallingModel):
@@ -37,17 +40,6 @@ class CreateLoadBalancer(AutoMarshallingModel):
                 "admin_state_up": true
             }
         }
-
-    xml ex:
-        <loadbalancer xmlns=""
-            name="a-new-loadbalancer"
-            description="A very simple example load balancer."
-            vip_subnet="SUBNET_ID"
-            vip_address="1.2.3.4"
-            tenant_id="7725fe12-1c14-4f45-ba8e-44bf01763578"
-            admin_state_up="True"
-        </loadbalancer>
-
     """
 
     ROOT_TAG = 'loadbalancer'
@@ -92,22 +84,6 @@ class CreateLoadBalancer(AutoMarshallingModel):
         main_body = {self.ROOT_TAG: body}
         return json.dumps(main_body)
 
-    def _obj_to_xml(self):
-        xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
-        element.set('xmlns', Constants.XML_API_NAMESPACE)
-        element.set('name', self.name)
-        element.set('vip_subnet', self.vip_subnet)
-        element.set('tenant_id', self.tenant_id)
-        if self.admin_state_up is not None:
-            element.set('admin_state_up', str(self.admin_state_up))
-        if self.description is not None:
-            element.set('description', self.description)
-        if self.vip_address is not None:
-            element.set('vip_address', self.vip_address)
-        xml = "{0}{1}".format(xml, ET.tostring(element))
-        return xml
-
 
 class UpdateLoadBalancer(AutoMarshallingModel):
     """ Update Load Balancer Request Model
@@ -122,13 +98,6 @@ class UpdateLoadBalancer(AutoMarshallingModel):
                 "admin_state_up": false
             }
         }
-
-    xml ex:
-        <loadbalancer xmlns=""
-            name="an_updated-loadbalancer"
-            description="A new very simple example load balancer."
-            admin_state_up="False" >
-
     """
 
     ROOT_TAG = CreateLoadBalancer.ROOT_TAG
@@ -159,16 +128,3 @@ class UpdateLoadBalancer(AutoMarshallingModel):
         body = self._remove_empty_values(body)
         main_body = {self.ROOT_TAG: body}
         return json.dumps(main_body)
-
-    def _obj_to_xml(self):
-        xml = Constants.XML_HEADER
-        element = ET.Element(self.ROOT_TAG)
-        element.set('xmlns', Constants.XML_API_NAMESPACE)
-        if self.name is not None:
-            element.set('name', self.name)
-        if self.description is not None:
-            element.set('description', self.description)
-        if self.admin_state_up is not None:
-            element.set('admin_state_up', str(self.admin_state_up))
-        xml = "{0}{1}".format(xml, ET.tostring(element))
-        return xml

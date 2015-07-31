@@ -1,5 +1,5 @@
 """
-Copyright 2014 Rackspace
+Copyright 2014-2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ LoadBalancersResponseTest
 
 import unittest
 
-from cloudcafe.networking.lbaas.common.constants import Constants
 from cloudcafe.networking.lbaas.lbaas_api.load_balancer.response \
     import LoadBalancer, LoadBalancers
 
@@ -32,8 +31,6 @@ class BaseLoadBalancerResponseTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(BaseLoadBalancerResponseTest, cls).setUpClass()
-        cls.XML_HEADER = Constants.XML_HEADER
-        cls.XML_NS = Constants.XML_API_NAMESPACE
         cls.id_ = "8992a43f-83af-4b49-9afd-c2bfbd82d7d7"
         cls.name = "a-new-loadbalancer"
         cls.vip_subnet = "SUBNET_ID"
@@ -72,17 +69,6 @@ class BaseLoadBalancerResponseTest(unittest.TestCase):
                     "status": "{status}"
         """.format(**cls.lb_attribute_kwargs)
 
-        cls.actual_xml_base = """
-                    id="{id_}"
-                    name="{name}"
-                    vip_subnet="{vip_subnet}"
-                    tenant_id="{tenant_id}"
-                    admin_state_up="{admin_state_up}"
-                    description="{description}"
-                    vip_address="{vip_address}"
-                    status="{status}"
-        """.format(**cls.lb_attribute_kwargs)
-
 
 class LoadBalancerResponseTest(BaseLoadBalancerResponseTest):
 
@@ -104,27 +90,12 @@ class LoadBalancerResponseTest(BaseLoadBalancerResponseTest):
         actual_obj = LoadBalancer.deserialize(actual_json, 'json')
         self.assertEqual(self.expected_obj, actual_obj)
 
-    def test_load_balancer_xml(self):
-        actual_xml = """{xml_header}
-                            <{root_tag}
-                                {actual_xml_base}
-                                xmlns="{xmlns}"
-                            />""".format(
-            xml_header=self.XML_HEADER,
-            xmlns=self.XML_NS,
-            root_tag=self.ROOT_TAG,
-            actual_xml_base=self.actual_xml_base,
-            **self.lb_attribute_kwargs)
-        actual_obj = LoadBalancer.deserialize(actual_xml, 'xml')
-        self.assertEqual(self.expected_obj, actual_obj)
-
 
 class LoadBalancersResponseTest(BaseLoadBalancerResponseTest):
 
     def setUp(self):
         super(LoadBalancersResponseTest, self).setUp()
         self.ROOT_TAG = LoadBalancers.ROOT_TAG
-        self.CHILD_TAG = LoadBalancer.ROOT_TAG
         self.expected_obj = self.load_balancers_obj
 
     def test_load_balancers_json(self):
@@ -138,22 +109,6 @@ class LoadBalancersResponseTest(BaseLoadBalancerResponseTest):
                                    actual_json_base=self.actual_json_base,
                                    **self.lb_attribute_kwargs)
         actual_obj = LoadBalancers.deserialize(actual_json, 'json')
-        self.assertEqual(self.expected_obj, actual_obj)
-
-    def test_load_balancers_xml(self):
-        actual_xml = """{xml_header}
-                            <{root_tag} xmlns="{xmlns}">
-                                <{child_tag}
-                                    {actual_xml_base}
-                                />
-                            </{root_tag}>""".format(
-            xml_header=self.XML_HEADER,
-            xmlns=self.XML_NS,
-            root_tag=self.ROOT_TAG,
-            child_tag=self.CHILD_TAG,
-            actual_xml_base=self.actual_xml_base,
-            **self.lb_attribute_kwargs)
-        actual_obj = LoadBalancers.deserialize(actual_xml, 'xml')
         self.assertEqual(self.expected_obj, actual_obj)
 
 
