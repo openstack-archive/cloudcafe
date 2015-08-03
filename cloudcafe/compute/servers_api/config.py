@@ -198,3 +198,18 @@ class ServersConfig(ConfigSectionInterface):
         The path to which files will be injected.
         """
         return self.get("default_file_path")
+
+    @property
+    def expected_rate_limits_count(self):
+        """
+        The expected number of rate limits.
+        """
+        return int(self.get("expected_rate_limits_count"))
+
+    @property
+    def expected_absolute_limits(self):
+        """
+        The expected absolute limits.
+        """
+        return ([x.strip() for x in
+                 self.get("expected_absolute_limits", "").split(',')])
