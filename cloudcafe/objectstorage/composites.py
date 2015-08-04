@@ -27,12 +27,12 @@ class ObjectStorageComposite(object):
         self.config = ObjectStorageAPIConfig()
         self.auth_info = self._auth_composite()
 
-        self.storage_url = self.auth_info.public_url
-        self.auth_token = self.auth_info.token_id
-
         if self.auth_info.auth_strategy == 'saio_tempauth':
             self.storage_url = self.auth_info.access_data.storage_url
             self.auth_token = self.auth_info.access_data.auth_token
+        else:
+            self.storage_url = self.auth_info.public_url
+            self.auth_token = self.auth_info.token_id
 
         self.client = ObjectStorageAPIClient(
             self.storage_url, self.auth_token)
