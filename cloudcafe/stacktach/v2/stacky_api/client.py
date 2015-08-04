@@ -131,13 +131,16 @@ class StackTachClient(AutoMarshallingHTTPClient):
                             response_entity_type=EventNameTimings,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def get_events_for_uuid(self, service, uuid, requestslib_kwargs=None):
+    def get_events_for_uuid(self, service, uuid, requestslib_kwargs=None,
+                            limit=100):
         """
         @summary: Retrieves events related to a given server
         @param uuid: The uuid of an existing instance.
         @type uuid: String
         @param service: Service/Product e.g. nova or glance
         @type service: String
+        @param limit: Max number of events to return
+        @type limit: int
         @return: List of events for the server
         @rtype:  Response Object
 
@@ -147,7 +150,7 @@ class StackTachClient(AutoMarshallingHTTPClient):
         response_entity_type = EventDetails
         if service == 'glance':
             response_entity_type = ImageEventDetails
-        params = {'uuid': uuid, 'service': service}
+        params = {'uuid': uuid, 'service': service, 'limit': limit}
         url = '{0}{1}'.format(self.url, '/stacky/uuid/')
         return self.request('GET', url, params=params,
                             response_entity_type=response_entity_type,
