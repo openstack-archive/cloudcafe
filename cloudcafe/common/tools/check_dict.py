@@ -36,9 +36,7 @@ def _get_cl_args():
     return data_dict
 
 
-def get_value(dict_key):
+def get_value(dict_key, default_value=None):
     data_dict = _get_cl_args()
-    if dict_key not in data_dict:
-        return None
 
-    return data_dict[dict_key]
+    return data_dict.get(dict_key, default_value)
