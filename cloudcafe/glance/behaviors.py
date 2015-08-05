@@ -46,7 +46,7 @@ class ImagesBehaviors(BaseBehavior):
         @summary: Create comparison dictionary based on a given set of data
 
         @param data_file: File containing data to compare
-        @param data_file: String
+        @type data_file: String
 
         @return: Comparison_dict
         @rtype: Dictionary
