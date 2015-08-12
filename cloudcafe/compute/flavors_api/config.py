@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from warnings import warn
+
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -33,5 +35,19 @@ class FlavorsConfig(ConfigSectionInterface):
 
     @property
     def resize_enabled(self):
-        """Determines if resize is enabled for this flavor class"""
+        """Deprecated. Determines if resize is enabled for this flavor class"""
+        warn(
+            "This config property is deprecated. Please use the config "
+            "property 'resize_up_enabled' or the"
+            " 'resize_down_enabled' instead.")
         return self.get_boolean("resize_enabled")
+
+    @property
+    def resize_up_enabled(self):
+        """Determines if resize up is enabled for this flavor class"""
+        return self.get_boolean("resize_up_enabled")
+
+    @property
+    def resize_down_enabled(self):
+        """Determines if resize down is enabled for this flavor class"""
+        return self.get_boolean("resize_down_enabled")
