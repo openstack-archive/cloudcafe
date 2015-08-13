@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
+
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -102,3 +104,17 @@ class ImagesConfig(ConfigSectionInterface):
         """Base container name convention which will be used as a static part
         of the container automated name creation"""
         return self.get("image_base_container")
+
+    @property
+    def image_filter(self):
+        """Expects Json.  Returns an empty dictionary by default (no filter).
+        Dictionary keys should be attributes of the image model, and key values
+        should be a list of values for that model attribute.
+        Used by some tests to decide which images to target for a given
+        test run.
+        """
+        return json.loads(self.get('image_filter', '{}'))
+
+    @property
+    def image_filter_mode(self):
+        return self.get("image_filter_mode", 'inclusion')
