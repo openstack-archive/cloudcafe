@@ -50,12 +50,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
     ERROR_INVALID_PATH = 'path must be supplied as a string.'
     ERROR_INVALID_METHOD = 'method must be supplied as a string.'
 
-    VALID_OBJECT_NAME = 'object'
-    VALID_OBJECT_NAME_WITH_SLASH = 'object/foo'
-    VALID_OBJECT_NAME_WITH_TRAILING_SLASH = 'object/'
-    VALID_OBJECT_NAME_WITH_UNICODE = 'object<insert_unicode_here>foo'
-    VALID_OBJECT_DATA = 'object data.'
-
     VALID_TEMPURL_KEY = 'qe-tempurl-key'
 
     def __init__(self, client=None, config=None):
