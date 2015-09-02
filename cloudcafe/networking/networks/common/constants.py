@@ -91,3 +91,10 @@ class ComputeResponseCodes(object):
     """HTTP Compute API Response codes"""
 
     NOT_FOUND = 404
+    SERVER_GET = 200
+
+
+class ComputeStatus(object):
+    """Compute server instance status"""
+
+    ACTIVE = 'ACTIVE'

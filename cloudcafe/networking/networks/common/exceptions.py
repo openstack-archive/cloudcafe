@@ -31,6 +31,10 @@ class UnavailableComputeInteractionException(BaseNetworkingException):
            'compute_endpoint_name at the compute_endpoint section')
 
 
+class UnableToGetNetworkingServer(BaseNetworkingException):
+    MSG = 'Unable to GET Networking Server'
+
+
 class NetworkIDMissingException(BaseNetworkingException):
     MSG = 'Network ID is required'
 

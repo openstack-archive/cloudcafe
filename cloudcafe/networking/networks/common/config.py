@@ -41,6 +41,11 @@ class NetworkingBaseConfig(ConfigSectionInterface):
         return self.get_boolean("use_compute_api", False)
 
     @property
+    def device_owner(self):
+        """Port expected device owner when assigned to server instance"""
+        return self.get_boolean("device_owner", "compute:None")
+
+    @property
     def keep_servers(self):
         """Flag for not deleting servers on tearDown"""
         return self.get_boolean("keep_servers", False)
@@ -49,6 +54,11 @@ class NetworkingBaseConfig(ConfigSectionInterface):
     def keep_servers_on_failure(self):
         """Flag for not deleting servers w failures on tearDown"""
         return self.get_boolean("keep_servers_on_failure", False)
+
+    @property
+    def keep_ip_associations(self):
+        """Flag for not deleting ip_associations on tearDown"""
+        return self.get_boolean("keep_ip_associations", False)
 
     @property
     def api_poll_interval(self):
