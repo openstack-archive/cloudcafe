@@ -41,8 +41,13 @@ class _BaseVolumesComposite(object):
     def __init__(self, auth_composite=None):
         self.auth = auth_composite or self._auth()
         self.config = self._config()
+        self.service_endpoint =  self.auth.public_url
+        if self.auth.config.service_endpoint_override is not None:
+            self.service_endpoint = "{url}/{tenant_id}".format(
+                url=self.auth.config.service_endpoint_override,
+                tenant_id=self.auth.tenant_id)
         self.client = self._client(
-            url=self.auth.public_url,
+            url=self.service_endpoint,
             auth_token=self.auth.token_id,
             serialize_format=self.config.serialize_format,
             deserialize_format=self.config.deserialize_format)

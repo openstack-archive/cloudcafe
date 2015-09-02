@@ -32,3 +32,7 @@ class BlockStorageConfig(ConfigSectionInterface):
     @property
     def availability_zone(self):
         return self.get('availability_zone')
+
+    @property
+    def service_endpoint_override(self):
+        return self.get('service_endpoint_override')
