@@ -257,3 +257,25 @@ class ComputeIntegrationDatasets(ComputeDatasets, BlockstorageDatasets):
             image_filter=image_filter, flavor_filter=flavor_filter,
             image_filter_mode=image_filter_mode,
             flavor_filter_mode=flavor_filter_mode)
+
+    @classmethod
+    def configured_images_by_flavor_by_volume_type(
+            cls, max_datasets=None, randomize=None):
+        """Returns a DatasetList of permuations of Images, Flavors and
+        VolumeTypes. Requests all available images, flavors and volume-types
+        from the API, and applies pre-configured image, flavor and volume-type
+        filters.
+        """
+        image_filter = cls._volumes.config.image_filter
+        image_filter_mode = cls._volumes.config.image_filter_mode
+        flavor_filter = cls._volumes.config.flavor_filter
+        flavor_filter_mode = cls._volumes.config.flavor_filter_mode
+        volume_type_filter = cls._volumes.config.volume_type_filter
+        volume_type_filter_mode = cls._volumes.config.volume_type_filter_mode
+        return cls.flavors_by_images_by_volume_type(
+            max_datasets=max_datasets, randomize=randomize,
+            image_filter=image_filter, flavor_filter=flavor_filter,
+            image_filter_mode=image_filter_mode,
+            flavor_filter_mode=flavor_filter_mode,
+            volume_type_filter=volume_type_filter,
+            volume_type_filter_mode=volume_type_filter_mode)
