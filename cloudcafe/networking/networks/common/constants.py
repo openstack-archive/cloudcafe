@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from cloudcafe.compute.common.types import NovaServerStatusTypes
+
 
 class NeutronResource(object):
     """Neutron resource types"""
@@ -33,6 +35,20 @@ class NeutronResource(object):
     @property
     def plural(self):
         return self.PLURALS.get(self.singular, self.singular)
+
+
+class NetworkTypes(object):
+    """Network types"""
+    PUBLIC = 'public'
+    SERVICE = 'service'
+    ISOLATED = 'isolated'
+
+
+class PortTypes(object):
+    """Port types"""
+    PUBLIC = 'pnet'
+    SERVICE = 'snet'
+    ISOLATED = 'inet'
 
 
 class NeutronResponseCodes(object):
@@ -85,9 +101,16 @@ class NeutronErrorTypes(object):
     PORT_NOT_FOUND = 'PortNotFound'
     SECURITY_GROUPS_NOT_IMPLEMENTED = 'SecurityGroupsNotImplemented'
     SUBNET_NOT_FOUND = 'SubnetNotFound'
+    TENANT_NETWORK_SECURITY_GROUP_RULES_NOT_ENABLED = (
+        'TenantNetworkSecurityGroupRulesNotEnabled')
 
 
 class ComputeResponseCodes(object):
     """HTTP Compute API Response codes"""
 
     NOT_FOUND = 404
+    SERVER_GET = 200
+
+
+class ComputeStatus(NovaServerStatusTypes):
+    """Compute server instance status"""

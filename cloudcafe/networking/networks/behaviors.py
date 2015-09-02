@@ -16,20 +16,22 @@ limitations under the License.
 
 import time
 
-from cloudcafe.compute.common.exceptions import ItemNotFound, TimeoutException
+from cloudcafe.compute.common.exceptions import TimeoutException
 from cloudcafe.compute.composites import ComputeComposite
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
 from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 from cloudcafe.networking.networks.common.constants \
-    import ComputeResponseCodes, NeutronResponseCodes
+    import ComputeResponseCodes, ComputeStatus, NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
     import NetworkGETException, SubnetGETException, UnsupportedTypeException, \
-        UnavailableComputeInteractionException
+    UnavailableComputeInteractionException, UnableToGetNetworkingServer
 from cloudcafe.networking.networks.common.models.response.network \
     import Network
 from cloudcafe.networking.networks.common.models.response.port \
     import Port
+from cloudcafe.networking.networks.extensions.ip_addresses_api.constants \
+    import IPAddressesServerZone
 
 
 class NetworkingBehaviors(NetworkingBaseBehaviors):
@@ -159,9 +161,9 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             subnet_id=subnet_id)
 
         err_msg = 'Subnet Get failure'
-        resp_check = self.check_response(resp=resp,
-            status_code=NeutronResponseCodes.GET_SUBNET, label=subnet_id,
-            message=err_msg, network_id=network_id)
+        resp_check = self.check_response(
+            resp=resp, status_code=NeutronResponseCodes.GET_SUBNET,
+            label=subnet_id, message=err_msg, network_id=network_id)
 
         if not resp_check:
             subnet = resp.entity
@@ -209,8 +211,9 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         log_msg = ('Checking {resource} entity type initial {init_status} '
                    'status is updated to {updated_status} status within a '
                    'timeout of {timeout}').format(resource=resource_type,
-                       init_status=initial_status, updated_status=new_status,
-                       timeout=timeout)
+                                                  init_status=initial_status,
+                                                  updated_status=new_status,
+                                                  timeout=timeout)
         self._log.info(log_msg)
 
         while time.time() < endtime:
@@ -324,6 +327,58 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         # The compute behavior verifies the response, no need to check
         return resp
 
+    def get_networking_server(self, server=None, server_id=None):
+        """
+        @summary: takes a server entity or ID and returns its latest version
+        """
+        if server is None and server_id is None:
+            raise UnableToGetNetworkingServer('Must provide server entity '
+                                              'or server_id')
+        net_server_id = getattr(server, 'id', None) or server_id
+        resp = self.compute.servers.client.get_server(net_server_id)
+
+        if resp.status_code != ComputeResponseCodes.SERVER_GET:
+            msg = 'Unable to get networks server {0}'.format(net_server_id)
+            raise UnableToGetNetworkingServer(msg)
+
+        if hasattr(server, 'admin_pass'):
+            resp.entity.admin_pass = server.admin_pass
+        return resp.entity
+
+    def wait_for_servers_to_be_active(self, server_id_list,
+                                      interval_time=None, timeout=None,
+                                      raise_exception=False):
+        """
+        @summary: Waits for multiple servers to be ACTIVE
+        @param server_id_list: The uuids of the servers to wait for ACTIVE
+        @type server_id_list: List
+        @param interval_time: Seconds to wait between polling
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait before aborting
+        @type timeout: Integer
+        """
+        interval_time = (interval_time or
+                         self.compute.servers.config.server_status_interval)
+        timeout = timeout or self.compute.servers.config.server_build_timeout
+        end_time = time.time() + timeout
+
+        while time.time() < end_time:
+            for server_id in server_id_list:
+                resp = self.compute.servers.client.get_server(server_id)
+                if (resp.status_code == ComputeResponseCodes.SERVER_GET and
+                        resp.entity.status == ComputeStatus.ACTIVE
+                        and server_id in server_id_list):
+                    server_id_list.remove(server_id)
+            if not server_id_list:
+                break
+            time.sleep(interval_time)
+        else:
+            msg = ('wait_for_servers_to_be_active {0} seconds timeout waiting'
+                   'for servers: {1}').format(timeout, server_id_list)
+            self._log.info(msg)
+            if raise_exception:
+                raise TimeoutException(msg)
+
     def wait_for_servers_to_be_deleted(self, server_id_list,
                                        interval_time=None, timeout=None,
                                        raise_exception=False):
@@ -337,29 +392,106 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         @type timeout: Integer
         """
 
+        self._wait_for_compute_delete(
+            resource_id_list=server_id_list, resource='servers',
+            delete_method=self.compute.servers.client.delete_server,
+            get_method=self.compute.servers.client.get_server,
+            interval_time=interval_time, timeout=timeout,
+            raise_exception=raise_exception)
+
+    def _wait_for_compute_delete(self, resource_id_list, resource,
+                                 delete_method, get_method, interval_time=None,
+                                 timeout=None, raise_exception=False):
+        """
+        @summary: Waits for compute resource deletes
+        @param resource_id_list: uuids of the compute resources to be deleted
+        @type resource_id_list: List
+        @param resource: compute resource like servers, ip associations, etc.
+        @type resource: String
+        @param delete_method: method used to delete the resource
+        @type delete_method: behavior or client method
+        @param get_method: method used to get the resource
+        @type get_method: behavior or client method
+        @param interval_time: Seconds to wait between polling
+        @type interval_time: Integer
+        @param timeout: The amount of time in seconds to wait before aborting
+        @type timeout: Integer
+        @param raise_exception: flag to raise an exception if deletes fail
+        @type raise_exception: bool
+        """
+
         interval_time = (interval_time or
                          self.compute.servers.config.server_status_interval)
         timeout = timeout or self.compute.servers.config.server_build_timeout
         end_time = time.time() + timeout
 
-        for server_id in server_id_list:
-            self.compute.servers.client.delete_server(server_id)
+        for resource_id in resource_id_list:
+            delete_method(resource_id)
 
         while time.time() < end_time:
-            for server_id in server_id_list:
-                resp = self.compute.servers.client.get_server(server_id)
+            for resource_id in resource_id_list:
+                resp = get_method(resource_id)
                 if (resp.status_code == ComputeResponseCodes.NOT_FOUND
-                        and server_id in server_id_list):
-                    server_id_list.remove(server_id)
-            if not server_id_list:
+                        and resource_id in resource_id_list):
+                    resource_id_list.remove(resource_id)
+            if not resource_id_list:
                 break
             time.sleep(interval_time)
         else:
-            msg = ('wait_for_servers_to_be_deleted {0} seconds timeout waiting'
-                   'for the expected get_server HTTP {1} status code for '
-                   'servers: {2}').format(timeout,
-                                          ComputeResponseCodes.NOT_FOUND,
-                                          server_id_list)
+            msg = ('Wait for compute {0} resource delete {0} seconds timeout '
+                   'for the expected resource get HTTP {1} status code for '
+                   'resources: {2}').format(resource, timeout,
+                                            ComputeResponseCodes.NOT_FOUND,
+                                            resource_id_list)
             self._log.info(msg)
             if raise_exception:
                 raise TimeoutException(msg)
+
+    def create_servers_in_same_cell(self, n_servers, name='same_cell_server',
+                                    network_ids=None, port_ids=None):
+        """
+        @summary: Creates n servers in same cell using the first server ID with
+            scheduler hints
+        @param n_servers: number of servers to create
+        @type n_servers: int
+        @param name: servers name (n will be appended at the end)
+        @type name: str
+        @param network_ids: server network ids, for ex. public, private, etc.
+        @type network_ids: list
+        @param port_ids: server network port ids from an isolated network
+        @type port_ids: list
+        @return: server entity list
+        @rtype: list
+        """
+        msg = 'Creating {0} servers in same cell...'.format(n_servers)
+        self._log.info(msg)
+        created_servers = []
+        server_id_list = []
+        for n_server in range(n_servers):
+            server_name = ''.join([name, str(n_server)])
+            if n_server < 1:
+                resp = self.create_networking_server(
+                    name=server_name, network_ids=network_ids,
+                    port_ids=port_ids, active_server=False)
+                server = resp.entity
+
+                # Setting up the scheduler hints for creating other servers
+                pz = IPAddressesServerZone.PUBLIC_IP_ZONE_NEAR
+                scheduler_hints = {pz: server.id}
+            else:
+                resp = self.create_networking_server(
+                    name=server_name, network_ids=network_ids,
+                    port_ids=port_ids, scheduler_hints=scheduler_hints,
+                    active_server=False)
+                server = resp.entity
+            created_servers.append(server)
+            server_id_list.append(server.id)
+
+        # Waiting for the servers to get into Active state
+        self.wait_for_servers_to_be_active(server_id_list=server_id_list)
+
+        # Getting and returning the active server entity objects
+        servers_list = [self.get_networking_server(svr)
+                        for svr in created_servers]
+
+        return servers_list

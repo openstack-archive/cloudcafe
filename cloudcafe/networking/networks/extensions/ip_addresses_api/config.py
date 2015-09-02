@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
+
 from cloudcafe.networking.networks.common.config import NetworkingBaseConfig
 
 
@@ -21,3 +23,17 @@ class IPAddressesConfig(NetworkingBaseConfig):
     """IP Addresses configuration parameters"""
 
     SECTION_NAME = 'ip_addresses'
+
+    @property
+    def scheduler_hints(self):
+        """
+        JSON string containing the os:scheduler_hints for server boot, for ex.
+        For targeting the same cell of the server ID given,
+        {"public_ip_zone:near": [serverID]}
+        For targeting another cell of the server ID given,
+        {"public_ip_zone:far": [serverID]}
+        For targeting another host in the same cell of the server ID given,
+        {"different_host": [serverID]}
+        """
+        result = self.get("scheduler_hints", "{}")
+        return json.loads(result)

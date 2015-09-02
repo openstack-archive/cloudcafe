@@ -13,8 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from cloudcafe.auth.config import UserAuthConfig, UserConfig
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -41,6 +39,14 @@ class NetworkingBaseConfig(ConfigSectionInterface):
         return self.get_boolean("use_compute_api", False)
 
     @property
+    def device_owner(self):
+        """
+        Port device owner attribute expected value when assigned to a
+        server instance
+        """
+        return self.get("device_owner", "compute:None")
+
+    @property
     def keep_servers(self):
         """Flag for not deleting servers on tearDown"""
         return self.get_boolean("keep_servers", False)
@@ -49,6 +55,11 @@ class NetworkingBaseConfig(ConfigSectionInterface):
     def keep_servers_on_failure(self):
         """Flag for not deleting servers w failures on tearDown"""
         return self.get_boolean("keep_servers_on_failure", False)
+
+    @property
+    def keep_ip_associations(self):
+        """Flag for not deleting ip_associations on tearDown"""
+        return self.get_boolean("keep_ip_associations", False)
 
     @property
     def api_poll_interval(self):
