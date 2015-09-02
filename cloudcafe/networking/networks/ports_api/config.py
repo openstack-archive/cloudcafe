@@ -45,7 +45,7 @@ class PortsConfig(NetworkingBaseConfig):
     @property
     def fixed_ips_per_port(self):
         """Ports fixed IPs quota"""
-        return int(self.get("fixed_ips_per_port", 5))
+        return int(self.get("fixed_ips_per_port", 6))
 
     @property
     def api_poll_interval(self):

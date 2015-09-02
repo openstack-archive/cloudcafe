@@ -42,3 +42,14 @@ class IPAddressesErrorTypes(NeutronErrorTypes):
     """IP Address Error Types"""
 
     IP_ADDRESS_NOT_FOUND = 'IPAddressNotFound'
+
+
+class IPAddressesServerZone(object):
+    """
+    Scheduler hint keys for targeting the same or different cell/host for
+    server builds
+    """
+
+    PUBLIC_IP_ZONE_NEAR = 'public_ip_zone:near'
+    PUBLIC_IP_ZONE_FAR = 'public_ip_zone:far'
+    DIFFERENT_HOST = 'different_host'

@@ -50,6 +50,23 @@ class PortsBehaviors(NetworkingBaseBehaviors):
                 results['subnet_ids'].append(fixed_ip['subnet_id'])
         return results
 
+    def get_addresses_from_fixed_ips(self, fixed_ips, ip_version=4):
+        """
+        @summary: gets the IP addresses from the port fixed IPs attribute
+        @param fixed_ips: list of fixed_ips
+        @type fixed_ips: list(dict)
+        @param version: IP version of addresses to get
+        @type version: int
+        @return: IP addresses from fixed IPs
+        @rtype: list(str)
+        """
+        result = []
+        for fixed_ip in fixed_ips:
+            ip = netaddr.IPAddress(fixed_ip['ip_address'])
+            if ip.version == ip_version:
+                result.append(str(ip))
+        return result
+
     def format_fixed_ips(self, fixed_ips):
         """
         @summary: formats fixed ips for assertions removing zeros on
