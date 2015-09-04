@@ -26,6 +26,11 @@ CONTENT_TYPE_FORMAT = '{content_type}/{content_subtype}'
 
 
 class FloatingIPClient(AutoMarshallingHTTPClient):
+
+    PARAM_FILTERS = ['floating_ip_address', 'router_id', 'fixed_ip_address',
+                     'status', 'id_', 'floating_network_id', 'port_id',
+                     'tenant_id']
+
     def __init__(self, url, auth_token, serialize_format='json',
                  deserialize_format='json', tenant_id=None):
         """
@@ -130,13 +135,16 @@ class FloatingIPClient(AutoMarshallingHTTPClient):
                                  floating_ip_address=False, status=False,
                                  floating_network_id=False, router_id=False,
                                  port_id=False, id_=False, tenant_id=False,
-                                 requestslib_kwargs=None):
+                                 params=None, requestslib_kwargs=None):
         """
         Show info about the specified floating IP id.
 
         :param floating_ip_id: (REQUIRED) - The UUID of the floating IP
         :param requestslib_kwargs: (OPTIONAL) - Extra information needed by
                  client
+        :param params: (OPTIONAL) - Additional URL key/value parameters
+            (expressed as a dictionary)
+
 
         Set the various fields to True to control which fields are returned in
         the response body. All parameters listed below are OPTIONAL and are
@@ -153,24 +161,25 @@ class FloatingIPClient(AutoMarshallingHTTPClient):
         :return: FloatingIPInfo Response Object
 
         """
-        if requestslib_kwargs is None:
-            requestslib_kwargs = {}
+        requestslib_kwargs = requestslib_kwargs or {}
 
         method = 'GET'
         url = '{url}/{floating_ip_id}'.format(url=self.floating_ip_url,
                                               floating_ip_id=floating_ip_id)
 
-        # Determine if additional url params have been specified.
-        filter_by = {
-            'floating_ip_address': floating_ip_address, 'router_id': router_id,
-            'fixed_ip_address': fixed_ip_address, 'status': status, 'id': id_,
-            'floating_network_id': floating_network_id, 'port_id': port_id,
-            'tenant_id': tenant_id,
-        }
+        # Get all values passed into the routine that are parameter filters
+        filter_by = self._build_filter_dict(vars())
 
+        # Translate any params that differ between the model specific (python)
+        # keys and the actual response "key".
+        self._translate_filter_params_dict(filter_by)
+
+        # Accumulate all params that were set to True, put into params dict
+        # (key = 'fields') as a list
         filter_fields = [field for field, value in filter_by.iteritems()
                          if value]
-        params = {'fields': filter_fields}
+        params = params or {}
+        params['fields'] = filter_fields
 
         return self.request(method, url, params=params,
                             response_entity_type=FloatingIPInfo,
@@ -179,7 +188,7 @@ class FloatingIPClient(AutoMarshallingHTTPClient):
     def list_floating_ips(self, fixed_ip_address=False, status=False,
                           floating_ip_address=False, router_id=False,
                           port_id=False, id_=False, tenant_id=False,
-                          floating_network_id=False,
+                          floating_network_id=False, params=None,
                           requestslib_kwargs=None):
         """
         Default policy settings return only those floating IPs that are owned
@@ -188,6 +197,8 @@ class FloatingIPClient(AutoMarshallingHTTPClient):
 
         :param requestslib_kwargs: (OPTIONAL) - Extra information needed by
                  client
+        :param params: (OPTIONAL) - Additional URL key/value parameters
+            (expressed as a dictionary)
 
         Set the various fields to True to control which fields are returned in
         the response body. All parameters listed below are OPTIONAL and are
@@ -204,29 +215,30 @@ class FloatingIPClient(AutoMarshallingHTTPClient):
         :return: FloatingIPInfo Response Object
 
         """
-        if requestslib_kwargs is None:
-            requestslib_kwargs = {}
+        requestslib_kwargs = requestslib_kwargs or {}
 
         method = 'GET'
         url = self.floating_ip_url
 
-        # Determine if additional url params have been specified.
-        filter_by = {
-            'floating_ip_address': floating_ip_address, 'router_id': router_id,
-            'fixed_ip_address': fixed_ip_address, 'status': status, 'id': id_,
-            'floating_network_id': floating_network_id, 'tenant_id': tenant_id,
-            'port_id': port_id,
-        }
+        # Get all values passed into the routine that are parameter filters
+        filter_by = self._build_filter_dict(vars())
 
+        # Translate any params that differ between the model specific (python)
+        # keys and the actual response "key".
+        self._translate_filter_params_dict(filter_by)
+
+        # Accumulate all params that were set to True, put into params dict
+        # (key = 'fields') as a list
         filter_fields = [field for field, value in filter_by.iteritems()
                          if value]
-        params = {'fields': filter_fields}
+        params = params or {}
+        params['fields'] = filter_fields
 
         return self.request(method, url, params=params,
                             response_entity_type=FloatingIPInfoList,
                             requestslib_kwargs=requestslib_kwargs)
 
-    def delete_floating_ip(self, floating_ip_id, requestslib_kwargs):
+    def delete_floating_ip(self, floating_ip_id, requestslib_kwargs=None):
         """
         Delete (release) the floating IP.
 
@@ -240,3 +252,24 @@ class FloatingIPClient(AutoMarshallingHTTPClient):
         method = 'DELETE'
         url = '{url}/{ip}'.format(url=self.floating_ip_url, ip=floating_ip_id)
         return self.request(method, url, requestslib_kwargs=requestslib_kwargs)
+
+    @staticmethod
+    def _translate_filter_params_dict(params_dict):
+        """
+        Translate between CCAFE (python) model keys that differ from the
+        actual response keys
+
+        :param params_dict: Dictionary of params to filter in response
+        :return: None
+        """
+        translations = [('id_', 'id')]
+
+        for (model_key, response_key) in translations:
+            if model_key in params_dict:
+                params_dict[response_key] = params_dict[model_key]
+                del params_dict[model_key]
+
+    @classmethod
+    def _build_filter_dict(cls, params_dict):
+        return dict([(prop, params_dict.get(prop)) for prop
+                     in cls.PARAM_FILTERS])
