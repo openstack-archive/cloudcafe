@@ -621,7 +621,7 @@ class ImagesBehaviors(BaseBehavior):
         if task.created_at is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'created_at', 'not None', task.created_at))
-        if task.input_.import_from is None:
+        if task.input_ is not None and task.input_.import_from is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'import_from', 'not None', task.input_.import_from))
         if (task.result is not None and
@@ -641,7 +641,7 @@ class ImagesBehaviors(BaseBehavior):
         if task.owner is None:
             errors.append(Messages.PROPERTY_MSG.format(
                 'owner', 'not None', task.owner))
-        if task.message != '':
+        if task.status == TaskStatus.SUCCESS and task.message != '':
             errors.append(Messages.PROPERTY_MSG.format(
                 'message', 'Empty message', task.message))
         if task.schema != '/v2/schemas/task':
