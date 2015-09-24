@@ -19,17 +19,13 @@ from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.networking.networks.extensions.floating_ips.models.request \
     import FloatingIPRequest, FloatingIPUpdate
 from cloudcafe.networking.networks.extensions.floating_ips.models.response \
-    import FloatingIPInfo, FloatingIPInfoList
+    import FloatingIPInfo, FloatingIPInfoList, ModelConstraints
 
 
 CONTENT_TYPE_FORMAT = '{content_type}/{content_subtype}'
 
 
 class FloatingIPClient(AutoMarshallingHTTPClient):
-
-    PARAM_FILTERS = ['floating_ip_address', 'router_id', 'fixed_ip_address',
-                     'status', 'id_', 'floating_network_id', 'port_id',
-                     'tenant_id']
 
     def __init__(self, url, auth_token, serialize_format='json',
                  deserialize_format='json', tenant_id=None):
@@ -271,5 +267,17 @@ class FloatingIPClient(AutoMarshallingHTTPClient):
 
     @classmethod
     def _build_filter_dict(cls, params_dict):
+        """
+        Takes dictionary of filterable fields (key:field, filter:boolean value)
+        and creates a new dictionary of fields that only contain fields that
+        should be filtered (all fields with values = True). The returned dict
+        will be used to create an HTTP URL param list (<url>?field=x&field=y)
+        :param params_dict: dictionary of values from calling routine
+            (typically the calling routine's parameter signature, captured
+            through vars())
+
+        :return: Dictionary of all fields to be used in filter
+
+        """
         return dict([(prop, params_dict.get(prop)) for prop
-                     in cls.PARAM_FILTERS])
+                     in ModelConstraints.PARAM_FILTERS])

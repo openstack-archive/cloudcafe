@@ -16,11 +16,25 @@ limitations under the License.
 
 import json
 
-from cafe.engine.models.base import AutoMarshallingListModel, \
-    AutoMarshallingModel
+from cafe.engine.models.base \
+    import AutoMarshallingListModel, AutoMarshallingModel
 
 
 COMMON_ROOT_TAG = 'floatingip'
+
+class ModelConstraints(object):
+    PUBLIC_NET_UUID = '00000000-0000-0000-0000-000000000000'
+
+    PARAM_FILTERS = ['floating_ip_address', 'router_id', 'fixed_ip_address',
+                     'status', 'id_', 'floating_network_id', 'port_id',
+                     'tenant_id']
+
+    NON_FILTERED_FIELDS = ['floating_ip_address', 'router_id',
+                           'floating_network_id', 'status',
+                           'fixed_ip_address']
+
+    NON_NULL_FIELDS = ['id_', 'status', 'floating_network_id',
+                       'floating_ip_address']
 
 
 class FloatingIPInfo(AutoMarshallingModel):
