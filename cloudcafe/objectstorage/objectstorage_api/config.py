@@ -246,3 +246,11 @@ class ObjectStorageAPIConfig(ConfigSectionInterface):
         will wait between retries.
         """
         return int(self.get('retry_sleep_time', '5'))
+
+    @property
+    def cleanup_failure_container_name(self):
+        """
+        The container name that will store clean up failure logs.
+        """
+        return int(self.get('cleanup_failure_container_name',
+                            'test_cleanup_failures'))
