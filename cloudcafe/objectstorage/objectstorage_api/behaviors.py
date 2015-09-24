@@ -137,9 +137,13 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             # did not occur, then return the response anyway so the caller
             # can deal with how to handle the situation.
             return function_response
-        raise ObjectStorageAPIBehaviorException(
-            'Unable to satisfy success condition within {0} retries'.format(
-                max_retries), function_response)
+
+        # Log the failure to obtain the success condition
+        self._log.debug('Unable to satisfy success condition within {0} '
+                        'retries'.format(max_retries))
+        # Still going to return the failed response, so the caller can deal
+        # with the response appropriately
+        return function_response
 
     def generate_unique_container_name(self, identifier=None):
         """
@@ -256,7 +260,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         if not response.ok:
             raise Exception(
-                'Error checking the existance of container  "{0}"'.format(
+                'Error checking the existence of container "{0}"'.format(
                     str(name)))
 
         return True
@@ -324,6 +328,8 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                       headers=None, params=None):
         if not self.container_exists(container_name):
             self.create_container(container_name)
+        if not headers:
+            headers = {}
 
         if data and 'content-length' not in headers:
             headers['content-length'] = str(len(data))
@@ -667,6 +673,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         # If the list response returns objects, purge again
         if list_response.status_code == 200:
             if call_count > max_recursion:
+                self._log_cleanup_failure(container_name)
                 raise Exception('Failed to purge objects from {0} '
                                 'after {1} tries.'.format(container_name,
                                                           call_count))
@@ -693,7 +700,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             return response.status_code == 204 or response.status_code == 404
 
         self._purge_container(container_name,
-                              max_recursion=20,
+                              max_recursion=30,
                               requestslib_kwargs=requestslib_kwargs)
 
         delete_response = self.retry_until_success(
@@ -705,10 +712,10 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             sleep_time=self.config.retry_sleep_time)
 
         if delete_response.status_code == 409:
-            raise Exception('Failed to force delete container {0} '
-                            'with error code {1}'.format(
-                                container_name,
-                                delete_response.status_code))
+            self._log.debug("force delete failure {0} status {1}".format(
+                container_name,
+                delete_response.status_code))
+            self._log_cleanup_failure(container_name)
 
     @behavior(ObjectStorageAPIClient)
     def force_delete_containers(self, container_list,
@@ -916,3 +923,25 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         return {'target_url': url, 'headers': post_headers,
                 'body': ''.join(data)}
+
+    def _log_cleanup_failure(self, container_name):
+        """
+        @summary: This method will create a failure object in a failure
+        container, so that it can be cleaned up separately. The failure
+        object's data will be the container that failed to clean up properly
+        during testing.
+
+        @param container_name: Name of container that failed to clean up.
+        @type container_name: string
+        """
+        # Create a unique failure log name
+        failure_log_name = "cleanup_failure_{0}_{1}".format(
+            datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'),
+            str(uuid.uuid4()).replace('-', ''))
+
+        # Create an object in the failure container with the data being the
+        # container that was not cleaned up properly
+        self.create_object(
+            container_name=self.config.cleanup_failure_container_name,
+            object_name=failure_log_name,
+            data=container_name)
