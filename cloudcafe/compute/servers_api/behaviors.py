@@ -540,6 +540,8 @@ class ServerBehaviors(BaseComputeBehavior):
                 linux_client import LinuxClient
             client = LinuxClient
 
+        if 'coreos' in image.metadata.get("os_distro", '').lower():
+            username = username or 'core'
         user = username or self.images_config.primary_image_default_user
         strategy = auth_strategy or self.config.instance_auth_strategy.lower()
 
