@@ -33,9 +33,12 @@ class SecurityGroupsResponseCodes(NeutronResponseCodes):
 
 class SecurityGroupsErrorTypes(NeutronErrorTypes):
     """Security Groups Error Types"""
+    EGRESS_SECURITY_GROUP_RULES_NOT_ENABLED = (
+        'EgressSecurityGroupRulesNotEnabled')
     INVALID_INPUT = 'InvalidInput'
     SECURITY_GROUP_INVALID_ICMP_VALUE = 'SecurityGroupInvalidIcmpValue'
     SECURITY_GROUP_INVALID_PORT_VALUE = 'SecurityGroupInvalidPortValue'
+    SECURITY_GROUP_MISSING_ICMP_TYPE = 'SecurityGroupMissingIcmpType'
     SECURITY_GROUP_NOT_FOUND = 'SecurityGroupNotFound'
     SECURITY_GROUP_PROTOCOL_REQUIRED_WITH_PORTS = (
         'SecurityGroupProtocolRequiredWithPorts')
