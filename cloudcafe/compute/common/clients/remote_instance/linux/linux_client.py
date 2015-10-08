@@ -404,6 +404,24 @@ class LinuxClient(RemoteInstanceClient):
             disks[disk_name] = size
         return disks
 
+    def get_mounted_disks(self):
+        """
+        Returns a list of all mounted devices for a server.
+
+        @return: The accessible mounted devices
+        @rtype: list
+        """
+
+        disks_raw = self.ssh_client.execute_command('df -h')
+        if disks_raw is None:
+            return None
+        disks_raw = disks_raw.stdout
+        print disks_raw
+        p = re.compile('/mnt/')
+        disks_list = p.findall(disks_raw)
+        print disks_list
+        return disks_list
+
     def get_all_disk_details(self):
         """
         Returns a list of dictionaries, each containing the name,
