@@ -400,7 +400,7 @@ class LinuxClient(RemoteInstanceClient):
         for disk in disks_list:
             items = disk.split()
             disk_name = items[1].replace(':', '')
-            size = int(items[4])/(1 << 30)
+            size = int(items[4]) / (10 ** 9)
             disks[disk_name] = size
         return disks
 
