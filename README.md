@@ -19,9 +19,9 @@ CloudCAFE, An Open CAFE Implementation for OpenStack
 = An Open CAFE Implementation =
 </pre>
 
-CloudCAFE is an implementation of the [Open CAFE Framework](https://github.com/stackforge/opencafe) specifically
+CloudCAFE is an implementation of the [Open CAFE Framework](https://github.com/openstack/opencafe) specifically
 designed to test deployed versions of [OpenStack](http://http://www.openstack.org/). It is built using the
-[Open CAFE Core](https://github.com/stackforge/opencafe).
+[Open CAFE Core](https://github.com/openstack/opencafe).
 
 
 Supported Operating Systems
@@ -35,7 +35,7 @@ Installation
 CloudCAFE can be [installed with pip](https://pypi.python.org/pypi/pip) from the git repository after it is cloned to
 a local machine.
 
-* First follow the README instructions to install [Open CAFE Core](https://github.com/stackforge/opencafe).
+* First follow the README instructions to install [Open CAFE Core](https://github.com/openstack/opencafe).
 * Clone this repository to your local machine.
 * CD to the cloned cloudcafe repository directory.
 * Run `pip install . --upgrade` so that pip will auto-install all other dependencies.
@@ -43,7 +43,7 @@ a local machine.
 
 Configuration
 --------------
-CloudCAFE works in tandem with the [Open CAFE Core](https://github.com/stackforge/opencafe) cafe-runner. This
+CloudCAFE works in tandem with the [Open CAFE Core](https://github.com/openstack/opencafe) cafe-runner. This
 installation of CloudCAFE includes a reference configuration for each of the CloudCAFE supported OpenStack products.
 Configurations will be installed to `<USER_HOME>/.cloudcafe/configs/<PRODUCT>`.
 
@@ -57,7 +57,7 @@ are ready to:
 
    *or...*
 
-2. Install the [CloudRoast Test Repository](https://github.com/stackforge/cloudroast), an open source body of
+2. Install the [CloudRoast Test Repository](https://github.com/openstack/cloudroast), an open source body of
    OpenStack automated tests written with CloudCAFE that can be executed or extended.
 
 
