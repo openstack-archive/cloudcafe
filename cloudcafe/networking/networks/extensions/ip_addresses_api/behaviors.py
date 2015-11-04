@@ -222,6 +222,14 @@ class IPAddressesBehaviors(NetworkingBaseBehaviors):
         @return: failed deletes list with IP Address IDs and failures
         @rtype: list(dict)
         """
+
+        # If IP address list not given, deleting all shared IPs
+        if not ip_address_list:
+            resp = self.list_ip_addresses(type_='shared', raise_exception=True)
+            shared_ips = resp.response.entity
+            ip_address_list = self.get_id_list_from_entity_list(
+                entity_list=shared_ips)
+
         result = self._delete_resources(
             resource=self.ip_address_resource,
             resource_list=ip_address_list,

@@ -33,7 +33,9 @@ class IPAddressesResponseCodes(NeutronResponseCodes):
 
     LIST_IP_ADDRESSES = 200
     GET_IP_ADDRESS = 200
-    CREATE_IP_ADDRESS = 201
+
+    # Using HTTP 200 instead of 201 till NCP-1577 is fixed
+    CREATE_IP_ADDRESS = 200
     UPDATE_IP_ADDRESS = 200
     DELETE_IP_ADDRESS = 204
 
@@ -42,3 +44,14 @@ class IPAddressesErrorTypes(NeutronErrorTypes):
     """IP Address Error Types"""
 
     IP_ADDRESS_NOT_FOUND = 'IPAddressNotFound'
+
+
+class IPAddressesServerZone(object):
+    """
+    Scheduler hint keys for targeting the same or different cell/host for
+    server builds
+    """
+
+    PUBLIC_IP_ZONE_NEAR = 'public_ip_zone:near'
+    PUBLIC_IP_ZONE_FAR = 'public_ip_zone:far'
+    DIFFERENT_HOST = 'different_host'
