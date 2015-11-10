@@ -28,6 +28,7 @@ from cloudcafe.extensions.saio_tempauth.v1_0.client import \
 from cloudcafe.extensions.saio_tempauth.v1_0.behaviors import \
     TempauthAPI_Behaviors as SaioAuthAPI_Behaviors
 from cloudcafe.identity.v2_0.behaviors import IdentityServiceBehaviors
+from cloudcafe.identity.v3.workaround import IdentityV3Behavior
 
 
 class MemoizedAuthServiceCompositeException(Exception):
@@ -78,6 +79,13 @@ class MemoizedAuthServiceComposite(object):
 
     @classmethod
     @memoized
+    def get_keystone_v3_access_data(
+            cls, username, password, auth_endpoint):
+        return IdentityV3Behavior.get_access_data(
+            username, password, auth_endpoint)
+
+    @classmethod
+    @memoized
     def get_saio_tempauth_access_data(
             cls, username, password, auth_endpoint):
         client = SaioAuthAPI_Client(auth_endpoint)
@@ -90,6 +98,11 @@ class MemoizedAuthServiceComposite(object):
             return self.get_keystone_access_data(
                 self.user_config.username, self.user_config.password,
                 self.user_config.tenant_name,
+                self.endpoint_config.auth_endpoint)
+
+        elif self.auth_strategy == "keystone_v3":
+            return self.get_keystone_v3_access_data(
+                self.user_config.username, self.user_config.password,
                 self.endpoint_config.auth_endpoint)
 
         elif self.auth_strategy == 'rax_auth':
@@ -155,6 +168,11 @@ class AuthProvider(object):
             return IdentityServiceBehaviors.get_access_data(
                 user_config.username, user_config.password,
                 user_config.tenant_name, endpoint_config.auth_endpoint)
+
+        elif endpoint_config.strategy.lower() == 'keystone_v3':
+            return IdentityV3Behavior.get_access_data(
+                user_config.username, user_config.password,
+                endpoint_config.auth_endpoint)
 
         elif endpoint_config.strategy.lower() == 'rax_auth':
             token_client = RaxTokenAPI_Client(
