@@ -24,7 +24,8 @@ class Secret(AutoMarshallingModel):
     def __init__(self, name=None, expiration=None, algorithm=None,
                  bit_length=None, mode=None, payload_content_type=None,
                  payload=None, content_types=None,
-                 payload_content_encoding=None):
+                 payload_content_encoding=None, secret_type=None,
+                 creator_id=None):
         super(Secret, self).__init__()
 
         self.name = name
@@ -36,6 +37,8 @@ class Secret(AutoMarshallingModel):
         self.payload = payload
         self.content_types = content_types
         self.payload_content_encoding = payload_content_encoding
+        self.secret_type = secret_type
+        self.creator_id = creator_id
 
     def _obj_to_json(self):
         return dict_to_str(self._obj_to_dict())
@@ -64,6 +67,10 @@ class Secret(AutoMarshallingModel):
         if self.payload_content_encoding is not None:
             converted['payload_content_encoding'] = \
                 self.payload_content_encoding
+        if self.secret_type is not None:
+            converted['secret_type'] = self.secret_type
+        if self.creator_id is not None:
+            converted['creator_id'] = self.creator_id
 
         return converted
 
@@ -83,12 +90,14 @@ class SecretMetadata(Secret):
     def __init__(self, name, expiration, algorithm, bit_length, mode,
                  payload_content_type=None, payload=None, status=None,
                  updated=None, created=None, secret_ref=None,
-                 content_types=None, content_encodings=None):
+                 content_types=None, content_encodings=None, secret_type=None,
+                 creator_id=None):
         super(SecretMetadata, self).__init__(name, expiration, algorithm,
                                              bit_length, mode,
                                              payload_content_type,
                                              payload, content_types,
-                                             content_encodings)
+                                             content_encodings, secret_type,
+                                             creator_id)
         self.status = status
         self.updated = updated
         self.created = created
