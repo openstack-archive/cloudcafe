@@ -100,6 +100,7 @@ class NeutronErrorTypes(object):
     POLICY_NOT_AUTHORIZED = 'PolicyNotAuthorized'
     PORT_NOT_FOUND = 'PortNotFound'
     SECURITY_GROUPS_NOT_IMPLEMENTED = 'SecurityGroupsNotImplemented'
+    SECURITY_GROUPS_REQUIRE_DEVICE = 'SecurityGroupsRequireDevice'
     SUBNET_NOT_FOUND = 'SubnetNotFound'
     TENANT_NETWORK_SECURITY_GROUP_RULES_NOT_ENABLED = (
         'TenantNetworkSecurityGroupRulesNotEnabled')
@@ -110,6 +111,7 @@ class ComputeResponseCodes(object):
 
     NOT_FOUND = 404
     SERVER_GET = 200
+    CREATE_KEYPAIR = 200
 
 
 class ComputeStatus(NovaServerStatusTypes):
