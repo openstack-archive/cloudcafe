@@ -15,7 +15,9 @@ limitations under the License.
 """
 
 import json
+import six
 import xml.etree.ElementTree as ET
+
 
 from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.compute.common.constants import Constants
@@ -78,7 +80,7 @@ class CreateSecurityGroupRule(AutoMarshallingModel):
         """
         xml = Constants.XML_HEADER
         element = ET.Element('security_group_rule')
-        for key, value in self.__dict__.iteritems():
+        for key, value in six.iteritems(self.__dict__):
             child = ET.Element(key)
             child.text = str(value)
             element.append(child)

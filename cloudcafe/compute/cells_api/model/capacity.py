@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import six
+
+
 from cafe.engine.models.base import AutoMarshallingModel
 
 
@@ -48,7 +51,7 @@ class CellCapacity(AutoMarshallingModel):
         @rtype: CellCapacity.
          """
         units = []
-        for key, value in capacity_dict.get("units_by_mb").iteritems():
+        for key, value in six.iteritems(capacity_dict.get("units_by_mb")):
             units.append(Unit._dict_to_obj({'mb': key, 'unit': value}))
         return CellCapacity(capacity_dict.get('total_mb'), units)
 

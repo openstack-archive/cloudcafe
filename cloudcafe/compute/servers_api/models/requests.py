@@ -16,6 +16,7 @@ limitations under the License.
 
 import json
 import xml.etree.ElementTree as ET
+import six
 
 from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.compute.common.constants import Constants
@@ -126,7 +127,7 @@ class CreateServer(AutoMarshallingModel):
             element.set('config_drive', self.config_drive)
         if self.scheduler_hints is not None:
             hints_ele = ET.Element('OS-SCH-HNT:scheduler_hints')
-            for key, value in self.metadata.iteritems():
+            for key, value in six.iteritems(self.metadata):
                 meta_element = ET.Element(key)
                 meta_element.text = value
                 hints_ele.append(meta_element)

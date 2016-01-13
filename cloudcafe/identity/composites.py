@@ -2,6 +2,7 @@ import cloudcafe.identity as lib_pt
 import fnmatch
 import importlib
 import os
+import six
 
 from cloudcafe.identity.common.client import BaseIdentityAPIClient
 from cloudcafe.identity.config import IdentityConfig
@@ -59,7 +60,7 @@ class IdentityBaseComposite(object):
         # get_modules_within will get the __init__.py's from the
         # subdirectories. It then loads those and gets the client or behavior
         # that is set within the __init__.py
-        for name, module in self.get_modules_within(lib_pt).iteritems():
+        for name, module in six.iteritems(self.get_modules_within(lib_pt)):
             module_path = "{path}.{module}".format(
                 path=lib_pt.__name__, module=module)
             module = module.replace("{0}.common.".format(self.version), "")
