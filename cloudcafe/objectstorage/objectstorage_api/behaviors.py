@@ -632,13 +632,77 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
     @behavior(ObjectStorageAPIClient)
     def get_tempurl_key(self):
         """
-        Returns the TempURL key for the account
-        """
-        response = self.authed_request(method='HEAD')
-        if 'x-account-meta-temp-url-key' not in response.headers:
-            return None
+        @summary: Check to see if the account currently has tempurl keys set
+        and return the first tempurl key if so. Otherwise, attempt to set the
+        keys to a default state and return the first tempurl key.
 
-        return response.headers['x-account-meta-temp-url-key']
+        @return Account tempurl key
+        @rtype String
+        """
+        acct_temp_keys_set = self.check_account_tempurl_keys()
+        if acct_temp_keys_set:
+            metadata_response = self.client.get_account_metadata()
+        else:
+            self.set_default_account_tempurl_keys()
+            metadata_response = self.client.get_account_metadata()
+
+        return metadata_response.headers.get("X-Account-Meta-Temp-Url-Key")
+
+    @behavior(ObjectStorageAPIClient)
+    def check_account_tempurl_keys(self):
+        """
+        Check the current account tempurl keys to ensure that they exist.
+        If they don't exist, call set_default_account_tempurl_keys() to set
+        the account keys to default values. Then recursively check the keys
+        again to make sure they are properly set.
+
+        @return: True/False
+        @rtype:  Boolean
+        """
+        metadata_response = self.client.get_account_metadata()
+
+        current_key_one = metadata_response.headers.get(
+            'x-account-meta-temp-url-key')
+        current_key_two = metadata_response.headers.get(
+            'x-account-meta-temp-url-key-2')
+
+        if current_key_one and current_key_two:
+            return True
+        else:
+            self.set_default_account_tempurl_keys()
+
+            metadata_response = self.client.get_account_metadata()
+            if not metadata_response.headers.get(
+                    'X-Account-Meta-Temp-URL-Key'):
+                return False
+            if not metadata_response.headers.get(
+                    'X-Account-Meta-Temp-URL-Key-2'):
+                return False
+
+    @behavior(ObjectStorageAPIClient)
+    def set_default_account_tempurl_keys(self):
+        """
+        Set the account tempurl keys to default values based on the constant
+        VALID_TEMPURL_KEY. This function will throw exceptions if either key
+        fails to be set.
+        """
+        # Set tempurl key one to default value
+        key_one = '{0}_one'.format(self.VALID_TEMPURL_KEY)
+        key_one_headers = {'X-Account-Meta-Temp-URL-Key': key_one}
+        key_one_response = self.client.set_temp_url_key(
+            headers=key_one_headers)
+
+        if not key_one_response.ok:
+            raise Exception('Could not set TempURL key one.')
+
+        # Set tempurl key two to default value
+        key_two = '{0}_two'.format(self.VALID_TEMPURL_KEY)
+        key_two_headers = {'X-Account-Meta-Temp-URL-Key-2': key_two}
+        key_two_response = self.client.set_temp_url_key(
+            headers=key_two_headers)
+
+        if not key_two_response.ok:
+            raise Exception('Could not set TempURL key two.')
 
     @behavior(ObjectStorageAPIClient)
     def _purge_container(self, container_name, max_recursion, call_count=1,
@@ -729,62 +793,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         for container_name in container_list:
             self.force_delete_container(
                 container_name, requestslib_kwargs=requestslib_kwargs)
-
-    @behavior(ObjectStorageAPIClient)
-    def check_account_tempurl_keys(self):
-        """
-        Check the current account tempurl keys to ensure that they exist.
-        If they don't exist, call set_default_account_tempurl_keys() to set
-        the account keys to default values. Then recursively check the keys
-        again to make sure they are properly set.
-
-        @return: True/False
-        @rtype:  Boolean
-        """
-        metadata_response = self.client.get_account_metadata()
-
-        current_key_one = metadata_response.headers.get(
-            'x-account-meta-temp-url-key')
-        current_key_two = metadata_response.headers.get(
-            'x-account-meta-temp-url-key-2')
-
-        if current_key_one and current_key_two:
-            return True
-        else:
-            self.set_default_account_tempurl_keys()
-
-            metadata_response = self.client.get_account_metadata()
-            if not metadata_response.headers.get(
-                    'X-Account-Meta-Temp-URL-Key'):
-                return False
-            if not metadata_response.headers.get(
-                    'X-Account-Meta-Temp-URL-Key-2'):
-                return False
-
-    @behavior(ObjectStorageAPIClient)
-    def set_default_account_tempurl_keys(self):
-        """
-        Set the account tempurl keys to default values based on the constant
-        VALID_TEMPURL_KEY. This function will throw exceptions if either key
-        fails to be set.
-        """
-        # Set tempurl key one to default value
-        key_one = '{0}_one'.format(self.VALID_TEMPURL_KEY)
-        key_one_headers = {'X-Account-Meta-Temp-URL-Key': key_one}
-        key_one_response = self.client.set_temp_url_key(
-            headers=key_one_headers)
-
-        if not key_one_response.ok:
-            raise Exception('Could not set TempURL key one.')
-
-        # Set tempurl key two to default value
-        key_two = '{0}_two'.format(self.VALID_TEMPURL_KEY)
-        key_two_headers = {'X-Account-Meta-Temp-URL-Key-2': key_two}
-        key_two_response = self.client.set_temp_url_key(
-            headers=key_two_headers)
-
-        if not key_two_response.ok:
-            raise Exception('Could not set TempURL key two.')
 
     def create_formpost(self, container, files, object_prefix='',
                         redirect='http://example.com/formpost',
