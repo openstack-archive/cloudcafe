@@ -42,5 +42,7 @@ class SecurityGroupsErrorTypes(NeutronErrorTypes):
     SECURITY_GROUP_NOT_FOUND = 'SecurityGroupNotFound'
     SECURITY_GROUP_PROTOCOL_REQUIRED_WITH_PORTS = (
         'SecurityGroupProtocolRequiredWithPorts')
+    SECURITY_GROUP_RULE_INVALID_ETHERTYPE = (
+        'SecurityGroupRuleInvalidEtherType')
     SECURITY_GROUP_RULE_INVALID_PROTOCOL = 'SecurityGroupRuleInvalidProtocol'
     SECURITY_GROUP_RULE_NOT_FOUND = 'SecurityGroupRuleNotFound'
