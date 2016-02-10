@@ -252,6 +252,16 @@ class LinuxClient(RemoteInstanceClient):
         if output:
             return output.rstrip('\n') == 'File exists'
 
+    def delete_file(self, file_path):
+        """
+        Deletes the file.
+        @param file_path: Path to the file
+        @type file_path: string
+        """
+
+        command = 'rm {file_path}'.format(file_path=file_path)
+        self.ssh_client.execute_command(command)
+
     def generate_mountpoint(self, prefix=None):
         """
         Generates a string to use as a path for mounting drives on the

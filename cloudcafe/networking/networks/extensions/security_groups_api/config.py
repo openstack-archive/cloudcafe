@@ -33,7 +33,7 @@ class SecurityGroupsConfig(NetworkingBaseConfig):
         Expected time in seconds for the data plane to apply a security
         group to a port
         """
-        return int(self.get("data_plane_delay", 60))
+        return int(self.get("data_plane_delay", 35))
 
     @property
     def max_secgroups_per_port(self):
