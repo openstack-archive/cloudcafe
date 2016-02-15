@@ -184,7 +184,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         parts.append(str(uuid.uuid4()).replace('-', ''))
         return '_'.join(parts)
 
-    @behavior(ObjectStorageAPIClient)
     def get_swift_info(self):
         """
         Returns a dictionary of info requested from swift.
@@ -250,7 +249,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         return ' '.join(features)
 
-    @behavior(ObjectStorageAPIClient)
     def container_exists(self, name=None):
         path = '/{0}'.format(name)
         response = self.request('HEAD', path)
@@ -265,7 +263,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         return True
 
-    @behavior(ObjectStorageAPIClient)
     def create_container(self, container_name, log_delivery=False,
                          headers=None):
 
@@ -280,7 +277,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             raise Exception(
                 'could not create container "{0}"'.format(str(container_name)))
 
-    @behavior(ObjectStorageAPIClient)
     def list_containers(self, headers=None, params=None,
                         expected_containers=None, requestslib_kwargs=None):
         """
@@ -323,7 +319,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             max_retries=10)
         return response.entity
 
-    @behavior(ObjectStorageAPIClient)
     def create_object(self, container_name, object_name, data=None,
                       headers=None, params=None):
         if not self.container_exists(container_name):
@@ -345,7 +340,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             raise Exception('could not create object "{0}/{1}"'.format(
                 container_name, object_name))
 
-    @behavior(ObjectStorageAPIClient)
     def create_static_large_object(self, container_name, object_name,
                                    segments_info=None, manifest=None,
                                    headers=None):
@@ -443,7 +437,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
             return manifest_response
 
-    @behavior(ObjectStorageAPIClient)
     def decompress_object(self, container_name, object_name,
                           headers=None, params=None, stream=False,
                           requestslib_kwargs=None):
@@ -481,7 +474,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         return uncompressed_data
 
-    @behavior(ObjectStorageAPIClient)
     def request(self, method=None, path='', **kwargs):
         """
         Make a HTTP request against the client's acccount.  This request
@@ -507,7 +499,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         return response
 
-    @behavior(ObjectStorageAPIClient)
     def get_object_count(self, container_name, headers=None, params=None,
                          expected_object_count=None, requestslib_kwargs=None):
         """
@@ -549,7 +540,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         return int(response.headers.get('x-container-object-count'))
 
-    @behavior(ObjectStorageAPIClient)
     def list_objects(self, container_name, headers=None, params=None,
                      expected_objects=None, requestslib_kwargs=None):
         """
@@ -595,7 +585,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             max_retries=10)
         return response.entity
 
-    @behavior(ObjectStorageAPIClient)
     def authed_request(self, method=None, path='', **kwargs):
         """
         Same as request, except the auth token is automatically added to
@@ -629,7 +618,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
 
         return response
 
-    @behavior(ObjectStorageAPIClient)
     def get_tempurl_key(self):
         """
         @summary: Check to see if the account currently has tempurl keys set
@@ -679,7 +667,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                     'X-Account-Meta-Temp-URL-Key-2'):
                 return False
 
-    @behavior(ObjectStorageAPIClient)
     def set_default_account_tempurl_keys(self):
         """
         Set the account tempurl keys to default values based on the constant
@@ -704,7 +691,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         if not key_two_response.ok:
             raise Exception('Could not set TempURL key two.')
 
-    @behavior(ObjectStorageAPIClient)
     def _purge_container(self, container_name, max_recursion, call_count=1,
                          requestslib_kwargs=None):
         """
@@ -747,7 +733,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                                       call_count=call_count + 1,
                                       requestslib_kwargs=requestslib_kwargs)
 
-    @behavior(ObjectStorageAPIClient)
     def force_delete_container(self, container_name,
                                requestslib_kwargs=None):
         """
@@ -781,7 +766,6 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                 delete_response.status_code))
             self._log_cleanup_failure(container_name)
 
-    @behavior(ObjectStorageAPIClient)
     def force_delete_containers(self, container_list,
                                 requestslib_kwargs=None):
         """
