@@ -22,6 +22,7 @@ from cafe.engine.models.base \
 
 COMMON_ROOT_TAG = 'floatingip'
 
+
 class ModelConstraints(object):
     PUBLIC_NET_UUID = '00000000-0000-0000-0000-000000000000'
 

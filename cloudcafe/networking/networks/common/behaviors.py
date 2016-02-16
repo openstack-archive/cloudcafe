@@ -24,8 +24,8 @@ from cloudcafe.networking.networks.common.constants \
     import NeutronResponseCodes, NeutronResource
 from cloudcafe.networking.networks.common.exceptions \
     import ResourceBuildException, ResourceDeleteException, \
-        ResourceGetException, ResourceListException, ResourceUpdateException, \
-        UnhandledMethodCaseException
+    ResourceGetException, ResourceListException, ResourceUpdateException, \
+    UnhandledMethodCaseException
 
 
 class NetworkingBaseBehaviors(BaseBehavior):
@@ -81,11 +81,15 @@ class NetworkingBaseBehaviors(BaseBehavior):
             response_msg = None
 
         elif not resp.ok or resp.status_code != status_code:
-            err_msg = ('{label} {message}: {status} {reason} '
+            err_msg = (
+                '{label} {message}: {status} {reason} '
                 '{content}. Expected status code {expected_status}').format(
-                label=label, message=message, status=resp.status_code,
-                reason=resp.reason, content=resp.content,
-                expected_status=status_code)
+                    label=label,
+                    message=message,
+                    status=resp.status_code,
+                    reason=resp.reason,
+                    content=resp.content,
+                    expected_status=status_code)
             self._log.error(err_msg)
             response_msg = err_msg
         elif not resp.entity:
@@ -227,7 +231,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         # If has_name is False name can be used as a reference for log messages
         name = attrs_kwargs.get('name')
-        if has_name == True:
+        if has_name is True:
             if name is None:
                 name = rand_name(self.config.starts_with_name)
             elif not use_exact_name:
@@ -240,7 +244,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_build_attempts = (resource_build_attempts or
-            self.config.api_retries)
+                                   self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_create_timeout
@@ -250,9 +254,10 @@ class NetworkingBaseBehaviors(BaseBehavior):
         for attempt in range(resource_build_attempts):
             self._log.debug(
                 'Attempt {attempt_n} of {attempts} creating '
-                '{resource_type}'.format(attempt_n=attempt + 1,
-                                       attempts=resource_build_attempts,
-                                       resource_type=resource_type))
+                '{resource_type}'.format(
+                    attempt_n=attempt + 1,
+                    attempts=resource_build_attempts,
+                    resource_type=resource_type))
 
             # Method uses resource type in singular form (slicing the ending s)
             create_fn_name = 'create_{0}'.format(resource_type)
@@ -332,7 +337,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_update_attempts = (resource_update_attempts or
-            self.config.api_retries)
+                                    self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_update_timeout
@@ -431,7 +436,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_get_attempts = (resource_get_attempts or
-            self.config.api_retries)
+                                 self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_get_timeout
@@ -469,9 +474,11 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
             response_code = get_fn_name.upper()
             status_code = getattr(self.response_codes, response_code)
-            resp_check = self.check_response(resp=resp,
+            resp_check = self.check_response(
+                resp=resp,
                 status_code=status_code,
-                label=resource_id, message=err_msg)
+                label=resource_id,
+                message=err_msg)
 
             result.response = resp
             if not resp_check:
@@ -526,7 +533,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_list_attempts = (resource_list_attempts or
-            self.config.api_retries)
+                                  self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_get_timeout
@@ -613,7 +620,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
 
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_delete_attempts = (resource_delete_attempts or
-            self.config.api_retries)
+                                    self.config.api_retries)
         use_over_limit_retry = (use_over_limit_retry or
                                 self.config.use_over_limit_retry)
         timeout = timeout or self.config.resource_get_timeout
@@ -808,7 +815,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
                 return None
             time.sleep(poll_interval)
 
-        err_msg = ('Unable to delete {resource_id} {resource_type} within a '
+        err_msg = (
+            'Unable to delete {resource_id} {resource_type} within a '
             '{timeout}s timeout').format(resource_id=resource_id,
                                          resource_type=resource_type,
                                          timeout=timeout)

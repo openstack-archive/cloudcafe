@@ -16,7 +16,6 @@ limitations under the License.
 
 import copy
 import json
-import xml.etree.ElementTree as ET
 
 from cafe.engine.models.base import AutoMarshallingListModel, \
     AutoMarshallingModel

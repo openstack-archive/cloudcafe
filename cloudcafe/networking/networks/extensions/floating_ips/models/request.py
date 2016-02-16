@@ -20,6 +20,7 @@ from cafe.engine.models.base import AutoMarshallingModel
 from cloudcafe.networking.networks.extensions.floating_ips.constants \
     import COMMON_ROOT_TAG
 
+
 class FloatingIPRequest(AutoMarshallingModel):
     """
     Model for associating the floating IP with an internal port.
