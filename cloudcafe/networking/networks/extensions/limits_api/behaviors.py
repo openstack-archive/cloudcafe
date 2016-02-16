@@ -50,18 +50,22 @@ class LimitsBehaviors(NetworkingBaseBehaviors):
         """
         poll_interval = poll_interval or self.config.api_poll_interval
         resource_get_attempts = (resource_get_attempts or
-            self.config.api_retries)
+                                 self.config.api_retries)
 
         result = NetworkingResponse()
         err_msg = 'Limits GET failure'
         for attempt in range(resource_get_attempts):
-            self._log.debug('Attempt {0} of {1} with limits GET'.
-                format(attempt + 1, resource_get_attempts))
+            self._log.debug(
+                'Attempt {0} of {1} with limits GET'.format(
+                    attempt + 1,
+                    resource_get_attempts))
 
             resp = self.client.get_limits(page_reverse=page_reverse)
-            resp_check = self.check_response(resp=resp,
+            resp_check = self.check_response(
+                resp=resp,
                 status_code=LimitsResponseCodes.GET_LIMITS,
-                label='', message=err_msg)
+                label='',
+                message=err_msg)
             result.response = resp
 
             # resp_check will have the response failure or None if no failure

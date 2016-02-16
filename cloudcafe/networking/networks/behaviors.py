@@ -366,8 +366,8 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             for server_id in server_id_list:
                 resp = self.compute.servers.client.get_server(server_id)
                 if (resp.status_code == ComputeResponseCodes.SERVER_GET and
-                        resp.entity.status == ComputeStatus.ACTIVE
-                        and server_id in server_id_list):
+                        resp.entity.status == ComputeStatus.ACTIVE and
+                        server_id in server_id_list):
                     server_id_list.remove(server_id)
             if not server_id_list:
                 break
@@ -431,8 +431,8 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         while time.time() < end_time:
             for resource_id in resource_id_list:
                 resp = get_method(resource_id)
-                if (resp.status_code == ComputeResponseCodes.NOT_FOUND
-                        and resource_id in resource_id_list):
+                if (resp.status_code == ComputeResponseCodes.NOT_FOUND and
+                        resource_id in resource_id_list):
                     resource_id_list.remove(resource_id)
             if not resource_id_list:
                 break

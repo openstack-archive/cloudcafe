@@ -409,8 +409,10 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         allocation_pools = []
         for _ in range(num):
             end_increment = start_increment + ip_range
-            allocation_pool = self.get_allocation_pool(cidr=cidr,
-                start_increment=start_increment, end_increment=end_increment)
+            allocation_pool = self.get_allocation_pool(
+                cidr=cidr,
+                start_increment=start_increment,
+                end_increment=end_increment)
             allocation_pools.append(allocation_pool)
             start_increment = end_increment + interval
         return allocation_pools
@@ -583,7 +585,7 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         return result
 
     def get_subnet(self, subnet_id, resource_get_attempts=None,
-                    raise_exception=False, poll_interval=None):
+                   raise_exception=False, poll_interval=None):
         """
         @summary: Shows and verifies a specified subnet
         @param subnet_id: The UUID for the subnet

@@ -19,6 +19,7 @@ import json
 from cafe.engine.models.base \
     import AutoMarshallingListModel, AutoMarshallingModel
 
+
 class NeutronExtension(AutoMarshallingModel):
     def __init__(self, updated, name, links, namespace, alias, description):
         super(NeutronExtension, self).__init__()
