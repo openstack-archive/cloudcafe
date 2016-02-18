@@ -566,10 +566,15 @@ class ObjectStorageAPIClient(HTTPClient):
 
         return response
 
-    def set_temp_url_key(self, headers=None,
+    def set_temp_url_key(self, container_name=None, headers=None,
                          requestslib_kwargs=None):
+        url = self.storage_url
+
+        if container_name:
+            url = "{0}/{1}".format(self.storage_url, container_name)
+
         response = self.post(
-            self.storage_url,
+            url,
             headers=headers,
             requestslib_kwargs=requestslib_kwargs)
 
