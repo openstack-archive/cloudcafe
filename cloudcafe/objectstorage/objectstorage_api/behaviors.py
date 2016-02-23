@@ -43,14 +43,8 @@ class ObjectStorageAPIBehaviorException(Exception):
 class ObjectStorageAPI_Behaviors(BaseBehavior):
     HEADERS_AUTH_TOKEN = 'X-Auth-Token'
 
-    PATH_TYPES_ACCOUNT = 'account'
-    PATH_TYPES_CONTAINER = 'container'
-    PATH_TYPES_OBJECT = 'object'
-
     ERROR_INVALID_PATH = 'path must be supplied as a string.'
     ERROR_INVALID_METHOD = 'method must be supplied as a string.'
-
-    VALID_TEMPURL_KEY = 'qe-tempurl-key'
 
     def __init__(self, client=None, config=None):
         super(ObjectStorageAPI_Behaviors, self).__init__()
