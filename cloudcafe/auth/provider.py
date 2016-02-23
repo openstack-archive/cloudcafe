@@ -89,7 +89,7 @@ class MemoizedAuthServiceComposite(object):
         if self.auth_strategy == 'keystone':
             return self.get_keystone_access_data(
                 self.user_config.username, self.user_config.password,
-                self.user_config.tenant_name,
+                self.user_config.tenant_id,
                 self.endpoint_config.auth_endpoint)
 
         elif self.auth_strategy == 'rax_auth':
