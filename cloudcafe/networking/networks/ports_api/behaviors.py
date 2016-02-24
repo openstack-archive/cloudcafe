@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import netaddr
-import time
 
 from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors
@@ -189,9 +188,9 @@ class PortsBehaviors(NetworkingBaseBehaviors):
         @rtype: common.behaviors.NetworkingResponse
         """
         attrs_kwargs = dict(
-                name=name, admin_state_up=admin_state_up,
-                fixed_ips=fixed_ips, device_id=device_id,
-                device_owner=device_owner, security_groups=security_groups)
+            name=name, admin_state_up=admin_state_up,
+            fixed_ips=fixed_ips, device_id=device_id,
+            device_owner=device_owner, security_groups=security_groups)
 
         result = self._update_resource(
             resource=self.ports_resource,

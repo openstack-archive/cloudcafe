@@ -16,6 +16,7 @@ limitations under the License.
 
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
+
 class NeutronExtensionConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'neutron_extensions'

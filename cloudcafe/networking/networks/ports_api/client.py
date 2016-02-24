@@ -131,9 +131,12 @@ class PortsClient(AutoMarshallingHTTPClient):
         url = '{base_url}/ports/{port_id}'.format(
             base_url=self.url, port_id=port_id)
 
-        request = PortRequest(name=name, admin_state_up=admin_state_up,
-            fixed_ips=fixed_ips, device_id=device_id,
-            device_owner=device_owner, security_groups=security_groups)
+        request = PortRequest(name=name,
+                              admin_state_up=admin_state_up,
+                              fixed_ips=fixed_ips,
+                              device_id=device_id,
+                              device_owner=device_owner,
+                              security_groups=security_groups)
         resp = self.request('PUT', url,
                             response_entity_type=Port,
                             request_entity=request,

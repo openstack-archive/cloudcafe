@@ -1,10 +1,12 @@
 
 COMMON_ROOT_TAG = 'floatingip'
 
+
 class FloatingIPStates(object):
     ACTIVE = 'ACTIVE'
     DOWN = 'DOWN'
     ERROR = 'ERROR'
+
 
 class FLIPResponseCodes(object):
     CREATE_SUCCESS = 201

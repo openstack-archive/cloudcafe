@@ -16,8 +16,7 @@ limitations under the License.
 
 import json
 
-from cafe.engine.models.base import AutoMarshallingListModel, \
-    AutoMarshallingModel
+from cafe.engine.models.base import AutoMarshallingModel
 
 
 class Limits(AutoMarshallingModel):
