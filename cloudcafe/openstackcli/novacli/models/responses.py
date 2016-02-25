@@ -1,6 +1,5 @@
 # Used by models that inherit from an *Extensible* model
 from ast import literal_eval
-from cloudcafe.openstackcli.novacli.models.extensions import extensions
 
 from cloudcafe.openstackcli.common.models.responses import (
     SimplePrettyTableList, SimplePrettyTableListItem,
