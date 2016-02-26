@@ -568,6 +568,10 @@ class ObjectStorageAPIClient(HTTPClient):
 
     def set_temp_url_key(self, container_name=None, headers=None,
                          requestslib_kwargs=None):
+        """
+        optional container name is for setting the tempurl at the container
+        level, otherwise key is set at the account level.
+        """
         url = self.storage_url
 
         if container_name:
