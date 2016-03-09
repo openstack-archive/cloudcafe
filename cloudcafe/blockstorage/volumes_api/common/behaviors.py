@@ -172,6 +172,11 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
     def wait_for_volume_status(
             self, volume_id, expected_status, timeout, poll_rate=None):
+        """ This method can end up polling for the entire timeout if the
+        volume enters a permament unexpected state.
+        It's been included for backwards compatibility only and should
+        generally be avoided.
+        """
 
         verifier = StatusProgressionVerifier(
             'volume', volume_id, self.get_volume_status, volume_id)
@@ -180,8 +185,8 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         verifier.add_state(
             expected_statuses=[expected_status],
             poll_rate=self.config.volume_status_poll_frequency,
-            poll_failure_retry_limit=
-                self.config.volume_status_poll_failure_max_retries)
+            poll_failure_retry_limit=(
+                self.config.volume_status_poll_failure_max_retries))
         verifier.start()
 
     def get_snapshot_info(self, snapshot_id):
@@ -194,6 +199,10 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
 
     def wait_for_snapshot_status(
             self, snapshot_id, expected_status, timeout, poll_rate=None):
+        """ This method can end up polling for the entire timeout if the
+        snapshot enters a permament unexpected state.
+        It's been included for backwards compatibility only and should
+        generally be avoided."""
 
         verifier = StatusProgressionVerifier(
             'snapshot', snapshot_id, self.get_snapshot_status, snapshot_id)
@@ -202,8 +211,8 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
         verifier.add_state(
             expected_statuses=[expected_status],
             poll_rate=self.config.snapshot_status_poll_frequency,
-            poll_failure_retry_limit=
-                self.config.snapshot_status_poll_failure_max_retries)
+            poll_failure_retry_limit=(
+                self.config.snapshot_status_poll_failure_max_retries))
         verifier.start()
 
     def create_available_volume(
@@ -272,15 +281,15 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             acceptable_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
             poll_rate=self.config.volume_status_poll_frequency,
-            poll_failure_retry_limit=
-                self.config.volume_status_poll_failure_max_retries)
+            poll_failure_retry_limit=(
+                self.config.volume_status_poll_failure_max_retries))
 
         verifier.add_state(
             expected_statuses=[self.statuses.Volume.AVAILABLE],
             error_statuses=[self.statuses.Volume.ERROR],
             poll_rate=self.config.volume_status_poll_frequency,
-            poll_failure_retry_limit=
-                self.config.volume_status_poll_failure_max_retries)
+            poll_failure_retry_limit=(
+                self.config.volume_status_poll_failure_max_retries))
 
         verifier.start()
 
@@ -326,12 +335,17 @@ class VolumesAPI_CommonBehaviors(BaseBehavior):
             expected_statuses=[self.statuses.Snapshot.CREATING],
             acceptable_statuses=[self.statuses.Snapshot.AVAILABLE],
             error_statuses=[self.statuses.Snapshot.ERROR],
-            timeout=self.config.snapshot_create_min_timeout, poll_rate=1)
+            timeout=self.config.snapshot_create_min_timeout,
+            poll_rate=self.config.snapshot_status_poll_frequency,
+            poll_failure_retry_limit=(
+                self.config.snapshot_status_poll_failure_max_retries))
         verifier.add_state(
             expected_statuses=[self.statuses.Snapshot.AVAILABLE],
             error_statuses=[self.statuses.Snapshot.ERROR],
             timeout=timeout,
-            poll_rate=self.config.snapshot_status_poll_frequency)
+            poll_rate=self.config.snapshot_status_poll_frequency,
+            poll_failure_retry_limit=(
+                self.config.snapshot_status_poll_failure_max_retries))
         verifier.start()
 
     def list_volume_snapshots(self, volume_id):
