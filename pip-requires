@@ -2,3 +2,4 @@ IPy
 netaddr
 XenAPI
 dateutils
+dnspython
