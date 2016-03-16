@@ -45,7 +45,7 @@ class QuotasClient(AutoMarshallingHTTPClient):
 
     def get_quota(self, tenant_id, requestslib_kwargs=None):
         """
-        @summary: Returns a quota for tennant_id
+        @summary: Returns a quota for tenant_id
         @param: tenant_id: id of tenant
         @type: String
         @return: resp
@@ -60,7 +60,7 @@ class QuotasClient(AutoMarshallingHTTPClient):
 
     def get_default_quota(self, tenant_id, requestslib_kwargs=None):
         """
-        @summary: Returns default quota for tennant_id
+        @summary: Returns default quota for tenant_id
         @param: tenant_id: id of tenant
         @type: String
         @return: resp
