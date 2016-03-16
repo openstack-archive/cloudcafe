@@ -1,5 +1,5 @@
 """
-Copyright 2013 Rackspace
+Copyright 2016 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ class ServersClient(AutoMarshallingHTTPClient):
 
     def list_servers(self, name=None, image=None, flavor=None,
                      status=None, marker=None, limit=None, changes_since=None,
-                     requestslib_kwargs=None):
+                     all_tenants=None, requestslib_kwargs=None):
         """
         @summary: Lists all servers with minimal details. Additionally,
          can filter results by params. Maps to /servers
@@ -81,13 +81,16 @@ class ServersClient(AutoMarshallingHTTPClient):
         @type limit: Int
         @param changes_since: Will only return servers where the updated time
          is later than the changes-since parameter.
+        @param all_tenants: Retrieve servers for all tenants
+        @type all_tenants: Int
         @return: resp
         @rtype: Requests.response
         """
 
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker,
-                  'limit': limit, 'changes-since': changes_since}
+                  'limit': limit, 'changes-since': changes_since,
+                  'all_tenants': all_tenants}
         url = '{base_url}/servers'.format(base_url=self.url)
         resp = self.request('GET', url, params=params,
                             response_entity_type=ServerMins,
@@ -97,7 +100,7 @@ class ServersClient(AutoMarshallingHTTPClient):
     def list_servers_with_detail(self, image=None, flavor=None, name=None,
                                  status=None, marker=None,
                                  limit=None, changes_since=None,
-                                 requestslib_kwargs=None):
+                                 all_tenants=None, requestslib_kwargs=None):
         """
         @summary: Lists all servers with full details. Additionally,
          can filter results by params. Maps to /servers/detail
@@ -113,15 +116,18 @@ class ServersClient(AutoMarshallingHTTPClient):
         @type marker: String
         @param limit: The maximum number of results to return
         @type limit: Int
-        @param changes-since: Will only return servers where the updated time
+        @param changes_since: Will only return servers where the updated time
          is later than the changes-since parameter.
+        @param all_tenants: Retrieve servers for all tenants
+        @type all_tenants: Int
         @return: resp
         @rtype: Requests.response
         """
 
         params = {'image': image, 'flavor': flavor, 'name': name,
                   'status': status, 'marker': marker, 'limit': limit,
-                  'changes-since': changes_since}
+                  'changes-since': changes_since,
+                  'all_tenants': all_tenants}
         url = '{base_url}/servers/detail'.format(base_url=self.url)
         resp = self.request('GET', url, params=params,
                             response_entity_type=Servers,
