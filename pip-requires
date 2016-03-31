@@ -3,3 +3,4 @@ netaddr
 XenAPI
 dateutils
 dnspython
+pexpect
