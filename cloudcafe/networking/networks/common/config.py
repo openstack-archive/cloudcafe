@@ -105,3 +105,13 @@ class NetworkingBaseConfig(ConfigSectionInterface):
     def check_response_attrs(self):
         """Flag to enable checking the response attributes"""
         return self.get_boolean("check_response_attrs", True)
+
+    @property
+    def ping_count(self):
+        """Ping count to be used like: ping -c ping_count"""
+        return int(self.get("ping_count", 3))
+
+    @property
+    def accepted_packet_loss(self):
+        """Accepted packet loss percent for server pings"""
+        return int(self.get("accepted_packet_loss", 0))
