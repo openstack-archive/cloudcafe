@@ -265,3 +265,89 @@ class BaseVolumesClient(AutoMarshallingHTTPClient):
             'GET', url,
             response_entity_type=self.response_models.QuotaSet,
             requestslib_kwargs=requestslib_kwargs)
+
+    # Volume Transfers
+    def create_volume_transfer(
+            self, target_tenant_id, volume_id, name=None,
+            requestslib_kwargs=None):
+        """POST /{target_tenant_id}/os-volume-transfer"""
+
+        url = '{url}/{target_tenant_id}/os-volume-transfer'.format(
+            url=self.url, target_tenant_id=target_tenant_id)
+
+        request_entity = self.request_models.VolumeTransferRequest(
+            volume_id=volume_id, name=name)
+
+        return self.request(
+            'POST', url, request_entity=request_entity,
+            response_entity_type=self.response_models.VolumeTransferResponse,
+            requestslib_kwargs=requestslib_kwargs)
+
+    def list_all_volume_transfers(
+            self, target_tenant_id, requestslib_kwargs=None):
+        """GET /{tenant_id}/os-volume-transfer"""
+
+        url = '{url}/{target_tenant_id}/os-volume-transfer'.format(
+            url=self.url, target_tenant_id=target_tenant_id)
+
+        return self.request(
+            'GET', url,
+            response_entity_type=self.response_models.
+            VolumeTransfersListResponse,
+            requestslib_kwargs=requestslib_kwargs)
+
+    def list_all_volume_transfers_info(
+            self, target_tenant_id, requestslib_kwargs=None):
+        """GET /{tenant_id}/os-volume-transfer/detail"""
+
+        url = '{url}/{target_tenant_id}/os-volume-transfer/detail'.format(
+            url=self.url, target_tenant_id=target_tenant_id)
+
+        return self.request(
+            'GET', url,
+            response_entity_type=self.response_models.
+            VolumeTransfersListDetailedResponse,
+            requestslib_kwargs=requestslib_kwargs)
+
+    def get_volume_transfer(
+            self, target_tenant_id, target_transfer_id,
+            requestslib_kwargs=None):
+        """GET /{tenant_id}/os-volume-transfer/{transfer_id}"""
+
+        url = '{url}/{target_tenant_id}/os-volume-transfer/ \
+        {target_transfer_id}'.format(
+            url=self.url, target_tenant_id=target_tenant_id,
+            target_transfer_id=target_transfer_id)
+
+        return self.request(
+            'GET', url, response_entity_type=self.response_models.
+            VolumeTransferDetailedResponse,
+            requestslib_kwargs=requestslib_kwargs)
+
+    def delete_volume_transfer(
+            self, target_tenant_id, target_transfer_id,
+            requestslib_kwargs=None):
+        """DELETE /{tenant_id}/os-volume-transfer/{transfer_id}"""
+
+        url = '{url}/{target_tenant_id}/os-volume-transfer/ \
+        {target_transfer_id}'.format(
+            url=self.url, target_tenant_id=target_tenant_id,
+            target_transfer_id=target_transfer_id)
+
+        return self.request(
+            'DELETE', url, requestslib_kwargs=requestslib_kwargs)
+
+    def accept_volume_transfer(
+            self, target_tenant_id, target_transfer_id,
+            requestslib_kwargs=None):
+        """POST /{tenant_id}/os-volume-transfer/{transfer_id}/accept"""
+
+        url = '{url}/{target_tenant_id}/os-volume-transfer/ \
+        {target_transfer_id}/accept'.format(
+            url=self.url, target_tenant_id=target_tenant_id,
+            target_transfer_id=target_transfer_id)
+
+        return self.request(
+            'POST', url, response_entity_type=self.response_models.
+            VolumeTransferAcceptResponse,
+            requestslib_kwargs=requestslib_kwargs)

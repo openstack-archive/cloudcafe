@@ -23,7 +23,7 @@ from cloudcafe.blockstorage.volumes_api.common.models.automarshalling import \
 
 # Import common requests
 from cloudcafe.blockstorage.volumes_api.common.models.requests import \
-    StatusResetRequest
+    StatusResetRequest, VolumeTransferRequest
 
 
 class VolumeRequest(CommonModelProperties, AutoMarshallingModel):
