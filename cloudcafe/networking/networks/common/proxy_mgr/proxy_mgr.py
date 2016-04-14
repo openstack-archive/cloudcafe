@@ -43,7 +43,7 @@ class NetworkProxyMgr(PingMixin, SshMixin):
         @param ip_version: Version to use by default, if utilities differ
             across IP versions.
         @param logger: Logging functionality.
-        @param debug: (Boolean) Used for debugging system and mixin utiliies
+        @param debug: (Boolean) Used for debugging system and mixin utilities
 
         @return: None
         """
