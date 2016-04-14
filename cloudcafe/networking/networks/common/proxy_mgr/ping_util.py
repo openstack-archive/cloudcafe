@@ -12,13 +12,14 @@ class PingMixin(object):
     PING_PACKET_LOSS_REGEX = r'\s*(?P<received>\d+)\s+received,'
     LINUX_PROMPT_PATTERN = r'[$#>]\s*$'
 
-    def ping(self, target_ip, count=PING_COUNT, threshold=1):
+    def ping(self, target_ip, count=PING_COUNT, threshold=1, ip_version=4):
         """
         Ping a target IP (using remote proxy or local host)
 
         @param target_ip: IP address to ping
         @param count: Number of echo requests to issue
         @param threshold: Number of echo requests required to determine success
+        @param ip_version: Version of the IP address to ping.
 
         @return: Boolean: Is target online?
 
@@ -27,16 +28,18 @@ class PingMixin(object):
         if self.use_proxy:
             api = self._ping_from_remote_client
 
-        output = api(target_ip, count)
+        output = api(target_ip, count, ip_version=ip_version)
         return self._validate_ping_response(
             ip=target_ip, response=output, threshold=threshold)
 
-    def _ping_from_remote_client(self, target_ip, count=PING_COUNT):
+    def _ping_from_remote_client(
+            self, target_ip, count=PING_COUNT, ip_version=4):
         """ Ping target from a remote host. Connects to the proxy, and then
            pings through proxy connection.
 
         @param target_ip:  The IP address of the target host
         @param count: Number of pings to attempt
+        @param ip_version: Version of the IP address to ping.
 
         @return String of ping cmd output.
 
@@ -46,22 +49,26 @@ class PingMixin(object):
 
         # Execute ping command on remote command
         return self._ping_from_here(
-            target_ip=target_ip, count=count, connection=connection)
+            target_ip=target_ip, count=count, connection=connection,
+            ip_version=ip_version)
 
     def _ping_from_here(
-            self, target_ip, count=PING_COUNT, connection=None):
+            self, target_ip, count=PING_COUNT, connection=None, ip_version=4):
         """
         Ping target from the execution (local) host
 
         @param target_ip:  The IP address of the target
         @param count: Number of pings to attempt
         @param connection: Active pexpect session (from self.connect_to_proxy)
+        @param ip_version: Version of the IP address to ping.
 
         :return: ExecResponse containing data (stdin, stdout, stderr).
 
         """
         # Setup ping command
-        ping_cmd = 'ping -c {count} -v {ip}'.format(ip=target_ip, count=count)
+        ping_version_cmd = 'ping' if ip_version == 4 else 'ping6'
+        ping_cmd = '{ping_version_cmd} -c {count} -v {ip}'.format(
+            ip=target_ip, count=count, ping_version_cmd=ping_version_cmd)
 
         # Build list of potential and expected output
         expectations = OrderedDict([
