@@ -1,7 +1,8 @@
 import warnings
 
 from cloudcafe.auth.provider import MemoizedAuthServiceComposite
-from cloudcafe.blockstorage.config import BlockStorageConfig
+from cloudcafe.blockstorage.config import \
+    BlockStorageConfig, BlockstorageAltUserConfig
 from cloudcafe.blockstorage.volumes_api.common.config import VolumesAPIConfig
 
 from cloudcafe.blockstorage.volumes_api.v1.config import \
@@ -38,10 +39,20 @@ class _BaseVolumesComposite(object):
     _behaviors = None
     _auth = _BlockstorageAuthComposite
 
+    @classmethod
+    def spawn_alt_user_composite(cls):
+        """This will return a new composite of the same version and
+        configuration as the composite this method is being called from,
+        except with the blockstorage_alt_user config info used in place of the
+        default user config.
+        """
+        alt_config = BlockstorageAltUserConfig()
+        return cls(auth_composite=cls._auth(user_config=alt_config))
+
     def __init__(self, auth_composite=None):
         self.auth = auth_composite or self._auth()
         self.config = self._config()
-        self.service_endpoint =  self.auth.public_url
+        self.service_endpoint = self.auth.public_url
         if self.auth.config.service_endpoint_override is not None:
             self.service_endpoint = "{url}/{tenant_id}".format(
                 url=self.auth.config.service_endpoint_override,
@@ -78,7 +89,7 @@ class VolumesV2Composite(_BaseVolumesComposite):
 
 
 class VolumesAutoComposite(object):
-    def __new__(cls, auth_composite=None):
+    def __new__(cls, auth_composite=None, version_under_test=None):
         config = VolumesAPIConfig()
         if config.version_under_test == "1":
             return VolumesV1Composite(auth_composite=auth_composite)

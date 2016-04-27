@@ -14,7 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from cloudcafe.auth.config import UserAuthConfig as _UserAuthConfig
 from cloudcafe.common.models.configuration import ConfigSectionInterface
+
+
+class BlockstorageAltUserConfig(_UserAuthConfig):
+    SECTION_NAME = 'blockstorage_alt_user'
 
 
 class BlockStorageConfig(ConfigSectionInterface):

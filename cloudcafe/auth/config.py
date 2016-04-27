@@ -37,6 +37,7 @@ class UserAuthConfig(ConfigSectionInterface):
         """
         return self.get("strategy")
 
+
 class UserConfig(ConfigSectionInterface):
 
     SECTION_NAME = 'user'
