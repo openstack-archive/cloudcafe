@@ -18,6 +18,11 @@ class MissingCredentials(SshUnableToConnect):
     MSG = 'Missing credentials to connect to: {ip} (Type: {t_type})'
 
 
+class ConnectionNotFound(Exception):
+    def __str__(self):
+        return 'No open pexpect connection was provided.'
+
+
 class SshResponse(object):
     str_concat = '{0!s}\n{1!s}'
 
@@ -370,6 +375,32 @@ class SshMixin(object):
 
         # Broke from loop, return all received output...
         self.last_response = response_obj
+        return response_obj
+
+    def execute_cmds_via_open_connection(
+            self, connection, cmds, response_obj=None, close_conn=False):
+        """
+        Execute the list of commands on the open connection
+
+        @param connection: Open pexpect connection
+        @param cmds: list of commands to execute
+        @param response_obj: The SSH Response object; instantiated if !provided
+        @param close_conn: (Boolean), Close the connection when done?
+        @return: Populated response object
+        """
+
+        if connection is None:
+            raise ConnectionNotFound()
+
+        if response_obj is None:
+            response_obj = SshResponse()
+            response_obj.connection = connection
+
+        args = {'response_obj': response_obj, 'cmds': cmds}
+
+        response_obj = self._cmds_via_open_connection(**args)
+        if close_conn:
+            self.close_connections(response_obj)
         return response_obj
 
     def _cmds_via_open_connection(self, response_obj, cmds):
