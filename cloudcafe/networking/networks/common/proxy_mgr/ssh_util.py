@@ -134,7 +134,7 @@ class SshMixin(object):
     def ssh_to_target(
             self, target_ip=None, user=None, password=None, cmds=None,
             proxy_user=None, proxy_pswd=None, proxy_ip=None,
-            close_when_done=True, response_obj=None):
+            close_when_done=True, response_obj=None, cmd_timeout=None):
         """
         SSH to the target host from the specified host. If target_ip is not
         specified, the response_obj with an open connection must be provided.
@@ -166,6 +166,7 @@ class SshMixin(object):
             object.
         :param response_obj: Provided SshResponse Object a for open
             connection to pass cmds to...
+        :param cmd_timeout: Timeout per command. Default = 30s (as per pexpect)
 
         :return: SSH Response object
         """
@@ -232,7 +233,10 @@ class SshMixin(object):
 
         # If there are commands to execute
         if cmds is not None:
-            response_obj = self._cmds_via_open_connection(response_obj, cmds)
+            args = {'response_obj': response_obj, 'cmds': cmds}
+            if cmd_timeout is not None:
+                args['timeout'] = cmd_timeout
+            response_obj = self._cmds_via_open_connection(**args)
 
         self.last_response = response_obj
 
@@ -378,7 +382,8 @@ class SshMixin(object):
         return response_obj
 
     def execute_cmds_via_open_connection(
-            self, connection, cmds, response_obj=None, close_conn=False):
+            self, connection, cmds, response_obj=None, close_conn=False,
+            timeout=None):
         """
         Execute the list of commands on the open connection
 
@@ -386,6 +391,7 @@ class SshMixin(object):
         @param cmds: list of commands to execute
         @param response_obj: The SSH Response object; instantiated if !provided
         @param close_conn: (Boolean), Close the connection when done?
+        @param timeout: (int) Max number of seconds to wait per command
         @return: Populated response object
         """
 
@@ -397,19 +403,23 @@ class SshMixin(object):
             response_obj.connection = connection
 
         args = {'response_obj': response_obj, 'cmds': cmds}
+        if timeout is not None:
+            args['timeout'] = timeout
 
         response_obj = self._cmds_via_open_connection(**args)
         if close_conn:
             self.close_connections(response_obj)
         return response_obj
 
-    def _cmds_via_open_connection(self, response_obj, cmds):
+    def _cmds_via_open_connection(self, response_obj, cmds, timeout=30):
         """
         SSH from the local host using pexpect.
 
         @param response_obj: Populated SshResponse Obj
         @param cmds: Ordered Dict of commands to execute on the host to
                 validate connection
+        @param timeout: Amount of time allowed per cmd (default: 30s, which
+                is the default for pexpect)
 
         @return: SshResponse Obj
 
@@ -432,7 +442,8 @@ class SshMixin(object):
 
                 # Watch connection for potential and expected output.
                 try:
-                    response = ssh_process.expect(expectations.keys())
+                    response = ssh_process.expect(
+                        expectations.keys(), timeout=timeout)
 
                 # TIMEOUT, break out of loop and indicate FAILURE
                 except pexpect.TIMEOUT:
