@@ -130,8 +130,20 @@ class MemoizedAuthServiceComposite(object):
         except AttributeError:
             raise MemoizedAuthServiceCompositeException(
                 "Unable to locate an endpoint with the region '{0}' in the "
-                "service '{1}' from the service service catalog for user {2}. "
+                "service '{1}' from the service catalog for user {2}. "
                 "No public URL found.".format(
+                    self.region, self.service_name, self.tenant_id))
+
+    @property
+    def internal_url(self):
+        endpoint = self.service.get_endpoint(self.region)
+        try:
+            return endpoint.internal_url
+        except AttributeError:
+            raise MemoizedAuthServiceCompositeException(
+                "Unable to locate an endpoint with the region '{0}' in the "
+                "service '{1}' from the service catalog for user {2}. "
+                "No internal_url URL found.".format(
                     self.region, self.service_name, self.tenant_id))
 
     @property
