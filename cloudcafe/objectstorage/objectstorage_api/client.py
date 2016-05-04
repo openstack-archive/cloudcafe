@@ -142,13 +142,15 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
 class ObjectStorageAPIClient(HTTPClient):
     _log = cclogging.getLogger(__name__)
 
-    def __init__(self, storage_url, auth_token, base_container_name=None,
+    def __init__(self, storage_url, snet_url, auth_token,
+                 base_container_name=None,
                  base_object_name=None):
         super(ObjectStorageAPIClient, self).__init__()
         self.engine_config = EngineConfig()
         self.temp_dir = expanduser(self.engine_config.temp_directory)
         self.swift_endpoint = storage_url.split('/v1/')[0]
         self.storage_url = storage_url
+        self.snet_url = snet_url
         self.auth_token = auth_token
         self.base_container_name = base_container_name or ''
         self.base_object_name = base_object_name or ''

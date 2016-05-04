@@ -32,10 +32,11 @@ class ObjectStorageComposite(object):
             self.auth_token = self.auth_info.access_data.auth_token
         else:
             self.storage_url = self.auth_info.public_url
+            self.snet_url = self.auth_info.internal_url
             self.auth_token = self.auth_info.token_id
 
         self.client = ObjectStorageAPIClient(
-            self.storage_url, self.auth_token)
+            self.storage_url, self.snet_url, self.auth_token)
 
         self.behaviors = ObjectStorageAPI_Behaviors(
             client=self.client, config=self.config)
