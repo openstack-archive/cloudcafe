@@ -76,6 +76,7 @@ class SshMixin(object):
     PSWD_PROMPT_REGEX = r'ssword\:\s*'
     LINUX_PROMPT_REGEX = r'[$#>]\s*$'
     SSH_KEY_REGEX = r'connecting\s+\(yes\/no\)\?\s*'
+    REFUSED = r'connection\s+refused'
 
     DEFAULT_CMD = 'ls -alF'
 
@@ -130,7 +131,7 @@ class SshMixin(object):
         output = self.ssh_to_target(
             target_ip=target_ip, user=user, password=password, cmds=[cmd])
         self.last_response = output
-        return cmd in output.output
+        return cmd in output.output and output.errors == ''
 
     def ssh_to_target(
             self, target_ip=None, user=None, password=None, cmds=None,
@@ -276,6 +277,7 @@ class SshMixin(object):
             (pexpect.TIMEOUT, None),
             (self.PSWD_PROMPT_REGEX, password),
             (self.SSH_KEY_REGEX, 'yes'),
+            (self.REFUSED, None),
             (self.LINUX_PROMPT_REGEX, None)])
 
         # Set ssh process from the open connection
@@ -314,6 +316,7 @@ class SshMixin(object):
                 err_msg = err.format(
                     ssh_process.before, ssh_process.after)
                 self.logger.error(err_msg)
+                response_obj.errors += '{0}\n'.format(err_msg)
 
                 # Record IO and remove IP from the tracking list
                 response_obj.add_to_stdout(
@@ -338,8 +341,22 @@ class SshMixin(object):
             # FAILURE...
             if response == 0:
                 err = "SSH'ing target timed out. {0} --> {1}"
-                self.logger.error(err.format(
-                    ssh_process.before, ssh_process.after))
+                err_msg = err.format(ssh_process.before, ssh_process.after)
+                self.logger.error(err_msg)
+                response_obj.errors += '{0}\n'.format(err_msg)
+                response_obj.add_to_stdout(
+                    str(ssh_process.before) + str(ssh_process.after))
+                self._conn_path.pop()
+                if not self._conn_path:
+                    response_obj.connection = None
+                break
+
+            # Connection refused
+            if response == 3:
+                err = "Connection Refused. {0} --> {1}"
+                err_msg = err.format(ssh_process.before, ssh_process.after)
+                self.logger.error(err_msg)
+                response_obj.errors += '{0}\n'.format(err_msg)
                 response_obj.add_to_stdout(
                     str(ssh_process.before) + str(ssh_process.after))
                 self._conn_path.pop()
@@ -350,6 +367,9 @@ class SshMixin(object):
             # Connection established, the expected prompt was found
             # (last element in the expectation ordered dict)
             if response == len(expectations.keys()) - 1:
+                if 'connection refused' in ssh_process.before.lower():
+                    response_obj.errors += 'Connection Refused: {0}\n'.format(
+                        ssh_process.before)
                 response_obj.add_to_stdout(
                     str(ssh_process.before) + str(ssh_process.match.group()))
                 break
@@ -438,9 +458,12 @@ class SshMixin(object):
                 # TIMEOUT, break out of loop and indicate FAILURE
                 except pexpect.TIMEOUT:
                     err = "CMD '{cmd}' timed out. {before} --> {after}"
-                    self.logger.error(err.format(
+                    err_msg = err.format(
                         before=ssh_process.before, after=ssh_process.after,
-                        cmd=cmd))
+                        cmd=cmd)
+                    self.logger.error(err_msg)
+                    response_obj.errors += '{0}\n'.format(err_msg)
+
                     self.logger.debug('Connection Hop Path: {0}'.format(
                         self._conn_path))
 
@@ -467,10 +490,11 @@ class SshMixin(object):
                 # indicate FAILURE...
                 if response == 0:
                     err = "CMD '{cmd}' timed out. {before} --> {after}"
-                    self.logger.error(err.format(
+                    err_msg = err.format(
                         before=ssh_process.before, after=ssh_process.after,
-                        cmd=cmd))
-
+                        cmd=cmd)
+                    self.logger.error(err_msg)
+                    response_obj.errors += '{0}\n'.format(err_msg)
                     response_obj.add_to_stdout(
                         str(ssh_process.before) + str(ssh_process.after))
                     self.logger.debug('Connection Hop Path: {0}'.format(
