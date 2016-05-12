@@ -129,6 +129,58 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
         self.fixed_ips_failure_msg = ('Unable to get server {0} fixed IPs '
                                       'with IPv{1} version for network {2}')
 
+    def __str__(self):
+
+        def build_data_str(data_list, attr=None):
+            if data_list is None:
+                return None
+
+            if attr is None:
+                data_str = [elem for elem in data_list]
+            else:
+                data_str = [getattr(elem, attr) for elem in data_list]
+
+            return ', '.join(data_str)
+
+        data = {'name': self.server.name, 'svr_id':self.server.id,
+                'pub_net_id': self.public_network_id,
+                'pub_port_ids': self.pnet_port_ids,
+                'pub_ipv4_addr': self.pnet_fix_ipv4,
+                'pub_ipv6_addr': self.pnet_fix_ipv6,
+                'svc_net_id': self.service_network_id,
+                'svc_port_ids': self.snet_port_ids,
+                'svc_ipv4_addr': self.snet_fix_ipv4,
+                'svc_ipv6_addr': self.snet_fix_ipv6,
+                'iso_net_id': getattr(self.network, 'id', None),
+                'iso_sub_id': getattr(self.subnetv4, 'id', None),
+                'iso_port_ids': self.inet_port_ids,
+                'iso_ipv4_addr': self.pnet_fix_ipv4,
+                'iso_sub_v6_ids': build_data_str(self.subnetv6, 'id'),
+                'iso_ipv6_addr': self.pnet_fix_ipv6}
+
+        msg = "\nServer Name: {name} ({svr_id})\n"
+        msg += "Public Net:\n"
+        msg += "\tNetwork Id: {pub_net_id}\n"
+        msg += "\tPort Ids: {pub_port_ids}\n"
+        msg += "\tIPv4 Address: {pub_ipv4_addr}\n"
+        msg += "\tIPv6 Address: {pub_ipv6_addr}\n\n"
+
+        msg += "Service Net:"
+        msg += "\tNetwork Id: {svc_net_id}\n"
+        msg += "\tPort Ids: {svc_port_ids}\n"
+        msg += "\tIPv4 Address: {svc_ipv4_addr}\n"
+        msg += "\tIPv6 Address: {svc_ipv6_addr}\n\n"
+
+        msg += "Isolated Net:\n"
+        msg += "\tNetwork Id: {iso_net_id}\n"
+        msg += "\tSubnet Id (IPv4): {iso_sub_id}\n"
+        msg += "\tPort Ids: {iso_port_ids}\n"
+        msg += "\tIPv4 Address: {iso_ipv4_addr}\n"
+        msg += "\tSubnet Id (IPv6): {iso_sub_v6_ids}\n"
+        msg += "\tIPv6 Address: {iso_ipv6_addr}\n\n"
+
+        return msg.format(**data)
+
     @property
     def pnet_ports(self):
         """
@@ -233,7 +285,7 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
     @property
     def inet_port_ids(self):
         """
-        @summary: gets the public network port ids
+        @summary: gets the isolated network port ids
         """
         return self._get_port_ids(port_type=PortTypes.ISOLATED)
 
