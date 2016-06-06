@@ -52,6 +52,7 @@ class IPAddressesServerZone(object):
     server builds
     """
 
+    RAX_PUBLIC_IP_ZONE = 'RAX-PUBLIC-IP-ZONE-ID:publicIPZoneId'
     PUBLIC_IP_ZONE_NEAR = 'public_ip_zone:near'
     PUBLIC_IP_ZONE_FAR = 'public_ip_zone:far'
     DIFFERENT_HOST = 'different_host'

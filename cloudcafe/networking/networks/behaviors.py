@@ -448,7 +448,8 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
                 raise TimeoutException(msg)
 
     def create_servers_in_same_cell(self, n_servers, name='same_cell_server',
-                                    network_ids=None, port_ids=None):
+                                    network_ids=None, port_ids=None,
+                                    ip_zone_hint=None):
         """
         @summary: Creates n servers in same cell using the first server ID with
             scheduler hints
@@ -476,7 +477,7 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
                 server = resp.entity
 
                 # Setting up the scheduler hints for creating other servers
-                pz = IPAddressesServerZone.PUBLIC_IP_ZONE_NEAR
+                pz = ip_zone_hint or IPAddressesServerZone.PUBLIC_IP_ZONE_NEAR
                 scheduler_hints = {pz: server.id}
             else:
                 resp = self.create_networking_server(

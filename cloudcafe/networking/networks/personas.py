@@ -296,6 +296,13 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
         self.server = self.behaviors.get_networking_server(server=self.server)
         self.isolated_network_id = getattr(self.network, 'id', None)
 
+        # Updating the isolated network port attribute
+        isolated_ports = self.inet_ports
+        if self.subnetv4 and isolated_ports:
+            self.portv4 = isolated_ports[0]
+        if self.subnetv6 and isolated_ports:
+            self.portv6 = isolated_ports[0]
+
         if clear_errors:
             self.errors = []
 
