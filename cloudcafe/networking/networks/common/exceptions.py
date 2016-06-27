@@ -35,6 +35,22 @@ class UnableToGetNetworkingServer(BaseNetworkingException):
     MSG = 'Unable to GET nova server used for networking'
 
 
+class UnableToDeleteServer(BaseNetworkingException):
+    MSG = 'Unable to DELETE nova server used for networking'
+
+
+class UnableToCreateKeypair(BaseNetworkingException):
+    MSG = 'Unable to create keypair used for networking'
+
+
+class UnableToGetKeypairs(BaseNetworkingException):
+    MSG = 'Unable to GET keypairs used for networking'
+
+
+class UnableToDeleteKeypair(BaseNetworkingException):
+    MSG = 'Unable to DELETE keypairs used for networking'
+
+
 class NetworkIDMissingException(BaseNetworkingException):
     MSG = 'Network ID is required'
 
@@ -81,3 +97,7 @@ class UnsupportedTypeException(BaseNetworkingException):
 
 class UnhandledMethodCaseException(BaseNetworkingException):
     MSG = 'Unhandled Case'
+
+
+class MissingDataException(BaseNetworkingException):
+    MSG = 'Missing expected data'

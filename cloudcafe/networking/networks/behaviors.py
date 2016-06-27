@@ -16,6 +16,7 @@ limitations under the License.
 
 import time
 
+from cloudcafe.common.tools.datagen import rand_name
 from cloudcafe.compute.common.exceptions import TimeoutException
 from cloudcafe.compute.composites import ComputeComposite
 from cloudcafe.networking.networks.common.behaviors \
@@ -25,7 +26,9 @@ from cloudcafe.networking.networks.common.constants \
     import ComputeResponseCodes, ComputeStatus, NeutronResponseCodes
 from cloudcafe.networking.networks.common.exceptions \
     import NetworkGETException, SubnetGETException, UnsupportedTypeException, \
-    UnavailableComputeInteractionException, UnableToGetNetworkingServer
+    UnavailableComputeInteractionException, UnableToCreateKeypair, \
+    UnableToDeleteKeypair, UnableToDeleteServer, UnableToGetKeypairs, \
+    UnableToGetNetworkingServer, MissingDataException
 from cloudcafe.networking.networks.common.models.response.network \
     import Network
 from cloudcafe.networking.networks.common.models.response.port \
@@ -55,6 +58,9 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             self.compute = ComputeComposite()
         else:
             self.compute = None
+
+        self.error_msg = ('{message}: {status} {reason} {content}. '
+                          'Expected status code {expected_status}')
 
     def get_port_fixed_ips(self, port):
         """Get the port fixed ips"""
@@ -327,23 +333,202 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         # The compute behavior verifies the response, no need to check
         return resp
 
-    def get_networking_server(self, server=None, server_id=None):
+    def get_networking_server(self, server=None, server_id=None,
+                              raise_exception=False):
         """
         @summary: takes a server entity or ID and returns its latest version
         """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
         if server is None and server_id is None:
             raise UnableToGetNetworkingServer('Must provide server entity '
                                               'or server_id')
-        net_server_id = getattr(server, 'id', None) or server_id
-        resp = self.compute.servers.client.get_server(net_server_id)
 
-        if resp.status_code != ComputeResponseCodes.SERVER_GET:
-            msg = 'Unable to get networks server {0}'.format(net_server_id)
-            raise UnableToGetNetworkingServer(msg)
+        net_server_id = getattr(server, 'id', None) or server_id
+        msg = 'Getting server {0}'.format(net_server_id)
+        self._log.info(msg)
+
+        resp = self.compute.servers.client.get_server(net_server_id)
+        resp_check = self.check_response(
+            resp=resp, status_code=ComputeResponseCodes.GET_SERVER,
+            label=net_server_id, message='Server GET failure')
+        if resp_check and raise_exception:
+            raise UnableToGetNetworkingServer(resp_check)
 
         if hasattr(server, 'admin_pass'):
             resp.entity.admin_pass = server.admin_pass
         return resp.entity
+
+    def list_servers(self, name=None, raise_exception=False):
+        """
+        @summary: list servers wrapper for networks
+        @param name: name or name_starts_with* to filter by
+        @type name: str
+        @param raise_exception: flag to raise an exception if get fails
+        @type raise_exception: bool
+        @return: server entities list
+        @rtype: list
+        """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        self._log.info('Getting servers')
+        resp = self.compute.servers.client.list_servers()
+        resp_check = self.check_response(
+            resp=resp, status_code=ComputeResponseCodes.GET_SERVER,
+            label='Servers', message='LIST failure')
+        if resp_check and raise_exception:
+            raise UnableToGetNetworkingServer(resp_check)
+
+        server_list = resp.entity
+        if name and server_list:
+            server_list = self.filter_entity_list_by_name(
+                entity_list=server_list, name=name)
+        return server_list
+
+    def list_server_ids(self, name=None, raise_exception=False):
+        """
+        @summary: gets a server id list from a server entities list
+        @param name: name or name_starts_with* to filter by
+        @type name: str
+        @param raise_exception: flag to raise an exception if get fails
+        @type raise_exception: bool
+        @return: server id list
+        @rtype: list(str)
+        """
+        server_list = self.list_servers(name=name,
+                                        raise_exception=raise_exception)
+        server_ids = self.get_id_list_from_entity_list(entity_list=server_list)
+        return server_ids
+
+    def delete_servers(self, name=None, raise_exception=False):
+        """
+        @summary: deletes servers (all or filtered by name) without waiting
+        @param name: name or name_starts_with* to filter by
+        @type name: str
+        @param raise_exception: flag to raise an exception if delete fails
+        @type raise_exception: bool
+        """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        server_ids = self.list_server_ids(name=name)
+        log_msg = 'Deleting servers: {0}'.format(server_ids)
+        self._log.info(log_msg)
+        for server_id in server_ids:
+            resp = self.compute.servers.client.delete_server(
+                server_id=server_id)
+            resp_check = self.check_response(
+                resp=resp, status_code=ComputeResponseCodes.DELETE_SERVER,
+                label=server_id, message='Server DELETE failure')
+            if resp_check and raise_exception:
+                raise UnableToDeleteServer(resp_check)
+
+    def create_keypair(self, name='networks_keypair', raise_exception=False):
+        """
+        @summary: create keypair wrapper for networks
+        @param name: starts with keypair name
+        @type name: str
+        @param raise_exception: flag to raise an exception if create fails
+        @type raise_exception: bool
+        @return: keypair
+        @rtype: keypair entity object
+        """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        # Using rand_name to avoid HTTP 409 Conflict due to duplicate names
+        name = rand_name(name)
+        log_msg = 'Creating test server keypair: {0}'.format(name)
+        self._log.info(log_msg)
+        resp = self.compute.keypairs.client.create_keypair(name)
+        resp_check = self.check_response(
+            resp=resp, status_code=ComputeResponseCodes.CREATE_KEYPAIR,
+            label=name, message='Keypair POST failure')
+        if resp_check and raise_exception:
+            raise UnableToCreateKeypair(resp_check)
+        return resp.entity
+
+    def get_keypair(self, name, raise_exception=False):
+        """
+        @summary: get keypair wrapper for networks
+        @param name: keypair name
+        @type name: str
+        @param raise_exception: flag to raise an exception if get fails
+        @type raise_exception: bool
+        @return: keypair
+        @rtype: keypair entity object
+        """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        log_msg = 'Getting keypair: {0}'.format(name)
+        self._log.info(log_msg)
+        resp = self.compute.keypairs.client.get_keypair(name)
+        resp_check = self.check_response(
+            resp=resp, status_code=ComputeResponseCodes.GET_KEYPAIR,
+            label=name, message='Keypair GET failure')
+        if resp_check and raise_exception:
+            raise UnableToGetKeypairs(resp_check)
+        return resp.entity
+
+    def list_keypairs(self, name=None, raise_exception=False):
+        """
+        @summary: gets the keypairs (all or filtered by name)
+        @param name: name or name_starts_with* to filter by
+        @type name: str
+        @param raise_exception: flag to raise an exception if get fails
+        @type raise_exception: bool
+        @return: keypair list
+        @rtype: list
+        """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        self._log.info('Getting keypairs')
+        resp = self.compute.keypairs.client.list_keypairs()
+        resp_check = self.check_response(
+            resp=resp, status_code=ComputeResponseCodes.LIST_KEYPAIRS,
+            label='Keypairs', message='LIST failure')
+        if resp_check and raise_exception:
+            raise UnableToGetKeypairs(resp_check)
+
+        keypair_list = resp.entity
+        if name and keypair_list:
+            keypair_list = self.filter_entity_list_by_name(
+                entity_list=keypair_list, name=name)
+        return keypair_list
+
+    def delete_keypairs(self, name=None, raise_exception=False):
+        """
+        @summary: deletes the keypairs (all or filtered by name)
+        @param name: name or name_starts_with* to filter by
+        @type name: str
+        @param raise_exception: flag to raise an exception if delete fails
+        @type raise_exception: bool
+        """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        keypair_list = self.list_keypairs(name=name)
+        log_msg = 'Deleting keypairs: {0}'.format(keypair_list)
+        self._log.info(log_msg)
+        if keypair_list:
+            for key in keypair_list:
+                resp = self.compute.keypairs.client.delete_keypair(key.name)
+                resp_check = self.check_response(
+                    resp=resp, status_code=ComputeResponseCodes.DELETE_KEYPAIR,
+                    label=key.name, message='Keypair DELETE failure')
+                if resp_check and raise_exception:
+                    raise UnableToDeleteKeypair(resp_check)
 
     def wait_for_servers_to_be_active(self, server_id_list,
                                       interval_time=None, timeout=None,
@@ -365,7 +550,7 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         while time.time() < end_time:
             for server_id in server_id_list:
                 resp = self.compute.servers.client.get_server(server_id)
-                if (resp.status_code == ComputeResponseCodes.SERVER_GET and
+                if (resp.status_code == ComputeResponseCodes.GET_SERVER and
                         resp.entity.status == ComputeStatus.ACTIVE and
                         server_id in server_id_list):
                     server_id_list.remove(server_id)
@@ -447,52 +632,144 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             if raise_exception:
                 raise TimeoutException(msg)
 
-    def create_servers_in_same_cell(self, n_servers, name='same_cell_server',
-                                    network_ids=None, port_ids=None,
-                                    ip_zone_hint=None):
+    def create_multiple_servers(self, create_by='names', names=None,
+                                images=None, flavors=None,
+                                keypair_name=None, networks=None, ports=None,
+                                pnet=True, snet=True, use_ip_zone_hint=False,
+                                ip_zone_hint=None, ip_zone_hint_id=None,
+                                raise_exception=False):
         """
-        @summary: Creates n servers in same cell using the first server ID with
-            scheduler hints
-        @param n_servers: number of servers to create
-        @type n_servers: int
-        @param name: servers name (n will be appended at the end)
-        @type name: str
-        @param network_ids: server network ids, for ex. public, private, etc.
-        @type network_ids: list
-        @param port_ids: server network port ids from an isolated network
-        @type port_ids: list
-        @return: server entity list
-        @rtype: list
+        @summary: Create multiple test servers with the same keypairs and
+                  networks given a list of names, image ids or flavor ids.
+        @param create_by: type of list to create servers from
+            (names, images or flavors)
+        @type create_by: str
+        @param names: list of names to create servers from
+        @type names: list(str)
+        @param images: image ids to create servers from
+        @type images: list(str)
+        @param flavors: list of flavor ids to create servers from
+        @type flavors: list(str)
+        @param keypair_name: (optional) keypair to create servers with
+        @type keypair_name: str
+        @param networks: (optional) isolated network ids to create servers with
+        @type networks: list(str)
+        @param ports: (optional) isolated ports ids to create servers with
+        @type ports: list(str)
+        @param pnet: flag to create server with public network
+        @type pnet: bool
+        @param snet: flag to create server with service (private) network
+        @type snet: bool
+        @param use_ip_zone_hint: flag to use scheduler hints with ip zone hint
+            WARNING if using with create by flavors, make sure the flavors
+            are within the same cell type.
+        @type use_ip_zone_hint: bool
+        @param ip_zone_hint: scheduler ip zone hint, for ex.
+            public_ip_zone:near, public_ip_zone:far, different_host, etc.
+        @type ip_zone_hint: str
+        @param ip_zone_hint_id: id to use for the ip_zone_hint, for ex.
+            server id or a public ip zone id
+        @type ip_zone_hint_id: str
+        @param raise_exception: flag to raise an exception if the wait for
+            active servers times out
+        @type raise_exception: bool
+        @return: server entity objects
+        @rtype: dict(server name: server entity object)
         """
-        msg = 'Creating {0} servers in same cell...'.format(n_servers)
-        self._log.info(msg)
-        created_servers = []
-        server_id_list = []
-        for n_server in range(n_servers):
-            server_name = ''.join([name, str(n_server)])
-            if n_server < 1:
-                resp = self.create_networking_server(
-                    name=server_name, network_ids=network_ids,
-                    port_ids=port_ids, active_server=False)
-                server = resp.entity
+        NAMES_CREATE_BY_TYPE = 'names'
+        IMAGES_CREATE_BY_TYPE = 'images'
+        FLAVORS_CREATE_BY_TYPE = 'flavors'
+        CREATE_TYPES = [NAMES_CREATE_BY_TYPE, IMAGES_CREATE_BY_TYPE,
+                        FLAVORS_CREATE_BY_TYPE]
 
-                # Setting up the scheduler hints for creating other servers
-                pz = ip_zone_hint or IPAddressesServerZone.PUBLIC_IP_ZONE_NEAR
-                scheduler_hints = {pz: server.id}
-            else:
-                resp = self.create_networking_server(
-                    name=server_name, network_ids=network_ids,
-                    port_ids=port_ids, scheduler_hints=scheduler_hints,
-                    active_server=False)
-                server = resp.entity
-            created_servers.append(server)
-            server_id_list.append(server.id)
+        # Verify the create_by is withing the expected create types
+        if create_by not in CREATE_TYPES:
+            msg = 'Unsupported create_by: {0}. Expecting: {1}'.format(
+                create_by, CREATE_TYPES)
+            raise UnsupportedTypeException(msg)
 
-        # Waiting for the servers to get into Active state
-        self.wait_for_servers_to_be_active(server_id_list=server_id_list)
+        # Verifying the expected name or image id or flavor id list is given
+        create_by_list = None
+        if create_by == NAMES_CREATE_BY_TYPE and names:
+            create_by_list = names
+        elif create_by == IMAGES_CREATE_BY_TYPE and images:
+            create_by_list = images
+        elif create_by == FLAVORS_CREATE_BY_TYPE and flavors:
+            create_by_list = flavors
+        else:
+            msg = 'Missing {0} list'.format(create_by)
+            raise MissingDataException(msg)
 
-        # Getting and returning the active server entity objects
-        servers_list = [self.get_networking_server(svr)
-                        for svr in created_servers]
+        if type(create_by_list) != list:
+            msg = 'Expecting a {0} list instead of: {1}'.format(create_by,
+                                                                create_by_list)
+            raise UnsupportedTypeException(msg)
 
-        return servers_list
+        server_count = len(create_by_list)
+        create_by_msg = 'Creating {0} servers from {1}: {2}'.format(
+            server_count, create_by, create_by_list)
+        self._log.info(create_by_msg)
+
+        self._log.info('Defining the network IDs to be used')
+        network_ids = []
+
+        if pnet:
+            network_ids.append(self.networks_config.public_network_id)
+        if snet:
+            network_ids.append(self.networks_config.service_network_id)
+        if networks:
+            network_ids.extend(networks)
+
+        # Removing duplicates if any (in case networks had pnet or snet too)
+        network_ids = list(set(network_ids))
+
+        net_ids_msg = 'Creating servers with networks: {0}'.format(network_ids)
+        self._log.info(net_ids_msg)
+
+        # Setting the ip_zone_hint if the use_ip_zone_hint set to True
+        scheduler_hints = None
+        if use_ip_zone_hint:
+            ip_zone_hint = ip_zone_hint or (
+                IPAddressesServerZone.PUBLIC_IP_ZONE_NEAR)
+
+            # Setting the scheduler hints if the ip_zone_hint_id given
+            if ip_zone_hint_id:
+                scheduler_hints = {ip_zone_hint: ip_zone_hint_id}
+
+        # Response dict where the key will be the server name and the value the
+        # server entity object
+        servers = dict()
+        server_ids = []
+        for n, param in enumerate(create_by_list):
+            server_name = '{0}_{1}_svr_{2}'.format(create_by, param, n+1)
+            server_kwargs = dict(name=server_name, key_name=keypair_name,
+                                 network_ids=network_ids, port_ids=ports,
+                                 active_server=False)
+            if create_by == IMAGES_CREATE_BY_TYPE:
+                server_kwargs.update(image_ref=param)
+            if create_by == FLAVORS_CREATE_BY_TYPE:
+                server_kwargs.update(flavor_ref=param)
+            if use_ip_zone_hint and scheduler_hints:
+                server_kwargs.update(scheduler_hints=scheduler_hints)
+
+            resp = self.create_networking_server(**server_kwargs)
+            server = resp.entity
+            server_ids.append(server.id)
+            servers[server_name] = server
+
+            # Setting the scheduler hints with the first server ID if the
+            # ip_zone_hint_id was not given and the use_ip_zone_hint was set
+            if use_ip_zone_hint and not scheduler_hints and n < 1:
+                scheduler_hints = {ip_zone_hint: server.id}
+
+        # Waiting for the servers to be active
+        self.wait_for_servers_to_be_active(server_id_list=server_ids,
+                                           raise_exception=raise_exception)
+
+        # Updating the servers dict with the latest server entities
+        # Hopefully in active status with all expected data
+        for server_name, server in servers.items():
+            updated_server = self.get_networking_server(server=server)
+            servers[server_name] = updated_server
+
+        return servers

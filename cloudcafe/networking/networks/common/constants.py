@@ -110,8 +110,12 @@ class ComputeResponseCodes(object):
     """HTTP Compute API Response codes"""
 
     NOT_FOUND = 404
-    SERVER_GET = 200
+    GET_SERVER = 200
+    DELETE_SERVER = 204
     CREATE_KEYPAIR = 200
+    GET_KEYPAIR = 200
+    LIST_KEYPAIRS = 200
+    DELETE_KEYPAIR = 204
 
 
 class ComputeStatus(NovaServerStatusTypes):
