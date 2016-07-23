@@ -165,8 +165,8 @@ class SubnetsClient(AutoMarshallingHTTPClient):
 
     def list_subnets(self, subnet_id=None, network_id=None, cidr=None,
                      tenant_id=None, gateway_ip=None, ip_version=None,
-                     enable_dhcp=None, name=None, limit=None, marker=None,
-                     page_reverse=None, requestslib_kwargs=None):
+                     enable_dhcp=None, name=None, shared=None, limit=None,
+                     marker=None, page_reverse=None, requestslib_kwargs=None):
         """
         @summary: Lists subnets, filtered by params if given
         @param subnet_id: subnet ID to filter by
@@ -185,6 +185,8 @@ class SubnetsClient(AutoMarshallingHTTPClient):
         @type enable_dhcp: bool
         @param name: subnet name to filter by
         @type name: string
+        @param shared: If subnet is shared across tenants status to filter by
+        @type shared: bool
         @param limit: page size
         @type limit: int
         @param marker: Id of the last item of the previous page
@@ -198,8 +200,8 @@ class SubnetsClient(AutoMarshallingHTTPClient):
         params = {'id': subnet_id, 'network_id': network_id, 'cidr': cidr,
                   'tenant_id': tenant_id, 'gteway_ip': gateway_ip,
                   'ip_version': ip_version, 'enable_dhcp': enable_dhcp,
-                  'name': name, 'limit': limit, 'marker': marker,
-                  'page_reverse': page_reverse}
+                  'name': name, 'shared': shared, 'limit': limit,
+                  'marker': marker, 'page_reverse': page_reverse}
         url = '{base_url}/subnets'.format(base_url=self.url)
         resp = self.request('GET', url, params=params,
                             response_entity_type=Subnets,

@@ -610,9 +610,10 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
 
     def list_subnets(self, subnet_id=None, network_id=None, cidr=None,
                      tenant_id=None, gateway_ip=None, ip_version=None,
-                     enable_dhcp=None, name=None, limit=None, marker=None,
-                     page_reverse=None, resource_list_attempts=None,
-                     raise_exception=False, poll_interval=None):
+                     enable_dhcp=None, name=None, shared=None, limit=None,
+                     marker=None, page_reverse=None,
+                     resource_list_attempts=None, raise_exception=False,
+                     poll_interval=None):
         """
         @summary: Lists subnets and verifies the response is the expected
         @param subnet_id: subnet ID to filter by
@@ -631,6 +632,8 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         @type enable_dhcp: bool
         @param name: subnet name to filter by
         @type name: string
+        @param shared: If subnet is shared across tenants status to filter by
+        @type shared: bool
         @param limit: page size
         @type limit: int
         @param marker: Id of the last item of the previous page
@@ -649,9 +652,9 @@ class SubnetsBehaviors(NetworkingBaseBehaviors):
         """
         params_kwargs = dict(
             subnet_id=subnet_id, network_id=network_id, cidr=cidr,
-            tenant_id=tenant_id, gateway_ip=gateway_ip,
-            ip_version=ip_version, enable_dhcp=enable_dhcp, name=name,
-            limit=limit, marker=marker, page_reverse=page_reverse)
+            tenant_id=tenant_id, gateway_ip=gateway_ip, ip_version=ip_version,
+            enable_dhcp=enable_dhcp, name=name, shared=shared, limit=limit,
+            marker=marker, page_reverse=page_reverse)
 
         result = self._list_resources(
             resource=self.subnets_resource,
