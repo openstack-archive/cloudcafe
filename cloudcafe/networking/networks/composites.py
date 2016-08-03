@@ -42,11 +42,14 @@ class _NetworkingAuthComposite(MemoizedAuthServiceComposite):
     _auth_endpoint_config = UserAuthConfig
     _auth_user_config = UserConfig
 
-    def __init__(self):
-        self.networking_endpoint_config = self._networking_endpoint_config()
+    def __init__(self, networking_endpoint_config=None, user_auth_config=None,
+                 user_config=None):
+        self.networking_endpoint_config = (networking_endpoint_config or
+                                           self._networking_endpoint_config())
         self.marshalling_config = MarshallingConfig()
-        self._auth_endpoint_config = self._auth_endpoint_config()
-        self._auth_user_config = self._auth_user_config()
+        self._auth_endpoint_config = (user_auth_config or
+                                      self._auth_endpoint_config())
+        self._auth_user_config = (user_config or self._auth_user_config())
 
         super(_NetworkingAuthComposite, self).__init__(
             service_name=self.networking_endpoint_config.networking_endpoint_name,
@@ -85,8 +88,8 @@ class NetworkingComposite(object):
     networking_auth_composite = _NetworkingAuthComposite
     behavior_class = NetworkingBehaviors
 
-    def __init__(self):
-        auth_composite = self.networking_auth_composite()
+    def __init__(self, auth_composite=None):
+        auth_composite = auth_composite or self.networking_auth_composite()
         self.url = auth_composite.networking_url
         self.user = auth_composite._auth_user_config
         self.config = NetworkingBaseConfig()
