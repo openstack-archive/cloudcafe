@@ -52,8 +52,10 @@ class _ComputeAuthComposite(MemoizedAuthServiceComposite):
     _auth_endpoint_config = UserAuthConfig
     _auth_user_config = UserConfig
 
-    def __init__(self, endpoint_config=None, user_config=None):
-        self.compute_endpoint_config = self._compute_endpoint_config()
+    def __init__(self, endpoint_config=None, user_config=None,
+                 compute_endpoint_config=None):
+        self.compute_endpoint_config = compute_endpoint_config or \
+            self._compute_endpoint_config()
         self.marshalling_config = MarshallingConfig()
         self._auth_endpoint_config = \
             endpoint_config or self._auth_endpoint_config()

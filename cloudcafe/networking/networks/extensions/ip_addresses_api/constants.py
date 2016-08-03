@@ -35,7 +35,7 @@ class IPAddressesResponseCodes(NeutronResponseCodes):
     GET_IP_ADDRESS = 200
 
     # Using HTTP 200 instead of 201 till NCP-1577 is fixed
-    CREATE_IP_ADDRESS = 200
+    CREATE_IP_ADDRESS = 201
     UPDATE_IP_ADDRESS = 200
     DELETE_IP_ADDRESS = 204
 

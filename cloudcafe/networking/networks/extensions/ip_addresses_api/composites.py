@@ -26,8 +26,8 @@ from cloudcafe.networking.networks.extensions.ip_addresses_api.config \
 class IPAddressesComposite(object):
     networking_auth_composite = _NetworkingAuthComposite
 
-    def __init__(self):
-        auth_composite = self.networking_auth_composite()
+    def __init__(self, auth_composite=None):
+        auth_composite = auth_composite or self.networking_auth_composite()
         self.url = auth_composite.networking_url
         self.user = auth_composite._auth_user_config
         self.config = IPAddressesConfig()
