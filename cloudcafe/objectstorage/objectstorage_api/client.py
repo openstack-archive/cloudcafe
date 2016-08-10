@@ -187,6 +187,9 @@ class ObjectStorageAPIClient(HTTPClient):
 
         # If headers are provided by both, headers "wins" over default_headers
         headers = dict(self.default_headers, **(headers or {}))
+        for header in headers:
+            if not isinstance(headers[header], str):
+                headers[header] = str(headers[header])
 
         # Override url if present in requestslib_kwargs
         if 'url' in requestslib_kwargs.keys():
