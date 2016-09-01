@@ -16,7 +16,7 @@ limitations under the License.
 
 import unittest
 
-from cloudcafe.bare_metal.drivers.models.responses import Driver, Drivers
+from cloudcafe.bare_metal.drivers.models import responses
 
 
 class DriversModelTest(unittest.TestCase):
@@ -158,7 +158,8 @@ class DriversModelTest(unittest.TestCase):
                ]
             }
             """
-        cls.drivers = Drivers.deserialize(cls.drivers_json_response, 'json')
+        cls.drivers = responses.Drivers.deserialize(cls.drivers_json_response,
+                                                    'json')
 
     def test_list_drivers(self):
         self.assertEqual(len(self.drivers), 8)
@@ -213,7 +214,8 @@ class DriverModelTest(unittest.TestCase):
                ]
             }
             """
-        cls.driver = Driver.deserialize(cls.driver_json_response, 'json')
+        cls.driver = responses.Driver.deserialize(cls.driver_json_response,
+                                                  'json')
 
     def test_driver_name(self):
         self.assertEqual(self.driver.name, "fake")

@@ -16,7 +16,7 @@ limitations under the License.
 
 import unittest
 
-from cloudcafe.bare_metal.chassis.models.requests import CreateChassis
+from cloudcafe.bare_metal.chassis.models import requests
 
 
 class CreateChassisModelTest(unittest.TestCase):
@@ -24,7 +24,7 @@ class CreateChassisModelTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        chassis_request = CreateChassis(
+        chassis_request = requests.CreateChassis(
             description='test_chassis', extra={'meta1': 'value1'})
         cls.chassis_json = chassis_request.serialize('json')
 

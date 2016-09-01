@@ -1,11 +1,11 @@
 import unittest
-from cloudcafe.openstackcli.novacli.client import NovaCLI
+from cloudcafe.openstackcli.novacli import client
 
 
 class NovaCLI_InitializeClientWithAllArguments(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.novacli = NovaCLI(
+        cls.novacli = client.NovaCLI(
             os_cache=True, timings=True, timeout=30,
             os_username='fake_username', os_password='fake_password',
             os_tenant_name='FakeTenantName', os_tenant_id='1234567',
@@ -68,7 +68,7 @@ class NovaCLI_InitializeClientWithAllArguments(unittest.TestCase):
         self.assertIn('--bypass-url bypass_url', self.base_cmd)
 
     def test_no_arguments_positive(self):
-        novacli = NovaCLI()
+        novacli = client.NovaCLI()
         self.assertEquals(novacli.base_cmd().strip(), 'nova')
 
 
@@ -82,7 +82,7 @@ class NovaCLI_CommandSerializationTests_CreateServer(unittest.TestCase):
                 self.command = cmd
                 self.standard_out = "fake standard out"
 
-        cls.novacli = NovaCLI()
+        cls.novacli = client.NovaCLI()
         cls.novacli.run_command = lambda x: FakeResponse(x)
         cls.command = cls.novacli.create_server(
             name='fake name',

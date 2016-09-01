@@ -16,7 +16,7 @@ limitations under the License.
 
 import unittest
 
-from cloudcafe.bare_metal.ports.models.requests import CreatePort
+from cloudcafe.bare_metal.ports.models import requests
 
 
 class CreatePortModelTest(unittest.TestCase):
@@ -24,7 +24,7 @@ class CreatePortModelTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        port_request = CreatePort(
+        port_request = requests.CreatePort(
             node_uuid="1", address="52:54:00:e5:57:d4",
             extra={'meta1': 'value1'})
         cls.port_json = port_request.serialize('json')

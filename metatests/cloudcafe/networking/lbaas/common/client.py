@@ -16,8 +16,7 @@ limitations under the License.
 
 import unittest
 
-from lbaascafe.lbaas.lbaas_api.clients.base_load_balancers_client \
-    import BaseLoadBalancersClient
+from lbaascafe.lbaas.lbaas_api.clients import base_load_balancers_client
 
 
 class BaseLoadBalancersClientFixture(unittest.TestCase):
@@ -35,4 +34,5 @@ class BaseLoadBalancersClientFixture(unittest.TestCase):
         cls.load_balancer_id = "12345"
         cls.url = "http://fake.url.endpoint"
         cls.load_balancers_url = '{url}/{suffix}'.format(
-            url=cls.url, suffix=BaseLoadBalancersClient._SUFFIX)
+            url=cls.url,
+            suffix=base_load_balancers_client.BaseLoadBalancersClient._SUFFIX)
