@@ -48,7 +48,7 @@ class NetworkingBaseBehaviors(BaseBehavior):
         self.config = NetworkingBaseConfig()
 
     def check_response(self, resp, status_code, label, message,
-                       network_id=None):
+                       network_id=None, entity_check=True):
         """
         @summary: Checks the API response object
         @param resp: API call response object
@@ -61,6 +61,8 @@ class NetworkingBaseBehaviors(BaseBehavior):
         @type message: string
         @param network_id: related Network ID (optional)
         @type network_id: string
+        @param entity_check: flag to enable/disable the response entity check
+        @type entity_check: bool
         @return: None if the response is the expected or the error message
         @rtype: None or string
         """
@@ -89,11 +91,13 @@ class NetworkingBaseBehaviors(BaseBehavior):
                     expected_status=status_code)
             self._log.error(err_msg)
             response_msg = err_msg
-        elif not resp.entity:
+        elif not resp.entity and entity_check:
             err_msg = ('{label} {message}: Unable to get response'
                        ' entity object').format(label=label, message=message)
             self._log.error(err_msg)
             response_msg = err_msg
+        elif not entity_check:
+            response_msg = None
         else:
 
             # This should NOT happen, scenarios should be covered by the elifs
@@ -158,6 +162,21 @@ class NetworkingBaseBehaviors(BaseBehavior):
             entity_list = self.filter_entity_list_by_name(entity_list, name)
         id_list = [entity.id for entity in entity_list]
         return id_list
+
+    def get_name_list_from_entity_list(self, entity_list, name=None):
+        """
+        @summary: Gets a name list from an entity list
+        @param entity_list: List of instances with the name and id attributes
+        @type entity_list: list(instances)
+        @param name: (optional) name or name_starts_with* to filter by
+        @type name: str
+        @return: name list
+        @rtype: list
+        """
+        if name:
+            entity_list = self.filter_entity_list_by_name(entity_list, name)
+        name_list = [entity.name for entity in entity_list]
+        return name_list
 
     def __over_limit_retry(self, resource_type, timeout, poll_interval,
                            status_code, resp, fn_name, fn_kwargs):
