@@ -115,7 +115,7 @@ class ComputeResponseCodes(object):
     CREATE_KEYPAIR = 200
     GET_KEYPAIR = 200
     LIST_KEYPAIRS = 200
-    DELETE_KEYPAIR = 204
+    DELETE_KEYPAIR = 202
 
 
 class ComputeStatus(NovaServerStatusTypes):
