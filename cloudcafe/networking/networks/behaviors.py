@@ -521,14 +521,20 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         keypair_list = self.list_keypairs(name=name)
         log_msg = 'Deleting keypairs: {0}'.format(keypair_list)
         self._log.info(log_msg)
+        failed_deletes = []
         if keypair_list:
             for key in keypair_list:
                 resp = self.compute.keypairs.client.delete_keypair(key.name)
                 resp_check = self.check_response(
                     resp=resp, status_code=ComputeResponseCodes.DELETE_KEYPAIR,
-                    label=key.name, message='Keypair DELETE failure')
-                if resp_check and raise_exception:
-                    raise UnableToDeleteKeypair(resp_check)
+                    label=key.name, message='Keypair DELETE failure',
+                    entity_check=False)
+                if resp_check:
+                    failed_deletes.append(resp_check)
+                    if raise_exception:
+                        raise UnableToDeleteKeypair(resp_check)
+
+        return failed_deletes
 
     def wait_for_servers_to_be_active(self, server_id_list,
                                       interval_time=None, timeout=None,
@@ -564,7 +570,7 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             if raise_exception:
                 raise TimeoutException(msg)
 
-    def wait_for_servers_to_be_deleted(self, server_id_list,
+    def wait_for_servers_to_be_deleted(self, server_id_list=None, name=None,
                                        interval_time=None, timeout=None,
                                        raise_exception=False):
         """
@@ -577,12 +583,24 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
         @type timeout: Integer
         """
 
-        self._wait_for_compute_delete(
-            resource_id_list=server_id_list, resource='servers',
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        if not server_id_list:
+            if not name:
+                raise MissingDataException('Missing name pattern')
+            server_ids = self.list_server_ids(name=name)
+            log_msg = 'Deleting servers: {0}'.format(server_ids)
+            self._log.info(log_msg)
+
+        failed_deletes = self._wait_for_compute_delete(
+            resource_id_list=server_ids, resource='servers',
             delete_method=self.compute.servers.client.delete_server,
             get_method=self.compute.servers.client.get_server,
             interval_time=interval_time, timeout=timeout,
             raise_exception=raise_exception)
+
+        return failed_deletes
 
     def _wait_for_compute_delete(self, resource_id_list, resource,
                                  delete_method, get_method, interval_time=None,
@@ -609,6 +627,7 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
                          self.compute.servers.config.server_status_interval)
         timeout = timeout or self.compute.servers.config.server_build_timeout
         end_time = time.time() + timeout
+        failed_deletes = []
 
         for resource_id in resource_id_list:
             delete_method(resource_id)
@@ -619,18 +638,30 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
                 if (resp.status_code == ComputeResponseCodes.NOT_FOUND and
                         resource_id in resource_id_list):
                     resource_id_list.remove(resource_id)
+
+                # Retrying to delete servers in ERROR status
+                elif (hasattr(resp, 'entity') and
+                        hasattr(resp.entity, 'status') and
+                        resp.entity.status == ComputeStatus.ERROR):
+                    delete_method(resource_id)
+
             if not resource_id_list:
                 break
             time.sleep(interval_time)
         else:
-            msg = ('Wait for compute {0} resource delete {0} seconds timeout '
-                   'for the expected resource get HTTP {1} status code for '
-                   'resources: {2}').format(resource, timeout,
+            msg = ('Wait for compute {0} resource delete {1} seconds timeout '
+                   'for the expected resource get HTTP {2} status code for '
+                   'resources: {3}').format(resource, timeout,
                                             ComputeResponseCodes.NOT_FOUND,
                                             resource_id_list)
             self._log.info(msg)
+            failed_deletes.append(msg)
             if raise_exception:
                 raise TimeoutException(msg)
+
+        # keeping the response consistent with the _delete_resources of the
+        # networking.networks.common.behaviors (failed_deletes)
+        return failed_deletes
 
     def create_multiple_servers(self, create_by='names', names=None,
                                 images=None, flavors=None,

@@ -13,6 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+import json
+
+
 from cloudcafe.common.models.configuration import ConfigSectionInterface
 
 
@@ -115,3 +119,11 @@ class NetworkingBaseConfig(ConfigSectionInterface):
     def accepted_packet_loss(self):
         """Accepted packet loss percent for server pings"""
         return int(self.get("accepted_packet_loss", 0))
+
+    @property
+    def delete_resources(self):
+        """
+        JSON string that may be used by the delete_networking resource_dict
+        at: networking.networks.common.tools.resources
+        """
+        return json.loads(self.get("delete_resources", '{}'))
