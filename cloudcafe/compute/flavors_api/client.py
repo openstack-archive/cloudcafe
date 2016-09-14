@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from urlparse import urlparse
+from six.moves.urllib_parse import urlparse
 
 from cafe.engine.http.client import AutoMarshallingHTTPClient
 from cloudcafe.compute.flavors_api.models.flavor import \

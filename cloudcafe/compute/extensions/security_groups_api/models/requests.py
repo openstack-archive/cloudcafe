@@ -69,7 +69,7 @@ class CreateSecurityGroupRule(AutoMarshallingModel):
         @summary: Converts the object to json.
         """
         ret = {'security_group_rule': self.__dict__}
-        print ret
+        print(ret)
         return json.dumps(ret)
 
     def _obj_to_xml(self):
