@@ -34,11 +34,17 @@ class SecurityGroup(AutoMarshallingModel):
     @type security_group_rules: list
     @param tenant_id: Owner of the security group
     @type tenant_id: string
+    @param external_service: other cloud
+    @type external_service: string
+    @param external_service_id: other cloud id
+    @type external_service_id: string
     """
     SECURITY_GROUP = 'security_group'
 
     def __init__(self, id_=None, name=None, description=None,
-                 security_group_rules=None, tenant_id=None, **kwargs):
+                 security_group_rules=None, tenant_id=None,
+                 external_service=None, external_service_id=None,
+                 **kwargs):
 
         # kwargs is to be used for extensions or checking unexpected attrs
         super(SecurityGroup, self).__init__()
@@ -47,6 +53,8 @@ class SecurityGroup(AutoMarshallingModel):
         self.description = description
         self.security_group_rules = security_group_rules
         self.tenant_id = tenant_id
+        self.external_service = external_service
+        self.external_service_id = external_service_id
         self.kwargs = kwargs
 
     @classmethod
@@ -152,13 +160,19 @@ class SecurityGroupRule(AutoMarshallingModel):
     @type remote_ip_prefix: string
     @param tenant_id: owner of the security group rule
     @type tenant_id: string
+    @param external_service: other cloud
+    @type external_service: string
+    @param external_service_id: other cloud id
+    @type external_service_id: string
     """
     SECURITY_GROUP_RULE = 'security_group_rule'
 
     def __init__(self, id_=None, direction=None, ethertype=None,
                  security_group_id=None, port_range_min=None,
                  port_range_max=None, protocol=None, remote_group_id=None,
-                 remote_ip_prefix=None, tenant_id=None, **kwargs):
+                 remote_ip_prefix=None, tenant_id=None,
+                 external_service=None, external_service_id=None,
+                 **kwargs):
 
         # kwargs is to be used for extensions or checking unexpected attrs
         super(SecurityGroupRule, self).__init__()
@@ -172,6 +186,8 @@ class SecurityGroupRule(AutoMarshallingModel):
         self.remote_group_id = remote_group_id
         self.remote_ip_prefix = remote_ip_prefix
         self.tenant_id = tenant_id
+        self.external_service = external_service
+        self.external_service_id = external_service_id
         self.kwargs = kwargs
 
     @classmethod
