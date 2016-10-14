@@ -1,0 +1,9 @@
+Code-Review+2: Nathan Buckner <nathan.buckner@rackspace.com>
+Code-Review+2: Christopher Hunt <chris.hunt@RACKSPACE.COM>
+Workflow+1: Christopher Hunt <chris.hunt@RACKSPACE.COM>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 14 Oct 2016 13:37:18 +0000
+Reviewed-on: https://review.openstack.org/364055
+Project: openstack/cloudcafe
+Branch: refs/heads/master
