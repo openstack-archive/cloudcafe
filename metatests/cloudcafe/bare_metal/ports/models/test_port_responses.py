@@ -16,7 +16,7 @@ limitations under the License.
 
 import unittest
 
-from cloudcafe.bare_metal.ports.models.responses import Port, Ports
+from cloudcafe.bare_metal.ports.models import responses
 
 
 class PortsModelTest(unittest.TestCase):
@@ -72,7 +72,7 @@ class PortsModelTest(unittest.TestCase):
                ]
             }
             """
-        cls.ports = Ports.deserialize(cls.ports_json, 'json')
+        cls.ports = responses.Ports.deserialize(cls.ports_json, 'json')
 
     def test_ports(self):
         self.assertEqual(len(self.ports), 3)
@@ -113,7 +113,7 @@ class PortModelTest(unittest.TestCase):
                "address":"52:54:00:b1:dc:51"
             }
             """
-        cls.port = Port.deserialize(cls.port_json, 'json')
+        cls.port = responses.Port.deserialize(cls.port_json, 'json')
 
     def test_port_node_uuid(self):
         self.assertEqual(

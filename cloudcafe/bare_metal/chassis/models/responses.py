@@ -16,13 +16,12 @@ limitations under the License.
 
 import json
 
-from cafe.engine.models.base import AutoMarshallingModel, \
-    AutoMarshallingListModel
+from cafe.engine.models import base
 
 from cloudcafe.bare_metal.common.models.links import Link, Links
 
 
-class Chassis(AutoMarshallingModel):
+class Chassis(base.AutoMarshallingModel):
 
     def __init__(
             self, description=None, links=None, extra=None, created_at=None,
@@ -61,7 +60,7 @@ class Chassis(AutoMarshallingModel):
             uuid=json_dict.get('uuid'))
 
 
-class ChassisList(AutoMarshallingListModel):
+class ChassisList(base.AutoMarshallingListModel):
 
     @classmethod
     def _json_to_obj(cls, serialized_str):

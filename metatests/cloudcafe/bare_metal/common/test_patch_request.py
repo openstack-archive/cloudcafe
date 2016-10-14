@@ -17,14 +17,14 @@ limitations under the License.
 import json
 import unittest
 
-from cloudcafe.bare_metal.common.models.patch import Patches
+from cloudcafe.bare_metal.common.models import patch
 
 
 class CreatePatchModelTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        patch_request = Patches(
+        patch_request = patch.Patches(
             [{"path": "/properties/foo", "value": "bar", "op": "add"}])
         cls.request_json = patch_request.serialize('json')
 
