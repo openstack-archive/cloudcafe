@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import copy
 import time
 
 from cloudcafe.common.tools.datagen import rand_name
@@ -21,17 +22,133 @@ from cloudcafe.networking.networks.common.behaviors \
     import NetworkingBaseBehaviors, NetworkingResponse
 from cloudcafe.networking.networks.common.exceptions \
     import ResourceBuildException, ResourceDeleteException, \
-    ResourceGetException, ResourceListException, ResourceUpdateException
+    ResourceGetException, ResourceListException, \
+    ResourceUpdateException, MissingDataException, \
+    UnsupportedTypeException
 from cloudcafe.networking.networks.extensions.security_groups_api.constants \
     import SecurityGroupsResponseCodes
 
 
 class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
 
+    ICMP = 'icmp'
+    TCP = 'tcp'
+    UDP = 'udp'
+
     def __init__(self, security_groups_client, security_groups_config):
         super(SecurityGroupsBehaviors, self).__init__()
         self.config = security_groups_config
         self.client = security_groups_client
+
+    def add_rule(self, security_groups, version=4, protocol='tcp', ports=None,
+                 ingress=True, egress=False):
+        """
+        @summary: Create security group rules ingress/egress
+        @param security_groups: security groups to add the rule.
+        @type security_groups: list
+        @param version: IP version, 4 or 6.
+        @type version: int
+        @param protocol: icmp, tcp or udp.
+        @type protocol: str
+        @param ports: port ranges min and max, for ex. 442-445, also only one
+            can be given for both, for ex. 22
+        @type ports: str
+        @param ingress: flag for adding an ingress rule.
+        @type ingress: bool
+        @param egress: flag for adding an egress rule.
+        @type egress: bool
+        """
+
+        # Verifying an expected protocol is given
+        expected_protocols = [self.ICMP, self.TCP, self.UDP]
+        if protocol not in expected_protocols:
+            msg = '{0} not within the expected protocols: {1}'.format(
+                protocol, expected_protocols)
+            raise MissingDataException(msg)
+
+        # Setting the rule protocol and ethertype from the IP version
+        ethertype = 'IPv{0}'.format(version)
+        attrs_kwargs = dict(protocol=protocol, ethertype=ethertype)
+
+        # Verifying a port or port range is given for tcp and udp rules
+        if protocol in [self.TCP, self.UDP]:
+            if not ports:
+                msg = ('{0} protocol requires the ports value, for ex.'
+                       '22 or 442-445').format(protocol)
+                raise MissingDataException(msg)
+
+            # In case only one port is given as an int
+            if type(ports) == int:
+                ports = str(ports)
+            elif type(ports) != str:
+                msg = ('{0} should be a string for ex. "22" or '
+                       '"442-445"').format(ports)
+                raise UnsupportedTypeException(msg)
+
+            port_list = ports.split('-')
+            port_range_min = port_list[0]
+            port_range_max = port_list[-1]
+
+            # Adding the port ranges to the request attributes
+            attrs_kwargs.update(port_range_min=port_range_min)
+            attrs_kwargs.update(port_range_max=port_range_max)
+
+        results = []
+
+        # Adding the ingress/egress rules to the security groups given.
+        for sg_id in security_groups:
+            result = dict(security_group_id=sg_id)
+            request_kwargs = copy.deepcopy(attrs_kwargs)
+            request_kwargs.update(security_group_id=sg_id)
+            if ingress:
+                request_kwargs.update(direction='ingress')
+                rule = self.create_security_group_rule(**request_kwargs)
+                result.update(ingress_rule_request=rule)
+            if egress:
+                request_kwargs.update(direction='egress')
+                rule = self.create_security_group_rule(**request_kwargs)
+                result.update(egress_rule_request=rule)
+            results.append(result)
+
+        return results
+
+    def remove_rule(self, security_groups, version='', protocol='',
+                    direction='', all_rules=False):
+        """
+        @summary: remove rules from groups based on criteria
+        @param security_groups: security groups to remove the rules.
+        @type security_groups: list
+        @param version: rules with this IP version will be deleted if given.
+        @type version: int
+        @param protocol: rules with this protocol will be deleted if given.
+        @type protocol: str
+        @param direction: rules with this direction will be deleted if given.
+        @type direction: str
+        @param all_rules: flag to delete all rules within the security group.
+        @type all_rules: bool
+        """
+
+        ethertype = 'IPv{0}'.format(version)
+
+        results = []
+
+        # Removing rules
+        for sg_id in security_groups:
+            sec_group = self.get_security_group(security_group_id=sg_id,
+                                                raise_exception=True)
+            rules = sec_group.response.entity.security_group_rules
+            for rule in rules:
+                result = dict(security_group_id=sg_id,
+                              security_group_rule_id=rule.id)
+                if (all_rules or rule.ethertype.lower() == ethertype.lower() or
+                        rule.protocol.lower() == protocol.lower() or
+                        rule.direction.lower() == direction.lower()):
+                    delete = self.delete_security_group_rule(
+                        security_group_rule_id=rule.id, raise_exception=True)
+                    result.update(delete_request=delete)
+                results.append(result)
+
+        return results
 
     def create_security_group(self, name=None, description=None,
                               tenant_id=None, resource_build_attempts=None,
@@ -587,9 +704,10 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
             resp = self.client.get_security_group_rule(
                 security_group_rule_id=security_group_rule_id)
 
+            status_code = SecurityGroupsResponseCodes.GET_SECURITY_GROUP_RULE
             resp_check = self.check_response(
                 resp=resp,
-                status_code=SecurityGroupsResponseCodes.GET_SECURITY_GROUP_RULE,
+                status_code=status_code,
                 label=security_group_rule_id, message=err_msg)
 
             result.response = resp
@@ -678,9 +796,10 @@ class SecurityGroupsBehaviors(NetworkingBaseBehaviors):
                 remote_ip_prefix=remote_ip_prefix, tenant_id=tenant_id,
                 limit=limit, marker=marker, page_reverse=page_reverse)
 
+            status_code = SecurityGroupsResponseCodes.LIST_SECURITY_GROUP_RULES
             resp_check = self.check_response(
                 resp=resp,
-                status_code=SecurityGroupsResponseCodes.LIST_SECURITY_GROUP_RULES,
+                status_code=status_code,
                 label='', message=err_msg)
 
             result.response = resp
