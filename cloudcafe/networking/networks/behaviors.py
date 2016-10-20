@@ -361,6 +361,21 @@ class NetworkingBehaviors(NetworkingBaseBehaviors):
             resp.entity.admin_pass = server.admin_pass
         return resp.entity
 
+    def get_remote_instance_client(self, server, ip_address, private_key,
+                                   ssh_username='root', auth_strategy='key'):
+        """
+        @summary: gets a compute server remote client
+        """
+
+        if self.compute is None:
+            raise UnavailableComputeInteractionException
+
+        remote_client = (
+            self.compute.servers.behaviors.get_remote_instance_client(
+                server=server, ip_address=ip_address, username=ssh_username,
+                key=private_key, auth_strategy=auth_strategy))
+        return remote_client
+
     def list_servers(self, name=None, raise_exception=False):
         """
         @summary: list servers wrapper for networks
