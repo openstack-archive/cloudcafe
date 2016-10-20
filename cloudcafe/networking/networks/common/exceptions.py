@@ -75,6 +75,10 @@ class ResourceUpdateException(BaseNetworkingException):
     MSG = 'Unable to update resource'
 
 
+class PortUpdateException(BaseNetworkingException):
+    MSG = 'Unable to update port'
+
+
 class ResourceGetException(BaseNetworkingException):
     MSG = 'Unable to get resource'
 

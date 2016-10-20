@@ -19,6 +19,11 @@ from cloudcafe.networking.networks.common.behaviors \
 from cloudcafe.networking.networks.common.constants \
     import NetworkTypes, PortTypes
 from cloudcafe.networking.networks.composites import NetworkingComposite
+from cloudcafe.networking.networks.extensions.security_groups_api.composites \
+    import SecurityGroupsComposite
+
+from cloudcafe.networking.networks.common.exceptions \
+    import PortUpdateException
 
 
 class ServerPersona(BaseModel, NetworkingBaseBehaviors):
@@ -32,7 +37,7 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
                  pnet_port_count=1, inet_fix_ipv4_count=0,
                  inet_fix_ipv6_count=0, snet_fix_ipv4_count=1,
                  snet_fix_ipv6_count=0, pnet_fix_ipv4_count=1,
-                 pnet_fix_ipv6_count=1):
+                 pnet_fix_ipv6_count=1, keypair=None, ssh_username=None):
         super(ServerPersona, self).__init__()
         """
         @param server: server entity
@@ -74,10 +79,16 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
         @type pnet_fix_ipv4_count: int
         @param pnet_fix_ipv6_count: expected public network fixed IPv6s count
         @type pnet_fix_ipv6_count: int
+        @param keypair: keypair object with private_key attribute
+        @type keypair: networking.networks.behaviors create_keypair response
+        @param ssh_username: remote client username for SSH
+        @type ssh_username: str
         """
 
-        # Server entity object
+        # Server and keypair entity object
         self.server = server
+        self.keypair = keypair
+        self.ssh_username = ssh_username
 
         # Server expected networks (bool value)
         self.pnet = pnet
@@ -104,8 +115,9 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
         self.pnet_fix_ipv4_count = pnet_fix_ipv4_count
         self.pnet_fix_ipv6_count = pnet_fix_ipv6_count
 
-        # Networking composite
+        # Networking composites
         self.net = NetworkingComposite()
+        self.sec = SecurityGroupsComposite()
 
         # base config from networking/networks/common/config.py
         self.config = self.net.config
@@ -128,6 +140,8 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
                                       'network {1}. Failures: {2}.')
         self.fixed_ips_failure_msg = ('Unable to get server {0} fixed IPs '
                                       'with IPv{1} version for network {2}')
+        self.update_port_failure_msg = ('Unable to update server {0} ports for'
+                                        ' network {1}. Failures: {2}.')
 
     def __str__(self):
 
@@ -142,32 +156,37 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
 
             return ', '.join(data_str)
 
-        data = {'name': self.server.name, 'svr_id':self.server.id,
+        data = {'name': self.server.name, 'svr_id': self.server.id,
                 'pub_net_id': self.public_network_id,
                 'pub_port_ids': self.pnet_port_ids,
+                'pub_sec_groups': self.pnet_security_groups,
                 'pub_ipv4_addr': self.pnet_fix_ipv4,
                 'pub_ipv6_addr': self.pnet_fix_ipv6,
                 'svc_net_id': self.service_network_id,
                 'svc_port_ids': self.snet_port_ids,
+                'svc_sec_groups': self.snet_security_groups,
                 'svc_ipv4_addr': self.snet_fix_ipv4,
                 'svc_ipv6_addr': self.snet_fix_ipv6,
                 'iso_net_id': getattr(self.network, 'id', None),
                 'iso_sub_id': getattr(self.subnetv4, 'id', None),
                 'iso_port_ids': self.inet_port_ids,
-                'iso_ipv4_addr': self.pnet_fix_ipv4,
+                'iso_sec_groups': self.inet_security_groups,
+                'iso_ipv4_addr': self.inet_fix_ipv4,
                 'iso_sub_v6_ids': build_data_str(self.subnetv6, 'id'),
-                'iso_ipv6_addr': self.pnet_fix_ipv6}
+                'iso_ipv6_addr': self.inet_fix_ipv6}
 
         msg = "\nServer Name: {name} ({svr_id})\n"
         msg += "Public Net:\n"
         msg += "\tNetwork Id: {pub_net_id}\n"
         msg += "\tPort Ids: {pub_port_ids}\n"
+        msg += "\tSecurity Groups: {pub_sec_groups}\n"
         msg += "\tIPv4 Address: {pub_ipv4_addr}\n"
         msg += "\tIPv6 Address: {pub_ipv6_addr}\n\n"
 
         msg += "Service Net:"
         msg += "\tNetwork Id: {svc_net_id}\n"
         msg += "\tPort Ids: {svc_port_ids}\n"
+        msg += "\tSecurity Groups: {svc_sec_groups}\n"
         msg += "\tIPv4 Address: {svc_ipv4_addr}\n"
         msg += "\tIPv6 Address: {svc_ipv6_addr}\n\n"
 
@@ -175,6 +194,7 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
         msg += "\tNetwork Id: {iso_net_id}\n"
         msg += "\tSubnet Id (IPv4): {iso_sub_id}\n"
         msg += "\tPort Ids: {iso_port_ids}\n"
+        msg += "\tSecurity Groups: {iso_sec_groups}\n"
         msg += "\tIPv4 Address: {iso_ipv4_addr}\n"
         msg += "\tSubnet Id (IPv6): {iso_sub_v6_ids}\n"
         msg += "\tIPv6 Address: {iso_ipv6_addr}\n\n"
@@ -289,6 +309,34 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
         """
         return self._get_port_ids(port_type=PortTypes.ISOLATED)
 
+    @property
+    def pnet_security_groups(self):
+        """
+        @summary: gets the security groups at the public network ports
+        """
+        return self._get_port_security_groups(port_type=PortTypes.PUBLIC)
+
+    @property
+    def snet_security_groups(self):
+        """
+        @summary: gets the security groups at the service network ports
+        """
+        return self._get_port_security_groups(port_type=PortTypes.SERVICE)
+
+    @property
+    def inet_security_groups(self):
+        """
+        @summary: gets the security groups at the isolated network ports
+        """
+        return self._get_port_security_groups(port_type=PortTypes.ISOLATED)
+
+    @property
+    def remote_client(self):
+        """
+        @summary: gets remote instance client
+        """
+        return self._get_remote_instance_client()
+
     def update_server_persona(self, clear_errors=True):
         """
         @summary: updates the self.server entity doing a GET server call
@@ -305,6 +353,51 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
 
         if clear_errors:
             self.errors = []
+
+    def add_security_groups_to_ports(self, port_type, security_group_ids,
+                                     port_ids=None, raise_exception=False):
+        """
+        Adds a security group or groups to a server port or ports based on type
+        @param port_type: port network type, for ex. pnet (public),
+            snet (service), or inet (isolated).
+        @type port_type: str
+        @param security_group_ids: the escurity group or groups to
+            be added to the port(s).
+        @type security_group_ids: list
+        @param port_ids (optional): to target specific ports by ID where the
+            security group(s) should be added. They must match the network type
+            param. By default, all the server port(s) by the given network type
+            will be added the security group(s).
+        @type port_ids: list
+        """
+
+        # Getting all the port ids from the network port type
+        port_ids_label = '{0}_port_ids'.format(port_type)
+        persona_port_ids = getattr(self, port_ids_label, None)
+
+        # Targeting specific ports if port_ids given
+        if port_ids:
+            port_ids_set = set(port_ids)
+            port_ids = list(port_ids_set.intersection(persona_port_ids))
+        else:
+            port_ids = persona_port_ids
+
+        print port_ids
+
+        # Adding the security group
+        for port_id in port_ids:
+            update = self.ports.behaviors.update_port(
+                port_id=port_id, security_groups=security_group_ids)
+            if update.failures:
+                msg = self.update_port_failure_msg.format(self.server.id,
+                                                          port_type,
+                                                          update.failures)
+                self.errors.append(msg)
+                self._log.error(msg)
+                if raise_exception:
+                    raise PortUpdateException(msg)
+                return False
+        return True
 
     def _port_response(self, network_type):
         """
@@ -326,6 +419,17 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
             self._log.error(msg)
             return []
         return ports.response.entity
+
+    def _get_remote_instance_client(self):
+        """
+        @summary: returns a remote instance client
+        """
+        ip_address = self.pnet_fix_ipv4[0]
+        remote_client = self.behaviors.get_remote_instance_client(
+            server=self.server, ip_address=ip_address,
+            private_key=self.keypair.private_key,
+            ssh_username=self.ssh_username)
+        return remote_client
 
     def _get_fixed_ips(self, ip_version, port_type, network_type):
         """
@@ -370,3 +474,16 @@ class ServerPersona(BaseModel, NetworkingBaseBehaviors):
         ports = getattr(self, port_attr, [])
         port_ids = [port.id for port in ports]
         return port_ids
+
+    def _get_port_security_groups(self, port_type):
+        """
+        @summary: gets the ports security groups
+        @param port_type: pnet, snet or inet port type
+        @type port_type: str
+        @return: all the security groups of the same port type
+        @rtype: list(list)
+        """
+        port_attr = '{0}_ports'.format(port_type.lower())
+        ports = getattr(self, port_attr, [])
+        port_sec_groups = [port.security_groups for port in ports]
+        return port_sec_groups
