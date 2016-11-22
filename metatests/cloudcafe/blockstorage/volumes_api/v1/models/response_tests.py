@@ -36,13 +36,13 @@ class VolumeTypeResponseModelBaseTest(BaseTest):
         extra_specs_value = "ExtraSpecsValue"
 
     def test_id(self):
-        self.assertEquals(self.model.id_, self.defaults.id_)
+        self.assertEqual(self.model.id_, self.defaults.id_)
 
     def test_name(self):
-        self.assertEquals(self.model.name, self.defaults.name)
+        self.assertEqual(self.model.name, self.defaults.name)
 
     def test_extra_specs(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.extra_specs,
             {self.defaults.extra_specs_key: self.defaults.extra_specs_value})
 
@@ -92,27 +92,27 @@ class VolumeTypeListResponseModelBaseTest(BaseTest):
         extra_specs_value = "ExtraSpecsValue"
 
     def test_list_contains_two_items(self):
-        self.assertEquals(len(self.model), 2)
+        self.assertEqual(len(self.model), 2)
 
     def test_first_item_id(self):
-        self.assertEquals(self.model[0].id_, self.defaults.id_)
+        self.assertEqual(self.model[0].id_, self.defaults.id_)
 
     def test_second_item_id(self):
-        self.assertEquals(self.model[1].id_, self.defaults.id_)
+        self.assertEqual(self.model[1].id_, self.defaults.id_)
 
     def test_first_item_name(self):
-        self.assertEquals(self.model[0].name, self.defaults.name1)
+        self.assertEqual(self.model[0].name, self.defaults.name1)
 
     def test_second_item_name(self):
-        self.assertEquals(self.model[1].name, self.defaults.name2)
+        self.assertEqual(self.model[1].name, self.defaults.name2)
 
     def test_first_item_extra_specs(self):
-        self.assertEquals(self.model[0].extra_specs, {
+        self.assertEqual(self.model[0].extra_specs, {
             self.defaults.extra_specs_key:
             self.defaults.extra_specs_value})
 
     def test_second_item_extra_specs(self):
-        self.assertEquals(self.model[1].extra_specs, {
+        self.assertEqual(self.model[1].extra_specs, {
             self.defaults.extra_specs_key:
             self.defaults.extra_specs_value})
 
@@ -166,45 +166,45 @@ class VolumeSnapshotResponseModelBaseTest(BaseTest):
         os_extended_snapshot_attributes_progress = '100%'
 
     def test_id(self):
-        self.assertEquals(self.model.id_, self.defaults.id_)
+        self.assertEqual(self.model.id_, self.defaults.id_)
 
     def test_volume_id(self):
-        self.assertEquals(self.model.volume_id, self.defaults.volume_id)
+        self.assertEqual(self.model.volume_id, self.defaults.volume_id)
 
     def test_display_name(self):
-        self.assertEquals(self.model.display_name, self.defaults.display_name)
+        self.assertEqual(self.model.display_name, self.defaults.display_name)
 
     def test_display_description(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.display_description, self.defaults.display_description)
 
     def test_status(self):
-        self.assertEquals(self.model.status, self.defaults.status)
+        self.assertEqual(self.model.status, self.defaults.status)
 
     def test_size_int_equivalent(self):
-        self.assertEquals(int(self.model.size), self.defaults.size)
+        self.assertEqual(int(self.model.size), self.defaults.size)
 
     def test_size_str_compare(self):
-        self.assertEquals(str(self.model.size), str(self.defaults.size))
+        self.assertEqual(str(self.model.size), str(self.defaults.size))
 
     def test_size_int_compare(self):
-        self.assertEquals(int(self.model.size), int(self.defaults.size))
+        self.assertEqual(int(self.model.size), int(self.defaults.size))
 
     def test_created_at(self):
-        self.assertEquals(self.model.created_at, self.defaults.created_at)
+        self.assertEqual(self.model.created_at, self.defaults.created_at)
 
     def test_metadata(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.metadata,
             {self.defaults.metadata_key: self.defaults.metadata_value})
 
     def test_os_extended_snapshot_attributes_project_id(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.os_extended_snapshot_attributes_project_id,
             self.defaults.os_extended_snapshot_attributes_project_id)
 
     def test_os_extended_snapshot_attributes_progress(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.os_extended_snapshot_attributes_progress,
             self.defaults.os_extended_snapshot_attributes_progress)
 
@@ -297,108 +297,108 @@ class VolumeResponseModelBaseTests(BaseTest):
         os_vol_mig_status_attr_name_id = '1111111'
 
     def test_id(self):
-        self.assertEquals(self.model.id_, self.defaults.id_)
+        self.assertEqual(self.model.id_, self.defaults.id_)
 
     def test_size_int_equivalent(self):
-        self.assertEquals(int(self.model.size), self.defaults.size)
+        self.assertEqual(int(self.model.size), self.defaults.size)
 
     def test_size_str_compare(self):
-        self.assertEquals(str(self.model.size), str(self.defaults.size))
+        self.assertEqual(str(self.model.size), str(self.defaults.size))
 
     def test_size_int_compare(self):
-        self.assertEquals(int(self.model.size), int(self.defaults.size))
+        self.assertEqual(int(self.model.size), int(self.defaults.size))
 
     def test_display_name(self):
-        self.assertEquals(self.model.display_name, self.defaults.display_name)
+        self.assertEqual(self.model.display_name, self.defaults.display_name)
 
     def test_volume_type(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.volume_type, self.defaults.volume_type)
 
     def test_display_description(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.display_description, self.defaults.display_description)
 
     def test_availability_zone(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.availability_zone,
             self.defaults.availability_zone)
 
     def test_metadata(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.metadata,
             {self.defaults.metadata_key: self.defaults.metadata_value})
 
     def test_snapshot_id(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.snapshot_id, self.defaults.snapshot_id)
 
     def test_bootable(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.bootable, self.defaults.bootable)
 
     def test_attachments_device(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.attachments[0].device,
             self.defaults.attachment_device)
 
     def test_attachments_server_id(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.attachments[0].server_id,
             self.defaults.attachment_server_id)
 
     def test_attachments_id(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.attachments[0].id_,
             self.defaults.attachment_id)
 
     def test_attachments_volume_id(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.attachments[0].volume_id,
             self.defaults.attachment_volume_id)
 
     def test_created_at(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.created_at,
             self.defaults.created_at)
 
     def test_status(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.status,
             self.defaults.status)
 
     def test_links_href(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.links[0].href,
             self.defaults.link_href)
 
     def test_links_rel(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.links[0].rel,
             self.defaults.link_rel)
 
     def test_source_volid(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.source_volid,
             self.defaults.source_volid)
 
     def test_os_vol_host_attr_host(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.os_vol_host_attr_host,
             self.defaults.os_vol_host_attr_host)
 
     def test_os_vol_tenant_attr_tenant_id(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.os_vol_tenant_attr_tenant_id,
             self.defaults.os_vol_tenant_attr_tenant_id)
 
     def test_os_vol_mig_status_attr_migstat(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.os_vol_mig_status_attr_migstat,
             self.defaults.os_vol_mig_status_attr_migstat)
 
     def test_os_vol_mig_status_attr_name_id(self):
-        self.assertEquals(
+        self.assertEqual(
             self.model.os_vol_mig_status_attr_name_id,
             self.defaults.os_vol_mig_status_attr_name_id)
 
@@ -450,19 +450,19 @@ class VolumeResponseModelTests_JSON(
 
     def test_empty_attachments_response(self):
         model = self.get_modified_volume_model('attachments', list())
-        self.assertEquals(model.attachments, list())
+        self.assertEqual(model.attachments, list())
         self.assertIsInstance(
             model.attachments, responses._VolumeAttachmentsList)
 
     def test_empty_links_response(self):
         model = self.get_modified_volume_model('links', list())
-        self.assertEquals(model.links, list())
+        self.assertEqual(model.links, list())
         self.assertIsInstance(
             model.attachments, responses._VolumeAttachmentsList)
 
     def test_empty_metadata_response(self):
         model = self.get_modified_volume_model('metadata', dict())
-        self.assertEquals(model.metadata, dict())
+        self.assertEqual(model.metadata, dict())
 
 
 class VolumeDetailResponseModelTests_XML(
