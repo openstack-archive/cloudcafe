@@ -710,7 +710,8 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             requestslib_kwargs=requestslib_kwargs)
 
         for storage_object in list_response.entity:
-            self.client.delete_object(container_name, storage_object.name)
+            self.delete_unicode_object(container_name,
+                                       storage_object.name)
 
         list_response = self.client.list_objects(container_name)
 
@@ -931,3 +932,23 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             container_name=self.config.cleanup_failure_container_name,
             object_name=failure_log_name,
             data=container_name)
+
+    def delete_unicode_object(self, container_name, object_name):
+        """
+        @summary: This method will encode an object name, that has unicode,
+        in utf-8 and then call the client delete method.
+
+        @param container_name: Name of container where object resides.
+        @type container_name: string
+        @param object_name: Name of object to delete
+        @type object_name: string
+
+        @return: response from the delete
+        @rtype: Requests.response object
+        """
+        utf_object_name = u''.join(object_name).encode('utf-8')
+
+        delete_response = self.client.delete_object(container_name,
+                                                    utf_object_name)
+
+        return delete_response
