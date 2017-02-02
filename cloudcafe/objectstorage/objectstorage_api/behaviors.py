@@ -952,3 +952,13 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                                                     utf_object_name)
 
         return delete_response
+
+    def get_account_hash(self):
+        """
+            @summary: This method will split the account hash from the
+            storage url and return it.
+
+            @return: The account hash
+            @rtype: string
+        """
+        return self.client.storage_url.split('/v1/')[1]
