@@ -69,7 +69,7 @@ class NovaCLI_InitializeClientWithAllArguments(unittest.TestCase):
 
     def test_no_arguments_positive(self):
         novacli = client.NovaCLI()
-        self.assertEquals(novacli.base_cmd().strip(), 'nova')
+        self.assertEqual(novacli.base_cmd().strip(), 'nova')
 
 
 class NovaCLI_CommandSerializationTests_CreateServer(unittest.TestCase):
