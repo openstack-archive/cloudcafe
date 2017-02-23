@@ -32,6 +32,8 @@ from cloudcafe.objectstorage.objectstorage_api.client \
     import ObjectStorageAPIClient
 from cloudcafe.objectstorage.objectstorage_api.config \
     import ObjectStorageAPIConfig
+from cloudcafe.objectstorage.objectstorage_api.common.constants import \
+    Constants
 
 
 class ObjectStorageAPIBehaviorException(Exception):
@@ -668,7 +670,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         fails to be set.
         """
         # Set tempurl key one to default value
-        key_one = '{0}_one'.format(self.VALID_TEMPURL_KEY)
+        key_one = '{0}_one'.format(Constants.BASE_TEMPURL_KEY)
         key_one_headers = {'X-Account-Meta-Temp-URL-Key': key_one}
         key_one_response = self.client.set_temp_url_key(
             headers=key_one_headers)
@@ -677,7 +679,7 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
             raise Exception('Could not set TempURL key one.')
 
         # Set tempurl key two to default value
-        key_two = '{0}_two'.format(self.VALID_TEMPURL_KEY)
+        key_two = '{0}_two'.format(Constants.BASE_TEMPURL_KEY)
         key_two_headers = {'X-Account-Meta-Temp-URL-Key-2': key_two}
         key_two_response = self.client.set_temp_url_key(
             headers=key_two_headers)
