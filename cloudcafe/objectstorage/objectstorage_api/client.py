@@ -57,6 +57,8 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             log level.
             """
             logline = '{0} {1}'.format(args, kwargs)
+            if logline and len(logline) > 200:
+                logline = '{0}...<truncated>'.format(logline[:100])
 
             try:
                 log.debug(logline.decode('utf-8', 'replace'))
