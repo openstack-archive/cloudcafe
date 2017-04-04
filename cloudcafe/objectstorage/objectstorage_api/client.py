@@ -57,6 +57,10 @@ def _log_transaction(log, level=cclogging.logging.DEBUG):
             log level.
             """
             logline = '{0} {1}'.format(args, kwargs)
+            # If the logline is over 200, just show the first 200 characters
+            # and truncate the rest.
+            if logline and len(logline) > 200:
+                logline = '{0}...<truncated>'.format(logline[:200])
 
             try:
                 log.debug(logline.decode('utf-8', 'replace'))
