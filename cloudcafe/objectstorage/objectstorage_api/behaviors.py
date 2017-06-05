@@ -20,7 +20,7 @@ import json
 import uuid
 
 from copy import deepcopy
-from hashlib import md5, sha1
+from hashlib import md5, sha1, sha256
 from random import choice
 from StringIO import StringIO
 from time import sleep, time
@@ -779,7 +779,8 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
                         redirect='http://example.com/formpost',
                         max_file_size=104857600, max_file_count=10,
                         expires=None, key='', signature="",
-                        x_delete_at=None, x_delete_after=None):
+                        x_delete_at=None, x_delete_after=None,
+                        sha_type=None):
         """
         Creates a multipart/form-data body (RFC-2388) that can be used for
         POSTs to Swift.
@@ -826,6 +827,9 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         @param x_delete_after: The amount of time, in seconds, after which
                                the object will be deleted from the container.
         @type x_delete_after: int
+        @param sha_type: The sha algorithm to be used when generating a
+                         signature. Currently should only be 'sha1' or 'sha2'.
+        @type sha_type: string
 
         @return: Data to be POSTed in the following format:
             {
@@ -846,7 +850,11 @@ class ObjectStorageAPI_Behaviors(BaseBehavior):
         url = ''.join([base_url, path])
         hmac_body = '{0}\n{1}\n{2}\n{3}\n{4}'.format(
             path, redirect, max_file_size, max_file_count, expires)
-        if not signature:
+        if not signature and sha_type == 'sha2':
+            signature = hmac.new(key, hmac_body, sha256).hexdigest()
+        elif not signature and sha_type == 'sha1':
+            signature = hmac.new(key, hmac_body, sha1).hexdigest()
+        elif not signature and not sha_type:
             signature = hmac.new(key, hmac_body, sha1).hexdigest()
 
         form = []

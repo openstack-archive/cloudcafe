@@ -19,7 +19,7 @@ import tarfile
 import urllib
 from cStringIO import StringIO
 from datetime import datetime
-from hashlib import sha1
+from hashlib import sha1, sha256
 from os.path import expanduser
 from time import time, mktime
 from urlparse import urlparse
@@ -591,7 +591,8 @@ class ObjectStorageAPIClient(HTTPClient):
 
         return response
 
-    def create_temp_url(self, method, container, obj, seconds, key):
+    def create_temp_url(self, method, container, obj, seconds, key,
+                        sha_type=None):
         method = method.upper()
         base_url = '{0}/{1}/{2}'.format(self.storage_url, container, obj)
         account_hash = self.storage_url.split('/v1/')[1]
@@ -599,7 +600,10 @@ class ObjectStorageAPIClient(HTTPClient):
         seconds = int(seconds)
         expires = int(time() + seconds)
         hmac_body = '{0}\n{1}\n{2}'.format(method, expires, object_path)
-        sig = hmac.new(key, hmac_body, sha1).hexdigest()
+        if sha_type == 'sha2':
+            sig = hmac.new(key, hmac_body, sha256).hexdigest()
+        else:
+            sig = hmac.new(key, hmac_body, sha1).hexdigest()
 
         return {'target_url': base_url, 'signature': sig, 'expires': expires}
 
