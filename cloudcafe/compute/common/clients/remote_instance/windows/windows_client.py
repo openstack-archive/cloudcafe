@@ -200,8 +200,6 @@ class WindowsClient(RemoteInstanceClient):
     def get_md5sum_for_remote_file(self, file_location, file_name):
         """
         @summary: Gets the md5sum of file on the server
-        @param filepath: The path name including file name
-        @type filepath: String
         """
         if not file_location.endswith("\\"):
             file_location = file_location + "\\"
