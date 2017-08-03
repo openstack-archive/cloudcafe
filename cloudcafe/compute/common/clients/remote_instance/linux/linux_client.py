@@ -497,8 +497,6 @@ class LinuxClient(RemoteInstanceClient):
                                                  client_filepath):
         """
         @summary: Creates and transfers a file from server to client
-        @param linux_client: A linux client for a given instance
-        @type address: Instance
         @param public_ip_address: The eth0 address of the instance
         @type public_ip_address: String
         @param gb_file_size: The size of the file to be generated in Gigabytes
