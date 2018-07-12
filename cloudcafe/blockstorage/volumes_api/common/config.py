@@ -382,3 +382,8 @@ class VolumesAPIConfig(ConfigSectionInterface):
     def allow_snapshot_restore_to_different_type(self):
         return self.get_boolean(
             "allow_snapshot_restore_to_different_type", False)
+
+    @property
+    def primary_bootable_volume(self):
+        """Introducing this property to handle VIRT-3099- SKS 11-JUL-2018."""
+        return self.get("primary_bootable_volume")
