@@ -687,6 +687,30 @@ class ServerBehaviors(BaseComputeBehavior):
             "type": type}]
         return block_device_mapping_matrix
 
+    def create_block_device_mapping_v1_virt2837(self, device_name, volume_id, delete_on_termination):
+        """
+        @summary: Creates Block Device mapping on the fly
+        @param volume_id: The uuid of the volume
+        @type volume_id: String
+        @param delete_on_termination:  True or False also 0 or 1
+        @type delete_on_termination: Boolean
+        @param device_name: Device name
+        @type device_name: String
+        @param size: Volume Size in GB
+        @type size: Int
+        @param type: snap or blank, from where the volume was created
+        @type type: String
+        @return: The Block Device Mapping
+        @rtype: List of dicts
+        """
+
+        # Creating block device mapping
+        block_device_mapping_matrix = [{
+            "device_name": device_name,
+            "volume_id": volume_id,
+            "delete_on_termination": delete_on_termination}]
+        return block_device_mapping_matrix
+
     def create_block_device_mapping_v2(self, boot_index, uuid, volume_size,
                                        source_type, destination_type,
                                        delete_on_termination):
@@ -715,5 +739,34 @@ class ServerBehaviors(BaseComputeBehavior):
             "volume_size": volume_size,
             "source_type": source_type,
             "destination_type": destination_type,
+            "delete_on_termination": delete_on_termination}]
+        return block_device_matrix
+
+    def create_block_device_mapping_v2_virt3099(self, boot_index, uuid,
+                                       source_type,
+                                       delete_on_termination):
+        """
+        @summary: Creates Block Device on the fly
+        @param uuid: The uuid of the volume
+        @type uuid: String
+        @param delete_on_termination:  True or False also 0 or 1
+        @type delete_on_termination: Boolean
+        @param boot_index: Used to order the boot disks
+        @type boot_index: String
+        @param volume_size: Volume Size in GB
+        @type volume_size: Int
+        @param source_type: snap or blank, from where the volume was created
+        @type source_type: String
+        @param destination_type: The type of the target virtual device
+        @type destination_type: String
+        @return: The Block Device Mapping
+        @rtype: List of dicts
+        """
+
+        # Creating block device
+        block_device_matrix = [{
+            "boot_index": boot_index,
+            "uuid": uuid,
+            "source_type": source_type,
             "delete_on_termination": delete_on_termination}]
         return block_device_matrix
