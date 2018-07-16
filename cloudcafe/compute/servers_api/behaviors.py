@@ -687,6 +687,32 @@ class ServerBehaviors(BaseComputeBehavior):
             "type": type}]
         return block_device_mapping_matrix
 
+
+    def create_block_device_mapping_v1_virt2837(self, device_name, volume_id, delete_on_termination):
+        """
+        @summary: Creates Block Device mapping on the fly
+        @param volume_id: The uuid of the volume
+        @type volume_id: String
+        @param delete_on_termination:  True or False also 0 or 1
+        @type delete_on_termination: Boolean
+        @param device_name: Device name
+        @type device_name: String
+        @param size: Volume Size in GB
+        @type size: Int
+        @param type: snap or blank, from where the volume was created
+        @type type: String
+        @return: The Block Device Mapping
+        @rtype: List of dicts
+        """
+
+        # Creating block device mapping
+        block_device_mapping_matrix = [{
+            "device_name": device_name,
+            "volume_id": volume_id,
+            "delete_on_termination": delete_on_termination}]
+        return block_device_mapping_matrix
+
+
     def create_block_device_mapping_v2(self, boot_index, uuid, volume_size,
                                        source_type, destination_type,
                                        delete_on_termination):

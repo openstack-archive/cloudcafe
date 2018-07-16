@@ -127,6 +127,146 @@ class CreateServerFromVolume(AutoMarshallingModel):
         return ''.join([Constants.XML_HEADER, ET.tostring(element)])
 
 
+
+class CreateServerFromVolumeVirt2837(AutoMarshallingModel):
+
+    def __init__(self, name, flavor_ref, block_device_mapping,
+                 max_count=None, min_count=None, networks=None,
+                 image_ref=None, personality=None, user_data=None,
+                 metadata=None, accessIPv4=None, accessIPv6=None,
+                 disk_config=None, admin_pass=None, key_name=None,
+                 config_drive=None, scheduler_hints=None,
+                 security_groups=None):
+
+        super(CreateServerFromVolumeVirt2837, self).__init__()
+        self.name = name
+        self.flavor_ref = flavor_ref
+        self.block_device_mapping = block_device_mapping
+        self.max_count = max_count
+        self.min_count = min_count
+        self.networks = networks
+        self.image_ref = image_ref
+        self.personality = personality
+        self.user_data = user_data
+        self.metadata = metadata
+        self.accessIPv4 = accessIPv4
+        self.accessIPv6 = accessIPv6
+        self.disk_config = disk_config
+        self.admin_pass = admin_pass
+        self.key_name = key_name
+        self.config_drive = config_drive
+        self.scheduler_hints = scheduler_hints
+        self.security_groups = security_groups
+
+    def _obj_to_json(self):
+        body = {
+            'name': self.name,
+            'flavorRef': self.flavor_ref,
+            'block_device_mapping': self.block_device_mapping,
+            'max_count': self.max_count,
+            'min_count': self.min_count,
+            'networks': self.networks,
+            'imageRef': self.image_ref,
+            'personality': self.personality,
+            'user_data': self.user_data,
+            'metadata': self.metadata,
+            'accessIPv4': self.accessIPv4,
+            'accessIPv6': self.accessIPv6,
+            'OS-DCF:diskConfig': self.disk_config,
+            'adminPass': self.admin_pass,
+            'key_name': self.key_name,
+            'config_drive': self.config_drive,
+            'security_groups': self.security_groups
+        }
+
+        body = self._remove_empty_values(body)
+        main_body = {'server': body}
+
+        if self.scheduler_hints:
+            main_body['os:scheduler_hints'] = self.scheduler_hints
+
+        return json.dumps(main_body)
+
+    def _obj_to_xml(self):
+        elements_dict = {
+            'name': self.name,
+            'flavorRef': self.flavor_ref,
+            'max_count': self.max_count,
+            'min_count': self.min_count,
+            'image_ref': self.image_ref,
+            'user_data': self.user_data,
+            'accessIPv4': self.accessIPv4,
+            'accessIPv6': self.accessIPv6,
+            'adminPass': self.admin_pass,
+            'key_name': self.key_name,
+            'config_drive': self.config_drive,
+            'security_groups': self.security_groups
+        }
+        element = ET.Element('server')
+        element.set('xmlns', Constants.XML_API_NAMESPACE)
+        block_device_ele = ET.Element('block_device_mapping')
+        block_device_ele.append(BlockDeviceMappingV1VIRT2837._obj_to_xml(
+            self.block_device_mapping))
+        element.append(block_device_ele)
+        if self.networks is not None:
+            networks_ele = ET.Element('networks')
+            for network_id in self.networks:
+                network = ET.Element('network')
+                network.set('uuid', network_id['uuid'])
+                networks_ele.append(network)
+            element.append(networks_ele)
+        if self.personality is not None:
+            personality_ele = ET.Element('personality')
+            personality_ele.append(Personality._obj_to_xml(self.personality))
+            element.append(personality_ele)
+        if self.metadata is not None:
+            meta_ele = ET.Element('metadata')
+            for key, value in self.metadata.items():
+                meta_ele.append(Metadata._dict_to_xml(key, value))
+            element.append(meta_ele)
+        if self.disk_config is not None:
+            element.set('xmlns:OS-DCF',
+                        Constants.XML_API_DISK_CONFIG_NAMESPACE)
+            element.set('OS-DCF:diskConfig', self.disk_config)
+        element = self._set_xml_etree_element(element, elements_dict)
+        return ''.join([Constants.XML_HEADER, ET.tostring(element)])
+
+class BlockDeviceMappingV1VIRT2837(AutoMarshallingModel):
+    """
+    @summary: Block Device Mapping Request Object for Version 1
+     of boot from volume extension
+    """
+    ROOT_TAG = 'block_device_mapping'
+
+    def __init__(self, volume_id, device_name, delete_on_termination):
+        super(BlockDeviceMappingV1VIRT2837, self).__init__()
+        self.volume_id = volume_id
+        self.device_name = device_name
+        self.delete_on_termination = delete_on_termination
+
+    @classmethod
+    def _obj_to_json(self):
+        body = {
+            'volume_id': self.volume_id,
+            'device_name': self.device_name,
+            'delete_on_termination': self.delete_on_termination
+        }
+
+        body = self._remove_empty_values(body)
+        return json.dumps({'block_device_mapping': body})
+
+    @classmethod
+    def _obj_to_xml(self, list_dicts):
+        device_dict = None
+        for device_dict in list_dicts:
+            device_element = ET.Element('block_device_mapping')
+            device_element.set('volume_id', device_dict.get('volume_id'))
+            device_element.set('device_name', device_dict.get('device_name'))
+            device_element.set('delete_on_termination',
+                               device_dict.get('delete_on_termination'))
+        return device_element
+
+
 class BlockDeviceMappingV2(AutoMarshallingModel):
     """
     @summary: Block Device Mapping Request Object for Version 2 Havana
