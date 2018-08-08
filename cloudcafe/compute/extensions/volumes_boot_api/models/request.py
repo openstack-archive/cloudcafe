@@ -24,6 +24,10 @@ from cloudcafe.compute.servers_api.models.requests import Personality
 
 
 class CreateServerFromVolume(AutoMarshallingModel):
+    """
+        Used for creating server from volume using block device mapping
+        version 2 API.
+    """
 
     def __init__(self, name, flavor_ref, block_device_mapping_v2,
                  max_count=None, min_count=None, networks=None,
@@ -127,8 +131,11 @@ class CreateServerFromVolume(AutoMarshallingModel):
         return ''.join([Constants.XML_HEADER, ET.tostring(element)])
 
 
-
-class CreateServerFromVolumeVirt2837(AutoMarshallingModel):
+class CreateServerFromVolumeDevMapv1(AutoMarshallingModel):
+    """
+        Used for creating server from volume using block device mapping
+        version 1 API.
+    """
 
     def __init__(self, name, flavor_ref, block_device_mapping,
                  max_count=None, min_count=None, networks=None,
@@ -138,7 +145,7 @@ class CreateServerFromVolumeVirt2837(AutoMarshallingModel):
                  config_drive=None, scheduler_hints=None,
                  security_groups=None):
 
-        super(CreateServerFromVolumeVirt2837, self).__init__()
+        super(CreateServerFromVolumeDevMapv1, self).__init__()
         self.name = name
         self.flavor_ref = flavor_ref
         self.block_device_mapping = block_device_mapping
@@ -205,7 +212,7 @@ class CreateServerFromVolumeVirt2837(AutoMarshallingModel):
         element = ET.Element('server')
         element.set('xmlns', Constants.XML_API_NAMESPACE)
         block_device_ele = ET.Element('block_device_mapping')
-        block_device_ele.append(BlockDeviceMappingV1VIRT2837._obj_to_xml(
+        block_device_ele.append(BlockDeviceMappingV1._obj_to_xml(
             self.block_device_mapping))
         element.append(block_device_ele)
         if self.networks is not None:
@@ -231,7 +238,8 @@ class CreateServerFromVolumeVirt2837(AutoMarshallingModel):
         element = self._set_xml_etree_element(element, elements_dict)
         return ''.join([Constants.XML_HEADER, ET.tostring(element)])
 
-class BlockDeviceMappingV1VIRT2837(AutoMarshallingModel):
+
+class BlockDeviceMappingV1(AutoMarshallingModel):
     """
     @summary: Block Device Mapping Request Object for Version 1
      of boot from volume extension
@@ -239,7 +247,7 @@ class BlockDeviceMappingV1VIRT2837(AutoMarshallingModel):
     ROOT_TAG = 'block_device_mapping'
 
     def __init__(self, volume_id, device_name, delete_on_termination):
-        super(BlockDeviceMappingV1VIRT2837, self).__init__()
+        super(BlockDeviceMappingV1, self).__init__()
         self.volume_id = volume_id
         self.device_name = device_name
         self.delete_on_termination = delete_on_termination
@@ -253,13 +261,13 @@ class BlockDeviceMappingV1VIRT2837(AutoMarshallingModel):
         }
 
         body = self._remove_empty_values(body)
-        return json.dumps({'block_device_mapping': body})
+        return json.dumps({self.ROOT_TAG: body})
 
     @classmethod
     def _obj_to_xml(self, list_dicts):
         device_dict = None
         for device_dict in list_dicts:
-            device_element = ET.Element('block_device_mapping')
+            device_element = ET.Element(self.ROOT_TAG)
             device_element.set('volume_id', device_dict.get('volume_id'))
             device_element.set('device_name', device_dict.get('device_name'))
             device_element.set('delete_on_termination',

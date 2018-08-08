@@ -17,7 +17,7 @@ limitations under the License.
 from cafe.engine.http.client import AutoMarshallingHTTPClient
 
 from cloudcafe.compute.extensions.volumes_boot_api.models.request import \
-    CreateServerFromVolume, CreateServerFromVolumeVirt2837
+    CreateServerFromVolume, CreateServerFromVolumeDevMapv1
 from cloudcafe.compute.servers_api.models.servers import Server
 
 
@@ -119,23 +119,23 @@ class VolumesBootClient(AutoMarshallingHTTPClient):
                             requestslib_kwargs=requestslib_kwargs)
         return resp
 
-
-    def create_server_virt2837(self, name, flavor_ref, block_device_mapping_v1,
-                      max_count=None, min_count=None, networks=None,
-                      image_ref=None, personality=None, user_data=None,
-                      metadata=None, accessIPv4=None, accessIPv6=None,
-                      disk_config=None, admin_pass=None, key_name=None,
-                      config_drive=None, scheduler_hints=None,
-                      security_groups=None, requestslib_kwargs=None):
+    def create_server_device_mapper_v1(
+            self, name, flavor_ref, block_device_mapping_v1,
+            max_count=None, min_count=None, networks=None,
+            image_ref=None, personality=None, user_data=None,
+            metadata=None, accessIPv4=None, accessIPv6=None,
+            disk_config=None, admin_pass=None, key_name=None,
+            config_drive=None, scheduler_hints=None,
+            security_groups=None, requestslib_kwargs=None):
         """
-        @summary: Creates an instance of a  block Version 2 server given the
+        @summary: Creates an instance of a  block Version 1 server given the
          provided parameters
         @param name: Name of the server
         @type name: String
         @param flavor_ref: Identifier for the flavor used to build the server
         @type flavor_ref: String
-        @param block_device_mapping_v2: A list of dictionaries needed for boot
-         from volume V2 feature
+        @param block_device_mapping_v1: A list of dictionaries needed for boot
+         from volume V1 feature
         @type block_device_mapping: List
         @param max_count: max_count parameter for the server.
         @type max_count: String
@@ -173,7 +173,7 @@ class VolumesBootClient(AutoMarshallingHTTPClient):
         @rtype: Requests.response
         """
 
-        server_request_object = CreateServerFromVolumeVirt2837(
+        server_request_object = CreateServerFromVolumeDevMapv1(
             name=name, flavor_ref=flavor_ref,
             block_device_mapping=block_device_mapping_v1,
             max_count=max_count, min_count=min_count, networks=networks,

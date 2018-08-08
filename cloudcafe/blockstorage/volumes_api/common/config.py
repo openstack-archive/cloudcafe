@@ -386,5 +386,8 @@ class VolumesAPIConfig(ConfigSectionInterface):
 
     @property
     def primary_bootable_volume(self):
-        """Introducing this property to handle VIRT-3099- SKS 11-JUL-2018."""
+        """Introducing this property to handle VIRT-3099- SKS 11-JUL-2018.
+        Specifies a bootable volume id (UUID) ready to be used to create a
+        server from.
+        """
         return self.get("primary_bootable_volume")
