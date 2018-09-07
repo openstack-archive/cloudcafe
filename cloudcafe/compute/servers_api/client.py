@@ -24,6 +24,8 @@ from cloudcafe.compute.servers_api.models.servers import Server, Servers, \
     ServerMins, Password
 from cloudcafe.compute.servers_api.models.servers import Addresses
 from cloudcafe.compute.servers_api.models.servers import InstanceActions
+from cloudcafe.compute.servers_api.models.requests import AddFixedIP, \
+    RemoveFixedIP
 from cloudcafe.compute.servers_api.models.requests import CreateServer, \
     AddSecurityGroup
 from cloudcafe.compute.servers_api.models.requests import UpdateServer
@@ -246,6 +248,42 @@ class ServersClient(AutoMarshallingHTTPClient):
                             request_entity=request,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
+
+    def add_fixed_ip(self, server_id, network_id, requestslib_kwargs=None):
+        """
+        @summary: Adds a fixed IP to a server.
+        @param server_id: The id of an existing server.
+        @type server_id: String
+        @param network_id: A unique network id.
+        @type network_id: String
+        @return: Base Response object
+        @rtype: Response object
+        """
+        request_body = AddFixedIP(network_id=network_id)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        return self.request('POST', url,
+                            response_entity_type=None,
+                            request_entity=request_body,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def remove_fixed_ip(self, server_id, address, requestslib_kwargs=None):
+        """
+        @summary: Removes a fixed IP from a server.
+        @param server_id: The id of an existing server.
+        @type server_id: String
+        @param address: IP address to be removed.
+        @type address: String
+        @return: Base Response object
+        @rtype: Response object
+        """
+        req_body = RemoveFixedIP(address=address)
+        url = '{base_url}/servers/{server_id}/action'.format(
+            base_url=self.url, server_id=server_id)
+        return self.request('POST', url,
+                            response_entity_type=None,
+                            request_entity=req_body,
+                            requestslib_kwargs=requestslib_kwargs)
 
     def list_addresses(self, server_id, requestslib_kwargs=None):
         """

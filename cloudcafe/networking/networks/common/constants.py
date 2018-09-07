@@ -69,6 +69,8 @@ class NeutronResponseCodes(object):
     CREATE_PORT = 201
     UPDATE_PORT = 200
     DELETE_PORT = 204
+    ADD_FIXED_IP = 202
+    REMOVE_FIXED_IP = 202
 
     BAD_REQUEST = 400
     UNAUTHORIZED = 401

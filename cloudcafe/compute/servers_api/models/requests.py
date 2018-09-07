@@ -756,12 +756,12 @@ class RemoveFixedIP(AutoMarshallingModel):
     Remove Fixed IP Action Request Object
     """
 
-    def __init__(self, network_id):
+    def __init__(self, address):
         super(RemoveFixedIP, self).__init__()
-        self.network_id = network_id
+        self.address = address
 
     def _obj_to_json(self):
-        body = {'networkId': self.network_id}
+        body = {'address': self.address}
         return json.dumps({'removeFixedIp': body})
 
 
