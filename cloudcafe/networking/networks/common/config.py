@@ -127,3 +127,17 @@ class NetworkingBaseConfig(ConfigSectionInterface):
         at: networking.networks.common.tools.resources
         """
         return json.loads(self.get("delete_resources", '{}'))
+
+    @property
+    def fixed_ips_to_add(self):
+        """
+        Adding fixed ip's to server
+        """
+        return int(self.get("fixed_ips_to_add", 2))
+
+    @property
+    def multiple_fixed_ips_to_add(self):
+        """
+        Adding multiple fixed ip's to server
+        """
+        return int(self.get('multiple_fixed_ips_to_add', 4))
