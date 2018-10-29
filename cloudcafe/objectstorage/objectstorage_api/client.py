@@ -22,7 +22,7 @@ from datetime import datetime
 from hashlib import sha1, sha256
 from os.path import expanduser
 from time import time, mktime
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from cafe.common.reporting import cclogging
 from cafe.engine.config import EngineConfig
