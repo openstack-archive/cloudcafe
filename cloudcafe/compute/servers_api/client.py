@@ -33,6 +33,10 @@ from cloudcafe.compute.servers_api.models.requests import ChangePassword, \
     ConfirmResize, RevertResize, Resize, Reboot, MigrateServer, Lock, \
     Unlock, Start, Stop, Suspend, Resume, Pause, Unpause, CreateImage, \
     Rebuild, ResetState, CreateBackup, LiveMigrateServer, Evacuate
+from cloudcafe.networking.networks.common.models.request.virtual_interface import \
+    VirtualInterface as RequestVirtualInterface
+from cloudcafe.networking.networks.common.models.response.virtual_interface import \
+    VirtualInterface as ResponseVirtualInterface
 
 
 class ServersClient(AutoMarshallingHTTPClient):
@@ -902,3 +906,20 @@ class ServersClient(AutoMarshallingHTTPClient):
                             response_entity_type=Password,
                             requestslib_kwargs=requestslib_kwargs)
         return resp
+    
+    def create_virtual_interface(self, server_id, network_id,
+                                 requestslib_kwargs=None):
+        virtual_interface = RequestVirtualInterface(network_id=network_id)
+        url = '{base_url}/servers/{server_id}/os-virtual-interfacesv2'.format(
+            base_url=self.url, server_id=server_id)
+        return self.request('POST', url,
+                            response_entity_type=ResponseVirtualInterface,
+                            request_entity=virtual_interface,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def list_virtual_interfaces(self, server_id, requestslib_kwargs=None):
+        url = '{base_url}/servers/{server_id}/os-virtual-interfacesv2'.format(
+            base_url=self.url, server_id=server_id)
+        return self.request('GET', url,
+                            response_entity_type=ResponseVirtualInterface,
+                            requestslib_kwargs=requestslib_kwargs)
