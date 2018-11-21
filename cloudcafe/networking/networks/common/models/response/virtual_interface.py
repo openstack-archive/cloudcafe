@@ -20,13 +20,13 @@ from cafe.engine.models.base import AutoMarshallingModel
 
 class VirtualInterface(AutoMarshallingModel):
 
-    def __init__(self, id_=None, mac_address=None, ip_addresses=None):
+    def __init__(self, id=None, mac_address=None, ip_addresses=None):
 
         """
         An object that represents the data of a Virtual Interface.
         """
         super(VirtualInterface, self).__init__()
-        self.id = id_
+        self.id = id
         self.mac_address = mac_address
         self.ip_addresses = ip_addresses or []
 
@@ -63,16 +63,17 @@ class VirtualInterface(AutoMarshallingModel):
     @classmethod
     def _json_to_obj(cls, serialized_str):
         ret = None
-        vif = 'virtual_interface'
         json_dict = json.loads(serialized_str)
+        vif = 'virtual_interface'
+        vifs = 'virtual_interfaces'
         if vif in json_dict:
             interface_dict = json_dict.get(vif)
             ip_addrs = IPAddress._dict_to_obj(interface_dict)
             interface_dict['ip_addresses'] = ip_addrs
             ret = VirtualInterface(**interface_dict)
-        if vif in json_dict:
+        if vifs in json_dict:
             ret = []
-            for interface_dict in json_dict.get(vif):
+            for interface_dict in json_dict.get(vifs):
                 ip_addrs = IPAddress._dict_to_obj(interface_dict)
                 interface_dict['ip_addresses'] = ip_addrs
                 ret.append(VirtualInterface(**interface_dict))

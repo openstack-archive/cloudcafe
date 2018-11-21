@@ -909,6 +909,16 @@ class ServersClient(AutoMarshallingHTTPClient):
 
     def create_virtual_interface(self, server_id, network_id,
                                  requestslib_kwargs=None):
+        """
+        @summary: creates a virtual interface for a network and
+        attaches the network to a server instance.
+        @param server_id: The id of an existing server.
+        @type server_id: String
+        @param network_id: The UUID for the network
+        @type network_id: string
+        @return: virtual interface response object
+        @rtype: Requests.response
+        """
         virtual_interface = RequestVirtualInterface(network_id=network_id)
         url = '{base_url}/servers/{server_id}/os-virtual-interfacesv2'.format(
             base_url=self.url, server_id=server_id)
@@ -918,8 +928,35 @@ class ServersClient(AutoMarshallingHTTPClient):
                             requestslib_kwargs=requestslib_kwargs)
 
     def list_virtual_interfaces(self, server_id, requestslib_kwargs=None):
+        """
+        @summary: lists virtual interfaces configured for a server instance.
+        @param server_id: The id of an existing server.
+        @type server_id: String
+        @return: list of virtual interfaces
+        @rtype: Requests.response
+        """
         url = '{base_url}/servers/{server_id}/os-virtual-interfacesv2'.format(
             base_url=self.url, server_id=server_id)
         return self.request('GET', url,
                             response_entity_type=ResponseVirtualInterface,
+                            requestslib_kwargs=requestslib_kwargs)
+
+    def delete_virtual_interface(self, server_id, virtual_interface_id,
+                                 requestslib_kwargs=None):
+        """
+        @summary: deletes the specified virtual interface from the
+        specified server instance.
+        @param server_id: The id of an existing server.
+        @type server_id: String
+        @param virtual_interface_id: ID of the virtual interface
+        which has to be deleted.
+        @type virtual_interface_id: String
+        @return: resp
+        @rtype: Requests.response
+        """
+        url = ('{base_url}/servers/{server_id}/os-virtual-interfacesv2/'
+               '{vif_id}'.format(base_url=self.url, server_id=server_id,
+                                 vif_id=virtual_interface_id))
+        return self.request('DELETE', url,
+                            response_entity_type=None,
                             requestslib_kwargs=requestslib_kwargs)
