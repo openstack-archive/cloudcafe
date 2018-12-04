@@ -1,0 +1,8 @@
+Code-Review+2: Christopher Hunt <chris.hunt@RACKSPACE.COM>
+Workflow+1: Christopher Hunt <chris.hunt@RACKSPACE.COM>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Tue, 04 Dec 2018 20:02:24 +0000
+Reviewed-on: https://review.openstack.org/622570
+Project: openstack/cloudcafe
+Branch: refs/heads/master
