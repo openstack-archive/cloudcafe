@@ -204,7 +204,8 @@ class ComputeIntegrationDatasets(ComputeDatasets, BlockstorageDatasets):
                         "{flavor}_{image}_on_{vtype}".format(
                             flavor=str(flavor.name), image=str(image.name),
                             vtype=str(vtype.name)).replace(' ', '_').replace(
-                            '.', '_').replace('(', '').replace(')', '')
+                            '.', '_').replace('(', '').replace(
+                            ')', '').replace('/', '-')
                     dataset_list.append_new_dataset(testname, data)
 
         # Apply modifiers
