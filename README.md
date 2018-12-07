@@ -98,4 +98,4 @@ Join us
 -------
 
 * IRC: #cafehub on irc.freenode.net
-* Mailing list: openstack-dev@lists.openstack.org
+* Mailing list: openstack-discuss@lists.openstack.org
