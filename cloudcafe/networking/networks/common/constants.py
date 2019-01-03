@@ -126,3 +126,10 @@ class ComputeResponseCodes(object):
 
 class ComputeStatus(NovaServerStatusTypes):
     """Compute server instance status"""
+
+
+class IPExcludePolicies(object):
+    """Reserved IP addresses that should NOT be handed out"""
+    publicnet = ['0', '255']
+    servicenet = ['0', '255']
+    isolatednet = ['0', '255']
