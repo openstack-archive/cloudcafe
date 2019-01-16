@@ -25,7 +25,7 @@ class VolumesAPIConfig(ConfigSectionInterface):
 
     @property
     def serialize_format(self):
-        """Sets all reqeusts made to the volumes api in either json or xml"""
+        """Sets all requests made to the volumes api in either json or xml"""
         return self.get("serialize_format", default="json")
 
     @property
