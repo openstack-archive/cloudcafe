@@ -1,3 +1,0 @@
-httpretty
-mock
-flake8
